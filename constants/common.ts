@@ -57,7 +57,7 @@ export type { UserProfile, Address, Cart, CartItem, Wishlist, UserOrder, OrderSt
 // ============================================================
 
 export interface NavLinkType {
-  [key: string]: string;
+  [key: string]: string | null;
 }
 
 export interface FooterLinkType {
@@ -74,9 +74,24 @@ export interface FooterSectionType {
 }
 
 export interface tabLinkType {
-  [key: string]: string;
+  [key: string]: string | null;
 }
+// ============================================================
+// CATEGORY OPTIONS (for vendor registration)
+// ============================================================
 
+export const categoryOptions: { value: string; label: string }[] = [
+    { value: "clothing", label: "Clothing" },
+    { value: "electronics", label: "Electronics" },
+    { value: "home_and_garden", label: "Home & Garden" },
+    { value: "health_and_beauty", label: "Health & Beauty" },
+    { value: "sports_and_outdoors", label: "Sports & Outdoors" },
+    { value: "toys_and_games", label: "Toys & Games" },
+    { value: "automotive", label: "Automotive" },
+    { value: "books_and_media", label: "Books & Media" },
+    { value: "food_and_beverage", label: "Food & Beverage" },
+    { value: "art_and_collectibles", label: "Art & Collectibles" }
+];
 // ============================================================
 // COUNTRY CODES
 // ============================================================

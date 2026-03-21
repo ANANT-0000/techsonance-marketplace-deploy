@@ -1,37 +1,36 @@
 'use client';
-
-import { useState } from "react";
+import { use, useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginStart, loginSuccess, loginFailure } from "@/Redux store/features/auth/authSlice";
-import { ADMIN_BASE_URL } from "@/constants/common";
-import axios from "axios";
+import { adminLogin } from "@/utils/apiClient";
+import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
     const dispatch = useDispatch();
     const [adminLoginID, setAdminLoginID] = useState<string | null>(null);
     const [adminLoginPass, setAdminLoginPass] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-
+    const router = useRouter();
+    const storedData = typeof window !== 'undefined' ? localStorage.getItem("auth") : null;
+    const auth = storedData ? JSON.parse(storedData) : null;
+    if (auth && auth?.isAuthenticated && auth?.user?.user_role
+        === "admin") {
+        console.log("Already logged in as admin.");
+        router.push(`/admin/${auth.user.id}`);
+    }
     const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         dispatch(loginStart());
-        try {
-            const response = await axios.post(`${ADMIN_BASE_URL}/api/admin/login`, {
-                admin_id: adminLoginID,
-                password: adminLoginPass
-            });
-            if (response.status === 200) {
-                dispatch(loginSuccess({
-                    user: response.data.user,
-                    token: response.data.token
-                }));
-            }
-        } catch (err: any) {
-            const errorMessage = err.response?.data?.message || err.message || "Login failed";
-            dispatch(loginFailure(errorMessage));
-            setError(errorMessage);
+        const result: { status: boolean, message: string, data?: any } = await adminLogin({ admin_id: adminLoginID!, password: adminLoginPass! });
+        dispatch(result.status ? loginSuccess(result.data) : loginFailure(result.message));
+        router.replace('/admin');
+        if (!result.status) {
+            setError(result.message);
+        } else {
+            setError(null);
         }
     }
+
 
     return (
         <>

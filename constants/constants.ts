@@ -1,4 +1,13 @@
 ﻿import type { Link } from "@/components/common/InnerSideBar.tsx";
+// Base URLs from environment variables//
+export const VENDOR_BASE_URL = process.env.NEXT_PUBLIC_VENDOR_URL;
+export const CUSTOMER_BASE_URL = process.env.NEXT_PUBLIC_USER_BASE_URL;
+export const ADMIN_BASE_URL = process.env.NEXT_PUBLIC_ADMIN_BASE_URL;
+export const VENDOR_AUTH_URL = process.env.NEXT_PUBLIC_VENDOR_AUTH_URL;
+export const CUSTOMER_AUTH_URL = process.env.NEXT_PUBLIC_USER_AUTH_URL;
+export const ADMIN_AUTH_URL = process.env.NEXT_PUBLIC_ADMIN_AUTH_URL;
+export const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 
 // Asset paths (served from /public/assets/)
 const BRAND_LOGO = "/assets/e-commerce_brand_logo.png";
@@ -242,13 +251,9 @@ export const VENDOR_SETTINGS_LINKS: Link[] = [
 ]
 
 
-// Base URLs from environment variables//
-export const VENDOR_BASE_URL = process.env.NEXT_PUBLIC_VENDOR_AUTH_URL;
-export const CUSTOMER_BASE_URL = process.env.NEXT_PUBLIC_CUSTOMER_BASE_URL;
-export const ADMIN_BASE_URL = process.env.NEXT_PUBLIC_ADMIN_BASE_URL;
-export const VENDOR_AUTH_URL = process.env.NEXT_PUBLIC_VENDOR_AUTH_URL;
-export const CUSTOMER_AUTH_URL = process.env.NEXT_PUBLIC_CUSTOMER_BASE_URL;
-//Cusomter Home hero title and description
+
+
+//Customer Home hero title and description
 export const HOME_HERO_TITLE = "Welcome to Sound Sphere - Your Ultimate Music Marketplace";
 export const HOME_HERO_DESC = "Discover, buy, and sell music products with ease. Join our vibrant community of music lovers and elevate your sound experience today!";
 

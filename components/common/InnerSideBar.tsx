@@ -12,7 +12,7 @@ export interface Link {
     }[];
 }
 
-export function InnerSideBar({ path, links, isOpen, isNotOpen }: { links: Link[], isOpen?: string, isNotOpen?: string }) {
+export function InnerSideBar({ path, links, isOpen, isNotOpen }: { path: string, links: Link[], isOpen?: string, isNotOpen?: string }) {
     const isSidebarOpen = useIsSidebarOpen();
     const style = isSidebarOpen ? isOpen : isNotOpen;
     const router = useRouter()

@@ -71,14 +71,12 @@ export interface Order {
   amount: number;
   action: 'Ship Now' | 'View';
 }
-export const UserRole = {
-  Admin: 'admin',
-  Vendor: 'vendor',
-  Customer: 'customer'
-} as const;
+export enum UserRole {
+  Admin = 'admin',
+  Vendor = 'vendor',
+  Customer = 'customer'
+}
 
-// This creates a type from the object values
-export type UserRole = typeof UserRole[keyof typeof UserRole];
 export type Permission = 'read' | 'create' | 'delete' | 'update';
 export interface RoleDefinition {
   can: Permission[];
@@ -146,4 +144,33 @@ export interface OrderFailedStatusTypes {
   transactionId?: string;
   attemptedAmount?: number;
   possibleReasons?: string[];
+}
+
+export interface VendorRegisterFormData {
+  store_name: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  store_owner_first_name: string;
+  store_owner_last_name: string;
+  category: string;
+  country_code?: string;
+  email: string;
+  password: string;
+  confirm_password: string;
+  document?: [{
+    document_type: VendorDocumentType;
+    document: string;
+  }];
+}
+
+export enum VendorDocumentType {
+  BusinessRegistration = 'business_registration',
+  FinancialStatements = 'financial_statements',
+  InsuranceCoverage = 'insurance_coverage',
+  ComplianceCertifications = 'compliance_certifications',
+  SecurityDocumentation = 'security_documentation',
+  ContractAgreements = 'contract_agreements',
+  VendorInformation = 'vendor_information',
+  BusinessContinuityPlan = 'business_continuity_plan',
 }

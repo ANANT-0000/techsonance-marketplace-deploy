@@ -1,14 +1,11 @@
 'use client';
-
-import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import axios from "axios";
-import { loginFailure, loginStart, loginSuccess } from "@/Redux store/features/auth/authSlice";
 import { passwordValidationSchema } from "@/utils/validation";
-import { VENDOR_AUTH_URL } from "@/constants/common";
-import { UserRole } from "@/utils/Types";
+import { vendorLogin } from "@/utils/apiClient";
+import { useSelector } from "react-redux";
+import { RootState } from "@/Redux store/store";
 
 interface LoginFormData {
     email: string;
@@ -16,10 +13,8 @@ interface LoginFormData {
 }
 
 export default function VendorLoginPage() {
-    const { loading, error } = useSelector((state: any) => state.auth);
-    const dispatch = useDispatch();
     const router = useRouter();
-
+    const { loading, error } = useSelector((state: RootState) => state.auth);
     const {
         reset,
         register,
@@ -28,27 +23,22 @@ export default function VendorLoginPage() {
     } = useForm<LoginFormData>({
         defaultValues: { email: "", password: "" }
     });
-
+    const storedData = typeof window !== 'undefined' ? localStorage.getItem("auth") : null;
+    const auth = storedData ? JSON.parse(storedData) : null;
+    if (auth && auth?.isAuthenticated && auth?.user?.user_role
+        === "vendor") {
+        console.log("Already logged in as vendor.");
+        router.replace('/vendor/dashboard');
+    }
     const onSubmit = async (data: LoginFormData) => {
-        dispatch(loginStart());
-        try {
-            const response = await axios.post(`${VENDOR_AUTH_URL}/login-vendor`, {
-                email: data.email,
-                password: data.password
-            });
-            if (response.status === 201) {
-                dispatch(loginSuccess({
-                    user: response.data.user,
-                    token: response.data.token,
-                    role: UserRole.Vendor
-                }));
-                reset();
-                router.push("/vendor");
-            }
-        } catch (err: any) {
-            const errorMessage = err.response?.data?.message || err.message || "Login failed";
-            dispatch(loginFailure(errorMessage));
+        const result = await vendorLogin(data);
+        if (result?.status) {
+            router.push('/vendor/dashboard');
+            reset();
+        } else {
+            result?.status === false && console.log(result?.message);
         }
+
     };
 
     return (

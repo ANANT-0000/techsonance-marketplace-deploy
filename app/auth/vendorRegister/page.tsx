@@ -1,25 +1,16 @@
 'use client';
-
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import axios from "axios";
+import { useFieldArray, useForm } from "react-hook-form";
 import { passwordValidationSchema } from "@/utils/validation";
-import { COUNTRY_CODES, VENDOR_AUTH_URL } from "@/constants/common";
+import { categoryOptions, COUNTRY_CODES } from "@/constants/common";
+import { vendorRegister } from "@/utils/apiClient";
+import { VendorDocumentType, VendorRegisterFormData } from "@/utils/Types";
+import { DynamicIcon } from "lucide-react/dynamic";
 
-interface FormData {
-    business_name: string;
-    business_number: string;
-    business_owner_full_name: string;
-    category: string;
-    country_code?: string;
-    vendor_admin_email: string;
-    vendor_admin_full_name: string;
-    password: string;
-    confirm_password: string;
-}
-
+const inputGroupContainer = "flex items-center overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all";
+const inputField = "flex-1 py-2.5 px-4 text-sm text-gray-800 placeholder-gray-400 focus:outline-none";
 const inputClass = "rounded-xl border border-gray-300 py-2.5 px-4 w-full text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all";
 const labelClass = "text-sm font-medium text-gray-700";
 const errorClass = "text-red-500 text-xs mt-0.5";
@@ -27,56 +18,41 @@ const errorClass = "text-red-500 text-xs mt-0.5";
 export default function VendorRegisterPage() {
     const router = useRouter();
     const [globalError, setGlobalError] = useState<string | null>(null);
-
+    const [isLegalDocumentWantToUpload, setIsLegalDocumentWantToUpload] = useState(false);
     const {
         register,
         handleSubmit,
         watch,
         reset,
+        control,
         formState: { errors, isSubmitting },
-    } = useForm<FormData>({
+    } = useForm<VendorRegisterFormData>({
         defaultValues: {
-            business_name: "",
-            business_number: "",
-            business_owner_full_name: "",
+            first_name: "",
+            last_name: "",
+            phone_number: "",
+            store_name: "",
+            store_owner_first_name: "",
+            store_owner_last_name: "",
             category: "",
-            vendor_admin_email: "",
+            email: "",
             country_code: "",
-            vendor_admin_full_name: "",
             password: "",
             confirm_password: "",
+            document: [{ document: undefined, document_type: undefined }] | undefined,
         }
     });
 
-    const onSubmit = async (data: FormData) => {
+    const { fields: documentFields, append: appendDocument, remove: removeDocument } = useFieldArray({ control, name: "documents" });
+    const onSubmit = async (data: VendorRegisterFormData) => {
         setGlobalError(null);
-        try {
-            const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
-            const response = await axios.post(`${VENDOR_AUTH_URL}/register-vendor`, {
-                user_role: "vendor",
-                business_name: data.business_name,
-                business_number: data.business_number,
-                business_owner_full_name: data.business_owner_full_name,
-                category: data.category,
-                vendor_admin_email: data.vendor_admin_email,
-                vendor_admin_full_name: data.vendor_admin_full_name,
-                password: data.password,
-                country_code: data.country_code,
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                }
-            });
-            if (response.status === 201) {
-                reset();
-                router.push("/auth/vendorLogin");
-            }
-        } catch (error: unknown) {
-            setGlobalError("Registration failed. Please try again.");
-        }
-    };
-
+        console.log(data);
+        const result = await vendorRegister(data);
+        if (result.status) {
+            reset();
+            router.push("/auth/vendorLogin");
+        };
+    }
     return (
         <main className="py-20 m-auto max-w-4xl px-6 font-[inter] mb-2 flex flex-col items-center">
             <div className="w-full mb-6">
@@ -94,29 +70,24 @@ export default function VendorRegisterPage() {
                         <div className="flex lg:flex-row flex-col gap-6 w-full">
                             <div className="flex flex-col gap-1.5 w-full">
                                 <label htmlFor="business_name" className={labelClass}>
-                                    Vendor / Business Name <span className="text-red-500">*</span>
+                                    Store / Business Name <span className="text-red-500">*</span>
                                 </label>
-                                <input id="business_name" type="text" className={inputClass} placeholder="Enter your business name" {...register("business_name", { required: "Business name is required" })} />
-                                {errors.business_name && <p className={errorClass}>{errors.business_name.message}</p>}
+                                <input id="business_name" type="text" className={inputClass} placeholder="Enter your business name" {...register("store_name", { required: "Business name is required" })} />
+                                {errors.store_name && <p className={errorClass}>{errors.store_name.message}</p>}
                             </div>
                             <div className="flex flex-col gap-1.5 w-full">
                                 <label htmlFor="category" className={labelClass}>
                                     Business Category <span className="text-red-500">*</span>
                                 </label>
                                 <select id="category" className={inputClass} {...register("category", { required: "Please select a business category" })}>
-                                    <option value="" disabled>Select Business Category</option>
-                                    <option value="retail">Retail</option>
-                                    <option value="diy_hardware">DIY and Hardware</option>
-                                    <option value="fashion">Fashion and Apparel</option>
-                                    <option value="food_and_beverages">Food and Beverages</option>
-                                    <option value="health_and_wellness">Health and Wellness</option>
-                                    <option value="automotive">Automotive</option>
-                                    <option value="sports_and_outdoors">Sports and Outdoors</option>
-                                    <option value="furniture">Furniture</option>
-                                    <option value="technology">Technology</option>
-                                    <option value="beauty_and_personal_care">Beauty and Personal Care</option>
-                                    <option value="hospitality">Toys and Hobbies</option>
-                                    <option value="other">Other</option>
+                                    <option value="" disabled>
+                                        Select Business Category
+                                    </option>
+                                    {categoryOptions.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
                                 </select>
                                 {errors.category && <p className={errorClass}>{errors.category.message}</p>}
                             </div>
@@ -126,8 +97,22 @@ export default function VendorRegisterPage() {
                                 <label htmlFor="business_owner_full_name" className={labelClass}>
                                     Business Owner Full Name <span className="text-red-500">*</span>
                                 </label>
-                                <input id="business_owner_full_name" type="text" className={inputClass} placeholder="Enter business owner full name" {...register("business_owner_full_name", { required: "Owner name is required" })} />
-                                {errors.business_owner_full_name && <p className={errorClass}>{errors.business_owner_full_name.message}</p>}
+                                <div className={inputGroupContainer}>
+                                    <input
+                                        type="text"
+                                        className={`${inputField} border-r border-gray-200`}
+                                        placeholder="First name"
+                                        {...register("store_owner_first_name", { required: "Required" })}
+                                    />
+                                    <input
+                                        type="text"
+                                        className={inputField}
+                                        placeholder="Last name"
+                                        {...register("store_owner_last_name", { required: "Required" })}
+                                    />
+                                </div>
+                                {errors.store_owner_first_name && <p className={errorClass}>{errors.store_owner_first_name.message}</p>}
+                                {errors.store_owner_last_name && <p className={errorClass}>{errors.store_owner_last_name.message}</p>}
                             </div>
                             <div className="flex flex-col gap-1.5 w-full">
                                 <label htmlFor="business_number" className={labelClass}>
@@ -142,13 +127,13 @@ export default function VendorRegisterPage() {
                                             </option>
                                         ))}
                                     </select>
-                                    <input type="tel" id="business_number" className="flex-1 py-2.5 px-4 text-sm text-gray-800 placeholder-gray-400 bg-white focus:outline-none" placeholder="123-456-7890" {...register("business_number", {
+                                    <input type="tel" id="business_number" className="flex-1 py-2.5 px-4 text-sm text-gray-800 placeholder-gray-400 bg-white focus:outline-none" placeholder="123-456-7890" {...register("phone_number", {
                                         required: "Business number is required",
                                         pattern: { value: /^[0-9]/, message: "Please use the format 123-456-7890" }
                                     })} />
                                 </div>
-                                {(errors.country_code || errors.business_number) && (
-                                    <p className={errorClass}>{errors.country_code?.message || errors.business_number?.message}</p>
+                                {(errors.country_code || errors.phone_number) && (
+                                    <p className={errorClass}>{errors.country_code?.message || errors.phone_number?.message}</p>
                                 )}
                             </div>
                         </div>
@@ -166,18 +151,31 @@ export default function VendorRegisterPage() {
                             <label htmlFor="vendor_admin_full_name" className={labelClass}>
                                 Vendor Admin Full Name <span className="text-red-500">*</span>
                             </label>
-                            <input id="vendor_admin_full_name" type="text" className={inputClass} placeholder="Enter admin full name" {...register("vendor_admin_full_name", { required: "Admin full name is required" })} />
-                            {errors.vendor_admin_full_name && <p className={errorClass}>{errors.vendor_admin_full_name.message}</p>}
+                            <div className={inputGroupContainer}>
+                                <input
+                                    type="text"
+                                    className={`${inputField} border-r border-gray-200`}
+                                    placeholder="First name"
+                                    {...register("first_name", { required: "Required" })}
+                                />
+                                <input
+                                    type="text"
+                                    className={inputField}
+                                    placeholder="Last name"
+                                    {...register("last_name", { required: "Required" })}
+                                />
+                            </div>
+                            {errors.first_name && errors.last_name && <p className={errorClass}>{errors.last_name.message}</p>}
                         </div>
                         <div className="flex flex-col gap-1.5 w-full">
                             <label htmlFor="vendor_admin_email" className={labelClass}>
                                 Vendor Admin Email <span className="text-red-500">*</span>
                             </label>
-                            <input id="vendor_admin_email" type="email" className={inputClass} placeholder="admin@vendor.com" {...register("vendor_admin_email", {
+                            <input id="vendor_admin_email" type="email" className={inputClass} placeholder="admin@vendor.com" {...register("email", {
                                 required: "Admin email is required",
                                 pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: "Invalid email address" }
                             })} />
-                            {errors.vendor_admin_email && <p className={errorClass}>{errors.vendor_admin_email.message}</p>}
+                            {errors.email && <p className={errorClass}>{errors.email.message}</p>}
                         </div>
                         <div className="flex lg:flex-row flex-col gap-6 w-full">
                             <div className="flex flex-col gap-1.5 w-full">
@@ -206,6 +204,96 @@ export default function VendorRegisterPage() {
 
                 {globalError && <p className="text-red-600 text-center text-sm font-medium">{globalError}</p>}
 
+                <section className="border border-gray-100 bg-white p-6 rounded-2xl w-full shadow-md shadow-gray-100/80 transition-all duration-300">
+                    {/* Toggle Row */}
+                    <label
+                        htmlFor="legal_document_toggle"
+                        className="flex items-center gap-3 cursor-pointer group w-fit"
+                    >
+                        <div className="relative">
+                            <input
+                                id="legal_document_toggle"
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={isLegalDocumentWantToUpload}
+                                onChange={(e) => setIsLegalDocumentWantToUpload(e.target.checked)}
+                            />
+                            <div className="w-10 h-5 bg-gray-200 rounded-full peer-checked:bg-blue-500 transition-colors duration-200" />
+                            <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 peer-checked:translate-x-5" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors duration-150 select-none">
+                            Upload legal document now
+                        </span>
+                    </label>
+
+                    {/* Document Upload Panel */}
+                    {isLegalDocumentWantToUpload && (
+                        <div className="mt-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div className="flex items-center justify-between">
+                                <p className={`${labelClass} mb-0`}>Legal Documents</p>
+                                <button
+                                    type="button"
+                                    onClick={() => appendDocument({ document: undefined, document_type: undefined })}
+                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors duration-150"
+                                >
+                                    <DynamicIcon name="plus" className="w-3.5 h-3.5" />
+                                    Add Document
+                                </button>
+                            </div>
+
+                            {documentFields.length === 0 && (
+                                <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-400">
+                                    <DynamicIcon name="file-text" className="w-8 h-8 mb-2 opacity-40" />
+                                    <p className="text-sm">No documents added yet</p>
+                                    <p className="text-xs mt-0.5">Click "Add Document" to get started</p>
+                                </div>
+                            )}
+
+                            <div className="flex flex-col gap-3">
+                                {documentFields.map((field, index) => (
+                                    <div
+                                        key={field.id}
+                                        className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3 group hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-150"
+                                    >
+                                        {/* File number badge */}
+                                        <span className="shrink-0 w-6 h-6 rounded-full bg-gray-200 text-gray-500 text-xs font-bold flex items-center justify-center group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors duration-150">
+                                            {index + 1}
+                                        </span>
+
+                                        {/* File input */}
+                                        <input
+                                            type="file"
+                                            className="block text-sm text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-white file:text-gray-700 file:shadow-sm file:border file:border-gray-200 hover:file:bg-gray-50 cursor-pointer flex-1 min-w-0"
+                                            {...register("document")}
+                                        />
+
+                                        {/* Document type select */}
+                                        <select
+                                            id="document_type"
+                                            className="text-sm text-gray-700 bg-white border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all duration-150 shrink-0"
+                                            {...register("document_type")}
+                                        >
+                                            <option value="" disabled>Select type</option>
+                                            {Object.values(VendorDocumentType).map((type) => (
+                                                <option key={type} value={type}>{type}</option>
+                                            ))}
+                                        </select>
+
+                                        {/* Remove button */}
+                                        <button
+                                            type="button"
+                                            onClick={() => removeDocument(index)}
+                                            className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
+                                            title="Remove document"
+                                        >
+                                            <DynamicIcon name="trash" className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </section>
                 {/* Actions */}
                 <div className="flex gap-4 justify-end mb-4">
                     <button type="button" onClick={() => reset()} className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">Cancel</button>

@@ -16,14 +16,15 @@ import {
 // ============================================================
 
 export const VENDOR_NAV_LINKS: NavLinkType[] = [
-  { Dashboard: null, icon: dashboard_icon },
-  { Products: "products", icon: product_icon },
-  { Orders: "orders", icon: order_icon },
-  { Inventory: "inventory", icon: inventory_icon },
-  { Analytics: "finances", icon: finance_icon },
-  { Marketing: "marketing", icon: marketing_icon },
-  { "Customer Care": "customerCare", icon: customer_care_icon },
-  { Settings: "settings", icon: settings_icon },
+  { Dashboard: null, icon: 'layout-dashboard' },
+  { Products: "products", icon: 'package' },
+  { Orders: "orders", icon: 'shopping-cart' },
+  { Inventory: "inventory", icon: 'package' },
+  { Analytics: "finances", icon: 'chart-column-stacked' },
+  { Finances: "finances", icon: 'hand-coins' },
+  { Marketing: "marketing", icon: 'megaphone' },
+  { "Customer Care": "customerCare", icon: 'headset' },
+  { Settings: "settings", icon: 'settings' },
 ];
 
 // ============================================================

@@ -12,11 +12,12 @@ import {
 // ============================================================
 
 export const ADMIN_NAV_LINKS: NavLinkType[] = [
-  { Dashboard: "/admin", icon: dashboard_icon },
-  { Vendor: "/admin/vendorManagement", icon: vendor_icon },
-  { Analytics: "/admin/auditLog", icon: analytics_icon },
-  { "Support Tickets": "/admin/supportTickets", icon: customer_care_icon },
-  { Settings: "/admin/settings", icon: settings_icon },
+  { 'Dashboard': null, icon: "layout-dashboard" },
+  { "Role Management": "role", icon: "user" },
+  { 'Vendor': "vendorManagement", icon: "building" },
+  { 'Analytics': "auditLog", icon: "chart-column-stacked" },
+  { "Support Tickets": "supportTickets", icon: "headset" },
+  { 'Settings': "settings", icon: "settings" },
 ];
 
 // ============================================================

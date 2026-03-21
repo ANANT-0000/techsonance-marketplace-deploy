@@ -4,6 +4,7 @@
     .stats {
         @apply my-6 flex lg:justify-between sm:flex-wrap sm:justify-start sm:w-full gap-6 mx-auto;
     }
+
     .stat {
         @apply border-2 border-gray-300 rounded-2xl py-4 px-6 bg-white min-w-70 gap-2 flex flex-col items-start;
         transition: transform 0.2s ease-in-out;
@@ -55,9 +56,11 @@
     .form_input {
         @apply my-1 border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
     }
+
     .form_select {
         @apply my-1 border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
     }
+
     .form_input_error {
         @apply border-red-500;
     }

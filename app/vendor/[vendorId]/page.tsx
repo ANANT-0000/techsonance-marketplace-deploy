@@ -5,9 +5,9 @@ import { VENDOR_DASHBOARD_STATS, VENDOR_ORDER_DATA } from "@/constants/vendor";
 import { useState } from "react";
 import Link from "next/link";
 import './index.css';
-import { useParams } from "next/navigation";
+const tableHeaders = ["Order ID", "Customer Name", "Status", "Amount", "Action"];
 export default function DashboardPage() {
-  
+
     const [count, setCount] = useState(1);
     const pageSize = 5;
     const totalPages = Math.ceil(VENDOR_ORDER_DATA.length / pageSize);
@@ -45,11 +45,12 @@ export default function DashboardPage() {
                     <table className="w-full table-auto min-w-max">
                         <thead className="bg-gray-200">
                             <tr>
-                                <th className="p-4 border-b border-gray-400">ORDER ID</th>
-                                <th className="p-4 border-b border-gray-400">CUSTOMER</th>
-                                <th className="p-4 border-b border-gray-400">STATUS</th>
-                                <th className="p-4 border-b border-gray-400">AMOUNT</th>
-                                <th className="p-4 border-b border-gray-400">ACTION</th>
+                                {tableHeaders.map((header, index) => (
+                                    <th key={index} className="p-4 border-b border-gray-400">
+                                        {header}
+                                    </th>
+                                ))}
+
                             </tr>
                         </thead>
                         <tbody className="text-center">
