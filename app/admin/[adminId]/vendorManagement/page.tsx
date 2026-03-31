@@ -1,15 +1,49 @@
 'use client';
-
 import { Navbar } from "@/components/admin/Navbar";
 import { Pagination } from "@/components/common/Pagination";
 import { VENDOR_LIST } from "@/constants/admin";
 import { searchImgDark } from "@/constants/common";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSelector } from "react-redux";
-
+import { ADMIN_BASE_URL } from "@/constants/constants";
+import { useAppSelector } from "@/hooks/reduxHooks";
+export const FILTER_STATUS_OPTIONS = [
+    { value: 'all', label: 'All Statuses' },
+    { value: 'Pending', label: 'Pending' },
+    { value: 'Approved', label: 'Approved' },
+    { value: 'Rejected', label: 'Rejected' }
+];
+const getVendorRequests = async () => {
+    try {
+        const response = await fetch(`${ADMIN_BASE_URL}/vendor-applications`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+        });
+        const resJson: {
+            data: [];
+            message: string;
+            status: string;
+        } = await response.json();
+        console.log(resJson.data);
+        let count = 0;
+        if (resJson.data?.length !== undefined) {
+            for (const application of resJson.data) {
+                if (application.company.company_status === 'Pending') {
+                    count++;
+                }
+            }
+        }
+        return count;
+    } catch (error) {
+        console.error('Error fetching vendor applications:', error);
+        return 0;
+    }
+};
 export default function VendorManagementPage() {
-    const { theme } = useSelector((state: any) => state.adminTheme);
+    const { theme } = useAppSelector((state) => state.adminTheme);
     const [count, setCount] = useState(1);
 
     const pageSize = 5;
@@ -17,7 +51,15 @@ export default function VendorManagementPage() {
     const startIndex = (count - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const currentData = VENDOR_LIST.slice(startIndex, endIndex);
-    const vendorRequests = 5;
+    const [vendorRequests, setVendorRequests] = useState(0);
+
+    useEffect(() => {
+        const fetchVendorRequests = async () => {
+            const count = await getVendorRequests();
+            setVendorRequests(count);
+        };
+        fetchVendorRequests();
+    }, []);
 
     return (
         <>
@@ -27,7 +69,10 @@ export default function VendorManagementPage() {
                     <h1 className="font-bold text-2xl">Manage Vendor domains, and platform access.</h1>
                     <span className="flex gap-4">
                         <Link className="vendor_manage_link text-white font-medium bg-blue-600 hover:bg-blue-700" href="vendorManagement/vendorForm">+ Create Vendors</Link>
-                        <Link className="vendor_manage_link font-medium" href="vendorManagement/approveVendors">Approve Vendor <span className="bg-yellow-300 py-1 px-3 rounded-full">{vendorRequests}</span></Link>
+                        {
+                            vendorRequests > 0 &&
+                            <Link className="vendor_manage_link font-medium" href="vendorManagement/approveVendors">Approve Vendor <span className="bg-yellow-300 py-1 px-3 rounded-full">{vendorRequests}</span></Link>
+                        }
                     </span>
                 </header>
                 <div className={"border-2 justify-between rounded-lg flex border-gray-400 items-center px-4 py-2 gap-4 bg-white filter " + (theme === 'light' ? '' : 'invert')}>
@@ -37,10 +82,11 @@ export default function VendorManagementPage() {
                     </span>
                     <span className="flex gap-4">
                         <select className="vendor_filter" name="status" id="status">
-                            <option value="all">All Status</option>
-                            <option value="active">Active</option>
-                            <option value="pending">Pending</option>
-                            <option value="suspended">Suspended</option>
+                            {
+                                FILTER_STATUS_OPTIONS.map((option) => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))
+                            }
                         </select>
                         <select className="vendor_filter" name="sort_by" id="sort_by">
                             <option value="date_newest">Newest</option>

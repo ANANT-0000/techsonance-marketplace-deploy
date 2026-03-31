@@ -1,27 +1,27 @@
 'use client';
 import { useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
- 
+
 import { PRODUCT_LIST } from "@/constants/customer";
 import { AddToCart } from "./AddToCart";
- 
+
 import { X, ShoppingBag } from "lucide-react";
 import { BuyBtn } from "./BuyBtn";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { useMediaQuery } from "react-responsive";
-import { RootState } from "@/Redux store/store";
-import { toggleCartSidebar } from "@/Redux store/features/CartSidebar";
+import { RootState } from "@/lib/store";
+import { toggleCartSidebar } from "@/lib/features/CartSidebar";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 
 
 
 export function CartSidebar() {
-  const { isCartOpen } = useSelector((state: RootState) => state.cartSidebar);
+  const { isCartOpen } = useAppSelector((state: RootState) => state.cartSidebar);
   const isMobile = useMediaQuery({ maxWidth: 768 });
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { items } = useSelector((state: RootState) => state.cart);
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const { items } = useAppSelector((state: RootState) => state.cart);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const cartItems = Array.isArray(PRODUCT_LIST) && Array.isArray(items)
     ? PRODUCT_LIST.filter(product => items.some(item => item.id === product.id)).map(product => {

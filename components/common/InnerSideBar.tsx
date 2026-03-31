@@ -1,19 +1,19 @@
 'use client';
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import Link from "next/link";
-import { useIsSidebarOpen } from "@/utils/sideBarCheck";
 import { useRouter } from "next/navigation";
 
 export interface Link {
     section: string;
     list: {
         title: string;
-        path: string;
+        path: string | null;
         icon: string;
     }[];
 }
 
 export function InnerSideBar({ path, links, isOpen, isNotOpen }: { path: string, links: Link[], isOpen?: string, isNotOpen?: string }) {
-    const isSidebarOpen = useIsSidebarOpen();
+    const isSidebarOpen = useAppSelector((state) => state.sidebar.isSidebarOpen);
     const style = isSidebarOpen ? isOpen : isNotOpen;
     const router = useRouter()
     const handleRouter = () => {

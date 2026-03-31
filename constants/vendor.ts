@@ -1,16 +1,47 @@
 import type { Link } from "@/components/common/InnerSideBar";
-import type { NavLinkType } from "./common";
-import {
-  dashboard_icon,
-  product_icon,
-  order_icon,
-  inventory_icon,
-  finance_icon,
-  marketing_icon,
-  customer_care_icon,
-  settings_icon,
-} from "./common";
+import { CouponType, CustomerTicketType, GstInvoiceType, InventoryItemType, NavLinkType, OrderDetailType, UserReviewType, VendorOrderType, VendorProductType, WarehouseType } from "@/utils/Types";
 
+
+export const VendorDocumentTypes: { label: string; value: string }[] = [
+  {
+    label: 'Business Registration',
+    value: 'business_registration'
+  },
+  {
+    label: 'Financial Statements',
+    value: 'financial_statements'
+  },
+  {
+    label: 'Insurance Coverage',
+    value: 'insurance_coverage'
+  }
+  ,
+  {
+    label: 'Compliance Certifications',
+    value: 'compliance_certifications'
+  }
+  ,
+  {
+    label: 'Security Documentation',
+    value: 'security_documentation'
+  }
+  ,
+  {
+    label: 'Contract Agreements',
+    value: 'contract_agreements'
+  }
+  ,
+  {
+    label: 'Vendor Information',
+    value: 'vendor_information'
+  }
+  ,
+  {
+    label: 'Business Continuity Plan',
+    value: 'business_continuity_plan'
+  }
+
+]
 // ============================================================
 // VENDOR NAVIGATION LINKS
 // ============================================================
@@ -72,15 +103,6 @@ export const VENDOR_DASHBOARD_STATS = {
 // VENDOR — RECENT ORDERS MOCK DATA
 // ============================================================
 
-export interface VendorOrderType {
-  orderId: string;
-  customerName: string;
-  status: "Pending" | "Shipped" | "Delivered";
-  amount: number;
-  action: "Ship Now" | "View";
-  date?: string;
-  items?: number;
-}
 
 export const VENDOR_ORDER_DATA: VendorOrderType[] = [
   { orderId: "#ORD-2024-001", customerName: "Rahul Kumar", status: "Pending", amount: 1499, action: "Ship Now", date: "2026-03-10", items: 2 },
@@ -107,16 +129,6 @@ export const VENDOR_ORDER_DATA: VendorOrderType[] = [
 // VENDOR — INVENTORY MOCK DATA
 // ============================================================
 
-export interface InventoryItemType {
-  id: string;
-  name: string;
-  sku: string;
-  category: string;
-  stock: number;
-  reorderLevel: number;
-  price: number;
-  status: "In Stock" | "Low Stock" | "Out of Stock";
-}
 
 export const VENDOR_INVENTORY_DATA: InventoryItemType[] = [
   { id: "INV-001", name: "Sony WH-1000XM5", sku: "SNY-WH-XM5", category: "Headphones", stock: 45, reorderLevel: 10, price: 29990, status: "In Stock" },
@@ -135,16 +147,7 @@ export const VENDOR_INVENTORY_DATA: InventoryItemType[] = [
 // VENDOR — PRODUCT MANAGEMENT MOCK DATA
 // ============================================================
 
-export interface VendorProductType {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  stock: number;
-  status: "Active" | "Draft" | "Archived";
-  imageUrl: string;
-  sales: number;
-}
+
 
 export const VENDOR_PRODUCTS: VendorProductType[] = [
   { id: "VP-001", name: "Sony WH-1000XM5 Noise Canceling", category: "Headphones", price: 29990, stock: 45, status: "Active", imageUrl: "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=300&q=80", sales: 128 },
@@ -203,18 +206,6 @@ export const VENDOR_MARKETING_DATA = {
 // VENDOR — ORDERS PAGE MOCK DATA
 // ============================================================
 
-export type OrderDetailType = {
-  id: string;
-  orderNumber: string;
-  dateTime: string;
-  customer: {
-    name: string;
-    location: string;
-  };
-  status: 'Pending' | 'Shipped' | 'Delivered';
-  total: number;
-  paymentMethod: 'Paid (UPI)' | 'COD' | 'Refunded' | 'Card payment';
-};
 
 export const VENDOR_ORDERS_DETAIL: OrderDetailType[] = [
   { id: "order_001", orderNumber: "#ORD-2024-001", dateTime: "Today, 10:23 AM", customer: { name: "Rahul Kumar", location: "Mumbai, MH" }, status: "Pending", total: 1499, paymentMethod: "Paid (UPI)" },
@@ -231,21 +222,8 @@ export const VENDOR_ORDERS_DETAIL: OrderDetailType[] = [
 // VENDOR — WAREHOUSE MOCK DATA
 // ============================================================
 
-export interface Warehouse {
-  warehouse_id: number;
-  company_id: number;
-  name: string;
-  type: "Warehouse" | "Hub"; // Type of location
-  address: string;         // Street/area address
-  city: string;
-  is_active: boolean;
-  total_units: number;
-  is_default: boolean;
-  contactPerson?: string;  // Optional contact person
-  phone?: string;
-}
 
-export const WAREHOUSE_DATA: Warehouse[] = [
+export const WAREHOUSE_DATA: WarehouseType[] = [
   { warehouse_id: 1, company_id: 101, name: "Main Warehouse (Surat)", location: "Ring Road, Surat, Gujarat", is_active: true, total_units: 4520, is_default: true },
   { warehouse_id: 2, company_id: 101, name: "North Hub (Delhi)", location: "Okhla Ind. Estate, Delhi", is_active: true, total_units: 2520, is_default: false },
   { warehouse_id: 3, company_id: 101, name: "South Hub (Bengaluru)", location: "Whitefield, Bengaluru, Karnataka", is_active: true, total_units: 3150, is_default: false },
@@ -257,17 +235,7 @@ export const WAREHOUSE_DATA: Warehouse[] = [
 // VENDOR — INVENTORY PRODUCT LIST MOCK DATA
 // ============================================================
 
-export interface InventoryProduct {
-  id: string;
-  productName: string;
-  sku: string;
-  category: string;
-  stock: number;
-  price: number;
-  warehouse: 'Main Warehouse' | 'North Hub';
-  status: 'In Stock' | 'Low Stock' | 'Out of Stock';
-  imageUrl: string;
-}
+
 
 export const INVENTORY_PRODUCTS: InventoryProduct[] = [
   { id: "prod-001", productName: "Noise Air Clips Wireless Open Ear Earbuds", sku: "AUD-MIC-001", category: "Audio", stock: 5, price: 8999, warehouse: "Main Warehouse", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-MIC-001/200/200" },
@@ -291,18 +259,8 @@ export const INVENTORY_PRODUCTS: InventoryProduct[] = [
 // VENDOR — GST INVOICES MOCK DATA (FINANCES)
 // ============================================================
 
-export interface GstInvoice {
-  id: number;
-  date: string;
-  invoice_no: string;
-  order_ref: string;
-  taxable_value: number;
-  total_tax: number;
-  currency: string;
-  download_available: boolean;
-}
 
-export const GST_INVOICES: GstInvoice[] = [
+export const GST_INVOICES: GstInvoiceType[] = [
   { id: 1, date: "2026-01-16", invoice_no: "INV-2026-0000000001", order_ref: "#ORD-00000009921", taxable_value: 2117.80, total_tax: 381.20, currency: "INR", download_available: true },
   { id: 2, date: "2026-01-15", invoice_no: "INV-2026-0000000004", order_ref: "#ORD-00000005921", taxable_value: 758.93, total_tax: 91.07, currency: "INR", download_available: true },
   { id: 3, date: "2026-01-14", invoice_no: "INV-2026-0000000003", order_ref: "#ORD-00000044921", taxable_value: 1540.00, total_tax: 277.20, currency: "INR", download_available: true },
@@ -326,21 +284,9 @@ export const VENDOR_FINANCE_STATS = {
 // VENDOR — COUPON MOCK DATA (MARKETING)
 // ============================================================
 
-export interface Coupon {
-  id: number;
-  code: string;
-  discount_type: 'PERCENTAGE' | 'FLAT_AMOUNT';
-  value: number;
-  currency?: string;
-  status: 'ACTIVE' | 'EXPIRED' | 'INACTIVE';
-  conditions: {
-    min_purchase_amount?: number;
-    customer_segment?: 'ALL' | 'NEW_CUSTOMERS';
-    expiry_text: string;
-  };
-}
 
-export const COUPON_DATA: Coupon[] = [
+
+export const COUPON_DATA: CouponType[] = [
   { id: 1, code: "WINTER26", discount_type: "PERCENTAGE", value: 25, status: "ACTIVE", conditions: { min_purchase_amount: 1000, customer_segment: "ALL", expiry_text: "Expires in 12 days" } },
   { id: 2, code: "WELCOME2026", discount_type: "FLAT_AMOUNT", value: 100, currency: "INR", status: "ACTIVE", conditions: { customer_segment: "NEW_CUSTOMERS", expiry_text: "No expiry" } },
 ];
@@ -354,17 +300,8 @@ export const COUPON_COLORS = {
 // VENDOR — REVIEW MOCK DATA (MARKETING)
 // ============================================================
 
-export interface UserReview {
-  id: number;
-  user_name: string;
-  purchased_item: string;
-  rating: number;
-  review_text: string;
-  time_posted: string;
-  actions: { can_reply: boolean; can_report: boolean };
-}
 
-export const REVIEW_DATA: UserReview[] = [
+export const REVIEW_DATA: UserReviewType[] = [
   { id: 1, user_name: "Rahul K.", purchased_item: "Cotton T-Shirt", rating: 5, review_text: "Great quality fabric! Fits perfectly and delivery was super fast. Will definitely order again.", time_posted: "2 hours ago", actions: { can_reply: true, can_report: true } },
   { id: 2, user_name: "Sneha M.", purchased_item: "Floral Summer Dress", rating: 4, review_text: "The print is beautiful and exactly as shown. The fit is slightly loose around the waist but comfortable.", time_posted: "5 hours ago", actions: { can_reply: true, can_report: true } },
   { id: 3, user_name: "Amit P.", purchased_item: "Slim Fit Jeans", rating: 3, review_text: "Quality is decent for the price, but the color faded slightly after the first wash.", time_posted: "1 day ago", actions: { can_reply: true, can_report: true } },
@@ -381,19 +318,8 @@ export const REVIEW_DATA: UserReview[] = [
 // VENDOR — CUSTOMER CARE MOCK DATA
 // ============================================================
 
-export interface CustomerTicket {
-  id: number;
-  ticket_number: string;
-  customer_name: string;
-  related_order?: string;
-  subject: string;
-  description: string;
-  status: 'Open' | 'In Progress' | 'Resolved' | 'Closed';
-  priority: 'High' | 'Medium' | 'Low';
-  created: string;
-}
 
-export const CUSTOMER_TICKET_DATA: CustomerTicket[] = [
+export const CUSTOMER_TICKET_DATA: CustomerTicketType[] = [
   { id: 1, ticket_number: "#9021", customer_name: "Sneha Kapoor", related_order: "#ORD-00009921", subject: "Received wrong size", description: "I ordered a Medium Cotton T-Shirt, but I received a Small. Please arrange for an exchange.", status: "In Progress", priority: "High", created: " 2 hours ago" },
   { id: 2, ticket_number: "#8955", customer_name: "Rahul Verma", related_order: "#ORD-00005921", subject: "Package marked delivered but not received", description: "The tracking says delivered yesterday, but I haven't received anything at my doorstep.", status: "Resolved", priority: "High", created: " 1 day ago" },
   { id: 3, ticket_number: "#8810", customer_name: "Amit Patel", related_order: "#ORD-00004492", subject: "Question about fabric care", description: "Can I machine wash the silk saree I bought, or is it dry clean only?", status: "Resolved", priority: "Low", created: " 3 days ago" },

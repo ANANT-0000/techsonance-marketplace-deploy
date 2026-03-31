@@ -1,66 +1,40 @@
-"use client";
-import { useState } from "react";
-import { createPermission } from "@/utils/apiClient";
-import { authToken } from "@/utils/authToken";
-import { BASE_API_URL } from "@/constants/constants";
+import { handleAddPermission, handleDeletePermission } from "@/utils/adminApiClients";
+import { Suspense } from "react";
+import { PermissionList } from "./PermissionList";
 
 interface Permission { id: string; permission_name: string; }
 
 interface Props {
+  adminId: string;
   permissions: Permission[];
-  onRefresh: () => void;
 }
 
-export default function PermissionsSection({ permissions, onRefresh }: Props) {
-  const [name, setName] = useState("");
-
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    await createPermission(name.trim().toLowerCase());
-    setName("");
-    onRefresh();
-  };
-
-  const handleDelete = async (id: string) => {
-    await fetch(`${BASE_API_URL}permissions/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${authToken()}` },
-    });
-    onRefresh();
-  };
-
+export default async function PermissionsSection({ permissions, adminId }: Props) {
+  const onAddPermission = handleAddPermission.bind(null, adminId);
   return (
     <div>
       <h2 className="text-sm font-semibold text-gray-700 mb-3">Permissions</h2>
 
-      <form onSubmit={handleAdd} className="flex gap-2 mb-4">
+      <form action={onAddPermission} className="flex gap-2 mb-4">
         <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          name="permission"
           placeholder="e.g. view_reports"
-          className="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-gray-500"
+          className="flex-1 border  border-gray-300 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:border-gray-500"
         />
-        <button className="border border-gray-300 rounded px-3 py-1.5 text-sm hover:bg-gray-50">
+        <button className="border border-gray-300 rounded-xl px-4 py-1.5  text-sm hover:bg-gray-50">
           Add
         </button>
       </form>
 
-      <div className="divide-y border rounded">
-        {permissions.length === 0 && (
-          <p className="text-xs text-gray-400 p-3">No permissions yet.</p>
-        )}
-        {permissions.map((p) => (
-          <div key={p.id} className="flex items-center justify-between px-3 py-2.5">
-            <span className="text-sm font-mono text-gray-800">{p.permission_name}</span>
-            <button
-              onClick={() => handleDelete(p.id)}
-              className="text-xs text-red-400 hover:text-red-600"
-            >
-              Delete
-            </button>
-          </div>
-        ))}
+      <div className="divide-y border-2 border-gray-300 rounded-2xl">
+        <Suspense fallback={<p className="text-xs text-gray-400 p-3">Loading permissions...</p>}>
+          {permissions.length === 0 ? (
+            <p className="text-xs text-gray-400 p-3">No permissions yet.</p>
+          ) : (
+            <PermissionList permissions={permissions}  adminId={adminId} />
+          )}
+
+        </Suspense>
       </div>
     </div>
   );

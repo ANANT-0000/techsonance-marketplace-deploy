@@ -3,13 +3,13 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, useAnimate, } from "motion/react";
 import { useMediaQuery } from "react-responsive";
-import type { PRODUCT_LIST_TYPE } from "@/constants/customer";
 import { AddToCart } from "./AddToCart";
 import { BuyBtn } from "./BuyBtn";
 import { WishListBtn } from "./WishListBtn";
 import Link from "next/link";
+import { ProductType } from "@/utils/Types";
 
-export function ProductList({ products = [], styles }: { products?: PRODUCT_LIST_TYPE[], styles?: string }) {
+export function ProductList({ products = [], styles }: { products?: ProductType[], styles?: string }) {
     const isMobile = useMediaQuery({ maxWidth: 768 });
     const isTablet = useMediaQuery({ minWidth: 769, maxWidth: 1024 });
     const [scope, animate] = useAnimate()
@@ -94,7 +94,7 @@ export function ProductList({ products = [], styles }: { products?: PRODUCT_LIST
     );
 }
 
-function ProductCard({ product, isMobile }: { product: PRODUCT_LIST_TYPE, isMobile: boolean }) {
+function ProductCard({ product, isMobile }: { product: ProductType, isMobile: boolean }) {
     return (
         <li className="flex flex-col justify-between text-lg text-gray-700 hover:text-gray-900 cursor-pointer border-2 border-gray-200 rounded-lg p-4 relative  transition-shadow hover:shadow-md"
         >
@@ -105,8 +105,8 @@ function ProductCard({ product, isMobile }: { product: PRODUCT_LIST_TYPE, isMobi
                 <Link href={`/shopping/${product.id}`} className="block overflow-hidden rounded-lg">
                     <img
                         className="w-full object-cover lg:aspect-9/14 aspect-9/12 rounded-lg mb-4 transform hover:scale-105 transition-transform duration-300"
-                        src={product.imgUrl ? product.imgUrl : "https://placehold.net/10.png"}
-                        alt={product.title.trim()}
+                        src={product.images && product.images.length > 0 ? product.images[0].image_url : "https://placehold.net/10.png"}
+                        alt={product.name.trim()}
                     />
                 </Link>
                 <h3 className="font-semibold text-sm lg:line-clamp-1 line-clamp-2 leading-4 mb-1">{product.title}</h3>

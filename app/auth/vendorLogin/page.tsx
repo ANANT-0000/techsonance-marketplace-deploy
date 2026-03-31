@@ -3,9 +3,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { passwordValidationSchema } from "@/utils/validation";
-import { vendorLogin } from "@/utils/apiClient";
-import { useSelector } from "react-redux";
-import { RootState } from "@/Redux store/store";
+import { vendorLogin } from "@/utils/authApiClient";
+import { RootState } from "@/lib/store";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 
 interface LoginFormData {
     email: string;
@@ -14,7 +14,7 @@ interface LoginFormData {
 
 export default function VendorLoginPage() {
     const router = useRouter();
-    const { loading, error } = useSelector((state: RootState) => state.auth);
+    const { loading, error } = useAppSelector((state: RootState) => state.auth);
     const {
         reset,
         register,
@@ -23,18 +23,21 @@ export default function VendorLoginPage() {
     } = useForm<LoginFormData>({
         defaultValues: { email: "", password: "" }
     });
+    const dispatch = useAppDispatch();
     const storedData = typeof window !== 'undefined' ? localStorage.getItem("auth") : null;
     const auth = storedData ? JSON.parse(storedData) : null;
     if (auth && auth?.isAuthenticated && auth?.user?.user_role
         === "vendor") {
         console.log("Already logged in as vendor.");
-        router.replace('/vendor/dashboard');
+        router.replace(`/vendor/${auth.user.vendor_id}`);
     }
     const onSubmit = async (data: LoginFormData) => {
-        const result = await vendorLogin(data);
-        if (result?.status) {
-            router.push('/vendor/dashboard');
+        const result = await vendorLogin(data, dispatch);
+        console.log(result);
+        if (result?.status === 201) {
             reset();
+            console.log(result.user);
+            router.push(`/vendor/${result.user.vendor_id ?? ''}`);
         } else {
             result?.status === false && console.log(result?.message);
         }
@@ -42,7 +45,7 @@ export default function VendorLoginPage() {
     };
 
     return (
-        <main className="flex font-[roboto] justify-center items-center border h-[100vh] gap-16">
+        <main className="flex font-[roboto] justify-center items-center   h-[100vh] gap-16">
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col border rounded-2xl px-9 h-[620px] w-[540px] justify-center">
                 <h1 className="font-bold lg:text-[2rem] md:text-[1.5rem]">Manage your Store</h1>
                 <p className="font-bold text-[1rem] text-slate-600 mb-8">Welcome back! Please enter your details.</p>
@@ -88,13 +91,13 @@ export default function VendorLoginPage() {
                 <button
                     type="submit"
                     disabled={isSubmitting || loading}
-                    className="bg-blue-500 text-center text-white font-bold py-2 rounded-xl mb-4 disabled:opacity-50"
+                    className="cursor-pointer bg-blue-500 text-center text-white font-bold py-2 rounded-xl mb-4 disabled:opacity-50"
                 >
                     {loading || isSubmitting ? "Logging in..." : "Log in to Dashboard"}
                 </button>
                 <p className="text-center text-balance text-slate-500">
                     Don&apos;t have a Business account?
-                    <Link href="/auth/vendorRegister" className="text-blue-500 underline ml-1">Create Business account</Link>
+                    <Link href="/auth/vendorRegister" className="cursor-pointer text-blue-500 underline ml-1">Create Business account</Link>
                 </p>
             </form>
         </main>

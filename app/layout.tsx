@@ -1,6 +1,6 @@
 ﻿import type { Metadata } from 'next'
 import "./globals.css";
-import ReduxProviders from '@/Redux store/ReduxProvider';
+import ReduxProviders from '@/app/StoreProvider';
 
 export const metadata: Metadata = {
     title: 'Techsonance Marketplace',

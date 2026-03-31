@@ -48,13 +48,18 @@
         /* Firefox */
         appearance: none;
     }
-
+    .section {
+        @apply border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden;
+    }
+    .section_header {
+        @apply flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70;
+    }
     .form_label {
-        @apply block text-gray-700 font-medium mb-2;
+        @apply block mb-1.5 text-sm font-semibold text-slate-700;
     }
 
     .form_input {
-        @apply my-1 border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
+        @apply my-1 border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white focus:border-blue-500 outline-none transition text-sm text-slate-800 placeholder:text-slate-400;
     }
 
     .form_select {
@@ -64,7 +69,6 @@
     .form_input_error {
         @apply border-red-500;
     }
-
 
     /* Webkit browsers (Chrome, Safari, Edge) */
     @layer base {

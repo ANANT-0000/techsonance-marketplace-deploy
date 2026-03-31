@@ -1,19 +1,19 @@
 'use client';
-
 import { Navbar } from "@/components/admin/Navbar";
 import { Pagination } from "@/components/common/Pagination";
 import { AUDIT_LOG_DATA } from "@/constants/admin";
 import { searchImgDark } from "@/constants/common";
 import { useState } from "react";
-import { useSelector } from "react-redux";
 import { Calendar } from "@/components/ui/calendar";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { AUDIT_LOG_COLUMNS, AUTH_LOG_FILTERS } from "@/constants/dynamicFields";
 
 export default function AuditLogPage() {
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [isOpen, setIsOpen] = useState(false);
     const [logs] = useState(AUDIT_LOG_DATA);
-    const { theme } = useSelector((state: any) => state.adminTheme);
+    const { theme } = useAppSelector((state: any) => state.adminTheme);
     const [count, setCount] = useState(1);
 
     const handleDateChange = (selectedDate: Date | undefined) => {
@@ -41,10 +41,11 @@ export default function AuditLogPage() {
                     </span>
                     <span className="flex gap-4">
                         <select className="vendor_filter" name="status" id="status">
-                            <option value="all">All Status</option>
-                            <option value="active">Active</option>
-                            <option value="pending">Pending</option>
-                            <option value="suspended">Suspended</option>
+                            {AUTH_LOG_FILTERS.map((filter) => (
+                                <option key={filter.id} value={filter.id}>
+                                    {filter.label}
+                                </option>
+                            ))}
                         </select>
                         <select className="vendor_filter" name="sort_by" id="sort_by">
                             <option value="date_newest">Newest</option>
@@ -70,13 +71,11 @@ export default function AuditLogPage() {
                     <table className="w-full text-left table-auto min-w-max">
                         <thead>
                             <tr>
-                                <th className="p-4 border-b border-gray-400">TIMESTAMP</th>
-                                <th className="p-4 border-b border-gray-400">ACTOR(USER)</th>
-                                <th className="p-4 border-b border-gray-400">COMPANY</th>
-                                <th className="p-4 border-b border-gray-400">ACTION TYPE</th>
-                                <th className="p-4 border-b border-gray-400">TARGET ENTITY</th>
-                                <th className="p-4 border-b border-gray-400">DETAILS</th>
-                                <th className="p-4 border-b border-gray-400">IP ADDRESS</th>
+                                {AUDIT_LOG_COLUMNS.map((column) => (
+                                    <th key={column.id} className="p-4 bg-gray-100 text-gray-600 font-semibold uppercase tracking-wide">
+                                        {column.label}
+                                    </th>
+                                ))}
                             </tr>
                         </thead>
                         <tbody>

@@ -1,29 +1,45 @@
-'use client';
-import { useState } from "react";
 import Link from "next/link";
 import { Edit } from "lucide-react";
 import { Pagination } from "@/components/common/Pagination";
-import { productData, searchImgDark } from "@/constants/constants";
+import { fetchVendorProducts, fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { searchImgDark } from "@/constants";
+import { ProductType } from "@/utils/Types";
 
 
 
+export default async function Products({ params }: { params: Promise<{ vendorId: string }> }) {
+    const { vendorId } = await params;
 
 
-export default function Products() {
-    const [count, setCount] = useState(1);
+    const categoryOptions = await fetchVendorsProductsCategory(vendorId).then((res) => {
+        const categories = res?.data || [];
+        return categories.map((cat: any) => ({ value: cat.id, label: cat.name }));
+    }).catch((error) => {
+        console.error("Error fetching category options:", error);
+        return [];
+    });
+    const getProducts = await fetchVendorProducts(vendorId).then((res) => res?.data || []).catch((error) => {
+        console.error("Error fetching products:", error);
+        return [];
+    });
+    const productList: ProductType[] = getProducts || [];
+    console.log(productList);
+    let count = 1
     const pageSize = 5;
-    const totalPages = Math.ceil(productData.length / pageSize);
+    const totalPages = Math.ceil(productList.length / pageSize);
     const currentPage = count;
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const currentData: typeof productData = productData.slice(startIndex, endIndex);
+    const currentData: typeof productList = productList.slice(startIndex, endIndex);
+    console.log(productList[pageSize - 1]?.id);
     console.log(currentData)
     return (
 
         <>
             <main>
                 <div className="flex gap-6 my-6 justify-end">
-                    <Link className="rounded-xl bg-black text-white px-4 py-2" href="/vendor/products/productForm">+ Add New Product</Link>
+                    <Link className="rounded-xl bg-black text-white px-4 py-2" href="products/productForm">+ Add New Product</Link>
                     <button className="rounded-xl bg-blue-500 text-white px-4 py-2"> Export CSV</button>
                 </div>
                 <div className={" mt-2 justify-between rounded-2xl flex border-gray-300    items-center  py-2 gap-4   bg-white  filter  "}>
@@ -39,65 +55,77 @@ export default function Products() {
 
                         </select>
                         <select className="vendor_filter rounded-2xl" name="sort_by" id="sort_by">
-                            <option value="category">Category</option>
-                            <option value="headphone">Headphone</option>
+                            {
+                                categoryOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))
+
+                            }
                         </select>
                     </span>
                 </div>
-                <div
-                    className="my-6 relative flex w-full h-full overflow-scroll  bg-white border rounded-2xl bg-clip-border">
-                    <table className="w-full  table-auto min-w-max  ">
 
-                        <thead className=" w-full " >
-                            <tr className="text-left bg-gray-200 ">
-                                <th className="p-4 border-b  text-center  border-gray-400"><input className="w-4  h-4 text-center" type="checkbox" /></th>
-                                <th className="p-4 border-b   border-gray-400"></th>
-                                <th className="p-4 border-b   border-gray-400">PRODUCT NAME</th>
-                                <th className="p-4 border-b   border-gray-400">SKU</th>
-                                <th className="p-4 border-b   border-gray-400">STOCK</th>
-                                <th className="p-4 border-b   border-gray-400">PRICE</th>
-                                <th className="p-4 border-b   border-gray-400">STATUS</th>
-                                <th className="p-4 border-b   border-gray-400">ACTION</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-center w-full ">
-                            {
-                                currentData.map((item, index) => (
+                <Table className="w-full  table-auto min-w-max  my-6 relative border-collapse border border-gray-200  ">
 
-                                    <tr key={index} className={`hover:bg-gray-100 ${item.id === currentData[pageSize - 1].id ? 'border-b-0' : 'border-b border-gray-400'} border-b border-gray-400   `}>
-                                        <td className={`p-4  `}> <input type="checkbox" className="w-4 h-4" /></td>
-                                        <td className={`p-4  `}> <img className="w-16 h-16" src={item.imageUrl} alt="product image" /> </td>
-                                        <td className={`p-4 w-56  `}>{item.productName}</td>
-                                        <td className={`p-4  `}>
-                                            {item.sku}
-                                        </td>
+                    <TableHeader className="w-full " >
+                        <TableRow className="text-left bg-gray-200 ">
+                            <TableHead className="p-4 border-b  text-center  border-gray-400"><input className="w-4  h-4 text-center" type="checkbox" /></TableHead>
+                            <TableHead className="p-4 border-b   border-gray-400"></TableHead>
+                            {/* <TableHead className="p-4 border-b   border-gray-400">IMAGE</TableHead> */}
+                            <TableHead className="p-4 border-b   border-gray-400">PRODUCT NAME</TableHead>
+                            <TableHead className="p-4 border-b   border-gray-400">SKU</TableHead>
+                            <TableHead className="p-4 border-b   border-gray-400">STOCK</TableHead>
+                            <TableHead className="p-4 border-b   border-gray-400">PRICE</TableHead>
+                            <TableHead className="p-4 border-b   border-gray-400">STATUS</TableHead>
+                            <TableHead className="p-4 border-b   border-gray-400">ACTION</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody className="text-center w-full ">
+                        {
+                            productList.map((item, index) => (
 
-                                        <td className={`p-4  `}>
-                                            <p className={`${item.stock >= 20 ? 'text-green-500  py-1 px-3 rounded-lg ' : 'text-red-500   py-1 px-3 rounded-lg  '}`}>{item.stock}</p>
-                                        </td>
-                                        <td className={`p-4  `}>₹ {item.price}</td>
-                                        <td className={`p-4  `}>
-                                            {
-                                                item.status === "Active" ? <span className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-sm">Active</span> :
-                                                    item.status === "Inactive" ? <span className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-sm">In Active</span> :
-                                                        <></>
-                                            }
-                                        </td>
-                                        <td className={`p-4`}>
-                                            <Link href={`/vendor/products/productUpdateForm/${item.id}`}>
-                                                <Edit />
-                                            </Link>
-                                        </td>
+                                <TableRow key={index} className={`hover:bg-gray-100 ${item.id === productList[pageSize - 1]?.id || item.id === productList[productList.length - 1]?.id ? 'border-b-0' : 'border-b border-gray-400'} border-b border-gray-400   `}>
+                                    <TableCell className={`p-4  `}> <input type="checkbox" className="w-4 h-4" /></TableCell>
+                                    <TableCell className={` max-w-6 min-w-4  `}> <img className=" h-auto  rounded-2xl" src={item.images[0].image_url} alt="product image" /> </TableCell>
+                                    <TableCell className={`p-4  line-clamp-1 whitespace-normal min-w-[300px] max-w-[500px] text-start  `}>
+                                        {item.name.trimStart()}
+                                    </TableCell>
+                                    <TableCell className={`p-4 text-start `}>
+                                        {item.has_variants ? 'Yes' : 'No'}
+                                    </TableCell>
 
-                                    </tr>
-                                ))
-                            }
-                        </tbody >
+                                    <TableCell className={`p-4 text-start  `}>
+                                        <p className={`${item.
+                                            stock_quantity >= 20 ? 'text-green-500  py-1 px-3 rounded-lg ' : 'text-red-500   py-1 px-3 rounded-lg  '}`}>{item.
+                                                stock_quantity}</p>
+                                    </TableCell>
+                                    <TableCell className={`p-4 text-start  `}>₹ {item.base_price}</TableCell>
+                                    <TableCell className={`p-4 text-start  `}>
+                                        {
+                                            item.status
+                                                === "active" ? <span className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-sm">Active</span> :
+                                                item.status === "inactive" ? <span className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-sm">In Active</span> :
+                                                    <></>
+                                        }
+                                    </TableCell>
+                                    <TableCell className={`p-4 text-start  `}>
+                                        <Link href={`/vendor/${vendorId}/products/productUpdateForm/${item.id}`}>
+                                            <Edit />
+                                        </Link>
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            ))
+                        }
+                    </TableBody>
 
-                    </table>
-                </div>
+
+                </Table>
+
                 <span className="flex justify-end">
-                    <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" />
+                    {/* <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" /> */}
                 </span>
             </main>
         </>

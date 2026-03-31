@@ -1,12 +1,4 @@
-import type { NavLinkType } from "./common";
-import {
-  dashboard_icon,
-  vendor_icon,
-  analytics_icon,
-  customer_care_icon,
-  settings_icon,
-} from "./common";
-
+import { ActiveInstanceType, AuditLogEntryType, SupportTicketType, VendorApplicationType, VendorManagementEntryType, VendorRequestEntryType, type NavLinkType } from "@/utils/Types";
 // ============================================================
 // ADMIN NAVIGATION LINKS
 // ============================================================
@@ -33,12 +25,7 @@ export const ADMIN_DASHBOARD_STATS = {
   systemsOperations: 99.9,
 };
 
-export interface ActiveInstanceType {
-  id: number;
-  name: string;
-  email: string;
-  status: "Healthy" | "High Load" | "Degraded";
-}
+
 
 export const ACTIVE_INSTANCES: ActiveInstanceType[] = [
   { id: 201, name: "Shree Electronics", email: "contact@shreeelectronics.in", status: "Healthy" },
@@ -59,16 +46,8 @@ export const ACTIVE_INSTANCES: ActiveInstanceType[] = [
 // ADMIN — VENDOR MANAGEMENT MOCK DATA
 // ============================================================
 
-export interface VendorManagementEntry {
-  id: number;
-  name: string;
-  email: string;
-  domain: string;
-  status: "Active" | "Pending" | "Suspended";
-  revenue: number;
-}
 
-export const VENDOR_LIST: VendorManagementEntry[] = [
+export const VENDOR_LIST: VendorManagementEntryType[] = [
   { id: 201, name: "Shree Electronics", email: "contact@shreeelectronics.in", domain: "shreeelectronics.in", status: "Pending", revenue: 69951 },
   { id: 202, name: "FashionHub", email: "support@fashionhub.com", domain: "fashionhub.com", status: "Active", revenue: 67863 },
   { id: 203, name: "GreenMart Organics", email: "sales@greenmart.org", domain: "greenmart.org", status: "Suspended", revenue: 33578 },
@@ -90,18 +69,8 @@ export const VENDOR_LIST: VendorManagementEntry[] = [
 // ADMIN — APPROVE VENDOR REQUESTS MOCK DATA
 // ============================================================
 
-export interface VendorRequestEntry {
-  id: number;
-  businessName: string;
-  ownerName: string;
-  email: string;
-  phone: string;
-  category: string;
-  submittedAt: string;
-  status: "Pending" | "Approved" | "Rejected";
-}
 
-export const VENDOR_REQUESTS: VendorRequestEntry[] = [
+export const VENDOR_REQUESTS: VendorRequestEntryType[] = [
   { id: 301, businessName: "Shree Electronics", ownerName: "Rajesh Kumar", email: "rajesh@shreeelectronics.in", phone: "+91 98765 11111", category: "Electronics", submittedAt: "2026-02-28T10:00:00Z", status: "Pending" },
   { id: 302, businessName: "VibeStation Music", ownerName: "Priya Sharma", email: "priya@vibestation.co", phone: "+91 98765 22222", category: "Musical Instruments", submittedAt: "2026-03-01T14:30:00Z", status: "Pending" },
   { id: 303, businessName: "BeatMakers Hub", ownerName: "Amit Patel", email: "amit@beatmakers.hub", phone: "+91 98765 33333", category: "Music Production", submittedAt: "2026-03-02T09:15:00Z", status: "Pending" },
@@ -113,18 +82,8 @@ export const VENDOR_REQUESTS: VendorRequestEntry[] = [
 // ADMIN — AUDIT LOG MOCK DATA
 // ============================================================
 
-export interface AuditLogEntry {
-  id: number;
-  timestamp: string;
-  actor: string;
-  tenant: string;
-  actionType: "Active" | "Inactive" | "Pending" | "Suspended";
-  targetEntity: string;
-  details: string;
-  ipAddress: string;
-}
 
-export const AUDIT_LOG_DATA: AuditLogEntry[] = [
+export const AUDIT_LOG_DATA: AuditLogEntryType[] = [
   { id: 1, timestamp: "Oct 24, 14:45:12", actor: "akash jain", tenant: "System(Global)", actionType: "Active", targetEntity: "Vendor #882", details: "View JSON", ipAddress: "192.168.1.12" },
   { id: 2, timestamp: "Oct 24, 14:38:05", actor: "sarah connor", tenant: "TechWorld Inc.", actionType: "Pending", targetEntity: "Payment Gateway", details: "View JSON", ipAddress: "10.0.0.45" },
   { id: 3, timestamp: "Oct 24, 14:32:01", actor: "Super Admin", tenant: "System(Global)", actionType: "Active", targetEntity: "User: john.smith", details: "View JSON", ipAddress: "192.168.1.1" },
@@ -146,24 +105,7 @@ export const AUDIT_LOG_DATA: AuditLogEntry[] = [
 // ADMIN — SUPPORT TICKETS MOCK DATA
 // ============================================================
 
-export interface TicketMessage {
-  id: number;
-  sender: string;
-  role: string;
-  text: string;
-  time: string;
-  type: "vendor" | "system" | "super_admin";
-}
 
-export interface SupportTicketType {
-  id: string;
-  title: string;
-  company: string;
-  email: string;
-  status: "active" | "pending" | "closed";
-  time: string;
-  messages: TicketMessage[];
-}
 
 export const SUPPORT_TICKETS: SupportTicketType[] = [
   {
@@ -255,27 +197,8 @@ export const ADMIN_CHART_DATA = {
 // ADMIN — VENDOR APPLICATIONS MOCK DATA (Approve Vendors)
 // ============================================================
 
-export interface VendorApplication {
-  business_profile: {
-    business_name: string;
-    owner_name: string;
-    owner_email: string;
-    submission_date: string;
-    status: 'verified' | 'pending' | 'rejected';
-  };
-  submitted_documents: {
-    file_name: string;
-    size: string;
-    uploaded_at: string;
-  }[];
-  instance_details: {
-    requested_subdomain: string;
-    domain_extension: string;
-    dns_check: 'passed' | 'failed';
-  };
-}
 
-export const VENDOR_APPLICATIONS: VendorApplication[] = [
+export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
   {
     business_profile: {
       business_name: "starlight logistics",

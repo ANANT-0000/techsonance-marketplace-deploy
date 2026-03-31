@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useRef, useState } from "react";
-import type { PRODUCT_LIST_TYPE } from "@/constants/customer";
 import { AddToCart } from "./AddToCart";
 import { BuyBtn } from "./BuyBtn";
 import { WishListBtn } from "./WishListBtn";
@@ -10,25 +9,26 @@ import { FilterSidebar } from "./FilterSidebar";
 import { useMediaQuery } from "react-responsive";
 import { ProductSkeleton } from "../common/ProductSkeleton";
 import { motion, MotionConfig } from "motion/react";
-import { useDispatch, useSelector } from "react-redux";
-import type { RootState } from "@/Redux store/store";
+import type { RootState } from "@/lib/store";
+
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 
 export function ShoppingList({
     products, styles
 }: {
-    products: PRODUCT_LIST_TYPE[];
+    products: ProductType[];
     styles?: string;
 }) {
     const pageSize = 8; // Number of products to show at a time
-    const [productsState, setProductsState] = useState<PRODUCT_LIST_TYPE[]>(products)
+    const [productsState, setProductsState] = useState<ProductType[]>(products)
     const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
     const [count, setCount] = useState(1); // Number of products to show at a time
     const totalPages = Math.ceil(productsState.length / pageSize);
     const firstIndex = (count - 1) * pageSize;
     const lastIndex = firstIndex + pageSize - 1;
     const [isLoading, setIsLoading] = useState(false);
-    const { isCartOpen } = useSelector((state: RootState) => state.cartSidebar);
-    const dispatch = useDispatch();
+    const { isCartOpen } = useAppSelector((state: RootState) => state.cartSidebar);
+    const dispatch = useAppDispatch();
     const sectionRef = useRef<HTMLElement>(null);
 
     const handleScroll = () => {

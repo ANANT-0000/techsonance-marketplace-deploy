@@ -1,25 +1,24 @@
 'use client';
 import { motion } from "motion/react"
 import { TAB_LINKS } from "@/constants/customer"
-
 import { DynamicIcon, IconName } from "lucide-react/dynamic"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSelector } from "react-redux";
 import { useMemo } from "react"
+import { useAppSelector } from "@/hooks/reduxHooks";
 
 
 
 export function TabNavBar() {
-    const { user } = useSelector((state: any) => state.auth)
-
+    const { user } = useAppSelector((state: any) => state.auth)
+    const userId= user?.user_id ? user.user_id : '';
     const path = usePathname();
     const navLinks = useMemo((() => {
         return TAB_LINKS.map((link, index) => {
             if (!user) {
                 link.url = link.url.toLowerCase() === '/profile' ? '/customerProfile' : link.url.toLowerCase() === '/cart' ? '/customerProfile' : link.url;
             } else {
-                link.title.toLowerCase() === 'profile' ? link.url = `/customerProfile/${user?.id}` : link.title.toLowerCase() === 'cart' ? link.url = `/customerProfile/${user?.id}/cart` : link.url = link.url;
+                link.title.toLowerCase() === 'profile' ? link.url = `/customerProfile/${userId}` : link.title.toLowerCase() === 'cart' ? link.url = `/customerProfile/${userId}/cart` : link.url = link.url;
             }
             return link;
         })
@@ -35,9 +34,8 @@ export function TabNavBar() {
 
                             <motion.div
                                 key={index}
-                         
                                 whileTap={{ scale: 0.90 }}
-                                initial={{ backgroundColor: "transparent" ,opacity: 0}}
+                                initial={{ backgroundColor: "transparent", opacity: 0 }}
                                 animate={{
                                     opacity: 1,
                                     backgroundColor: isActive ? "#007BFF" : "transparent",
@@ -50,7 +48,7 @@ export function TabNavBar() {
                                     backgroundColor: { duration: 0.5, ease: "linear" },
                                     color: { duration: 0.5, ease: "linear" },
                                     y: { duration: 0.5, ease: "linear" },
-                                    boxShadow: { duration: 0.3,ease: "linear" },
+                                    boxShadow: { duration: 0.3, ease: "linear" },
                                     opacity: { duration: 0.5, ease: "linear" }
                                 }}
                                 className="rounded-full w-10 h-10 p-2 flex flex-col items-center justify-center gap-1"
@@ -64,11 +62,6 @@ export function TabNavBar() {
                                         size={20}
                                         className={`${isActive ? 'text-primary' : 'text-gray-500'} z-60 transition-colors duration-200`}
                                     />
-                                    {/* <span className={` ${isActive ? 'text-primary' : 'text-gray-500'} text-xs   transition-colors duration-200`}>
-                                        {link.title}
-                                    </span> */}
-
-
                                 </Link>
                             </motion.div>
                         )

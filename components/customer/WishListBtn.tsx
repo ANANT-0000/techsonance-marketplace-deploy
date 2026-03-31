@@ -1,25 +1,25 @@
 'use client';
 import { Heart } from 'lucide-react'
-import { useDispatch, useSelector } from 'react-redux';
-import { addToWishlist, removeFromWishlist } from '@/Redux store/features/Wishlist';
+import { addToWishlist, removeFromWishlist } from '@/lib/features/Wishlist';
 import { useMediaQuery } from 'react-responsive'
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
+import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 export function WishListBtn({ productId, styles, iconSize }: { productId?: string, styles?: string, iconSize?: number }) {
-  const dispatch = useDispatch();
-  const { wishItems } = useSelector((state: any) => state.wishlist)
-  const { user } = useSelector((state: any) => state.auth)
+  const dispatch = useAppDispatch();
+  const { wishItems } = useAppSelector((state: any) => state.wishlist)
+  const { user } = useAppSelector((state: any) => state.auth)
   const isAlreadyInWishlist = wishItems.some((item: any) => item.productId === productId);
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const iconSizeValue = iconSize || (isMobile ? 28 : 32);
   const router = useRouter();
-  
+
   const handleAddToWishlist = () => {
-    if (!user) {
+    if (!user.user_role || user.user_role.toLowerCase() !== 'customer') {
       router.push('/auth/customerLogin');
       return;
     }
-    
+
     if (isAlreadyInWishlist) {
       dispatch(removeFromWishlist(productId));
       console.log(`Removing product ${productId} from wishlist`);

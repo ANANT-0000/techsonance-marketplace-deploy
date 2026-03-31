@@ -1,0 +1,25 @@
+﻿@import "tailwindcss";
+
+@layer components {
+
+    .input-group-container {
+        @apply flex items-center overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all;
+    }
+    .input-select {
+        @apply my-1 border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
+    }
+    .input-field {
+        @apply flex-1 py-2.5 px-4 text-sm text-gray-800 placeholder-gray-400 focus:outline-none;
+    }
+
+    .input-class {
+        @apply rounded-xl border border-gray-300 py-2.5 px-4 w-full text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all;
+    }
+
+    .input-label {
+        @apply text-sm font-medium text-gray-700;
+    }
+    .input-error {
+        @apply text-red-500 text-xs mt-0.5;
+    }
+}

@@ -41,18 +41,20 @@ const localStorageMiddleware = (store: any) => (next: any) => (action: any) => {
     }
 }
 
-export const store = configureStore({
-    reducer: {
-        auth: authReducer,
-        adminTheme: adminThemeReducer,
-        sidebar: sidebarReducer,
-        menu: menuReducer,
-        cart: CartReducer,
-        cartSidebar: cartSidebarReducer,
-        wishlist: WishlistReducer,
-    },
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(localStorageMiddleware),
-});
-
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export const store = () => {
+    return configureStore({
+        reducer: {
+            auth: authReducer,
+            adminTheme: adminThemeReducer,
+            sidebar: sidebarReducer,
+            menu: menuReducer,
+            cart: CartReducer,
+            cartSidebar: cartSidebarReducer,
+            wishlist: WishlistReducer,
+        },
+        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(localStorageMiddleware),
+    })
+}
+export type AppStore = ReturnType<typeof store>;
+export type RootState = ReturnType<AppStore['getState']>;
+export type AppDispatch = AppStore['dispatch'];

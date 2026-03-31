@@ -1,11 +1,11 @@
 'use client';
 import { ShoppingCart, Plus, Minus } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
-import type { RootState } from "@/Redux store/store";
-import { addToCart, removeFromCart, updateQuantity } from "@/Redux store/features/Cart";
-import { toggleCartSidebar } from "@/Redux store/features/CartSidebar";
+import type { RootState } from "@/lib/store";
+import { addToCart, removeFromCart, updateQuantity } from "@/lib/features/Cart";
+import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 
 interface AddToCartProps {
     productId: string;
@@ -13,9 +13,9 @@ interface AddToCartProps {
 }
 
 export function AddToCart({ productId, styles }: AddToCartProps) {
-    const dispatch = useDispatch();
-    const { items } = useSelector((state: RootState) => state.cart);
-    const { user } = useSelector((state: RootState) => state.auth);
+    const dispatch = useAppDispatch();
+    const { items } = useAppSelector((state: RootState) => state.cart);
+    const { user } = useAppSelector((state: RootState) => state.auth);
     const path = usePathname();
     const router = useRouter();
 

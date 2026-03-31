@@ -5,11 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { passwordValidationSchema } from "@/utils/validation";
 import axios from "axios";
-import { CUSTOMER_BASE_URL } from "@/constants/common";
+import { CUSTOMER_BASE_URL, CUSTOMER_REGISTRATION_POSTER } from "@/constants/common";
+import Image from "next/image";
+import { CUSTOMER_REGISTRATION_FIELDS } from "@/constants/dynamicFields";
+
+
 
 interface FormData {
-    customer_name: string | null;
-    customer_email: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
     password: string | null;
     password_confirm: string | null;
 }
@@ -17,8 +22,9 @@ interface FormData {
 export default function CustomerRegisterPage() {
     const router = useRouter();
     const [formData, setFormData] = useState<FormData>({
-        customer_name: null,
-        customer_email: null,
+        first_name: null,
+        last_name: null,
+        email: null,
         password: null,
         password_confirm: null,
     });
@@ -33,7 +39,7 @@ export default function CustomerRegisterPage() {
                 ? setPasswordMatchError(null)
                 : setPasswordMatchError("Password must be at least 8 characters long and include uppercase, lowercase, number, and special character");
         }
-        if (name === 'confirm_password') {
+        if (name === 'password_confirm') {
             if (formData.password !== value || formData.password == null) {
                 setPasswordMatchError("Passwords do not match");
                 return;
@@ -52,8 +58,9 @@ export default function CustomerRegisterPage() {
         try {
             const response = await axios.post(`${CUSTOMER_BASE_URL}/register`, {
                 user_role: 'customer',
-                customer_name: formData.customer_name,
-                customer_email: formData.customer_email,
+                first_name: formData.first_name,
+                last_name: formData.last_name,
+                email: formData.email,
                 password: formData.password,
                 password_confirm: formData.password_confirm,
             });
@@ -66,36 +73,39 @@ export default function CustomerRegisterPage() {
     };
 
     return (
-        <main className="flex justify-around items-center border h-[100vh]">
-            <form onSubmit={submitHandler} className="flex bg-white z-20 flex-col border rounded-2xl px-12 py-6 justify-center w-[560px]">
+        <main className="relative flex justify-center items-center p-4  h-full mx-auto">
+
+            <form onSubmit={submitHandler} className="relative flex bg-white z-20 flex-col  rounded-2xl px-12 py-6 justify-center  lg:min-w-md md:min-w-md lg:max-w-lg md:max-w-md">
                 <h1 className="lg:text-[1.5rem] md:text-[1rem] text-center">Create an account</h1>
                 <p className="text-[.7rem] text-slate-600 mb-4 text-center">Join to Find great products.</p>
                 <div className="flex flex-col gap-4 mb-4">
-                    <div className="flex flex-col text-[.8rem] gap-2">
-                        <label htmlFor="name">Full name</label>
-                        <input type="text" placeholder="Enter your full name" name="customer_name" required className="border rounded-[.5rem] py-1 px-3" onChange={handleChange} />
-                    </div>
-                    <div className="flex flex-col text-[.8rem] gap-2">
-                        <label htmlFor="email">Email</label>
-                        <input type="text" placeholder="Enter your email" name="customer_email" required className="border rounded-[.5rem] py-1 px-3" onChange={handleChange} />
-                    </div>
-                    <div className="flex flex-col text-[.8rem] gap-2">
-                        <label htmlFor="password">Password<span className="text-red-600">*</span></label>
-                        <input type="password" placeholder="Password" name="password" required className="border rounded-[.5rem] py-1 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500" onChange={handleChange} />
-                    </div>
-                    <div className="flex flex-col gap-2 text-[.8rem] w-full">
-                        <label htmlFor="confirm_password">Confirm Password<span className="text-red-600">*</span></label>
-                        <input type="password" name="confirm_password" className="border-2 py-1 px-3 rounded-xl" placeholder="Please reenter password" onChange={handleChange} />
-                    </div>
+                    {CUSTOMER_REGISTRATION_FIELDS.map((field, index) => (
+                        <div key={index} className="flex flex-col gap-1">
+                            <label htmlFor={field.id} className="text-sm font-medium">{field.label}</label>
+                            <input
+                                type={field.type}
+                                name={field.id}
+                                placeholder={field.placeholder}
+                                onChange={handleChange}
+                                className="border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                    ))}
                 </div>
-                {passwordMatchError && <p className="text-red-500 text-[.7rem] mb-2">{passwordMatchError}</p>}
-                {error && <p className="text-red-500 text-[.7rem] mb-2">{error}</p>}
-                <button type="submit" className="bg-blue-500 text-[.8rem] text-center text-white py-[.3rem] rounded-xl mb-3">Create Account</button>
-                <p className="w-full flex justify-center text-center items-center text-[.6rem] text-slate-800">
+                {error && <p className="text-red-500 text-sm mb-4 w-md">{error}</p>}
+                {passwordMatchError && <p className="text-red-500 text-sm mb-4 w-md">{passwordMatchError}</p>}
+                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300">Register</button>
+                {/* <p className="w-full flex justify-center text-center items-center text-sm text-slate-800 ">
+                    By creating an account, you agree to our &ensp;<Link href="/terms" className=" text-blue-500 underline ">Terms of Service</Link>
+                    and
+                    <Link href="/privacy" className=" text-blue-500 underline">Privacy Policy</Link>
+                </p> */}
+                <p className="mt-2 w-full flex justify-center text-center items-center text-md text-slate-800">
                     Already have an account?
-                    <Link href="/auth/customerLogin" className="ml-1 text-blue-500 underline">Log in</Link>
+                    <Link href="/auth/customerLogin" className="ml-1 text-blue-500 underline ">Log in</Link>
                 </p>
             </form>
+            <Image src={CUSTOMER_REGISTRATION_POSTER} height={1200} width={1200} alt="" className="hidden lg:block  absolute  left-0 lg:relative  xl:relative  lg:h-[455px] lg:w-[455px] md:h-[300px] md:w-[300px] rounded-l-0 rounded-r-[6rem]" />
         </main>
     )
 }

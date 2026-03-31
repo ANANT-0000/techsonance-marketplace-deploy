@@ -1,9 +1,9 @@
 'use client';
-import { useSelector } from 'react-redux'
 import { userIcon } from '@/constants/common'
+import { useAppSelector } from '@/hooks/reduxHooks';
 
 export default function Navbar({ title }: { title: string }) {
-    const { isSidebarOpen } = useSelector((state: any) => state.sidebar);
+    const { isSidebarOpen } = useAppSelector((state: any) => state.sidebar);
     return (
 
         <nav className={` w-full  py-2   border-b-2   border-gray-300 flex   justify-between items-center `}>

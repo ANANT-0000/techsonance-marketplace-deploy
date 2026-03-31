@@ -4,11 +4,14 @@ import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { DynamicIcon, IconName } from 'lucide-react/dynamic';
 import { Star } from 'lucide-react';
-import { PRODUCT_LIST, type PRODUCT_LIST_TYPE } from '@/constants/customer';
 import { WishListBtn } from '@/components/customer/WishListBtn';
 import { AddToCart } from '@/components/customer/AddToCart';
 import { BuyBtn } from '@/components/customer/BuyBtn';
 import { ProductList } from '@/components/customer/ProductList';
+import { ProductReview } from '@/components/customer/ProductReview';
+import { ProductSpecifications } from '@/components/customer/ProductSpec';
+import { ProductType } from '@/utils/Types';
+import { PRODUCT_LIST } from '@/constants';
 
 const brandOffer = [
     { id: '1', title: '1 year warranty', icon: 'shopping-bag' },
@@ -21,8 +24,8 @@ const brandOffer = [
 export default function ProductPage() {
     const params = useParams();
     const id = params?.id as string;
-    const product: PRODUCT_LIST_TYPE | undefined = PRODUCT_LIST.find(pro => pro.id === id);
-    const [activeImage, setActiveImage] = useState(product?.imgUrl);
+    const product: ProductType[] | undefined = PRODUCT_LIST.filter(pro => pro.id === id);
+    const [activeImage, setActiveImage] = useState(product?.[0]?.images[0]?.image_url || '');
 
     if (!product) {
         return <h1 className='text-2xl font-bold text-gray-900 p-8'>Product not found</h1>;
@@ -88,19 +91,12 @@ export default function ProductPage() {
                     <div className="prose prose-gray max-w-none text-gray-600 space-y-3">{product.description.split('\n').map((line, idx) => (<p key={idx}>{line}</p>))}</div>
                 </motion.div>
                 <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className='lg:w-1/2'>
-                    <h2 className='text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2'><span className="w-1 h-8 bg-brand-primary rounded-full"></span>Specifications</h2>
-                    <div className='bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm'>
-                        <table className="w-full text-sm text-left"><tbody>{product.productDetails?.specifications && Object.entries(product.productDetails.specifications).map(([key, value], idx) => (<tr key={key} className={`border-b border-gray-100 last:border-0 ${idx % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'}`}><td className='py-3 px-6 font-semibold text-gray-900 w-1/3'>{key}</td><td className='py-3 px-6 text-gray-600'>{value}</td></tr>))}</tbody></table>
-                    </div>
+                    <ProductSpecifications product={product} />
                 </motion.div>
             </section>
             <section className='mt-20'>
                 <h2 className='text-2xl font-bold text-gray-900 mb-8'>Customer Reviews</h2>
-                {product.reviews && product.reviews.length > 0 ? (
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>{product.reviews.map((review, idx) => (<motion.div key={idx} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: idx * 0.1 }} className='p-6 border border-gray-200 rounded-2xl bg-white hover:shadow-md transition-shadow'><div className="flex justify-between items-start mb-4"><div><h3 className='font-bold text-gray-900'>{review.userName}</h3><div className='flex items-center gap-1 mt-1'>{Array.from({ length: 5 }, (_, i) => (<Star key={i} size={12} fill={i < review.rating ? "#eab308" : "#e5e7eb"} className={i < review.rating ? "text-yellow-500" : "text-gray-200"} />))}</div></div><span className='text-xs text-gray-400 font-medium'>{new Date(review.date).toLocaleDateString()}</span></div><p className='text-gray-600 leading-relaxed text-sm'>"{review.comment}"</p></motion.div>))}</div>
-                ) : (
-                    <div className="py-12 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200"><p className='text-gray-500'>No reviews yet. Be the first to review!</p></div>
-                )}
+                <ProductReview product={product} />
             </section>
             <section className='mt-20'>
                 <h2 className='text-2xl font-bold text-gray-900 mb-8'>You might also like</h2>

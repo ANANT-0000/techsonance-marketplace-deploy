@@ -1,9 +1,37 @@
 'use client';
 import { ContactList, ContactPageContent } from "@/constants/customer";
+import { id } from "date-fns/locale";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+export const CONTACT_FORM_FIELDS = [
+    {
+        id: "name",
+        label: "Name",
+        placeholder: "Your Name",
+        type: "text"
+    },
+    {
+        id: "email",
+        label: "Email",
+        placeholder: "Your Email",
+        type: "email"
+    },
+    {
+        id: "phone",
+        label: "Phone",
+        placeholder: "Your Phone Number",
+        type: "tel"
+    },
+
+    {
+        id: "message",
+        label: "Message",
+        placeholder: "Your Message",
+        type: "textarea"
+    }
+]
 export default function Contact() {
     const { register, reset, handleSubmit, formState: { errors } } = useForm({
         defaultValues: {
@@ -72,30 +100,27 @@ export default function Contact() {
                     </div>
 
                     <form className="flex flex-col gap-4 border-2 border-gray-300 rounded-lg px-6 py-6 lg:min-w-[24rem] sm:min-w-full" onSubmit={handleSubmit(onSubmit)}>
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="name">
-                                Name <span className="text-red-500">*</span>
-                            </label>
-                            <input {...register("name")} type="text" placeholder="Your Name" className="border-2 border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="email">
-                                Email <span className="text-red-500">*</span>
-                            </label>
-                            <input {...register("email")} type="email" placeholder="Your Email" className="border-2 border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="phone">
-                                Phone <span className="text-red-500">*</span>
-                            </label>
-                            <input {...register("phone")} type="tel" placeholder="Your Phone Number" className="border-2 border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="message">
-                                Message <span className="text-red-500">*</span>
-                            </label>
-                            <textarea {...register("message")} placeholder="Your Message" className="border-2 border-gray-300 rounded-lg py-2 px-3 h-32 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        </div>
+                        {CONTACT_FORM_FIELDS.map((field) => (
+                            <div className="flex flex-col gap-2" key={field.id}>
+                                <label htmlFor={field.id}>
+                                    {field.label} <span className="text-red-500">*</span>
+                                </label>
+                                {field.type === "textarea" ? (
+                                    <textarea
+                                        {...register(field.id)}
+                                        placeholder={field.placeholder}
+                                        className="border-2 border-gray-300 rounded-lg py-2 px-3 h-32 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                ) : (
+                                    <input
+                                        {...register(field.id)}
+                                        type={field.type}
+                                        placeholder={field.placeholder}
+                                        className="border-2 border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                )}
+                            </div>
+                        ))}
                         <input type="submit" className=" text-primary px-6 py-3 rounded-lg bg-primary-foreground hover:scale-105 transition-transform" value="Send Message" />
                     </form>
                 </div>

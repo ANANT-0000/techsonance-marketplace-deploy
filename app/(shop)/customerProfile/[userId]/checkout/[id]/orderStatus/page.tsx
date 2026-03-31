@@ -1,8 +1,9 @@
 'use client';
-import { mockFailedStatus, mockSuccessStatus } from "@/utils/customer/constants";
+
 import { Check, X, Copy, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { mockFailedStatus, mockSuccessStatus } from "@/constants";
 
 
 

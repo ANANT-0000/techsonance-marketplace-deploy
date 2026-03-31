@@ -1,15 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { RoleDefinition, UserProfile, UserRole } from '../../../utils/Types';
-import { MockUser } from '@/utils/customer/constants';
-
-const isClient = typeof window !== 'undefined';
+import { UserProfile, UserRole } from '../../../utils/Types';
+import { ACCESS_TOKEN_KEY, CART_KEY, IS_AUTHENTICATED_KEY, isClient, USER_STORAGE_KEY } from '@/constants';
 
 
 const getUserFromLocalStorage = () => {
     if (!isClient) return null;
     try {
-        const serializedUser = localStorage.getItem('user');
-        if (serializedUser) {
+        const serializedUser = localStorage.getItem(USER_STORAGE_KEY);
+        if (serializedUser !== undefined && serializedUser !== null) {
             return JSON.parse(serializedUser);
         } else {
             return null;
@@ -23,21 +21,20 @@ const getUserFromLocalStorage = () => {
 
 export interface AuthType {
     isAuthenticated: boolean;
-    user: UserProfile | null;
+    user: Partial<UserProfile> | null;
     loading: boolean;
     error: string | null;
     token: string | null;
     role: UserRole;
 }
 
-const AUTH_TOKEN = 'authToken';
 
 const initialState: AuthType = {
-    isAuthenticated: isClient ? !!localStorage.getItem(AUTH_TOKEN) : false,
-    user: getUserFromLocalStorage() || MockUser, // Load user from localStorage or use mock data for development    
+    isAuthenticated: isClient ? !!localStorage.getItem(ACCESS_TOKEN_KEY) : false,
+    user: getUserFromLocalStorage(),
     loading: false,
     error: null,
-    token: isClient ? localStorage.getItem(AUTH_TOKEN) : null,
+    token: isClient ? sessionStorage.getItem(ACCESS_TOKEN_KEY) : null,
     role: UserRole.Customer,
 };
 
@@ -53,7 +50,7 @@ const authSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
-        loginSuccess(state, action: { payload: { user: UserProfile, token: string, role: UserRole } }) {
+        loginSuccess(state, action: { payload: { user: any, token: string, role: UserRole } }) {
             state.isAuthenticated = true;
             state.user = action.payload.user;
             state.token = action.payload.token;
@@ -61,7 +58,12 @@ const authSlice = createSlice({
             state.loading = false;
             state.error = null;
             if (isClient) {
-                localStorage.setItem(AUTH_TOKEN, action.payload.token);
+                localStorage.setItem(IS_AUTHENTICATED_KEY, JSON.stringify({ isAuthenticated: true, role: action.payload.role }));
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(action.payload.user));
+                sessionStorage.setItem(ACCESS_TOKEN_KEY, JSON.stringify({
+                    token: action.payload.token,
+                    expiresAt: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString()
+                }));
             }
         },
         logOut(state) {
@@ -71,9 +73,10 @@ const authSlice = createSlice({
             state.loading = false;
             state.error = null;
             if (isClient) {
-                localStorage.removeItem(AUTH_TOKEN);
-                localStorage.removeItem('user');
-                localStorage.removeItem('cart');
+                localStorage.removeItem(USER_STORAGE_KEY);
+                localStorage.removeItem(CART_KEY);
+                localStorage.removeItem(IS_AUTHENTICATED_KEY);
+                sessionStorage.removeItem(ACCESS_TOKEN_KEY);
             }
         },
 

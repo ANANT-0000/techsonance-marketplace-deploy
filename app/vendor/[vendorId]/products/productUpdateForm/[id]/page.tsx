@@ -1,11 +1,36 @@
 'use client';
 import { useFieldArray, useForm } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useParams } from "next/navigation";
 import { Trash2, Plus, UploadCloud, Package, Tag, Image, Building2, ChevronDown, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { fetchVendorProducts, fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
+import { ProductFeatureType, ProductImageType, ProductType } from "@/utils/Types";
+import { fetchProduct } from "@/utils/commonAPiClient";
+import { ca } from "date-fns/locale";
+import { ORGANIZATION_TAXATION_FIELDS } from "@/constants";
+import { DynamicIcon, IconName } from "lucide-react/dynamic";
+import { set } from "zod";
 
 type Feature = { title: string; description: string };
+export const PRODUCT_FORM_FIELDS = [
 
+  {
+    section: "Price & Inventory", icon: 'tag', fields: [
+      { name: "basePrice", label: "Base Price (₹)", type: "number" },
+      { name: "discountPercent", label: "Discount (%)", type: "number" },
+      { name: "stocks", label: "Stock Quantity", type: "number" },
+      { name: "sku", label: "SKU", type: "text" },
+    ]
+  },
+  {
+    section: "Category & Taxation", icon: 'building-2', fields: [
+      { name: "category", label: "Category", type: "select", },
+      { name: "status", label: "Status", type: "select", },
+      { name: "taxProfile", label: "Tax Profile", type: "select", },
+    ]
+
+  }
+]
 type ProductUpdateFormValues = {
   productName: string;
   description: string;
@@ -24,7 +49,6 @@ type ProductUpdateFormValues = {
 export default function ProductUpdateForm() {
   const params = useParams<{ id: string }>();
   const id = params.id;
-
   const {
     control,
     register,
@@ -49,45 +73,73 @@ export default function ProductUpdateForm() {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({ control, name: "features" });
 
-  const [productFiles, setProductFiles] = useState<File[]>([]);
-  const [featureFiles, setFeatureFiles] = useState<File[]>([]);
+  const [productData, setProductData] = useState<ProductType | null>(null);
+  const [  categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
+  const { fields, append, remove } = useFieldArray({ control, name: "features" });
+  const [productFiles, setProductFiles] = useState<ProductImageType[] | File[]>([]);
+  const [featureFiles, setFeatureFiles] = useState<ProductImageType[] | File[]>([]);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [isFetching, setIsFetching] = useState(true);
-
   // --- Fetch existing product data ---
   useEffect(() => {
     if (!id) return;
-    const fetchProduct = async () => {
+    const loadData = async () => {
+      setIsFetching(true);
       try {
-        // Replace with your real API call:
-        // const res = await fetch(`/api/products/${id}`);
-        // const data = await res.json();
-        // Simulated prefill:
-        await new Promise((r) => setTimeout(r, 800));
-        const data = {
-          productName: "Classic Cotton T-Shirt",
-          description: "A comfortable everyday t-shirt made from 100% cotton.",
-          features: [{ title: "Breathable", description: "Made with natural cotton fibres." }],
-          basePrice: 499,
-          discountPercent: 10,
-          stocks: 50,
-          sku: "TSHIRT-001",
-          category: "fashion",
-          status: "Active",
-          taxProfile: "reduced",
-        };
-        reset(data);
-      } catch {
-        // handle fetch error
+        // 1. Fetch Product first
+        const productResponse: { data: ProductType } = await fetchProduct(id);
+        const product = productResponse?.data;
+        console.log("productResponse", productResponse);
+        if (!product) return;
+
+        // Update state for the UI
+        setProductData(product);
+
+        // 2. Fetch Categories using the product data DIRECTLY 
+        // (Don't use productData state here, it hasn't updated yet!)
+        try {
+          const vendorId = product.vendor_id || "";
+          const categoryResponse = await fetchVendorsProductsCategory(vendorId);
+          const categories = categoryResponse?.data || [];
+
+          setCategoryOptions(
+            categories.map((cat: any) => ({ value: cat.id, label: cat.name }))
+          );
+        } catch (catError) {
+          console.error("Error fetching categories:", catError);
+        }
+
+        // 3. Reset the form with the fresh product data
+        reset({
+          productName: product.name || '',
+          description: product.description || '',
+          features: (product.features as ProductFeatureType[])?.map(f => ({
+            title: f.title,
+            description: f.description
+          })) || [{ title: "", description: "" }],
+          basePrice: product.base_price || 0,
+          discountPercent: product.discount_percent || 0,
+          stocks: product.stock_quantity || 0,
+          sku: product.sku || "TSHIRT-001",
+          category: categoryOptions.filter(cat => cat.value === product.category_id)[0]?.label || '',
+          status: product.status || "Active",
+        });
+        setFeatureFiles(product.images?.filter((img) => img.imgType === 'gallery') || []);
+        setProductFiles(product.images?.filter((img) => img.imgType === 'main') || []);
+      } catch (error) {
+        console.error("Error in product initialization:", error);
       } finally {
         setIsFetching(false);
       }
     };
-    fetchProduct();
-  }, [id, reset]);
 
+    loadData();
+  }, [id, reset]);
+  console.log("productData", productData);
+  console.log("categoryOptions", categoryOptions);
+  console.log("productFiles", productFiles)
+  console.log('featureFiles', featureFiles)
   // --- Unified file handler ---
   const handleFileSelect = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -293,64 +345,77 @@ export default function ProductUpdateForm() {
             </div>
           </div>
 
+
+
           {/* ── 2. PRICING & INVENTORY ── */}
-          <div className={sectionCls}>
-            <div className={sectionHeaderCls}>
-              <Tag size={18} className="text-brand-primary" />
-              <h2 className="text-base font-semibold text-slate-800">Pricing & Inventory</h2>
-            </div>
-            <div className="p-6">
-              <div className="flex flex-wrap gap-5">
-                <div className="flex-1 min-w-[180px]">
-                  <label className={labelCls}>Base Price (₹) <span className="text-red-400">*</span></label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">₹</span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min={0}
-                      className={`${inputCls} pl-7`}
-                      placeholder="0.00"
-                      {...register("basePrice", { required: "Required", min: { value: 0, message: "Must be ≥ 0" } })}
-                    />
+          {
+            PRODUCT_FORM_FIELDS.map((field, idx) => (
+              <div className={sectionCls}>
+                <div className={sectionHeaderCls}>
+                  <DynamicIcon name={field.icon as IconName} size={18} className="text-brand-primary" />
+                  <h2 className="text-base font-semibold text-slate-800">{field.section}</h2>
+                </div>
+
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-4 gap-10">
+                    {field.fields.map((f, idx) => (
+                      <div key={idx} className="mb-4 flex-1">
+                        <label className={labelCls}>{f.label} {f.label.includes("*") && <span className="text-red-400">*</span>}</label>
+                        {f.type === "select" ? (
+                          <div className="relative">
+                            <select
+                              {...register(f.name as keyof ProductUpdateFormValues, { required: f.label.includes("*") ? "Required" : false })}
+                              className="form_input appearance-none pr-9 disabled:opacity-50"
+                            >
+                              <option value="">Select {f.label}</option>
+                              {
+                                f.name === "category" ? (
+                                  categoryOptions.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                  ))
+                                ) : f.name === "status" ? (
+                                  <>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option> 
+                                  </>
+                                ) : f.name === "taxProfile" ? (
+                                  ORGANIZATION_TAXATION_FIELDS.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                  ))
+                                ) : null
+                              }
+                            </select>
+                            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            {errors[f.name as keyof ProductUpdateFormValues] && (
+                              <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <AlertCircle size={12} />{errors[f.name as keyof ProductUpdateFormValues]?.message as string}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <input
+                            type={f.type}
+                            step={f.type === "number" ? "0.01" : undefined}
+                            min={f.type === "number" ? 0 : undefined}
+                            className={inputCls}
+                            placeholder={f.type === "number" ? (f.name === "basePrice" ? "0.00" : "0") : `Enter ${f.label.toLowerCase()}`}
+                            {...register(f.name as keyof ProductUpdateFormValues, { required: f.label.includes("*") ? "Required" : false, min: f.type === "number" ? { value: 0, message: "Must be ≥ 0" } : undefined })}
+                          />
+                        )}
+                        {errors[f.name as keyof ProductUpdateFormValues] && (
+                          <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                            <AlertCircle size={12} />{errors[f.name as keyof ProductUpdateFormValues]?.message as string}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+
                   </div>
-                  {errors.basePrice && <p className="text-red-500 text-xs mt-1">{errors.basePrice.message}</p>}
-                </div>
-                <div className="flex-1 min-w-[180px]">
-                  <label className={labelCls}>Discount (%)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    className={inputCls}
-                    placeholder="0"
-                    {...register("discountPercent", { min: 0, max: 100 })}
-                  />
-                </div>
-                <div className="flex-1 min-w-[180px]">
-                  <label className={labelCls}>Stock Quantity <span className="text-red-400">*</span></label>
-                  <input
-                    type="number"
-                    min={0}
-                    className={inputCls}
-                    placeholder="0"
-                    {...register("stocks", { required: "Required", min: { value: 0, message: "Must be ≥ 0" } })}
-                  />
-                  {errors.stocks && <p className="text-red-500 text-xs mt-1">{errors.stocks.message}</p>}
-                </div>
-                <div className="flex-1 min-w-[180px]">
-                  <label className={labelCls}>SKU <span className="text-red-400">*</span></label>
-                  <input
-                    type="text"
-                    className={inputCls}
-                    placeholder="e.g. SHIRT-001"
-                    {...register("sku", { required: "SKU is required" })}
-                  />
-                  {errors.sku && <p className="text-red-500 text-xs mt-1">{errors.sku.message}</p>}
                 </div>
               </div>
-            </div>
-          </div>
+            ))
+          }
+
 
           {/* ── 3. MEDIA ── */}
           <div className={sectionCls}>
@@ -383,13 +448,13 @@ export default function ProductUpdateForm() {
                     <ul className="mt-3 space-y-2">
                       {files.map((file, i) => (
                         <li key={i} className="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-sm">
-                          <span className="truncate max-w-[180px] font-medium text-slate-700">{file.name}</span>
+                          <img src={file.image_url ? file.image_url : URL.createObjectURL(file)} alt={file.alt_text ? file.alt_text : "Uploaded Image"} className="w-16 h-16 object-cover rounded-md" />
                           <button
                             type="button"
                             onClick={() => handleFileRemove(i, files, setFiles as any, fieldName)}
                             className="ml-2 text-slate-300 hover:text-red-500 transition"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={24} />
                           </button>
                         </li>
                       ))}
@@ -399,69 +464,6 @@ export default function ProductUpdateForm() {
               ))}
             </div>
           </div>
-
-          {/* ── 4. ORGANIZATION & TAXATION ── */}
-          <div className={sectionCls}>
-            <div className={sectionHeaderCls}>
-              <Building2 size={18} className="text-brand-primary" />
-              <h2 className="text-base font-semibold text-slate-800">Organization & Taxation (GST)</h2>
-            </div>
-            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  name: "category" as const,
-                  label: "Category",
-                  options: [
-                    { value: "electronic", label: "Electronics" },
-                    { value: "fashion", label: "Fashion" },
-                    { value: "home_appliance", label: "Home Appliances" },
-                    { value: "books", label: "Books" },
-                    { value: "sports", label: "Sports" },
-                  ],
-                },
-                {
-                  name: "status" as const,
-                  label: "Status",
-                  options: [
-                    { value: "Active", label: "Active" },
-                    { value: "Inactive", label: "Inactive" },
-                    { value: "Draft", label: "Draft" },
-                  ],
-                },
-                {
-                  name: "taxProfile" as const,
-                  label: "Tax Profile",
-                  options: [
-                    { value: "standard", label: "GST Standard (18%)" },
-                    { value: "reduced", label: "GST Reduced (5%)" },
-                    { value: "zero", label: "Zero Rated (0%)" },
-                  ],
-                },
-              ].map(({ name, label, options: opts }) => (
-                <div key={name}>
-                  <label className={labelCls}>{label} <span className="text-red-400">*</span></label>
-                  <div className="relative">
-                    <select
-                      {...register(name, { required: "Required" })}
-                      className={`${inputCls} appearance-none pr-9`}
-                    >
-                      <option value="">Select {label}</option>
-                      {opts.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                  </div>
-                  {errors[name] && (
-                    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle size={12} />{errors[name]?.message}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* ── FOOTER CTA ── */}
           <div className="flex justify-end gap-3 pb-8">
             <button

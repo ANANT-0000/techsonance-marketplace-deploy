@@ -1,17 +1,27 @@
 'use client';
-import { useSelector } from "react-redux";
-import type { RootState } from "@/Redux store/store";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { ChevronLeftCircle } from "lucide-react";
+import { useAppSelector } from "@/hooks/reduxHooks";
+
+
+export const PROFILE_EDIT_FIELDS = [
+    { id: 'profile_picture', label: 'Profile Picture URL', type: 'text', placeholder: 'Enter image URL' },
+    { id: 'first_name', label: 'First Name', type: 'text', placeholder: 'Enter your first name' },
+    { id: 'last_name', label: 'Last Name', type: 'text', placeholder: 'Enter your last name' },
+    { id: 'email', label: 'Email', type: 'email', placeholder: 'Enter your email' },
+    { id: 'phone', label: 'Phone Number', type: 'text', placeholder: 'Enter your phone number' }
+];
 
 export default function EditProfilePage() {
-    const { user } = useSelector((state: RootState) => state.auth);
+    const { user } = useAppSelector((state) => state.auth);
+    const userId = user?.user_id ? user.user_id : '';
     const router = useRouter();
     const { register, reset, handleSubmit } = useForm({
         defaultValues: {
             profile_picture: user?.profileImgUrl || "",
-            name: user?.name || "",
+            first_name: user?.first_name || "",
+            last_name: user?.last_name || "",
             email: user?.email || "",
             phone: user?.phone || ""
         }
@@ -23,46 +33,24 @@ export default function EditProfilePage() {
             <form className="lg:ml-10 mx-auto pt-1 px-3 space-y-6 w-xs lg:w-lg" onSubmit={handleSubmit((data) => {
                 console.log(data);
                 reset();
-                router.push(`/customerProfile/${user?.user_id}`);
+                router.push(`/customerProfile/${userId}`);
             })}>
-                <div className="flex justify-center">
-                    <label htmlFor="profile_picture" className="block text-sm font-medium text-gray-700">
-                        {user?.profileImgUrl ? <img src={user.profileImgUrl} alt="Profile" className="w-24 h-24 rounded-full object-cover" /> :
+                {
+                    PROFILE_EDIT_FIELDS.map((field) => (
+                        <div key={field.id} className="space-y-1">
+                            <label htmlFor={field.id} className="block text-sm font-medium text-gray-700">
+                                {field.label}
+                            </label>
                             <input
-                                type="text"
-                                id="profile_picture"
-                                {...register("profile_picture")}
-                                className={`${user?.profileImgUrl ? "hidden" : ""} mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500`}
-                            />}
-                    </label>
-                </div>
-                <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-                    <input
-                        type="text"
-                        id="name"
-                        {...register("name")}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        {...register("email")}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
-                    <input
-                        type="text"
-                        id="phone"
-                        {...register("phone")}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                </div>
+                                id={field.id}
+                                type={field.type}
+                                placeholder={field.placeholder}
+                                {...register(field.id, { required: true })}
+                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
+                            />
+                        </div>
+                    ))
+                }
                 <div className="flex gap-4">
                     <button
                         type="submit"
@@ -74,7 +62,7 @@ export default function EditProfilePage() {
                         type="button"
                         onClick={() => {
                             reset();
-                            router.push(`/customerProfile/${user?.user_id}`);
+                            router.push(`/customerProfile/${userId}`);
                         }}
                         className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
                     >

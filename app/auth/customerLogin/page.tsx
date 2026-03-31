@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { passwordValidationSchema } from "@/utils/validation";
 import axios from "axios";
 import { CUSTOMER_BASE_URL, CUSTOMER_LOGIN_POSTER } from "@/constants/common";
-import { useDispatch } from "react-redux";
-import { loginFailure, loginStart, loginSuccess } from "@/Redux store/features/auth/authSlice";
+import { loginFailure, loginStart, loginSuccess } from "@/lib/features/auth/authSlice";
+import { useAppDispatch } from "@/hooks/reduxHooks";
 
 interface FormData {
     customer_email: string | null;
@@ -21,7 +21,7 @@ export default function CustomerLoginPage() {
         password: null,
     });
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -53,9 +53,9 @@ export default function CustomerLoginPage() {
     };
 
     return (
-        <main className="flex justify-center items-center border h-[100vh]">
+        <main className="flex justify-center items-center  h-[100vh]">
             <img src={CUSTOMER_LOGIN_POSTER} alt="Login poster" className="lg:h-[380px] lg:w-[380px] md:h-[300px] md:w-[300px] rounded-l-[4rem] rounded-r-0" />
-            <form onSubmit={submitHandler} className="flex bg-white flex-col border rounded-xl px-12 py-8 justify-center w-[400px] h-[460px]">
+            <form onSubmit={submitHandler} className="flex bg-white flex-col  rounded-xl px-12 py-8 justify-center w-[400px] h-[460px]">
                 <h1 className="lg:text-[1.5rem] md:text-[1rem] text-center my-1">Welcome</h1>
                 <p className="text-[.7rem] text-slate-600 mb-6 text-center">Welcome back! Find great products.</p>
                 <div className="flex flex-col gap-4 mb-4">

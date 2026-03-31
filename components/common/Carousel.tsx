@@ -25,7 +25,7 @@ export function Carousel({items, styles}: {items: string[]; styles?:string}) {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="absolute left-0 " />
+      <CarouselPrevious className="absolute left-0  " />
       <CarouselNext className="absolute right-0" />
     </CarouselPrimitive>
   )

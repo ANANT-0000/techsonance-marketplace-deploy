@@ -1,6 +1,6 @@
 'use client';
+import { ProductType } from '@/utils/Types';
 import { SlidersHorizontal, ChevronUp, ChevronRight, X, ChevronDown } from 'lucide-react'
-import { type PRODUCT_LIST_TYPE } from '@/constants/customer'
 import { useEffect, useState } from 'react'
 const SidebarContent = ({ setIsOpen, maxPrice, setMaxPrice, minPrice, setMinPrice, isPriceOpen, setIsPriceOpen, categoryFilter, setSelectedCategories, selectedCategories }: {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>,
@@ -96,14 +96,14 @@ const SidebarContent = ({ setIsOpen, maxPrice, setMaxPrice, minPrice, setMinPric
   </div>
 );
 export function FilterSidebar({ PRODUCT_LIST, filterProduct }: {
-  PRODUCT_LIST: PRODUCT_LIST_TYPE[],
-  filterProduct: React.Dispatch<React.SetStateAction<PRODUCT_LIST_TYPE[]>>
+  PRODUCT_LIST: ProductType[],
+  filterProduct: React.Dispatch<React.SetStateAction<ProductType[]>>
 }) {
   const [isPriceOpen, setIsPriceOpen] = useState(true);
   const [isColorsOpen, setIsColorsOpen] = useState(true);
   const [isCategoryOpen, setIsCategoryOpen] = useState(true);
   const [isOpen, setIsOpen] = useState(false); // Mobile drawer state
-  const [categoryFilter] = useState<string[]>([...new Set(PRODUCT_LIST.map(pro => pro.category))])
+  const [categoryFilter] = useState<string[]>([...new Set(PRODUCT_LIST.map(pro => pro.category))]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(50000); // Default high ceiling

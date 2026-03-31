@@ -1,20 +1,20 @@
 'use client';
-import { useDispatch, useSelector } from "react-redux";
-import type { RootState } from "@/Redux store/store";
+import type { RootState } from "@/lib/store";
 import { ChevronLeftCircle, X } from "lucide-react";
 import { PRODUCT_LIST } from "@/constants/customer";
 import { AddToCart } from "@/components/customer/AddToCart";
-import { removeFromWishlist } from "@/Redux store/features/Wishlist";
+import { removeFromWishlist } from "@/lib/features/Wishlist";
 import { useRouter } from "next/navigation";
 import { useMediaQuery } from "react-responsive";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 
 export default function WishlistPage() {
     const router = useRouter();
-    const { wishItems } = useSelector((state: RootState) => state.wishlist);
+    const wishItems = useAppSelector((state: RootState) => state.wishlist);
     const wishlistItems = Array.isArray(wishItems) ? PRODUCT_LIST.filter(item => wishItems.some((wishItem: any) => wishItem.productId === item.id)) : [];
     const isMobileOrTablet = useMediaQuery({ minWidth: 340, maxWidth: 1024 });
     const isEmpty = Array.isArray(wishItems) ? wishItems.length === 0 : [];
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     return (
         <>

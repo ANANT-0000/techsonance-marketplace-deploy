@@ -25,11 +25,11 @@ export default function AdminDashboardPage() {
                         <div className="stat_value">{ADMIN_DASHBOARD_STATS.totalOrders}</div>
                         <div className="stat_desc">This month</div>
                     </div>
-                    <div className="stat">
+                    {/* <div className="stat">
                         <div className="stat_title">Systems Operations</div>
                         <div className="stat_value text-green-600">{ADMIN_DASHBOARD_STATS.systemsOperations}%</div>
                         <div className="stat_desc">All systems operational</div>
-                    </div>
+                    </div> */}
                 </div>
                 <section className="mid_section flex justify-between my-5 gap-6">
                     <DashboardChart />

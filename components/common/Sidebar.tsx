@@ -1,10 +1,13 @@
 'use client';
-import { BAR_TOGGLE_ICON, TS_LOGO, type NavLinkType } from "@/constants/common"
-import { useDispatch, useSelector } from "react-redux";
-import { toggleSidebar, type isSidebarType } from "@/Redux store/features/sidebar";
+import { BAR_TOGGLE_ICON, TS_LOGO,  } from "@/constants/common"
+import { toggleSidebar, type isSidebarType } from "@/lib/features/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { RootState } from "@/lib/store";
+import { NavLinkType } from "@/utils/Types";
+
 type SidebarProps = {
     basePath?: string;
     NAV_LINKS: NavLinkType[];
@@ -12,8 +15,8 @@ type SidebarProps = {
 }
 
 export function Sidebar({ basePath = " ", NAV_LINKS, id = 32 }: SidebarProps) {
-    const { isSidebarOpen }: isSidebarType = useSelector((state: any) => state.sidebar);
-    const dispatch = useDispatch()
+    const { isSidebarOpen }: isSidebarType = useAppSelector((state: RootState) => state.sidebar);
+    const dispatch = useAppDispatch()
     const path = usePathname();
     return (
         <>

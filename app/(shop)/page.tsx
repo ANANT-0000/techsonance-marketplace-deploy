@@ -1,6 +1,5 @@
 import { Carousel } from "@/components/common/Carousel";
-import { HOME_HERO_TITLE, HOME_HERO_DESC } from "@/constants/common";
-import { BEST_SELLING_PRODUCTS, CATEGORY_LIST, FEEDBACK_LIST, PRODUCT_LIST, HERO_BTN_TEXT, HOME_SECONDARY_IMG } from "@/constants/customer";
+import { BEST_SELLING_PRODUCTS, CATEGORY_LIST, FEEDBACK_LIST, PRODUCT_LIST, HERO_BTN_TEXT, HOME_SECONDARY_IMG, HOME_HERO_TITLE, HOME_HERO_DESC } from "@/constants/customer";
 import { CategoryList } from "@/components/customer/CategoryList";
 import { BestSelling } from "@/components/customer/BestSelling";
 import { ProductList } from "@/components/customer/ProductList";
@@ -10,7 +9,6 @@ import Link from "next/link";
 import Image from "next/image";
 
 const imgs = [
-    'https://m.media-amazon.com/images/I/61KcQyhY6SL._SL1200_.jpg',
     'https://m.media-amazon.com/images/I/71YenZNhuPL._SL1500_.jpg',
     'https://m.media-amazon.com/images/I/61En6OhNqNL._SL1200_.jpg'
 ]
@@ -30,7 +28,7 @@ export default function Home() {
                     </Link>
                 </section>
                 <section className="flex justify-between gap-16 mt-14 flex-wrap bg-primary xl:pt-10 pb-8 xl:px-32 lg:px-8 md:px-4 sm:px-2 py-1">
-                    <div className="w-full grid lg:grid-cols-4 grid-cols-2 gap-4">
+                    <div className="w-full grid lg:grid-cols-4 grid-cols-2 gap-4 mt-2">
                         <HomeBrandFeatures />
                     </div>
                     <hr className="mx-auto w-[80%] h-[2px] lg:text-gray-400 text-gray-300 mb mb-2" />
