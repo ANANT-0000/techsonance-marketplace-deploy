@@ -7,7 +7,7 @@ import { fetchVendorProducts, fetchVendorsProductsCategory } from "@/utils/vendo
 import { ProductFeatureType, ProductImageType, ProductType } from "@/utils/Types";
 import { fetchProduct } from "@/utils/commonAPiClient";
 import { ca } from "date-fns/locale";
-import { ORGANIZATION_TAXATION_FIELDS } from "@/constants";
+import { ORGANIZATION_TAXATION_OPTIONS } from "@/constants";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { set } from "zod";
 
@@ -46,7 +46,7 @@ type ProductUpdateFormValues = {
   taxProfile: string;
 };
 
-export default function ProductUpdateForm() {
+export default function ProductUpdateFormPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const {
@@ -75,29 +75,23 @@ export default function ProductUpdateForm() {
 
 
   const [productData, setProductData] = useState<ProductType | null>(null);
-  const [  categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
   const { fields, append, remove } = useFieldArray({ control, name: "features" });
   const [productFiles, setProductFiles] = useState<ProductImageType[] | File[]>([]);
   const [featureFiles, setFeatureFiles] = useState<ProductImageType[] | File[]>([]);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [isFetching, setIsFetching] = useState(true);
-  // --- Fetch existing product data ---
   useEffect(() => {
     if (!id) return;
     const loadData = async () => {
       setIsFetching(true);
       try {
-        // 1. Fetch Product first
         const productResponse: { data: ProductType } = await fetchProduct(id);
         const product = productResponse?.data;
         console.log("productResponse", productResponse);
         if (!product) return;
 
-        // Update state for the UI
         setProductData(product);
-
-        // 2. Fetch Categories using the product data DIRECTLY 
-        // (Don't use productData state here, it hasn't updated yet!)
         try {
           const vendorId = product.vendor_id || "";
           const categoryResponse = await fetchVendorsProductsCategory(vendorId);
@@ -118,9 +112,9 @@ export default function ProductUpdateForm() {
             title: f.title,
             description: f.description
           })) || [{ title: "", description: "" }],
-          basePrice: product.base_price || 0,
-          discountPercent: product.discount_percent || 0,
-          stocks: product.stock_quantity || 0,
+          basePrice: Number(product.base_price) || 0,
+          discountPercent: Number(product.discount_percent) || 0,
+          stocks: Number(product.stock_quantity) || 0,
           sku: product.sku || "TSHIRT-001",
           category: categoryOptions.filter(cat => cat.value === product.category_id)[0]?.label || '',
           status: product.status || "Active",
@@ -133,14 +127,12 @@ export default function ProductUpdateForm() {
         setIsFetching(false);
       }
     };
-
     loadData();
   }, [id, reset]);
   console.log("productData", productData);
   console.log("categoryOptions", categoryOptions);
   console.log("productFiles", productFiles)
   console.log('featureFiles', featureFiles)
-  // --- Unified file handler ---
   const handleFileSelect = (
     e: React.ChangeEvent<HTMLInputElement>,
     currentFiles: File[],
@@ -165,7 +157,6 @@ export default function ProductUpdateForm() {
     setValue(fieldName, updated as any, { shouldDirty: true });
   };
 
-  // --- Submit (PATCH/PUT) ---
   const onSubmit = async (data: ProductUpdateFormValues) => {
     const payload = {
       id,
@@ -182,8 +173,6 @@ export default function ProductUpdateForm() {
     };
 
     try {
-      // Replace with real API call:
-      // await fetch(`/api/products/${id}`, { method: 'PATCH', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
       console.log("Update Payload →", payload);
       await new Promise((r) => setTimeout(r, 1200));
       setSubmitStatus("success");
@@ -350,7 +339,7 @@ export default function ProductUpdateForm() {
           {/* ── 2. PRICING & INVENTORY ── */}
           {
             PRODUCT_FORM_FIELDS.map((field, idx) => (
-              <div className={sectionCls}>
+              <div className={sectionCls} key={idx}>
                 <div className={sectionHeaderCls}>
                   <DynamicIcon name={field.icon as IconName} size={18} className="text-brand-primary" />
                   <h2 className="text-base font-semibold text-slate-800">{field.section}</h2>
@@ -367,7 +356,6 @@ export default function ProductUpdateForm() {
                               {...register(f.name as keyof ProductUpdateFormValues, { required: f.label.includes("*") ? "Required" : false })}
                               className="form_input appearance-none pr-9 disabled:opacity-50"
                             >
-                              <option value="">Select {f.label}</option>
                               {
                                 f.name === "category" ? (
                                   categoryOptions.map((opt) => (
@@ -376,7 +364,7 @@ export default function ProductUpdateForm() {
                                 ) : f.name === "status" ? (
                                   <>
                                     <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option> 
+                                    <option value="inactive">Inactive</option>
                                   </>
                                 ) : f.name === "taxProfile" ? (
                                   ORGANIZATION_TAXATION_FIELDS.map((opt) => (
@@ -448,7 +436,7 @@ export default function ProductUpdateForm() {
                     <ul className="mt-3 space-y-2">
                       {files.map((file, i) => (
                         <li key={i} className="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-sm">
-                          <img src={file.image_url ? file.image_url : URL.createObjectURL(file)} alt={file.alt_text ? file.alt_text : "Uploaded Image"} className="w-16 h-16 object-cover rounded-md" />
+                          <img src={file?.image_url ? file.image_url : URL.createObjectURL(file)} alt={file.alt_text ? file.alt_text : "Uploaded Image"} className="w-16 h-16 object-cover rounded-md" />
                           <button
                             type="button"
                             onClick={() => handleFileRemove(i, files, setFiles as any, fieldName)}

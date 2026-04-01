@@ -196,26 +196,12 @@ export const productData: Product[] = [
 
 
 
-export const ORGANIZATION_TAXATION_FIELDS =
+export const ORGANIZATION_TAXATION_OPTIONS =
   [
-    {
-      name: "status",
-      label: "Status",
-      options: [
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
-        { value: "draft", label: "Draft" },
-      ],
-    },
-    {
-      name: "taxProfile",
-      label: "Tax Profile",
-      options: [
-        { value: "standard", label: "GST Standard (18%)" },
-        { value: "reduced", label: "GST Reduced (5%)" },
-        { value: "zero", label: "Zero Rated (0%)" },
-      ],
-    },
+
+    { value: "standard", label: "GST Standard (18%)" },
+    { value: "reduced", label: "GST Reduced (5%)" },
+    { value: "zero", label: "Zero Rated (0%)" },
   ];
 
 // ============================================================

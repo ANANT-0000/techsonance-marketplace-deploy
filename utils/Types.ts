@@ -221,35 +221,36 @@ export interface ReviewType {
 export type ProductStatus = 'active' | 'inactive' | 'archived'; // Add other status strings here
 
 export type ProductImageType = {
-    id: string;
-    image_url: string;
-    alt_text?: string;
-    imgType: string;
-    is_primary: boolean;
-    product_id: string;
+  id: string;
+  image_url: string;
+  alt_text?: string;
+  imgType: string;
+  is_primary: boolean;
+  product_id: string;
 };
 
 export type ProductFeatureType = {
-    key: string;
-    value: string | boolean | number;
+  key: string;
+  value: string | boolean | number;
 };
 
 export type ProductType = {
-    id: string;
-    name: string;
-    description: string;
-    base_price: string;
-    discount_percent: string;
-    stock_quantity: number;
-    has_variants: boolean;
-    status: ProductStatus;
-    category_id: string;
-    company_id: string;
-    vendor_id: string;
-    features: ProductFeatureType[];
-    images: ProductImageType[];
-    created_at: string;
-    updated_at: string;
+  id: string;
+  name: string;
+  description: string;
+  base_price: string;
+  discount_percent: string;
+  stock_quantity: number;
+  has_variants: boolean;
+  status: ProductStatus;
+  category_id: string;
+  company_id: string;
+  vendor_id: string;
+  features: ProductFeatureType[];
+  images: ProductImageType[];
+  variants?: VariantType[];
+  created_at: string;
+  updated_at: string;
 };
 //Deleted the old PRODUCT_LIST_TYPE and replaced it with ProductType which is more comprehensive and closely aligned with the expected product data structure in a marketplace application.
 // export interface PRODUCT_LIST_TYPE {
@@ -417,6 +418,7 @@ export type ProductFormValuesType = {
   productName: string;
   description: string;
   features: FeatureType[];
+  attributes: OptionType[];
   basePrice: number;
   discountPercent: number;
   stocks: number;
@@ -449,7 +451,7 @@ export interface CustomerTicketType {
   priority: 'High' | 'Medium' | 'Low';
   created: string;
 }
-export interface UserReviewType{
+export interface UserReviewType {
   id: number;
   user_name: string;
   purchased_item: string;

@@ -106,7 +106,7 @@ function ProductCard({ product, isMobile }: { product: ProductType, isMobile: bo
                     <img
                         className="w-full object-cover lg:aspect-9/14 aspect-9/12 rounded-lg mb-4 transform hover:scale-105 transition-transform duration-300"
                         src={product.images && product.images.length > 0 ? product.images[0].image_url : "https://placehold.net/10.png"}
-                        alt={product.name.trim()}
+                        alt={product.name?.trim()}
                     />
                 </Link>
                 <h3 className="font-semibold text-sm lg:line-clamp-1 line-clamp-2 leading-4 mb-1">{product.title}</h3>

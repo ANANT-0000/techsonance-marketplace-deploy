@@ -1,18 +1,12 @@
 ﻿"use server"
 import { ACCESS_TOKEN_KEY, BASE_API_URL } from "@/constants";
 import { authToken } from "./authToken";
-
 import { revalidatePath } from "next/cache";
 export const fetchVendorsProductsCategory = async (vendorId: string) => {
-
     try {
-
-        // console.log(`Fetching product categories for vendor ${vendorId} with token: ${token}`);
         const response = await fetch(`${BASE_API_URL}categories/${vendorId}`, {
             method: 'GET',
-            headers: {
-                // Authorization: `Bearer ${token}`,
-            },
+            next: { revalidate: 3600 },
         });
         if (response.status !== 200) {
             return { data: [], message: 'Failed to fetch product categories' };
@@ -20,7 +14,7 @@ export const fetchVendorsProductsCategory = async (vendorId: string) => {
         return await response.json();
     } catch (error) {
         console.error('Error fetching product categories:', error);
-        throw error;
+        return { data: [], message: 'Error fetching product categories' };
     }
 };
 export const createVendorProductCategory = async (vendorId: string, categoryData: { name: string; description?: string }, companyId: string) => {
