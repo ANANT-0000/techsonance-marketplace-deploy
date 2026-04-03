@@ -1,9 +1,9 @@
 "use client";
-import React, { useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useFieldArray, useForm } from "react-hook-form";
-import { BusinessStructure, categoryOptions, COUNTRIES, COUNTRY_CODES } from "@/constants/common";
+import { useForm } from "react-hook-form";
+import { COUNTRIES, } from "@/constants/common";
 import { vendorRegister } from "@/utils/authApiClient";
 import { VendorRegisterFormData, VendorRegisterTypes } from "@/utils/Types";
 import { RegistrationSuccessModal } from "@/components/common/RegistrationSuccessModal";
@@ -12,19 +12,19 @@ import { DocUploadInput, DocUploadInputRef } from "@/components/vendor/DocUpload
 import { VendorDocumentTypes } from "@/constants";
 import { ORGANIZATION_DETAIL_FIELDS, RegistrationStages } from "@/constants/dynamicFields";
 import { Button } from "@/components/common/Button";
-
+import { vendorRegisterSchema } from "@/utils/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 // Fields that belong to each step — used for per-step validation
 const STEP_FIELDS: Record<number, (keyof VendorRegisterFormData)[]> = {
     0: ["company_name", "store_owner_first_name", "store_owner_last_name", "country_code", "phone_number", "category", "company_structure"],
     1: ["company_domain"],
-    2: [], // Compliance — no RHF fields, validated separately
+    2: [],
     3: [],
     4: ["first_name", "last_name", "email", "password", "confirm_password"],
 };
 
 export default function VendorRegisterPage() {
-    const router = useRouter();
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [globalError, setGlobalError] = useState<string | null>(null);
     const [countryCode, setCountryCode] = useState("");
@@ -43,6 +43,8 @@ export default function VendorRegisterPage() {
         control,
         formState: { errors, isSubmitting },
     } = useForm<VendorRegisterTypes>({
+        mode: "onChange",
+        resolver: zodResolver(vendorRegisterSchema),
         defaultValues: {
             first_name: null,
             last_name: null,
@@ -121,15 +123,17 @@ export default function VendorRegisterPage() {
                                         </label>
 
                                         {field.groupField ? (
-                                            <div className=" w-full">
+                                            <div className="w-full flex items-start gap-2"> {/* Changed grid to flex */}
                                                 {field.groupField.map((subField) => (
-                                                    <span key={subField.id} className="w-full">
+                                                    <div
+                                                        key={subField.id}
+                                                        className={`flex flex-col gap-1 ${subField.type === "select" ? "w-32" : "flex-1" // Select gets fixed width, Input fills remaining
+                                                            }`}
+                                                    >
                                                         {subField.type === "select" ? (
                                                             <select
                                                                 className={`input-class w-full ${subField.styles ?? ""}`}
-                                                                {...register(subField.id as keyof VendorRegisterTypes, {
-                                                                    required: "Country code is required",
-                                                                })}
+                                                                {...register(subField.id as keyof VendorRegisterTypes)}
                                                                 onChange={(e) => {
                                                                     setCountryCode(e.target.value);
                                                                     register(subField.id as keyof VendorRegisterTypes).onChange(e);
@@ -145,50 +149,25 @@ export default function VendorRegisterPage() {
                                                                 type={subField.type ?? "text"}
                                                                 className={`input-class w-full ${subField.styles ?? ""}`}
                                                                 placeholder={subField.placeholder}
-                                                                {...register(subField.id as keyof VendorRegisterTypes, {
-                                                                    required: "Phone number is required",
-                                                                    pattern: { value: /^[0-9\-]+$/, message: "Please use format 123-456-7890" },
-                                                                })}
+                                                                {...register(subField.id as keyof VendorRegisterTypes)}
                                                             />
                                                         )}
+
                                                         {errors[subField.id as keyof VendorRegisterTypes] && (
-                                                            <p className="input-error">
+                                                            <p className="input-error text-xs">
                                                                 {errors[subField.id as keyof VendorRegisterTypes]?.message}
                                                             </p>
                                                         )}
-                                                    </span>
+                                                    </div>
                                                 ))}
                                             </div>
-
-                                        ) : field.type === "select" ? (
-                                            <>
-                                                <select
-                                                    className="input-class"
-                                                    {...register(field.id as keyof VendorRegisterFormData, {
-                                                        required: `${field.label} is required`,
-                                                    })}
-                                                >
-                                                    <option value="">Select {field.label}</option>
-                                                    {field.options?.map((o) => (
-                                                        <option key={o.value} value={o.value}>{o.label}</option>
-                                                    ))}
-                                                </select>
-                                                {errors[field.id as keyof VendorRegisterFormData] && (
-                                                    <p className="input-error">
-                                                        {errors[field.id as keyof VendorRegisterFormData]?.message}
-                                                    </p>
-                                                )}
-                                            </>
-
                                         ) : (
                                             <>
                                                 <input
                                                     type={field.type ?? "text"}
                                                     className="input-class"
                                                     placeholder={field.placeholder}
-                                                    {...register(field.id as keyof VendorRegisterFormData, {
-                                                        required: `${field.label} is required`,
-                                                    })}
+                                                    {...register(field.id as keyof VendorRegisterFormData)}
                                                 />
                                                 {errors[field.id as keyof VendorRegisterFormData] && (
                                                     <p className="input-error">
@@ -212,7 +191,7 @@ export default function VendorRegisterPage() {
                             <label className="font-bold text-xl mb-4">Instance Configuration</label>
                             <div className="w-full flex mt-3">
                                 <input
-                                    {...register("company_domain", { required: "Instance domain is required" })}
+                                    {...register("company_domain")}
                                     className="border-2 flex-[2] border-gray-200 px-4 py-2 rounded-l-xl focus:outline-none"
                                     placeholder="your-store"
                                 />
@@ -305,10 +284,6 @@ export default function VendorRegisterPage() {
                                                 ...(field.id === "confirm_password" && {
                                                     validate: (val) =>
                                                         val === watch("password") || "Passwords do not match",
-                                                }),
-                                                // Extra rule: basic email format
-                                                ...(field.id === "email" && {
-                                                    pattern: { value: /^\S+@\S+\.\S+$/, message: "Enter a valid email" },
                                                 }),
                                             })}
                                         />

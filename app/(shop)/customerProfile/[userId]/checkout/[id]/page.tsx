@@ -8,6 +8,7 @@ import { useParams } from "next/navigation";
 import { PAYMENT_METHODS_FIELDS } from "@/constants/dynamicFields";
 import { SelectedPaymentMethod } from "@/components/customer/SelectedPaymentMethod";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { formatCurrency } from "@/lib/utils";
 
 
 
@@ -115,7 +116,7 @@ export default function CheckoutPage() {
                 Object.entries(orderData).map(([key, value]) => (
                   <div key={key} className={`flex justify-between text-gray-700 ${key === 'total' ? 'py-2 font-bold text-lg border-t-2' : ''}`}>
                     <span className="capitalize">{key.replace('_', ' ')}</span>
-                    <span  >₹{value.toLocaleString()}</span>
+                    <span  >₹{formatCurrency(value)}</span>
                   </div>
                 ))
 
@@ -125,7 +126,7 @@ export default function CheckoutPage() {
 
 
             <button className="w-full bg-blue-600 text-white font-semibold lg:py-3 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-              Pay ₹{orderData.total.toLocaleString()}
+              Pay ₹{formatCurrency(orderData.total)}
               <span>→</span>
             </button>
 

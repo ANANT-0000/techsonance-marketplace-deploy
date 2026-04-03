@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeftCircle } from "lucide-react";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { format } from "path";
+import { formatCurrency } from "@/lib/utils";
 
 
 const PriceTicker = ({ value }: { value: number }) => {
@@ -24,7 +26,7 @@ const PriceTicker = ({ value }: { value: number }) => {
             animate={{ y: 0, opacity: 1 }}
             className="inline-block lg:text-xl text-lg text-primary-foreground"
         >
-            ₹{displayValue.toLocaleString()}
+            ₹{formatCurrency(value)}
         </motion.span>
     );
 };
@@ -85,12 +87,12 @@ export default function CartList() {
                                                 <img src={item.imgUrl} alt={item.name} className="lg:w-20 lg:h-20 w-16 h-16 object-cover aspect-square rounded-xl   " />
                                                 <div className="flex flex-col justify-between lg:full h-16  ">
                                                     <h3 className="lg:font-bold lg:text-lg text-xs lg:line-clamp-3 line-clamp-2 lg:leading-5">{item.name}</h3>
-                                                    <p className="text-brand-primary font-semibold lg:text-md text-sm">₹{item.price.toLocaleString()}</p>
+                                                    <p className="text-brand-primary font-semibold lg:text-md text-sm">₹{formatCurrency(item.price)}</p>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-start gap-1">
                                                 <AddToCart productId={item.id} styles="small lg:w-24 w-18" />
-                                                <p className="text-xs text-gray-400">Subtotal: ₹{(item.price * item.quantity).toLocaleString()}</p>
+                                                <p className="text-xs text-gray-400">Subtotal: ₹{formatCurrency(item.price * item.quantity)}</p>
                                             </div>
                                         </motion.div>
                                     ))}
@@ -117,7 +119,7 @@ export default function CartList() {
                                                 {cartItemsWithDetails.map(item => (
                                                     <tr key={item.id} className="text-gray-500">
                                                         <td className="py-1 line-clamp-1 w-32">{item.name}</td>
-                                                        <td className="py-1 text-right">₹{(item.price * item.quantity).toLocaleString()}</td>
+                                                        <td className="py-1 text-right">₹{formatCurrency(item.price * item.quantity)}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>

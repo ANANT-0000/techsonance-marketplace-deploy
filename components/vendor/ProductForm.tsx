@@ -1,7 +1,9 @@
 ﻿'use client';
 import { BASE_API_URL, ORGANIZATION_TAXATION_OPTIONS } from "@/constants";
 import { useAppSelector } from "@/hooks/reduxHooks";
-import { ProductFormValuesType, ProductImageType } from "@/utils/Types";
+import { ProductImageType } from "@/utils/Types";
+import { ProductFormValuesType, productSchema } from "@/utils/validation";
+import { zodResolver } from "@hookform/resolvers/zod/dist/zod.js";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useCallback, useState } from "react";
@@ -22,6 +24,8 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
         setValue,
         formState: { errors, isSubmitting },
     } = useForm<ProductFormValuesType>({
+        resolver: zodResolver(productSchema), // Add this
+        mode: "onChange",
         defaultValues: {
             productName: "",
             description: "",
@@ -35,7 +39,7 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
             productMedia: [],
             featureMedia: [],
             category: "",
-            status: "",
+            status: 'inactive',
             taxProfile: "",
         },
     });
@@ -283,7 +287,7 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">₹</span>
                                 <input
-                                    type="number"
+                                    inputMode="decimal"
                                     step="0.01"
                                     min={0}
                                     className="my-1 border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white focus:border-blue-500 outline-none transition text-sm text-slate-800 placeholder:text-slate-400 pl-7"
@@ -296,21 +300,25 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
                         <div className="flex-1 min-w-[180px]">
                             <label className={"form_label"}>Discount (%)</label>
                             <input
-                                type="number"
+                                inputMode="decimal"
                                 min={0}
                                 max={100}
                                 className={"form_input"}
                                 placeholder="0"
                                 {...register("discountPercent", { min: 0, max: 100 })}
                             />
+                            {errors.discountPercent && <p className="text-red-500 text-xs mt-1">{errors.discountPercent.message}</p>}
                         </div>
                         <div className="flex-1 min-w-[180px]">
                             <label className={"form_label"}>Stock Quantity</label>
                             <input type="number" min={0} className={"form_input"} placeholder="0" {...register("stocks", { min: 0 })} />
+                            {errors.stocks && <p className="text-red-500 text-xs mt-1">{errors.stocks.message}</p>}
                         </div>
+
                         <div className="flex-1 min-w-[180px]">
                             <label className={"form_label"}>SKU</label>
                             <input type="text" className={"form_input"} placeholder="e.g. SHIRT-001" {...register("sku")} />
+                            {errors.sku && <p className="text-red-500 text-xs mt-1">{errors.sku.message}</p>}
                         </div>
 
                     </div>

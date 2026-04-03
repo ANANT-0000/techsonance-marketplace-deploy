@@ -3,13 +3,9 @@
 import { useForm } from "react-hook-form";
 import { ToggleLeft, ToggleRight } from "lucide-react";
 import { useState } from "react";
+import { ChangePasswordData } from "@/utils/validation";
 
-interface SecuritySettingsType {
-    current_password: string;
-    new_password: string;
-    confirm_password: string;
-}
-interface securitySettingsDataType {
+export interface securitySettingsDataType {
     two_factor_enabled: boolean;
     active_sessions: {
         id: number;
@@ -30,7 +26,7 @@ const securitySettingsData: securitySettingsDataType = {
     ]
 }
 export default function SecurityPage() {
-    const { register, getValues, setValue, watch, handleSubmit } = useForm<SecuritySettingsType>({
+    const { register, getValues, setValue, watch, handleSubmit } = useForm<ChangePasswordData>({
         defaultValues: {
             current_password: '',
             new_password: '',
@@ -38,12 +34,11 @@ export default function SecurityPage() {
         }
     })
     const [securitySettingsDataState, setSecuritySettingsDataState] = useState(securitySettingsData);
-    const onSubmit = (data: SecuritySettingsType) => {
+    const onSubmit = (data: ChangePasswordData) => {
         console.log(data);
     }
     const toggleTwoFactor = () => {
-        // Here you would typically make an API call to update the 2FA setting on the server
-        // For this example, we'll just toggle the value locally
+
         setSecuritySettingsDataState({
             ...securitySettingsDataState,
             two_factor_enabled: !securitySettingsDataState.two_factor_enabled
@@ -51,10 +46,8 @@ export default function SecurityPage() {
     }
     return (
         <>
-             
-           
             <main className={` mt-6   ml-70  `}>
-                
+
                 <form className="vendor_settings_content   mt-0  px-6 py-6 bg-white border-2 border-gray-300 rounded-lg" onSubmit={handleSubmit((data) => {
                     console.log(data);
                 })}>

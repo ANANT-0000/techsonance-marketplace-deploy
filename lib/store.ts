@@ -4,12 +4,22 @@ import { CartReducer } from './features/Cart';
 import { cartSidebarReducer } from './features/CartSidebar';
 import { menuReducer } from './features/menuBar';
 import { sidebarReducer } from './features/sidebar';
-import { authReducer } from './features/auth/authSlice';
+import { authReducer, getPreloadedAuthState } from './features/auth/authSlice';
 import { WishlistReducer } from './features/Wishlist';
 import { configureStore } from '@reduxjs/toolkit';
+import { get } from 'http';
 
 const isClient = typeof window !== 'undefined';
 
+type PartialRootState = {
+    auth: ReturnType<typeof authReducer>;
+    adminTheme?: ReturnType<typeof adminThemeReducer>;
+    sidebar?: ReturnType<typeof sidebarReducer>;
+    menu?: ReturnType<typeof menuReducer>;
+    cart?: ReturnType<typeof CartReducer>;
+    cartSidebar?: ReturnType<typeof cartSidebarReducer>;
+    wishlist?: ReturnType<typeof WishlistReducer>;
+};
 const localStorageMiddleware = (store: any) => (next: any) => (action: any) => {
     try {
         const result = next(action);
@@ -21,7 +31,7 @@ const localStorageMiddleware = (store: any) => (next: any) => (action: any) => {
                 localStorage.setItem('cart', JSON.stringify(cartState));
             }
         }
-        if (action.type.startsWith('auth/')) {
+        if (action.type === 'auth/loginSuccess' || action.type === 'auth/logOut') {
             const authState = store.getState().auth;
             localStorage.setItem('auth', JSON.stringify(authState));
         }
@@ -52,6 +62,7 @@ export const store = () => {
             cartSidebar: cartSidebarReducer,
             wishlist: WishlistReducer,
         },
+        preloadedState: getPreloadedAuthState(),
         middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(localStorageMiddleware),
     })
 }

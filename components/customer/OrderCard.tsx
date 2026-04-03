@@ -1,4 +1,5 @@
 ﻿import { PRODUCT_LIST } from "@/constants";
+import { formatCurrency } from "@/lib/utils";
 import { PRODUCT_LIST_TYPE, UserOrder } from "@/utils/Types";
 import { motion } from "motion/react";
 export const OrderCard = ({ order, isMobile }: { order: UserOrder, isMobile: boolean }) => {
@@ -30,7 +31,7 @@ export const OrderCard = ({ order, isMobile }: { order: UserOrder, isMobile: boo
                     </div>
                     <div className="text-gray-500">
                         <h3 className="mb-1">  TOTAL AMOUNT</h3>
-                        <p>₹{order.total_amount.toLocaleString()}</p>
+                        <p>₹{formatCurrency(order.total_amount)}</p>
                     </div>
                     <div className="text-gray-500">
                         <h3 className="mb-1">SHIP TO</h3>

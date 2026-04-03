@@ -30,12 +30,38 @@ export interface AuthType {
 
 
 const initialState: AuthType = {
-    isAuthenticated: isClient ? !!localStorage.getItem(ACCESS_TOKEN_KEY) : false,
+    isAuthenticated: false,
     user: getUserFromLocalStorage(),
     loading: false,
     error: null,
-    token: isClient ? sessionStorage.getItem(ACCESS_TOKEN_KEY) : null,
+    token: null,
     role: UserRole.Customer,
+};
+export const getPreloadedAuthState = (): { auth: AuthType } => {
+    if (!isClient) {
+        return {
+            auth: {
+                isAuthenticated: false,
+                user: null,
+                loading: false,
+                error: null,
+                token: null,
+                role: UserRole.Customer,
+            }
+        };
+    }
+    const isAuthRaw = localStorage.getItem(IS_AUTHENTICATED_KEY);
+    const parsedAuth = isAuthRaw ? JSON.parse(isAuthRaw) : null;
+    return {
+        auth: {
+            isAuthenticated: !!parsedAuth?.isAuthenticated,
+            user: getUserFromLocalStorage(),
+            loading: false,
+            error: null,
+            token: null,
+            role: parsedAuth?.role || UserRole.Customer,
+        }
+    };
 };
 
 const authSlice = createSlice({
@@ -45,6 +71,9 @@ const authSlice = createSlice({
         loginStart(state) {
             state.loading = true;
             state.error = null;
+        },
+        loginEnd(state) {
+            state.loading = false;
         },
         loginFailure(state, action) {
             state.loading = false;
@@ -131,6 +160,7 @@ const authSlice = createSlice({
 
 export const {
     loginStart,
+    loginEnd,
     loginFailure,
     loginSuccess,
     logOut,

@@ -12,9 +12,10 @@ export default function AdminLoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
-    const storedData = typeof window !== 'undefined' ? localStorage.getItem("auth") : null;
-    const auth = storedData ? JSON.parse(storedData) : null;
+
     useEffect(() => {
+        const storedData = typeof window !== 'undefined' ? localStorage.getItem("auth") : null;
+        const auth = storedData ? JSON.parse(storedData) : null;
         if (auth && auth?.isAuthenticated && auth?.user?.user_role
             === "admin") {
             setLoading(true);
@@ -22,7 +23,7 @@ export default function AdminLoginPage() {
             router.push(`/admin/${auth.user.id}`);
         }
         setLoading(false);
-    }, [auth, router]);
+    }, []);
     const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         dispatch(loginStart());

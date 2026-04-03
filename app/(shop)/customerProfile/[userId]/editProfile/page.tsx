@@ -1,23 +1,32 @@
 'use client';
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { ChevronLeftCircle } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronLeftCircle, AlertCircle } from "lucide-react";
 import { useAppSelector } from "@/hooks/reduxHooks";
-
+import { profileEditSchema, ProfileEditData } from "@/utils/validation";
 
 export const PROFILE_EDIT_FIELDS = [
-    { id: 'profile_picture', label: 'Profile Picture URL', type: 'text', placeholder: 'Enter image URL' },
+    { id: 'profile_picture', label: 'Profile Picture URL', type: 'text', placeholder: 'https://example.com/photo.jpg' },
     { id: 'first_name', label: 'First Name', type: 'text', placeholder: 'Enter your first name' },
     { id: 'last_name', label: 'Last Name', type: 'text', placeholder: 'Enter your last name' },
     { id: 'email', label: 'Email', type: 'email', placeholder: 'Enter your email' },
     { id: 'phone', label: 'Phone Number', type: 'text', placeholder: 'Enter your phone number' }
-];
+] as const;
 
 export default function EditProfilePage() {
     const { user } = useAppSelector((state) => state.auth);
-    const userId = user?.user_id ? user.user_id : '';
+    const userId = user?.user_id ?? '';
     const router = useRouter();
-    const { register, reset, handleSubmit } = useForm({
+
+    const {
+        register,
+        reset,
+        handleSubmit,
+        formState: { errors, isSubmitting }
+    } = useForm<ProfileEditData>({
+        resolver: zodResolver(profileEditSchema),
+        mode: "onBlur",
         defaultValues: {
             profile_picture: user?.profileImgUrl || "",
             first_name: user?.first_name || "",
@@ -25,51 +34,76 @@ export default function EditProfilePage() {
             email: user?.email || "",
             phone: user?.phone || ""
         }
-    })
-    return (
-        <>
-            <ChevronLeftCircle className="mb-4 block lg:hidden" size={36} onClick={() => router.back()} />
+    });
 
-            <form className="lg:ml-10 mx-auto pt-1 px-3 space-y-6 w-xs lg:w-lg" onSubmit={handleSubmit((data) => {
-                console.log(data);
-                reset();
-                router.push(`/customerProfile/${userId}`);
-            })}>
-                {
-                    PROFILE_EDIT_FIELDS.map((field) => (
-                        <div key={field.id} className="space-y-1">
-                            <label htmlFor={field.id} className="block text-sm font-medium text-gray-700">
-                                {field.label}
-                            </label>
-                            <input
-                                id={field.id}
-                                type={field.type}
-                                placeholder={field.placeholder}
-                                {...register(field.id, { required: true })}
-                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
-                            />
-                        </div>
-                    ))
-                }
-                <div className="flex gap-4">
+    const onSubmit = (data: ProfileEditData) => {
+        console.log("Updated Profile Data:", data);
+        // Here you would call your update API
+        reset();
+        router.push(`/customerProfile/${userId}`);
+    };
+
+    const handleCancel = () => {
+        reset();
+        router.push(`/customerProfile/${userId}`);
+    };
+
+    return (
+        <div className="container mx-auto p-4 max-w-2xl">
+            <ChevronLeftCircle
+                className="mb-4 block lg:hidden cursor-pointer text-gray-600 hover:text-gray-900"
+                size={36}
+                onClick={() => router.back()}
+            />
+
+            <form
+                className="lg:ml-10 pt-1 space-y-5"
+                onSubmit={handleSubmit(onSubmit)}
+                noValidate
+            >
+                <h1 className="text-xl font-bold text-gray-800 mb-2">Edit Profile</h1>
+
+                {PROFILE_EDIT_FIELDS.map((field) => (
+                    <div key={field.id} className="flex flex-col gap-1.5">
+                        <label htmlFor={field.id} className="text-sm font-semibold text-gray-700">
+                            {field.label}
+                        </label>
+                        <input
+                            id={field.id}
+                            type={field.type}
+                            placeholder={field.placeholder}
+                            {...register(field.id as keyof ProfileEditData)}
+                            className={`w-full border rounded-lg shadow-sm sm:text-sm p-2.5 transition-all outline-none focus:ring-2 ${errors[field.id as keyof ProfileEditData]
+                                ? "border-red-400 focus:ring-red-100"
+                                : "border-gray-300 focus:ring-blue-100 focus:border-blue-500"
+                                }`}
+                        />
+                        {errors[field.id as keyof ProfileEditData] && (
+                            <p className="text-red-500 text-xs flex items-center gap-1 font-medium mt-1">
+                                <AlertCircle size={12} />
+                                {errors[field.id as keyof ProfileEditData]?.message}
+                            </p>
+                        )}
+                    </div>
+                ))}
+
+                <div className="flex gap-4 pt-4">
                     <button
                         type="submit"
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        disabled={isSubmitting}
+                        className="px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
                     >
-                        Save Changes
+                        {isSubmitting ? "Saving..." : "Save Changes"}
                     </button>
                     <button
                         type="button"
-                        onClick={() => {
-                            reset();
-                            router.push(`/customerProfile/${userId}`);
-                        }}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                        onClick={handleCancel}
+                        className="px-6 py-2.5 bg-gray-100 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-200 transition-colors"
                     >
                         Cancel
                     </button>
                 </div>
             </form>
-        </>
-    )
+        </div>
+    );
 }

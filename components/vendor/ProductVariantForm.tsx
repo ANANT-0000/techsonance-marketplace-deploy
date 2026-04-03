@@ -6,6 +6,7 @@ import { ProductFormValuesType, ProductImageType } from "@/utils/Types";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useRouter } from "next/navigation";
 import { DynamicIcon } from "lucide-react/dynamic";
+import { createProductVariant } from "@/utils/vendorApiClient";
 type VariantFormValuesType = {
     variantName: string;
     attributes: { name: string; value: string }[];
@@ -117,16 +118,9 @@ export const ProductVariantForm = ({ vendorId, productId, existVariant }: { vend
         productFiles.forEach((file) => formData.append('product', file));
         featureFiles.forEach((file) => formData.append('product_spec', file));
         formData.append('variant_data', JSON.stringify(payload));
-
-        try {
-            const response = await fetch(`${BASE_API_URL}product-variant`, {
-                method: "POST",
-                body: formData,
-            });
-            if (!response.ok) throw new Error("Failed to create variant");
+        const result = await createProductVariant(formData, vendorId, productId);
+        if (result.status === 201) {
             router.push(`/vendor/${vendorId}/products`);
-        } catch (error) {
-            console.error("Error creating product variant:", error);
         }
     };
     return (

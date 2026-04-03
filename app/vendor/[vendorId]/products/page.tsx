@@ -3,12 +3,11 @@ import { Delete, Edit, Plus } from "lucide-react";
 import { Pagination } from "@/components/common/Pagination";
 import { fetchVendorProducts, fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { searchImgDark } from "@/constants";
 import { ProductType } from "@/utils/Types";
 import { DeleteBtn } from "@/components/vendor/DeleteBtn";
 import { DynamicIcon } from "lucide-react/dynamic";
 
-export const PRODUCT_TABLE_HEAD = ["PRODUCT NAME", "SKU", "STOCK", "PRICE", "STATUS", "ACTION", "VARIANT"];
+export const PRODUCT_TABLE_HEAD = ['', "PRODUCT NAME", "VARIANT", "SKU", "STOCK", "PRICE", "STATUS", "ACTION"];
 export default async function Products({ params }: { params: Promise<{ vendorId: string }> }) {
     const { vendorId } = await params;
     const categoryOptions = await fetchVendorsProductsCategory(vendorId).then((res) => {
@@ -23,7 +22,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
         return [];
     });
     const productList: ProductType[] = getProducts || [];
-    console.log(productList[2].variants);
+    console.log("productList[2].variants", productList[2]?.variants?.length);
     let count = 1
     const pageSize = 5;
     const totalPages = Math.ceil(productList.length / pageSize);
@@ -78,14 +77,13 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                     <TableHeader className="w-full " >
                         <TableRow className="text-left bg-gray-200 ">
                             <TableHead className="p-4 border-b  text-center  border-gray-400"><input className="w-4  h-4 text-center" type="checkbox" /></TableHead>
-                            <TableHead className="p-4 border-b   border-gray-400"></TableHead>
-                            <TableHead className="p-4 border-b   border-gray-400">PRODUCT NAME</TableHead>
-                            <TableHead className="p-4 border-b   border-gray-400">SKU</TableHead>
-                            <TableHead className="p-4 border-b   border-gray-400">STOCK</TableHead>
-                            <TableHead className="p-4 border-b   border-gray-400">PRICE</TableHead>
-                            <TableHead className="p-4 border-b   border-gray-400">STATUS</TableHead>
-                            <TableHead className="p-4 border-b   border-gray-400">ACTION</TableHead>
-                            <TableHead className="p-4 border-b   border-gray-400">VARIANT</TableHead>
+                            {
+                                PRODUCT_TABLE_HEAD.map((head, index) => (
+                                    <TableHead key={index} className={`p-4 border-b  text-center  border-gray-400 ${index === 1 ? 'text-start' : ''} `}>
+                                        {head}
+                                    </TableHead>
+                                ))
+                            }
 
                         </TableRow>
                     </TableHeader>
@@ -93,10 +91,28 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                         {
                             productList.map((item, index) => (
                                 <TableRow key={index} className={`hover:bg-gray-100 ${item.id === productList[pageSize - 1]?.id || item.id === productList[productList.length - 1]?.id ? 'border-b-0' : 'border-b border-gray-400'} border-b border-gray-400   `}>
-                                    <TableCell className={`p-4   `}> <input type="checkbox" className="w-4 h-4" /></TableCell>
-                                    <TableCell className={` max-w-6 min-w-4  `}> <img className=" min-h-5   rounded-2xl" src={item.images[0].image_url} alt="product image" /> </TableCell>
+                                    <TableCell className={`p-4   `}> <input type="checkbox" className="w-6 h-6" /></TableCell>
+                                    <TableCell className={` max-w-6 min-w-4 pr-4  `}> <img className=" min-h-8 min-w-8   rounded-2xl" src={item.images[0].image_url} alt="product image" /> </TableCell>
                                     <TableCell className={`p-4  line-clamp-1 whitespace-normal min-w-[300px] max-w-[500px] text-start  `}>
                                         {item.name.trimStart()}
+                                    </TableCell>
+                                    <TableCell >
+                                        {item.variants?.length > 0 ? (
+                                            <div className="flex flex-col items-center border p-2 gap-2   border-emerald-600 border-b-3  hover:border-b-1 hover:border-emerald-800 rounded-lg">
+                                                <Link href={`/vendor/${vendorId}/products/${item.id}/variants`} className="flex gap-2 text-emerald-600 hover:text-emerald-800 items-center justify-center" title="View Variants">
+                                                    {item.variants?.length} Variants <DynamicIcon name="tag" size={18} />
+                                                </Link>
+                                            </div>
+                                        ) : (
+                                            <Link
+                                                href={`/vendor/${vendorId}/products/variantForm/${item.id}`}
+                                                className="flex gap-2 text-emerald-600 hover:text-emerald-800 items-center justify-center"
+                                                title="Add Variant">
+                                                Create Variant    <DynamicIcon name="plus" size={18} />
+                                            </Link>
+                                        )
+                                        }
+
                                     </TableCell>
                                     <TableCell className={`p-4 text-start `}>
                                         {/* {item.variants.sku ? item.variants.sku : 'No'} */}
@@ -118,31 +134,15 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                                         }
                                     </TableCell>
                                     <TableCell className={`p-4 text-start flex gap-4  items-center  justify-around  `}>
-                                        <Link href={`/vendor/${vendorId}/products/productUpdateForm/${item.id}`} className="flex gap-2  text-blue-600 hover:text-blue-800" title="Edit Product">
+                                        <Link href={`/vendor/${vendorId}/products/productUpdateForm/${item.id}`} className="flex gap-2 border border-blue-600
+                                        border-b-3 hover:border-b hover:border-blue-800 text-blue-600 hover:text-blue-800 py-2 px-3 rounded-lg" title="Edit Product">
                                             Edit<Edit />
                                         </Link>
-                                        <DeleteBtn id={item.id} />
+                                        <DeleteBtn id={item.id} toDelete="PRODUCT" style="flex gap-2 border border-red-600
+                                        border-b-3 hover:border-b hover:border-red-800 text-red-600 hover:text-red-800 py-2 px-3 rounded-lg" />
 
                                     </TableCell>
-                                    <TableCell >
-                                        <Link
-                                            href={`products/variantForm/${item.id}`}
-                                            className="flex gap-2 text-emerald-600 hover:text-emerald-800 items-center justify-center"
-                                            title="Add Variant"
-                                        >{
-                                                item.has_variants ? (
-                                                    <p >
-                                                        {item?.variants.length > 0 ? `${item?.variants.length} Variants` : 'Create Variant'}
-                                                    </p>
-                                                ) : (
-                                                    <p className="flex gap-2 items-center">
-                                                        Create Variant    <Plus size={18} />
-                                                    </p>
-                                                )
-                                            }
 
-                                        </Link>
-                                    </TableCell>
                                 </TableRow>
                             ))
                         }
@@ -154,7 +154,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                 <span className="flex justify-end">
                     {/* <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" /> */}
                 </span>
-            </main>
+            </main >
         </>
     )
 }

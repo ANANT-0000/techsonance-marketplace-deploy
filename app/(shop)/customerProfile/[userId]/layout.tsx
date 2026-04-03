@@ -12,7 +12,6 @@ export default function UserProfileLayout({ children }: { children: React.ReactN
         <main className={`  xl:pt-10 pb-8   xl:px-32   lg:px-8 md:px-4 px-2 pt-1    min-h-[80dvh] flex lg:flex-row flex-col`}>
             <ProfileSidebar />
             {children}
-            <TabNavBar />
         </main>
         // </ProtectedRoute>
     );

@@ -5,6 +5,7 @@ import { VENDOR_DASHBOARD_STATS, VENDOR_ORDER_DATA } from "@/constants/vendor";
 import { useState } from "react";
 import Link from "next/link";
 import './index.css';
+import { formatCurrency, formatNumber,   } from "@/lib/utils";
 const tableHeaders = ["Order ID", "Customer Name", "Status", "Amount", "Action"];
 export default function DashboardPage() {
 
@@ -22,17 +23,17 @@ export default function DashboardPage() {
                 <div className="stats justify-evenly">
                     <div className="stat">
                         <div className="stat_title">Total Revenue</div>
-                        <div className="stat_value">₹{VENDOR_DASHBOARD_STATS.totalRevenue.toLocaleString()}</div>
+                        <div className="stat_value">₹{formatCurrency(VENDOR_DASHBOARD_STATS.totalRevenue)}</div>
                         <div className="stat_desc text-green-600">↗︎ {VENDOR_DASHBOARD_STATS.revenueGrowth}% v last month</div>
                     </div>
                     <div className="stat">
                         <div className="stat_title">Pending Orders</div>
-                        <div className="stat_value">{VENDOR_DASHBOARD_STATS.pendingOrder}</div>
+                        <div className="stat_value">{formatNumber(VENDOR_DASHBOARD_STATS.pendingOrder)}</div>
                         <div className="stat_desc">Requires immediate shipping</div>
                     </div>
                     <div className="stat">
                         <div className="stat_title">Active Products</div>
-                        <div className="stat_value">{VENDOR_DASHBOARD_STATS.totalProducts}</div>
+                        <div className="stat_value">{formatNumber(VENDOR_DASHBOARD_STATS.totalProducts)}</div>
                         <div className="stat_desc">{VENDOR_DASHBOARD_STATS.lowStock} Products low on stock</div>
                     </div>
                 </div>

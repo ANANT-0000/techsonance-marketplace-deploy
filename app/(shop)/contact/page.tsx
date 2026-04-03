@@ -1,5 +1,7 @@
 'use client';
 import { ContactList, ContactPageContent } from "@/constants/customer";
+import { contactSchema } from "@/utils/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { id } from "date-fns/locale";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { useState } from "react";
@@ -34,11 +36,13 @@ export const CONTACT_FORM_FIELDS = [
 ]
 export default function Contact() {
     const { register, reset, handleSubmit, formState: { errors } } = useForm({
+        resolver: zodResolver(contactSchema),
+        mode: "onChange",
         defaultValues: {
-            name: '',
-            email: '',
-            phone: '',
-            message: ''
+            name: null,
+            email: null,
+            phone: null,
+            message: null
         }
     });
     const [copied, setCopied] = useState(false);

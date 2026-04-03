@@ -12,6 +12,7 @@ import { ProductReview } from '@/components/customer/ProductReview';
 import { ProductSpecifications } from '@/components/customer/ProductSpec';
 import { ProductType } from '@/utils/Types';
 import { PRODUCT_LIST } from '@/constants';
+import { formatCurrency } from '@/lib/utils';
 
 const brandOffer = [
     { id: '1', title: '1 year warranty', icon: 'shopping-bag' },
@@ -64,8 +65,8 @@ export default function ProductPage() {
                     </motion.div>
                     <motion.div variants={fadeInUp} className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
                         <div className="flex items-end gap-3">
-                            <span className='text-4xl font-black text-gray-900'>₹{product.price.toLocaleString()}</span>
-                            {product.discount > 0 && (<><span className='text-lg line-through text-gray-400 mb-1'>₹{Math.floor(product.price / (1 - product.discount / 100)).toLocaleString()}</span><span className='text-lg font-bold text-green-600 mb-1'>{Math.round(product.discount)}% OFF</span></>)}
+                            <span className='text-4xl font-black text-gray-900'>₹{formatCurrency(product?.price)}</span>
+                            {product.discount > 0 && (<><span className='text-lg line-through text-gray-400 mb-1'>₹{formatCurrency(Math.floor(product.price / (1 - product.discount / 100)))}</span><span className='text-lg font-bold text-green-600 mb-1'>{Math.round(product.discount)}% OFF</span></>)}
                         </div>
                         <p className='text-xs text-gray-500 mt-1 font-medium uppercase tracking-wide'>Inclusive of all taxes</p>
                     </motion.div>

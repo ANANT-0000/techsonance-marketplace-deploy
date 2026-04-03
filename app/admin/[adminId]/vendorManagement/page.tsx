@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ADMIN_BASE_URL } from "@/constants/constants";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { formatCurrency } from "@/lib/utils";
 export const FILTER_STATUS_OPTIONS = [
     { value: 'all', label: 'All Statuses' },
     { value: 'Pending', label: 'Pending' },
@@ -115,7 +116,7 @@ export default function VendorManagementPage() {
                                             {vendor.status}
                                         </div>
                                     </td>
-                                    <td className="p-4 border-gray-400">₹ {vendor.revenue.toLocaleString()}</td>
+                                    <td className="p-4 border-gray-400">₹ {formatCurrency(vendor.revenue)}</td>
                                     <td className="p-4 items-center">
                                         <Link href={`/admin/vendorManagement/vendorDetails/${vendor.id}`} className="text-blue-600 hover:underline">View Details</Link>
                                         <button className="text-red-500 hover:underline mx-4 my-0 h-7 w-7 items-center">delete</button>

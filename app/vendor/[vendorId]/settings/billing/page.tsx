@@ -1,197 +1,166 @@
 'use client';
 import { useForm } from 'react-hook-form';
-import { Dot, Edit, Landmark } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Dot, Edit, Landmark, AlertCircle, UploadCloud, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { billingSchema, BillingFormData } from '@/utils/validation';
 
-
-interface InvoiceSettings {
-    gstin: string;              // GSTIN number
-    pan: string;                // PAN number
-    businessName: string;       // Registered business name
-    prefix: string;             // Invoice prefix (e.g., "INV")
-    year: number;               // Invoice year (e.g., 2026)
-    startSequence: number;      // Starting sequence number
-    preview: string | null;            // Example preview (e.g., "INV-2026-00001")
-    signatureUrl?: string | undefined;      // Optional signature image path
-    termsAndNotes?: string;     // Optional invoice notes
-}
-interface BankAccount {
-    bankName: string;
-    accountNumber: string;
-    ifsc: string;
-    primary: boolean;
-}
-const invoiceSettings: InvoiceSettings = { gstin: "24ABCDE1234F1Z5", pan: "ABCDE1234F", businessName: "TechWorld Innovations Pvt Ltd", prefix: "INV", year: 2026, startSequence: 467, preview: "INV-2026-00001", signatureUrl: undefined, termsAndNotes: "Thank you for your business. Goods once sold will not be taken back. Authorized Signature" };
-const bankAccounts: BankAccount[] = [{ bankName: "HDFC Bank", accountNumber: "XXXX-XXXX-8821", ifsc: "HDFC0001234", primary: true }];
+const DEFAULT_SETTINGS = {
+    gstin: "24ABCDE1234F1Z5",
+    pan: "ABCDE1234F",
+    businessName: "TechWorld Innovations Pvt Ltd",
+    prefix: "INV",
+    year: 2026,
+    startSequence: 467,
+    termsAndNotes: "Thank you for your business..."
+};
 
 export default function BillingAndBankingPage() {
-    const { register, getValues, setValue, watch, handleSubmit } = useForm({
-        defaultValues: invoiceSettings
-    })
-    const [signatureUrl, setSignatureUrl] = useState<string | undefined>();
-        ;
-    useEffect(() => {
-        if (signatureUrl && signatureUrl.length > 0) {
-            const file = signatureUrl[0];
-            // Suppose 'file' comes from an <input type="file" />
-            if (file instanceof Blob) {
-                const objectUrl = URL.createObjectURL(file);
-                setSignatureUrl(objectUrl);
-            } else {
-                console.error("Invalid file provided to createObjectURL");
-            }
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+    const {
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+        formState: { errors, isSubmitting }
+    } = useForm<BillingFormData>({
+        resolver: zodResolver(billingSchema),
+        mode: "onChange",
+        defaultValues: DEFAULT_SETTINGS
+    });
 
+    const watchedPrefix = watch("prefix");
+    const watchedYear = watch("year");
+    const watchedSequence = watch("startSequence");
+
+    // Handle Signature Upload
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setPreviewUrl(url);
+            setValue("signatureUrl", url); // In real app, upload to S3/Cloudinary first
         }
-    }, [signatureUrl]);
+    };
+
+    const onSubmit = (data: BillingFormData) => {
+        console.log("Saving Billing Data:", data);
+    };
+
     return (
-        <>
+        <main className="max-w-5xl mx-auto py-10 px-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
 
+                {/* --- TAX IDENTITY --- */}
+                <section className="p-6 border border-gray-200 rounded-2xl bg-white shadow-sm">
+                    <header className="flex justify-between items-center mb-6">
+                        <div>
+                            <h1 className="text-xl font-bold text-gray-800">Tax Identity</h1>
+                            <p className="text-sm text-gray-500">Manage your GSTIN and PAN details.</p>
+                        </div>
+                        <div className="bg-green-50 border border-green-200 rounded-full px-4 py-1 text-xs font-bold text-green-600">
+                            Verified Status: Active
+                        </div>
+                    </header>
 
-            <main className={`mt-6 `}>
-               
-                <form className="vendor_settings_content ml-70   " onSubmit={handleSubmit((data) => {
-                    console.log(data);
-                })}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-semibold">GSTIN Number</label>
+                            <input
+                                {...register("gstin")}
+                                className={`form_input uppercase ${errors.gstin ? 'border-red-500' : ''}`}
+                            />
+                            {errors.gstin && <p className="text-red-500 text-xs flex items-center gap-1"><AlertCircle size={12} />{errors.gstin.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-semibold">PAN Number</label>
+                            <input
+                                {...register("pan")}
+                                className={`form_input uppercase ${errors.pan ? 'border-red-500' : ''}`}
+                            />
+                            {errors.pan && <p className="text-red-500 text-xs flex items-center gap-1"><AlertCircle size={12} />{errors.pan.message}</p>}
+                        </div>
+                    </div>
 
-                    <section className='py-6 px-6 border-2 border-gray-200   gap-6 rounded-2xl mb-6'>
-                        <header className='flex justify-between items-center'>
-                            <span>
-                                <h1 className='text-2xl font-bold'>Tax Identity</h1>
-                                <p className='text-sm text-gray-500'>Manage your GSTIN and PAN details.</p>
-                            </span>
-                            {invoiceSettings.gstin && (
-                                <div className='bg-green-50 border-2 rounded-2xl font-bold border-green-500 text-green-500 py-2 px-6'>
-                                    Active (Regular)
-                                </div>
-                            )}
-                        </header>
-                        <span className='flex gap-12 my-6'>
-                            <div className='flex-1 flex flex-col '>
-                                <label htmlFor="gstin">GSTIN Number</label>
-                                <input type="text" defaultValue={watch("gstin")} id="gstin" className='form_input mt-2' {...register("gstin")} />
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-semibold">Registered Business Name</label>
+                        <input {...register("businessName")} className="form_input" />
+                        {errors.businessName && <p className="text-red-500 text-xs">{errors.businessName.message}</p>}
+                    </div>
+                </section>
+
+                {/* --- INVOICE CUSTOMIZATION --- */}
+                <section className="p-6 border border-gray-200 rounded-2xl bg-white shadow-sm">
+                    <h1 className="text-xl font-bold text-gray-800 mb-6">Invoice Customization</h1>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                            <label className="text-sm font-semibold block">Invoice Prefix & Year</label>
+                            <div className="flex">
+                                <input {...register("prefix")} className="form_input rounded-r-none border-r-0 w-24 text-center uppercase" />
+                                <div className="bg-gray-100 border-y border-gray-300 flex items-center px-3 text-gray-400">-</div>
+                                <select {...register("year")} className="form_input rounded-l-none">
+                                    {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+                                </select>
                             </div>
-                            <div className='flex-1 flex flex-col  '>
-                                <label htmlFor="pan">PAN Number</label>
-                                <input type="text" defaultValue={watch("pan")} id="pan" className='form_input mt-2' {...register("pan")} />
-                            </div>
-                        </span>
-
-                        <div className='flex flex-col  '>
-                            <label htmlFor="businessName">Registered Business Name</label>
-                            <input type="text" defaultValue={watch("businessName")} id="businessName" className='form_input mt-2' {...register("businessName")} />
+                            <p className="text-xs text-gray-400 font-medium italic">
+                                Preview format: <span className="text-blue-600 font-bold">{watchedPrefix}-{watchedYear}-{String(watchedSequence).padStart(5, '0')}</span>
+                            </p>
                         </div>
 
+                        <div className="space-y-4">
+                            <label className="text-sm font-semibold block">Starting Sequence</label>
+                            <input type="number" {...register("startSequence")} className="form_input" />
+                        </div>
+                    </div>
 
-                    </section>
-                    <section className='py-6 px-6 border-2 border-gray-200   gap-6 rounded-2xl my-6 '>
-                        <header className='flex justify-between items-center'>
-
-                            <h1 className='text-2xl font-bold'>Invoice Customization</h1>
-                        </header>
-
-                        <span className='flex justify-between gap-12'>
-
-
-                            <div className='my-6 flex flex-col gap-2 flex-1'>
-                                <label className='font-bold' htmlFor="invoice prefix">Invoice Prefix</label>
-                                <span className='flex'>
-                                    <input type="text" defaultValue={watch("prefix")} id="invoice prefix" className='form_input   rounded-r-none pl-4 ' {...register("prefix")} />
-                                    <span className='form_input text-2xl rounded-none text-gray-500 border-2 border-gray-300 px-2 py-2    text-center w-24'>-</span>
-                                    <select id="" className='form_input  rounded-l-none  w-full' {...register("year")}  >
-                                        <option selected={watch("year") === 2023}>2023</option>
-                                        <option selected={watch("year") === 2024}>2024</option>
-                                        <option selected={watch("year") === 2025}>2025</option>
-                                        <option selected={watch("year") === 2026}>2026</option>
-                                    </select>
-                                </span>
-                                <p className='text-gray-500'>Preview: {watch("prefix")}-{watch("year")}</p>
-                            </div>
-                            <div className='my-6 flex flex-col gap-2 flex-1 w-full '>
-                                <label className='font-bold' htmlFor="start sequence">Starting Sequence Number</label>
-                                <input type="number" defaultValue={watch("startSequence")} id="start sequence" className='form_input mt-3 w-full ' {...register("startSequence")} />
-                            </div>
-                        </span>
-                        <div className='flex flex-col gap-2 my-6 '>
-
-                            <h1 className='mb-6'>Authorized Signature</h1>
-                            <div className='flex items-start gap-6'>
-                                {signatureUrl ?
-
-                                    <img src={signatureUrl} alt="Authorized Signature" className='min-w-24 max-w-48 max-h-32 min-h-36 object-cover rounded-2xl' />
-                                    : <label htmlFor="Authorized Signature" className='w-28 h-20  font-medium text-gray-500 min-w-24 max-w-48 max-h-32 min-h-18  border-2 border-gray-300 rounded-2xl text-center p-6'>Signature
-                                        <input type="file" id="Authorized Signature" className='form_input mt-2 hidden  ' onChange={(e) => setSignatureUrl(e.target.files)} />
+                    {/* Signature Upload */}
+                    <div className="mt-8 pt-8 border-t border-gray-100">
+                        <label className="text-sm font-semibold block mb-4">Authorized Signature</label>
+                        <div className="flex items-center gap-6">
+                            <div className="relative w-48 h-24 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-gray-50 overflow-hidden group">
+                                {previewUrl ? (
+                                    <>
+                                        <img src={previewUrl} className="w-full h-full object-contain p-2" alt="Signature" />
+                                        <button
+                                            type="button"
+                                            onClick={() => { setPreviewUrl(null); setValue("signatureUrl", ""); }}
+                                            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                                        >
+                                            <Trash2 className="text-white" />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <label className="cursor-pointer flex flex-col items-center gap-1">
+                                        <UploadCloud size={24} className="text-gray-400" />
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase">Upload PNG</span>
+                                        <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                                     </label>
-                                }
-                                <div>
-
-
-                                    {
-                                        signatureUrl ?
-                                            <>
-                                                <button className='py-2 px-4 border-2 border-red-300 b g-red-100 text-red-700 rounded-lg ' onClick={() => { setSignatureUrl(undefined); setValue("signatureUrl", undefined) }}>Remove Signature</button>
-                                            </> :
-                                            <>
-                                                <p className='text-sm text-gray-500 mt-2'>Upload an image of the authorized signature to be displayed on your invoices.</p>
-                                            </>
-                                    }
-                                </div>
-
+                                )}
                             </div>
+                            <p className="text-xs text-gray-500 max-w-xs">
+                                Upload a transparent PNG of your signature. This will appear at the bottom of every generated invoice.
+                            </p>
                         </div>
-                        <div className='my-6 flex flex-col gap-2 '>
-                            <label htmlFor="terms and notes" className='font-bold'>Invoice Terms & Notes</label>
-                            <textarea id="terms and notes" rows={4} className='form_input mt-2 w-full ' {...register("termsAndNotes")}>{watch("termsAndNotes")}</textarea>
+                    </div>
 
-                        </div>
-                        <div className='align-right mt-6 flex justify-end'>
-                            <input type="submit" defaultValue={'Save Changes'} className='py-2 px-4 bg-blue-500 text-white rounded-lg hover:border-blue-300' />
-                        </div>
-                    </section>
-                    <section className=' border-2 border-gray-300 rounded-2xl p-6 my-6 '>
+                    <div className="mt-8">
+                        <label className="text-sm font-semibold block mb-2">Invoice Terms & Notes</label>
+                        <textarea {...register("termsAndNotes")} rows={3} className="form_input w-full" placeholder="Default terms and conditions..." />
+                    </div>
 
-                        <header className='flex justify-between items-center mb-6'>
-                            <span>
-                                <h1 className='text-2xl font-bold'>Bank Accounts</h1>
-                                <p className='text-sm text-gray-500'>Manage your bank accounts for payouts.</p>
-                            </span>
-                            <button className='py-2 px-4  bg-blue-500 text-white rounded-lg' >+ Add Account</button>
-                        </header>
-                        {
-                            bankAccounts.map((account, index) => (
-
-                                <div key={index} className={`flex justify-between items-center  border-2  ${account.primary ? 'border-blue-500 ' : 'border-gray-300'} px-6 py-6 mb-4 rounded-lg`}>
-                                    <span className='flex items-center gap-2'>
-
-                                        <span className='p-2 border-2 border-blue-300 bg-blue-50 rounded-lg inline-block'>
-
-                                            <Landmark className='text-blue-500' />
-                                        </span>
-
-                                        <div className='mx-1'>
-                                            <h2 className="text-xl font-bold ">{account.bankName}</h2>
-                                            <p className="flex text-gray-500"> {account.accountNumber} <Dot />
-                                                IFSC: {account.ifsc}</p>
-                                        </div>
-                                    </span>
-                                    <span className='flex items-center align-middle gap-4'>
-
-
-                                        {account.primary && (
-                                            <p className="py-2 px-4 rounded-xl text-sm font-medium text-green-600  border-green-500 bg-green-100  inline-block">Primary Account</p>
-                                        )}
-
-                                        <button className=" "><Edit /> </button>
-                                    </span>
-                                </div>
-                            )
-                            )
-                        }
-                    </section>
-
-
-                </form>
-            </main>
-        </>
-    )
+                    <div className="mt-6 flex justify-end">
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50"
+                        >
+                            {isSubmitting ? "Saving..." : "Save Configuration"}
+                        </button>
+                    </div>
+                </section>
+            </form>
+        </main>
+    );
 }

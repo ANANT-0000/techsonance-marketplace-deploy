@@ -48,9 +48,10 @@ export function CartSidebar() {
 
   useEffect(() => {
     if (isCartOpen && isMobile) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         dispatch(toggleCartSidebar('close'));
-      }, 2500)
+      }, 2500);
+      return () => clearTimeout(timeoutId);
     }
   }, [isCartOpen, isMobile])
 

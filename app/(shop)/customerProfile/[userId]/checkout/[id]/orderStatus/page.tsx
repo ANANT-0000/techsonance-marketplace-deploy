@@ -4,6 +4,7 @@ import { Check, X, Copy, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { mockFailedStatus, mockSuccessStatus } from "@/constants";
+import { formatCurrency } from "@/lib/utils";
 
 
 
@@ -117,7 +118,7 @@ export default function OrderStatusPage() {
                                             <p className="text-sm text-gray-500">Color: {item.color}</p>
                                             <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                                         </div>
-                                        <div className="font-semibold">₹{item.price.toLocaleString()}</div>
+                                        <div className="font-semibold">₹{formatCurrency(item.price)}</div>
                                     </div>
                                 ))}
                             </div>
@@ -129,11 +130,11 @@ export default function OrderStatusPage() {
                                 <div className="space-y-3 mb-6">
                                     <div className="flex justify-between text-gray-700">
                                         <span>Subtotal</span>
-                                        <span>₹{orderSuccess?.subtotal?.toLocaleString()}</span>
+                                        <span>₹{formatCurrency(orderSuccess?.subtotal)}</span>
                                     </div>
                                     <div className="flex justify-between text-gray-700">
                                         <span>Discount</span>
-                                        <span className="text-green-600">- ₹{orderSuccess?.discount?.toLocaleString()}</span>
+                                        <span className="text-green-600">- ₹{formatCurrency(orderSuccess?.discount)}</span>
                                     </div>
                                     <div className="flex justify-between text-gray-700">
                                         <span>Delivery</span>
@@ -143,7 +144,7 @@ export default function OrderStatusPage() {
                                 <div className="border-t pt-4 mb-6">
                                     <div className="flex justify-between items-center text-xl font-bold">
                                         <span>Total</span>
-                                        <span>₹{orderSuccess?.total?.toLocaleString()}</span>
+                                        <span>₹{formatCurrency(orderSuccess?.total)}</span>
                                     </div>
                                 </div>
                                 <Link href="/" className="block w-full bg-black text-white text-center font-semibold py-3 rounded-lg hover:bg-gray-800 transition-colors">
@@ -184,7 +185,7 @@ export default function OrderStatusPage() {
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-gray-700">Attempted Amount</span>
-                            <span className="font-semibold">Rs. {orderFailed?.attemptedAmount?.toLocaleString()}</span>
+                            <span className="font-semibold">Rs. {formatCurrency(orderFailed?.attemptedAmount)}</span>
                         </div>
                     </div>
                 </div>
