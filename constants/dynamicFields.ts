@@ -89,3 +89,8 @@ export const AUTH_LOG_FILTERS = [
     { id: 'pending', label: 'Pending' },
     { id: 'suspended', label: 'Suspended' },
 ];
+export const PRODUCT_FORM_PRICING_FIELDS = [
+    { name: "basePrice", label: "Base Price (₹)", type: "number", placeholder: "0.00" },
+    { name: "discountPercent", label: "Discount (%)", type: "number", placeholder: "0" },
+    { name: "stocks", label: "Stock Quantity", type: "number", placeholder: "0" },
+];

@@ -29,23 +29,6 @@ export function CartSidebar() {
       return { ...product, quantity: item?.quantity || 0 };
     })
     : [];
-
-  // useEffect(() => {
-  //   if (!sidebarRef.current) return;
-  //   const handleClickOutside = (e: MouseEvent) => {
-  //     if (!sidebarRef.current?.contains(e.target as Node)) {
-  //       closeSidebar();
-  //     }
-  //   };
-
-  //   document.addEventListener('mousedown', handleClickOutside);
-
-  //   return () => {
-  //     document.removeEventListener('mousedown', handleClickOutside);
-
-  //   };
-  // }, [isCartOpen]);
-
   useEffect(() => {
     if (isCartOpen && isMobile) {
       const timeoutId = setTimeout(() => {

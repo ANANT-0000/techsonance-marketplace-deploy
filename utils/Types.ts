@@ -558,3 +558,18 @@ export interface CountryComplianceType {
   country_name: string;
   fields: ComplianceFieldType[];
 }
+
+
+export type FileOrImage = File | ProductImageType;
+
+export type VariantFormValuesType = {
+  variantName: string;
+  attributes: { name: string; value: string }[];
+  basePrice: number | null;
+  discountPercent: number | null;
+  stocks: number | null;
+  sku: string;
+  variantMediaMain: FileOrImage[];
+  variantMediaGallery: FileOrImage[];
+  status: string;
+};

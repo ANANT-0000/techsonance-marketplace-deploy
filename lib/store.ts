@@ -7,29 +7,34 @@ import { sidebarReducer } from './features/sidebar';
 import { authReducer, getPreloadedAuthState } from './features/auth/authSlice';
 import { WishlistReducer } from './features/Wishlist';
 import { configureStore } from '@reduxjs/toolkit';
-import { get } from 'http';
+import { set } from 'zod';
 
 const isClient = typeof window !== 'undefined';
 
-type PartialRootState = {
-    auth: ReturnType<typeof authReducer>;
-    adminTheme?: ReturnType<typeof adminThemeReducer>;
-    sidebar?: ReturnType<typeof sidebarReducer>;
-    menu?: ReturnType<typeof menuReducer>;
-    cart?: ReturnType<typeof CartReducer>;
-    cartSidebar?: ReturnType<typeof cartSidebarReducer>;
-    wishlist?: ReturnType<typeof WishlistReducer>;
-};
+// type PartialRootState = {
+//     auth: ReturnType<typeof authReducer>;
+//     adminTheme?: ReturnType<typeof adminThemeReducer>;
+//     sidebar?: ReturnType<typeof sidebarReducer>;
+//     menu?: ReturnType<typeof menuReducer>;
+//     cart?: ReturnType<typeof CartReducer>;
+//     cartSidebar?: ReturnType<typeof cartSidebarReducer>;
+//     wishlist?: ReturnType<typeof WishlistReducer>;
+// };
+let cartSaveTimer: ReturnType<typeof setTimeout> | null = null;
+let wishlistSaveTimer: ReturnType<typeof setTimeout> | null = null;
 const localStorageMiddleware = (store: any) => (next: any) => (action: any) => {
     try {
         const result = next(action);
         if (!isClient) return result;
 
         if (action.type.startsWith('cart/')) {
-            const cartState = store.getState().cart;
-            if (Array.isArray(cartState.items)) {
-                localStorage.setItem('cart', JSON.stringify(cartState));
-            }
+            if (cartSaveTimer) clearTimeout(cartSaveTimer);
+            cartSaveTimer = setTimeout(() => {
+                const cartState = store.getState().cart;
+                if (Array.isArray(cartState.items)) {
+                    localStorage.setItem('cart', JSON.stringify(cartState));
+                }
+            }, 300);
         }
         if (action.type === 'auth/loginSuccess' || action.type === 'auth/logOut') {
             const authState = store.getState().auth;
@@ -40,8 +45,11 @@ const localStorageMiddleware = (store: any) => (next: any) => (action: any) => {
             localStorage.setItem('cartSidebar', JSON.stringify(cartSidebarState));
         }
         if (action.type.startsWith('wishlist/')) {
-            const wishlistState = store.getState().wishlist;
-            localStorage.setItem('wishlist', JSON.stringify(wishlistState));
+            if (wishlistSaveTimer) clearTimeout(wishlistSaveTimer);
+            wishlistSaveTimer = setTimeout(() => {
+                const wishlistState = store.getState().wishlist;
+                localStorage.setItem('wishlist', JSON.stringify(wishlistState));
+            }, 300);
         }
         return result;
     } catch (error) {

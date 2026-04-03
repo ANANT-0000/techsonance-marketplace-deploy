@@ -1,30 +1,39 @@
 ﻿'use client';
-import { BASE_API_URL, ORGANIZATION_TAXATION_OPTIONS } from "@/constants";
+import { PRODUCT_FORM_FIELDS } from "@/app/vendor/[vendorId]/products/productUpdateForm/[id]/page";
+import { BASE_API_URL, ORGANIZATION_TAXATION_OPTIONS, PRODUCT_FORM_PRICING_FIELDS } from "@/constants";
 import { useAppSelector } from "@/hooks/reduxHooks";
-import { ProductImageType } from "@/utils/Types";
+import { usePreviewUrls } from "@/lib/utils";
+import { FileOrImage, ProductImageType } from "@/utils/Types";
 import { ProductFormValuesType, productSchema } from "@/utils/validation";
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod.js";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useCallback, useState } from "react";
+import { useEffect,  useCallback, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+
 
 const FILE_UPLOAD_FIELD_LABELS = [
     { label: "Product Images / Thumbnail", fieldName: "productMedia" as keyof ProductFormValuesType },
     { label: "Feature / Specification Media", fieldName: "featureMedia" as keyof ProductFormValuesType },
 ] as const;
 
-export function ProductForm({ categoryOptions, vendorId, existingData }: { categoryOptions: { value: string; label: string }[]; vendorId: string; existingData?: ProductFormValuesType }) {
+export function ProductForm({
+    categoryOptions,
+    vendorId,
+}: {
+    categoryOptions: { value: string; label: string }[];
+    vendorId: string;
+    existingData?: ProductFormValuesType;
+}) {
     const {
         control,
         reset,
         register,
         handleSubmit,
-        watch,
         setValue,
         formState: { errors, isSubmitting },
     } = useForm<ProductFormValuesType>({
-        resolver: zodResolver(productSchema), // Add this
+        resolver: zodResolver(productSchema),
         mode: "onChange",
         defaultValues: {
             productName: "",
@@ -39,68 +48,60 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
             productMedia: [],
             featureMedia: [],
             category: "",
-            status: 'inactive',
+            status: "inactive",
             taxProfile: "",
         },
     });
+
     const { fields: featureFields, append: appendFeature, remove: removeFeature } = useFieldArray({ control, name: "features" });
     const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: "attributes" });
     const { user } = useAppSelector((state) => state.auth);
     const router = useRouter();
-
-    const [productFiles, setProductFiles] = useState<File[] | ProductImageType[]>([]);
-    const [featureFiles, setFeatureFiles] = useState<File[] | ProductImageType[]>([]);
-    const fileStateMap = useMemo(() => ({
+    const [productFiles, setProductFiles] = useState<FileOrImage[]>([]);
+    const [featureFiles, setFeatureFiles] = useState<FileOrImage[]>([]);
+    const { getPreviewUrl, revokeAll, revokeOne } = usePreviewUrls();
+    useEffect(() => {
+        return () => revokeAll();
+    }, []);
+    const fileStateMap = {
         productMedia: { files: productFiles, setFiles: setProductFiles },
         featureMedia: { files: featureFiles, setFiles: setFeatureFiles },
-    }), [productFiles, featureFiles]);
+    } as const;
 
-    const productPreviewUrls = useMemo(
-        () => productFiles.map((file) => (file instanceof File ? URL.createObjectURL(file) : (file as ProductImageType).image_url)),
-        [productFiles]
+    // ── File handlers ──
+    const handleFileSelect = useCallback(
+        (
+            e: React.ChangeEvent<HTMLInputElement>,
+            currentFiles: FileOrImage[],
+            setFiles: React.Dispatch<React.SetStateAction<FileOrImage[]>>,
+            fieldName: keyof ProductFormValuesType
+        ) => {
+            if (!e.target.files) return;
+            const updated = [...currentFiles, ...Array.from(e.target.files)];
+            setFiles(updated);
+            setValue(fieldName, updated as any, { shouldDirty: true });
+            e.target.value = "";
+        },
+        [setValue]
     );
-    const featurePreviewUrls = useMemo(
-        () => featureFiles.map((file) => (file instanceof File ? URL.createObjectURL(file) : (file as ProductImageType).image_url)),
-        [featureFiles]
+
+    const handleFileRemove = useCallback(
+        (
+            index: number,
+            currentFiles: FileOrImage[],
+            setFiles: React.Dispatch<React.SetStateAction<FileOrImage[]>>,
+            fieldName: keyof ProductFormValuesType
+        ) => {
+            const removed = currentFiles[index];
+            revokeOne(removed);
+            const updated = currentFiles.filter((_, i) => i !== index);
+            setFiles(updated);
+            setValue(fieldName, updated as any, { shouldDirty: true });
+        },
+        [setValue, revokeOne]
     );
 
-
-    useEffect(() => {
-        return () => { productPreviewUrls.forEach((url) => URL.revokeObjectURL(url)); };
-    }, [productPreviewUrls]);
-
-    useEffect(() => {
-        return () => { featurePreviewUrls.forEach((url) => URL.revokeObjectURL(url)); };
-    }, [featurePreviewUrls]);
-
-    const previewUrlMap = useMemo(() => ({
-        productMedia: productPreviewUrls,
-        featureMedia: featurePreviewUrls,
-    }), [productPreviewUrls, featurePreviewUrls]);
-    const handleFileSelect = useCallback((
-        e: React.ChangeEvent<HTMLInputElement>,
-        currentFiles: File[],
-        setFiles: React.Dispatch<React.SetStateAction<File[]>>,
-        fieldName: keyof ProductFormValuesType
-    ) => {
-        if (!e.target.files) return;
-        const updated = [...currentFiles, ...Array.from(e.target.files)];
-        setFiles(updated);
-        setValue(fieldName, updated as any);
-        e.target.value = "";
-    }, [setValue]);
-
-    const handleFileRemove = useCallback((
-        index: number,
-        currentFiles: File[],
-        setFiles: React.Dispatch<React.SetStateAction<File[]>>,
-        fieldName: keyof ProductFormValuesType
-    ) => {
-        const updated = currentFiles.filter((_, i) => i !== index);
-        setFiles(updated);
-        setValue(fieldName, updated as any);
-    }, [setValue]);
-
+    // ── Submit ──
     const onSubmit = async (data: ProductFormValuesType) => {
         if (productFiles.length === 0 || featureFiles.length === 0) {
             console.warn("Product or feature files are missing.");
@@ -127,22 +128,21 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
         };
 
         const formData = new FormData();
-        productFiles.forEach((file) => formData.append('product', file));
-        featureFiles.forEach((file) => formData.append('product_spec', file));
-        formData.append('product_data', JSON.stringify(payload));
+        productFiles.forEach((file) => { if (file instanceof File) formData.append("product", file); });
+        featureFiles.forEach((file) => { if (file instanceof File) formData.append("product_spec", file); });
+        formData.append("product_data", JSON.stringify(payload));
 
         try {
-            const response = await fetch(`${BASE_API_URL}products/${user.company_id}/${user.vendor_id}`, {
-                method: "POST",
-                body: formData,
-            });
+            const response = await fetch(
+                `${BASE_API_URL}products/${user.company_id}/${user.vendor_id}`,
+                { method: "POST", body: formData }
+            );
             if (!response.ok) throw new Error("Failed to create product");
             router.push(`/vendor/${vendorId}/products`);
         } catch (error) {
             console.error("Error occurred while creating product:", error);
         }
     };
-
     return (
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
 
@@ -155,31 +155,42 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
             </header>
 
             {/* ── 1. GENERAL INFORMATION ── */}
-            <div className={"section"}>
-                <div className={"section_header"}>
+            <div className="section">
+                <div className="section_header">
                     <DynamicIcon name="package" size={18} className="text-indigo-500" />
                     <h2 className="text-base font-semibold text-slate-800">General Information</h2>
                 </div>
                 <div className="p-6 space-y-5">
+                    {/* Product Name */}
                     <div>
-                        <label className={"form_label"}>Product Name <span className="text-red-400">*</span></label>
+                        <label className="form_label">Product Name <span className="text-red-400">*</span></label>
                         <input
                             type="text"
-                            className={'form_input'}
+                            className="form_input"
                             placeholder="e.g. Classic Cotton T-Shirt"
-                            {...register("productName", { required: "Product name is required" })}
+                            {...register("productName")}
                         />
-                        {errors.productName && <p className="text-red-500 text-xs mt-1 flex items-center gap-1"><DynamicIcon name="alert-circle" size={12} />{errors.productName.message}</p>}
+                        {errors.productName && (
+                            <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <DynamicIcon name="alert-circle" size={12} />{errors.productName.message}
+                            </p>
+                        )}
                     </div>
+
+                    {/* Description */}
                     <div>
-                        <label className={"form_label"}>Description <span className="text-red-400">*</span></label>
+                        <label className="form_label">Description <span className="text-red-400">*</span></label>
                         <textarea
                             rows={4}
-                            className={"form_input"}
+                            className="form_input"
                             placeholder="Describe your product…"
-                            {...register("description", { required: "Description is required" })}
+                            {...register("description")}
                         />
-                        {errors.description && <p className="text-red-500 text-xs mt-1 flex items-center gap-1"><DynamicIcon name="alert-circle" size={12} />{errors.description.message}</p>}
+                        {errors.description && (
+                            <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <DynamicIcon name="alert-circle" size={12} />{errors.description.message}
+                            </p>
+                        )}
                     </div>
 
                     {/* Features */}
@@ -208,18 +219,18 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
                                         <label className="block text-xs font-semibold text-slate-600 mb-1">Feature Title</label>
                                         <input
                                             type="text"
-                                            className={'form_input'}
+                                            className="form_input"
                                             placeholder="e.g. Waterproof"
-                                            {...register(`features.${index}.title`, { required: "Required" })}
+                                            {...register(`features.${index}.title`)}
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-semibold text-slate-600 mb-1">Details</label>
                                         <textarea
                                             rows={2}
-                                            className={"form_input"}
+                                            className="form_input"
                                             placeholder="Feature description…"
-                                            {...register(`features.${index}.description`, { required: "Required" })}
+                                            {...register(`features.${index}.description`)}
                                         />
                                     </div>
                                 </div>
@@ -253,18 +264,18 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
                                         <label className="block text-xs font-semibold text-slate-600 mb-1">Attribute Title</label>
                                         <input
                                             type="text"
-                                            className={'form_input'}
+                                            className="form_input"
                                             placeholder="e.g. Material Type"
-                                            {...register(`attributes.${index}.name`, { required: "Required" })}
+                                            {...register(`attributes.${index}.name`)}
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-semibold text-slate-600 mb-1">Details</label>
                                         <textarea
                                             rows={2}
-                                            className={"form_input"}
+                                            className="form_input"
                                             placeholder="e.g. 100% Cotton"
-                                            {...register(`attributes.${index}.values`, { required: "Required" })}
+                                            {...register(`attributes.${index}.values`)}
                                         />
                                     </div>
                                 </div>
@@ -275,96 +286,92 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
             </div>
 
             {/* ── 2. PRICING & INVENTORY ── */}
-            <div className={"section"}>
-                <div className={"section_header"}>
+            <div className="section">
+                <div className="section_header">
                     <DynamicIcon name="tag" size={18} className="text-blue-500" />
                     <h2 className="text-base font-semibold text-slate-800">Pricing & Inventory</h2>
                 </div>
                 <div className="p-6">
-                    <div className="flex flex-wrap gap-5 mb-6">
-                        <div className="flex-1 min-w-[180px]">
-                            <label className={'form_label'}>Base Price (₹) <span className="text-red-400">*</span></label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">₹</span>
-                                <input
-                                    inputMode="decimal"
-                                    step="0.01"
-                                    min={0}
-                                    className="my-1 border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white focus:border-blue-500 outline-none transition text-sm text-slate-800 placeholder:text-slate-400 pl-7"
-                                    placeholder="0.00"
-                                    {...register("basePrice", { required: "Required", min: { value: 0, message: "Must be ≥ 0" } })}
-                                />
-                            </div>
-                            {errors.basePrice && <p className="text-red-500 text-xs mt-1">{errors.basePrice.message}</p>}
-                        </div>
-                        <div className="flex-1 min-w-[180px]">
-                            <label className={"form_label"}>Discount (%)</label>
-                            <input
-                                inputMode="decimal"
-                                min={0}
-                                max={100}
-                                className={"form_input"}
-                                placeholder="0"
-                                {...register("discountPercent", { min: 0, max: 100 })}
-                            />
-                            {errors.discountPercent && <p className="text-red-500 text-xs mt-1">{errors.discountPercent.message}</p>}
-                        </div>
-                        <div className="flex-1 min-w-[180px]">
-                            <label className={"form_label"}>Stock Quantity</label>
-                            <input type="number" min={0} className={"form_input"} placeholder="0" {...register("stocks", { min: 0 })} />
-                            {errors.stocks && <p className="text-red-500 text-xs mt-1">{errors.stocks.message}</p>}
-                        </div>
-
-                        <div className="flex-1 min-w-[180px]">
-                            <label className={"form_label"}>SKU</label>
-                            <input type="text" className={"form_input"} placeholder="e.g. SHIRT-001" {...register("sku")} />
-                            {errors.sku && <p className="text-red-500 text-xs mt-1">{errors.sku.message}</p>}
-                        </div>
-
+                    <div className="p-6 flex flex-col md:flex-row gap-6 border border-slate-200 rounded-xl bg-slate-50">
+                        {
+                            Array.isArray(PRODUCT_FORM_FIELDS) && PRODUCT_FORM_PRICING_FIELDS.map((field) => (
+                                <div key={field.name} className="mb-4 flex-1">
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1">
+                                        {field.label}
+                                    </label>
+                                    <input
+                                        type={field.type}
+                                        className=" form_input w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                                        placeholder={field.placeholder}
+                                        {...register(field.name, { required: "Required" })}
+                                    />
+                                    {errors[field.name] && (
+                                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                            <DynamicIcon name="alert-circle" size={16} />{errors[field.name]?.message as string}
+                                        </p>
+                                    )}
+                                </div>
+                            ))
+                        }
                     </div>
                 </div>
             </div>
 
             {/* ── 3. MEDIA ── */}
-            <div className={"section"}>
-                <div className={"section_header"}>
+            <div className="section">
+                <div className="section_header">
                     <DynamicIcon name="image" size={18} className="text-indigo-500" />
                     <h2 className="text-base font-semibold text-slate-800">Media</h2>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     {FILE_UPLOAD_FIELD_LABELS.map(({ label, fieldName }) => {
                         const { files, setFiles } = fileStateMap[fieldName];
-                        const previewUrls = previewUrlMap[fieldName];
+
                         return (
                             <div key={fieldName} className="border border-slate-200 rounded-xl p-4 bg-slate-50">
                                 <h3 className="text-sm font-semibold text-slate-700 mb-3">{label}</h3>
+
+                                {/* Upload area */}
                                 <label className="flex flex-col items-center justify-center py-2 border-2 border-dashed border-blue-300 bg-blue-50/30 rounded-xl cursor-pointer hover:bg-blue-50 transition group">
                                     <input
                                         type="file"
                                         multiple
                                         accept="image/*,video/*"
                                         className="hidden"
-                                        onChange={(e) => handleFileSelect(e, files as File[], setFiles as React.Dispatch<React.SetStateAction<File[]>>, fieldName)}
+                                        onChange={(e) => handleFileSelect(e, files, setFiles as React.Dispatch<React.SetStateAction<FileOrImage[]>>, fieldName)}
                                     />
                                     <DynamicIcon name="upload-cloud" size={32} className="text-blue-400 group-hover:text-blue-600 transition mb-2" />
                                     <p className="text-xs font-semibold text-blue-500 group-hover:text-blue-700">Click to upload</p>
                                     <p className="text-xs text-slate-400 mt-0.5">PNG, JPG, MP4 up to 10MB</p>
                                 </label>
+
+                                {/* Preview list */}
                                 {files.length > 0 && (
                                     <ul className="flex flex-wrap gap-3 mt-4">
                                         {files.map((file, i) => (
-                                            <li key={i} className="relative bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm w-20 h-20">
+                                            <li
+                                                key={i}
+                                                className="relative bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm w-20 h-20"
+                                            >
                                                 <img
-                                                    src={previewUrls[i]}
+                                                    src={getPreviewUrl(file)}
                                                     alt={`preview-${i}`}
                                                     className="w-full h-full object-cover"
                                                 />
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleFileRemove(i, files as File[], setFiles as React.Dispatch<React.SetStateAction<File[]>>, fieldName)}
+                                                    onClick={() =>
+                                                        handleFileRemove(
+                                                            i,
+                                                            files,
+                                                            setFiles as React.Dispatch<React.SetStateAction<FileOrImage[]>>,
+                                                            fieldName
+                                                        )
+                                                    }
                                                     className="absolute top-1 right-1 p-0.5 bg-red-50 text-red-400 hover:text-red-600 transition rounded-full border border-red-200"
+                                                    title="Remove image"
                                                 >
-                                                    <DynamicIcon name="loader-2" size={15} />
+                                                    <DynamicIcon name="x" size={12} />
                                                 </button>
                                             </li>
                                         ))}
@@ -376,20 +383,18 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
                 </div>
             </div>
 
-            {/* ── 4. Category & TAXATION ── */}
-            <div className={"section"}>
-                <div className={"section_header"}>
+            {/* ── 4. CATEGORY & TAXATION ── */}
+            <div className="section">
+                <div className="section_header">
                     <DynamicIcon name="building-2" size={18} className="text-blue-500" />
                     <h2 className="text-base font-semibold text-slate-800">Product Category & Taxation (GST)</h2>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Category */}
                     <div>
                         <label className="form_label">Category <span className="text-red-400">*</span></label>
                         <div className="relative">
-                            <select
-                                {...register('category', { required: "Required" })}
-                                className="form_input appearance-none pr-9"
-                            >
+                            <select {...register("category")} className="form_input appearance-none pr-9">
                                 <option value="" disabled>Select Category</option>
                                 {categoryOptions.map((c, idx) => (
                                     <option key={idx} value={c.value}>{c.label}</option>
@@ -404,13 +409,11 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
                         )}
                     </div>
 
-                    <div className="relative">
-                        <label className={'form_label'}>Tax Profile <span className="text-red-400">*</span></label>
+                    {/* Tax Profile */}
+                    <div>
+                        <label className="form_label">Tax Profile <span className="text-red-400">*</span></label>
                         <div className="relative">
-                            <select
-                                {...register('taxProfile', { required: "Required" })}
-                                className="form_input appearance-none pr-9"
-                            >
+                            <select {...register("taxProfile")} className="form_input appearance-none pr-9">
                                 <option value="" disabled>Select Tax Profile</option>
                                 {ORGANIZATION_TAXATION_OPTIONS.map(({ value, label }, idx) => (
                                     <option value={value} key={idx}>{label}</option>
@@ -418,30 +421,40 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
                             </select>
                             <DynamicIcon name="chevron-down" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         </div>
-                        {errors.taxProfile && <p className="text-red-500 text-xs mt-1 flex items-center gap-1"><DynamicIcon name="alert-circle" size={12} />{errors.taxProfile.message}</p>}
+                        {errors.taxProfile && (
+                            <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <DynamicIcon name="alert-circle" size={12} />{errors.taxProfile.message}
+                            </p>
+                        )}
                     </div>
 
-                    <div className="relative">
-                        <label className={'form_label'}>Status <span className="text-red-400">*</span></label>
+                    {/* Status */}
+                    <div>
+                        <label className="form_label">Status <span className="text-red-400">*</span></label>
                         <div className="relative">
-                            <select
-                                {...register('status', { required: "Required" })}
-                                className="form_input appearance-none pr-9"
-                            >
+                            <select {...register("status")} className="form_input appearance-none pr-9">
                                 <option value="" disabled>Select Status</option>
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
                             </select>
                             <DynamicIcon name="chevron-down" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         </div>
-                        {errors.status && <p className="text-red-500 text-xs mt-1 flex items-center gap-1"><DynamicIcon name="alert-circle" size={12} />{errors.status.message}</p>}
+                        {errors.status && (
+                            <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <DynamicIcon name="alert-circle" size={12} />{errors.status.message}
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>
 
             {/* ── FOOTER CTA ── */}
             <div className="flex justify-end gap-3 pb-8">
-                <button type="button" className="border border-slate-300 bg-white text-slate-700 text-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-slate-50 transition shadow-sm">
+                <button
+                    type="button"
+                    onClick={() => reset()}
+                    className="border border-slate-300 bg-white text-slate-700 text-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-slate-50 transition shadow-sm"
+                >
                     Save Draft
                 </button>
                 <button
@@ -449,7 +462,10 @@ export function ProductForm({ categoryOptions, vendorId, existingData }: { categ
                     disabled={isSubmitting}
                     className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold py-2.5 px-8 rounded-xl hover:bg-blue-700 transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                    {isSubmitting ? <><DynamicIcon name="loader-2" size={15} className="animate-spin" /> Publishing…</> : "Publish Product"}
+                    {isSubmitting
+                        ? <><DynamicIcon name="loader-2" size={15} className="animate-spin" /> Publishing…</>
+                        : "Publish Product"
+                    }
                 </button>
             </div>
         </form>

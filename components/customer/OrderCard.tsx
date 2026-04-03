@@ -2,6 +2,7 @@
 import { formatCurrency } from "@/lib/utils";
 import { PRODUCT_LIST_TYPE, UserOrder } from "@/utils/Types";
 import { motion } from "motion/react";
+import Link from "next/link";
 export const OrderCard = ({ order, isMobile }: { order: UserOrder, isMobile: boolean }) => {
     const productId: string | undefined = order.products?.[0]?.product_id;
     const quantity: number = order.products?.[0]?.quantity ?? 0;

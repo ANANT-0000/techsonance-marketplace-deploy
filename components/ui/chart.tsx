@@ -236,7 +236,7 @@ function ChartTooltipContent({
                       </div>
                       {item.value && (
                         <span className="text-foreground font-mono font-medium tabular-nums">
-                          {formatCurrency(item.value)}
+                          {formatCurrency(Number(item.value))}
                         </span>
                       )}
                     </div>
