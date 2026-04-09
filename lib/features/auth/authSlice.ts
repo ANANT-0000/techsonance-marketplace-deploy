@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { UserProfile, UserRole } from '../../../utils/Types';
-import { ACCESS_TOKEN_KEY, CART_KEY, IS_AUTHENTICATED_KEY, isClient, USER_STORAGE_KEY } from '@/constants';
+import { ACCESS_TOKEN_KEY, CART_KEY, IS_AUTHENTICATED_KEY, isClient, USER_STORAGE_KEY, WISHLIST_KEY } from '@/constants';
 
 
 const getUserFromLocalStorage = () => {
@@ -86,6 +86,7 @@ const authSlice = createSlice({
             state.role = action.payload.role;
             state.loading = false;
             state.error = null;
+            console.log("state.user", state.user);
             if (isClient) {
                 localStorage.setItem(IS_AUTHENTICATED_KEY, JSON.stringify({ isAuthenticated: true, role: action.payload.role }));
                 localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(action.payload.user));
@@ -96,6 +97,7 @@ const authSlice = createSlice({
             }
         },
         logOut(state) {
+
             state.isAuthenticated = false;
             state.user = null;
             state.token = null;
@@ -105,6 +107,8 @@ const authSlice = createSlice({
                 localStorage.removeItem(USER_STORAGE_KEY);
                 localStorage.removeItem(CART_KEY);
                 localStorage.removeItem(IS_AUTHENTICATED_KEY);
+                localStorage.removeItem(CART_KEY);
+                localStorage.removeItem(WISHLIST_KEY);
                 sessionStorage.removeItem(ACCESS_TOKEN_KEY);
             }
         },

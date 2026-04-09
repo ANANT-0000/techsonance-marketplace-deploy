@@ -1,14 +1,14 @@
 ﻿'use client';
-import { PRODUCT_FORM_FIELDS } from "@/app/vendor/[vendorId]/products/productUpdateForm/[id]/page";
-import { BASE_API_URL, ORGANIZATION_TAXATION_OPTIONS, PRODUCT_FORM_PRICING_FIELDS } from "@/constants";
+import { BASE_API_URL, ORGANIZATION_TAXATION_OPTIONS, PRODUCT_FORM_FIELDS, PRODUCT_FORM_PRICING_FIELDS } from "@/constants";
 import { useAppSelector } from "@/hooks/reduxHooks";
-import { usePreviewUrls } from "@/lib/utils";
+import { usePreviewUrls } from "@/lib/clientUtils";
 import { FileOrImage, ProductImageType } from "@/utils/Types";
 import { ProductFormValuesType, productSchema } from "@/utils/validation";
+import { createProduct } from "@/utils/vendorApiClient";
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod.js";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { useRouter } from "next/navigation";
-import { useEffect,  useCallback, useState } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
 
@@ -16,14 +16,33 @@ const FILE_UPLOAD_FIELD_LABELS = [
     { label: "Product Images / Thumbnail", fieldName: "productMedia" as keyof ProductFormValuesType },
     { label: "Feature / Specification Media", fieldName: "featureMedia" as keyof ProductFormValuesType },
 ] as const;
+const PRODUCT_FORM_GENERAL_FIELDS = [
+    { name: "productName", label: "Product Name", placeholder: "e.g. Classic Cotton T-Shirt", type: "text" },
+    { name: "description", label: "Description", placeholder: "Write a detailed description of the product...", type: "textarea" },
+] as const;
+const PRODUCT_FORM_PAGE_LABELS = {
+    headerTitle: "Create New Product",
+    headerDesc: "Fill in the details below to list a new product.",
+    draftButton: "Save Draft",
+    submitButton: "Publish Product",
+}
+const PRODUCT_UPDATE_FORM_PAGE_LABELS = {
+    headerTitle: "Update Product",
+    headerDesc: "Update the details below to modify the product.",
+    draftButton: "Save Draft",
+    submitButton: "Update Product",
+}
 
 export function ProductForm({
     categoryOptions,
     vendorId,
+    existingData,
+    productId,
 }: {
     categoryOptions: { value: string; label: string }[];
     vendorId: string;
-    existingData?: ProductFormValuesType;
+    existingData?: Partial<ProductFormValuesType>;
+    productId?: string
 }) {
     const {
         control,
@@ -40,9 +59,9 @@ export function ProductForm({
             description: "",
             features: [{ title: "", description: "" }],
             attributes: [{ name: "", values: "" }],
-            basePrice: null,
-            discountPercent: null,
-            stocks: null,
+            basePrice: "",
+            discountPercent: "",
+            stocks: "",
             sku: "",
             has_variants: false,
             productMedia: [],
@@ -52,21 +71,31 @@ export function ProductForm({
             taxProfile: "",
         },
     });
-
+    console.log("errors.basePrice", errors.basePrice)
+    const formPageLabels = existingData ? PRODUCT_UPDATE_FORM_PAGE_LABELS : PRODUCT_FORM_PAGE_LABELS;
     const { fields: featureFields, append: appendFeature, remove: removeFeature } = useFieldArray({ control, name: "features" });
     const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: "attributes" });
     const { user } = useAppSelector((state) => state.auth);
     const router = useRouter();
     const [productFiles, setProductFiles] = useState<FileOrImage[]>([]);
     const [featureFiles, setFeatureFiles] = useState<FileOrImage[]>([]);
+    const [deletedImgs, setDeletedImgs] = useState<string[]>([])
     const { getPreviewUrl, revokeAll, revokeOne } = usePreviewUrls();
     useEffect(() => {
         return () => revokeAll();
-    }, []);
+    }, [revokeAll]);
     const fileStateMap = {
         productMedia: { files: productFiles, setFiles: setProductFiles },
         featureMedia: { files: featureFiles, setFiles: setFeatureFiles },
     } as const;
+    useEffect(() => {
+        if (productId && existingData) {
+            reset({ ...existingData, category: existingData.category ?? '', taxProfile: existingData.taxProfile ?? '', status: existingData.status ?? 'inactive' });
+            setProductFiles(existingData.productMedia || []);
+            setFeatureFiles(existingData.featureMedia || []);
+        }
+        console.log(existingData)
+    }, [existingData, reset, categoryOptions]);
 
     // ── File handlers ──
     const handleFileSelect = useCallback(
@@ -90,20 +119,22 @@ export function ProductForm({
             index: number,
             currentFiles: FileOrImage[],
             setFiles: React.Dispatch<React.SetStateAction<FileOrImage[]>>,
-            fieldName: keyof ProductFormValuesType
-        ) => {
+            fieldName: keyof ProductFormValuesType,
+            imgId?: string) => {
             const removed = currentFiles[index];
             revokeOne(removed);
             const updated = currentFiles.filter((_, i) => i !== index);
             setFiles(updated);
             setValue(fieldName, updated as any, { shouldDirty: true });
+            if (imgId) { setDeletedImgs((prev) => [...prev, imgId]) }
         },
         [setValue, revokeOne]
     );
+    console.log("deletedImgs", deletedImgs)
 
     // ── Submit ──
     const onSubmit = async (data: ProductFormValuesType) => {
-        if (productFiles.length === 0 || featureFiles.length === 0) {
+        if (!existingData && (productFiles.length === 0 || featureFiles.length === 0)) {
             console.warn("Product or feature files are missing.");
             return;
         }
@@ -111,8 +142,8 @@ export function ProductForm({
             console.warn("User vendor and company information is missing.");
             return;
         }
-
-        const payload = {
+        const isUpdate = Boolean(productId);
+        let newProduct = {
             name: data.productName,
             description: data.description,
             features: data.features,
@@ -120,37 +151,49 @@ export function ProductForm({
             category_id: data.category,
             status: data.status.toLowerCase(),
             tax_profile: data.taxProfile,
-            has_variants: false,
             base_price: String(data.basePrice),
             discount_percent: String(data.discountPercent),
             stock_quantity: Number(data.stocks),
             sku: data.has_variants ? undefined : data.sku,
         };
-
+        const payload = isUpdate ? {
+            ...newProduct, variant_name: data.productName,
+            variant_id: existingData?.variantId, price: Number(data.basePrice),
+        } : newProduct;
         const formData = new FormData();
         productFiles.forEach((file) => { if (file instanceof File) formData.append("product", file); });
         featureFiles.forEach((file) => { if (file instanceof File) formData.append("product_spec", file); });
         formData.append("product_data", JSON.stringify(payload));
-
+        if (deletedImgs.length > 0) {
+            formData.append('imagesToDelete', JSON.stringify(deletedImgs))
+        }
         try {
-            const response = await fetch(
-                `${BASE_API_URL}products/${user.company_id}/${user.vendor_id}`,
-                { method: "POST", body: formData }
-            );
-            if (!response.ok) throw new Error("Failed to create product");
+            let response;
+            if (productId) {
+                console.log("updating")
+                response = await fetch(
+                    `${BASE_API_URL}products/${productId}`,
+                    { method: "PATCH", body: formData }
+                );
+            } else {
+                console.log("creating")
+                response = await createProduct(formData, vendorId);
+            }
+            if (!response.ok) console.log(response.status, response.statusText);
             router.push(`/vendor/${vendorId}/products`);
         } catch (error) {
             console.error("Error occurred while creating product:", error);
         }
     };
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
 
             {/* ── HEADER ── */}
             <header className="flex flex-wrap justify-between items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Create New Product</h1>
-                    <p className="text-sm text-slate-500 mt-0.5">Fill in the details below to list a new product.</p>
+                    <h1 className="text-2xl font-bold text-slate-900">{formPageLabels.headerTitle}</h1>
+                    <p className="text-sm text-slate-500 mt-0.5">{formPageLabels.headerDesc}</p>
                 </div>
             </header>
 
@@ -162,36 +205,33 @@ export function ProductForm({
                 </div>
                 <div className="p-6 space-y-5">
                     {/* Product Name */}
-                    <div>
-                        <label className="form_label">Product Name <span className="text-red-400">*</span></label>
-                        <input
-                            type="text"
-                            className="form_input"
-                            placeholder="e.g. Classic Cotton T-Shirt"
-                            {...register("productName")}
-                        />
-                        {errors.productName && (
-                            <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                <DynamicIcon name="alert-circle" size={12} />{errors.productName.message}
-                            </p>
-                        )}
-                    </div>
+                    {
+                        PRODUCT_FORM_GENERAL_FIELDS.map((field, idx) => (
+                            <div key={idx}>
+                                <label className="form_label">{field.label} <span className="text-red-400">*</span></label>
+                                {field.type === "textarea" ? (
+                                    <textarea
+                                        className="form_input"
+                                        placeholder={field.placeholder}
+                                        aria-multiline={true}
+                                        {...register(field.name as keyof ProductFormValuesType, { required: "Required" })}
+                                    />
+                                ) : (
+                                    <input
+                                        type="text"
+                                        className="form_input"
+                                        placeholder={field.placeholder}
+                                        {...register(field.name as keyof ProductFormValuesType, { required: "Required" })}
+                                    />
+                                )}
+                                {errors[field.name] && (
+                                    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                        <DynamicIcon name="alert-circle" size={12} />{errors[field.name].message}
+                                    </p>
+                                )}
+                            </div>
+                        ))}
 
-                    {/* Description */}
-                    <div>
-                        <label className="form_label">Description <span className="text-red-400">*</span></label>
-                        <textarea
-                            rows={4}
-                            className="form_input"
-                            placeholder="Describe your product…"
-                            {...register("description")}
-                        />
-                        {errors.description && (
-                            <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                <DynamicIcon name="alert-circle" size={12} />{errors.description.message}
-                            </p>
-                        )}
-                    </div>
 
                     {/* Features */}
                     <div className="pt-2 border-t border-slate-100">
@@ -294,20 +334,25 @@ export function ProductForm({
                 <div className="p-6">
                     <div className="p-6 flex flex-col md:flex-row gap-6 border border-slate-200 rounded-xl bg-slate-50">
                         {
-                            Array.isArray(PRODUCT_FORM_FIELDS) && PRODUCT_FORM_PRICING_FIELDS.map((field) => (
+                            Array.isArray(PRODUCT_FORM_PRICING_FIELDS) && PRODUCT_FORM_PRICING_FIELDS.map((field) => (
                                 <div key={field.name} className="mb-4 flex-1">
                                     <label className="block text-sm font-semibold text-slate-700 mb-1">
                                         {field.label}
                                     </label>
+
+
                                     <input
-                                        type={field.type}
-                                        className=" form_input w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                                        type="text"
+                                        className="form_input"
                                         placeholder={field.placeholder}
-                                        {...register(field.name, { required: "Required" })}
+                                        {...register(field.name as keyof ProductFormValuesType, { required: "Required" })}
                                     />
-                                    {errors[field.name] && (
+
+
+
+                                    {errors[field.name as keyof ProductFormValuesType] && (
                                         <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                            <DynamicIcon name="alert-circle" size={16} />{errors[field.name]?.message as string}
+                                            <DynamicIcon name="alert-circle" size={16} />{errors[field.name as keyof ProductFormValuesType]?.message as string}
                                         </p>
                                     )}
                                 </div>
@@ -326,7 +371,7 @@ export function ProductForm({
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     {FILE_UPLOAD_FIELD_LABELS.map(({ label, fieldName }) => {
                         const { files, setFiles } = fileStateMap[fieldName];
-
+                        console.log("files", files)
                         return (
                             <div key={fieldName} className="border border-slate-200 rounded-xl p-4 bg-slate-50">
                                 <h3 className="text-sm font-semibold text-slate-700 mb-3">{label}</h3>
@@ -365,7 +410,8 @@ export function ProductForm({
                                                             i,
                                                             files,
                                                             setFiles as React.Dispatch<React.SetStateAction<FileOrImage[]>>,
-                                                            fieldName
+                                                            fieldName,
+                                                            file.id ? file.id : undefined
                                                         )
                                                     }
                                                     className="absolute top-1 right-1 p-0.5 bg-red-50 text-red-400 hover:text-red-600 transition rounded-full border border-red-200"
@@ -394,7 +440,7 @@ export function ProductForm({
                     <div>
                         <label className="form_label">Category <span className="text-red-400">*</span></label>
                         <div className="relative">
-                            <select {...register("category")} className="form_input appearance-none pr-9">
+                            <select {...register("category")} className="form_input appearance-none pr-9" defaultValue={existingData?.category ?? ''}   >
                                 <option value="" disabled>Select Category</option>
                                 {categoryOptions.map((c, idx) => (
                                     <option key={idx} value={c.value}>{c.label}</option>
@@ -413,7 +459,7 @@ export function ProductForm({
                     <div>
                         <label className="form_label">Tax Profile <span className="text-red-400">*</span></label>
                         <div className="relative">
-                            <select {...register("taxProfile")} className="form_input appearance-none pr-9">
+                            <select {...register("taxProfile")} className="form_input appearance-none pr-9" defaultValue={existingData?.taxProfile ?? ''}>
                                 <option value="" disabled>Select Tax Profile</option>
                                 {ORGANIZATION_TAXATION_OPTIONS.map(({ value, label }, idx) => (
                                     <option value={value} key={idx}>{label}</option>
@@ -432,7 +478,7 @@ export function ProductForm({
                     <div>
                         <label className="form_label">Status <span className="text-red-400">*</span></label>
                         <div className="relative">
-                            <select {...register("status")} className="form_input appearance-none pr-9">
+                            <select {...register("status")} className="form_input appearance-none pr-9" defaultValue={existingData?.status ?? ''}>
                                 <option value="" disabled>Select Status</option>
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
@@ -450,13 +496,6 @@ export function ProductForm({
 
             {/* ── FOOTER CTA ── */}
             <div className="flex justify-end gap-3 pb-8">
-                <button
-                    type="button"
-                    onClick={() => reset()}
-                    className="border border-slate-300 bg-white text-slate-700 text-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-slate-50 transition shadow-sm"
-                >
-                    Save Draft
-                </button>
                 <button
                     type="submit"
                     disabled={isSubmitting}

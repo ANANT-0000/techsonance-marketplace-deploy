@@ -17,14 +17,17 @@ import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: { styles?: string, logoUrl?: string, menuLinks?: { [key: string]: string }[] }) {
     const searchImg = false ? searchImgLight : searchImgDark;
     const { items } = useAppSelector((state: RootState) => state.cart);
-    const { wishItems } = useAppSelector((state: any) => state.wishlist);
-    const { user } = useAppSelector((state: any) => state.auth);
+    const { wishItems } = useAppSelector((state: RootState) => state.wishlist);
+    const { user } = useAppSelector((state: RootState) => state.auth);
     const dispatch = useAppDispatch();
-    const isTabletOrMobile = useMediaQuery({ query: '(max-width: 1224px)' })
     const wishlistCount = wishItems.length;
+    const cartCount = items.length;
+    console.log("wishItems", wishItems)
+    console.log("items", items);
     const path = usePathname();
+    const isTabletOrMobile = useMediaQuery({ query: '(max-width: 1224px)' })
     const [isMounted, setIsMounted] = useState(false);
-
+    console.log("nav user", user?.id)
     useEffect(() => {
         setIsMounted(true);
     }, []);
@@ -34,14 +37,15 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: 
     if (path.startsWith('/admin') || path.startsWith('/vendor') || path.includes('checkout') || path.includes('cart') || path.includes('wishlist') || path.includes('orders') || path.includes('changePassword') || path.includes('address') || path.includes('customerProfile')) {
         return <></>
     }
+    if (!isMounted) {
 
+        return <nav className="h-16" />;
+    }
     if (isTabletOrMobile) {
         return (
-            <nav className="flex justify-between items-center  align-middle  px-4 py-2 h-16   ">
-                <Link href="/"><img src={logoUrl} alt="brand logo" className="h-10  " /></Link>
-                <Link href='/notifications'>
-                    <Bell />
-                </Link>
+            <nav className="flex justify-between items-center align-middle px-4 py-2 h-16">
+                <Link href="/"><img src={logoUrl} alt="brand logo" className="h-10" /></Link>
+                <Bell />
             </nav>
         )
     }
@@ -86,7 +90,7 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: 
                 {path === '/customerRegister' || path === '/customerLogin' || path.includes('/customerProfile') ? null :
                     <div className="  flex gap-6 items-center ">
                         {showUserContent ?
-                            <Link href={'/customerProfile' + (`/${user?.user_id}`) + '/wishlist'} className="relative  ">
+                            <Link href={'/customerProfile' + (`/${user?.id}`) + '/wishlist'} className="relative">
                                 {wishlistCount > 0 ? <motion.span
                                     key={wishlistCount}
                                     initial={{ scale: 1.2, opacity: 0 }}
@@ -102,7 +106,7 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: 
                             <ShoppingCart size={38} />
                         </button>
 
-                        <Link href={'/customerProfile' + (user?.userId ? `/${user?.user_id}` : '')} className=" ">
+                        <Link href={user?.id ? '/customerProfile' + `/${user?.id}` : '/auth/customerLogin'} className=" ">
                             <img src={userIcon} alt="" className="h-8 w-8 rounded-full" />
                         </Link>
                     </div>}

@@ -50,7 +50,7 @@ export const toggle_dark = "/assets/toggle-dark.png";
 // ============================================================
 
 export { UserRole } from "@/utils/Types";
-export type { UserProfile, Address, Cart, CartItem, Wishlist, UserOrder, OrderStatus, Order, Permission, RoleDefinition } from "@/utils/Types";
+export type { UserProfile, Address, Cart, CartItemType, Wishlist, UserOrder, OrderStatus, Order, Permission, RoleDefinition } from "@/utils/Types";
 
 // ============================================================
 // SHARED INTERFACES

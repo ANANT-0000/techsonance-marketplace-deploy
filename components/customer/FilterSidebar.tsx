@@ -81,9 +81,9 @@ const SidebarContent = ({ setIsOpen, maxPrice, setMaxPrice, minPrice, setMinPric
         <ChevronUp size={18} />
       </div>
       <div className='flex flex-col gap-3  overflow-y-scroll h-full'>
-        {categoryFilter.map((cat) => (
+        {categoryFilter.map((cat, idx) => (
           <div
-            key={cat}
+            key={idx}
             onClick={() => setSelectedCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])}
             className="flex items-center justify-between cursor-pointer group"
           >
@@ -95,15 +95,15 @@ const SidebarContent = ({ setIsOpen, maxPrice, setMaxPrice, minPrice, setMinPric
     </section>
   </div>
 );
-export function FilterSidebar({ PRODUCT_LIST, filterProduct }: {
+export function FilterSidebar({ PRODUCT_LIST }: {
   PRODUCT_LIST: ProductType[],
-  filterProduct: React.Dispatch<React.SetStateAction<ProductType[]>>
+
 }) {
   const [isPriceOpen, setIsPriceOpen] = useState(true);
   const [isColorsOpen, setIsColorsOpen] = useState(true);
   const [isCategoryOpen, setIsCategoryOpen] = useState(true);
   const [isOpen, setIsOpen] = useState(false); // Mobile drawer state
-  const [categoryFilter] = useState<string[]>([...new Set(PRODUCT_LIST.map(pro => pro.category))]);
+  const [categoryFilter] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(50000); // Default high ceiling
@@ -119,11 +119,9 @@ export function FilterSidebar({ PRODUCT_LIST, filterProduct }: {
   useEffect(() => {
     let filtered = selectedCategories.length === 0
       ? PRODUCT_LIST
-      : PRODUCT_LIST.filter(pro => selectedCategories.includes(pro.category));
-    filtered = filtered.filter(pro => pro.price >= minPrice && pro.price <= maxPrice);
-
-    filterProduct(filtered);
-  }, [selectedCategories, minPrice, maxPrice, filterProduct]);
+      : PRODUCT_LIST.filter(pro => selectedCategories.includes(pro.category_id));
+    filtered = filtered.filter(pro => Number(pro.base_price) >= minPrice && Number(pro.base_price) <= maxPrice);
+  }, [selectedCategories, minPrice, maxPrice]);
   // Sidebar Content (Extracted to avoid repetition)
 
 

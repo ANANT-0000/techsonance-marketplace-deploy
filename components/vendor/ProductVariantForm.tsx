@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { DynamicIcon } from "lucide-react/dynamic";
-import { createProductVariant } from "@/utils/vendorApiClient";
-import { usePreviewUrls } from "@/lib/utils";
-import { PRODUCT_FORM_FIELDS } from "@/app/vendor/[vendorId]/products/productUpdateForm/[id]/page";
+import { createProductVariant, updateProductVariant } from "@/utils/vendorApiClient";
+import { usePreviewUrls } from "@/lib/clientUtils";
+import { PRODUCT_FORM_PRICING_FIELDS } from "@/constants";
 const FILE_UPLOAD_FIELD_LABELS = [
     { label: "Product Images / Thumbnail", fieldName: "variantMediaMain" as keyof VariantFormValuesType },
     { label: "Feature / Specification Media", fieldName: "variantMediaGallery" as keyof VariantFormValuesType },
@@ -19,10 +19,12 @@ export const ProductVariantForm = ({
     vendorId,
     productId,
     existVariant,
+    variantId
 }: {
     vendorId: string;
     productId: string;
     existVariant?: VariantFormValuesType;
+    variantId?: string
 }) => {
     const { user } = useAppSelector((state) => state.auth);
     const router = useRouter();
@@ -49,7 +51,7 @@ export const ProductVariantForm = ({
 
     const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } =
         useFieldArray({ control, name: "attributes" });
-
+    const [deletedImgs, setDeletedImgs] = useState<string[]>([])
     // ── File state ──
     const [productFiles, setProductFiles] = useState<FileOrImage[]>(() =>
         existVariant?.variantMediaMain ?? []
@@ -90,13 +92,15 @@ export const ProductVariantForm = ({
             index: number,
             currentFiles: FileOrImage[],
             setFiles: React.Dispatch<React.SetStateAction<FileOrImage[]>>,
-            fieldName: keyof VariantFormValuesType
+            fieldName: keyof VariantFormValuesType,
+            id?: string
         ) => {
             const removed = currentFiles[index];
             revokeOne(removed); // free memory for this file only
             const updated = currentFiles.filter((_, i) => i !== index);
             setFiles(updated);
             setValue(fieldName, updated as any, { shouldDirty: true });
+            if (id) { setDeletedImgs((prev) => [...prev, id]) }
         },
         [setValue, revokeOne]
     );
@@ -112,7 +116,7 @@ export const ProductVariantForm = ({
             status: data.status.toLowerCase(),
             price: String(data.basePrice),
             discount_percent: data.discountPercent ?? 0,
-            stock_quantity: Number(data.stocks) ?? 0,
+            stock_quantity: String(data.stocks) ?? 0,
             sku: data.sku,
         };
 
@@ -120,8 +124,18 @@ export const ProductVariantForm = ({
         productFiles.forEach((f) => { if (f instanceof File) formData.append("product", f); });
         featureFiles.forEach((f) => { if (f instanceof File) formData.append("product_spec", f); });
         formData.append("variant_data", JSON.stringify(payload));
-
-        const result = await createProductVariant(formData, vendorId, productId);
+        if (deletedImgs.length > 0) {
+            formData.append('imagesToDelete', JSON.stringify(deletedImgs))
+        }
+        let response;
+        if (variantId && productId) {
+            console.log('updating')
+            response = await updateProductVariant(formData, vendorId, productId, variantId)
+        } else {
+            console.log('creating')
+            response = await createProductVariant(formData, vendorId, productId);
+        }
+        console.log("response", response)
         if (result?.status === 201) {
             router.push(`/vendor/${vendorId}/products`);
         }
@@ -223,7 +237,7 @@ export const ProductVariantForm = ({
                 <div className="p-6">
                     <div className="p-6 flex flex-col md:flex-row gap-6 border border-slate-200 rounded-xl bg-slate-50">
                         {
-                            Array.isArray(PRODUCT_FORM_FIELDS) && PRODUCT_FORM_PRICING_FIELDS.map((field) => (
+                            Array.isArray(PRODUCT_FORM_PRICING_FIELDS) && PRODUCT_FORM_PRICING_FIELDS.map((field) => (
                                 <div key={field.name} className="mb-4 flex-1">
                                     <label className="block text-sm font-semibold text-slate-700 mb-1">
                                         {field.label}
@@ -301,7 +315,8 @@ export const ProductVariantForm = ({
                                                             i,
                                                             files,
                                                             setFiles as React.Dispatch<React.SetStateAction<FileOrImage[]>>,
-                                                            fieldName
+                                                            fieldName,
+                                                            file?.id
                                                         )
                                                     }
                                                     className="absolute top-1 right-1 p-0.5 bg-red-50 text-red-400 hover:text-red-600 transition rounded-full border border-red-200"

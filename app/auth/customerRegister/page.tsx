@@ -1,5 +1,5 @@
 'use client';
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Added useEffect for debugging
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -7,39 +7,57 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { CUSTOMER_REGISTRATION_FIELDS } from "@/constants/dynamicFields";
 import { CustomerRegister } from "@/utils/authApiClient";
-import { customerRegisterSchema, CustomerRegisterSchemaType, } from "@/utils/validation";
+import { customerRegisterSchema, CustomerRegisterSchemaType } from "@/utils/validation";
+import { companyDomain } from "@/config";
 
 export default function CustomerRegisterPage() {
     const router = useRouter();
     const [serverError, setServerError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting },
-    } = useForm<CustomerRegisterSchemaType>({
+        watch,
+        formState: { errors, isValid, isDirty },
+    } = useForm<CustomerRegisterSchemaType>({ // Removed Partial
         resolver: zodResolver(customerRegisterSchema),
         mode: "onChange",
         defaultValues: {
-            first_name: "",
-            last_name: "",
-            email: "",
-            password: "",
-            confirm_password: "",
+            first_name: '',
+            last_name: '',
+            email: '',
+            password: '',
+            confirm_password: '',
+            phone_number: '',
+            terms_accepted: true, // IMPORTANT: Match this with your schema
         }
     });
 
+    // This will help you see why the form is invalid in real-time
+    useEffect(() => {
+        if (Object.keys(errors).length > 0) {
+            console.log("Validation Errors:", errors);
+        }
+    }, [errors]);
+
+    console.log("Password:", watch('password'));
+    console.log("Confirm Password:", watch('confirm_password'));
     const onSubmit = async (data: CustomerRegisterSchemaType) => {
+        console.log('🚀 Submit Triggered!', data);
+        setIsSubmitting(true);
         setServerError(null);
         try {
-            const response = await CustomerRegister(data);
-            if (response.status === true) {
+            const response = await CustomerRegister(data, companyDomain);
+            if (response?.status === 201) {
                 router.push('/auth/customerLogin');
             } else {
-                setServerError(response.message || "Registration failed");
+                setServerError(response?.error || "Registration failed");
             }
         } catch (err: any) {
-            setServerError(err.response?.data?.message || "Something went wrong");
+            setServerError(err.message || "Something went wrong");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -47,13 +65,14 @@ export default function CustomerRegisterPage() {
         <main className="flex justify-center items-center min-h-screen w-full p-4">
             <div className="flex flex-col lg:flex-row bg-white rounded-3xl shadow-xl overflow-hidden max-w-4xl w-full">
 
-                {/* Form Section */}
                 <form
-                    onSubmit={handleSubmit(onSubmit)}
+                    onSubmit={handleSubmit(onSubmit, (err) => console.log("Submit blocked by Zod:", err))}
                     className="flex flex-col px-8 py-10 lg:px-12 justify-center flex-1"
                 >
                     <h1 className="text-2xl font-bold text-center text-gray-800">Create an account</h1>
-                    <p className="text-sm text-slate-500 mb-8 text-center">Join to find great products.</p>
+                    <p className="text-sm text-slate-500 mb-8 text-center font-medium">
+                        Form Valid: {isValid ? "✅" : "❌"} | Changed: {isDirty ? "✅" : "❌"}
+                    </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         {CUSTOMER_REGISTRATION_FIELDS.map((field) => (
@@ -92,7 +111,10 @@ export default function CustomerRegisterPage() {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        className={`font-bold py-3 rounded-xl transition-colors ${isSubmitting
+                            ? "bg-blue-400 text-white cursor-not-allowed"
+                            : "bg-blue-600 text-white hover:bg-blue-700"
+                            }`}
                     >
                         {isSubmitting ? "Creating Account..." : "Register"}
                     </button>
@@ -106,18 +128,15 @@ export default function CustomerRegisterPage() {
                 </form>
 
                 {/* Image Section */}
-                <div className="hidden lg:block relative flex-1 ">
+                <div className="hidden lg:block relative flex-1 bg-slate-100">
                     <Image
-                        src={'https://imgs.search.brave.com/KuCYM754oU5_H4hh07t-Qc6WZH3BUTuLJEFzYxh8Y2c/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzUyLzg1/LzEyLzUyODUxMmU2/MDA1NjY1OGVmN2Zi/MGEwZWM5MDk0YmI0/LmpwZw'}
-                        width={1200}
-                        height={800}
+                        src="https://imgs.search.brave.com/KuCYM754oU5_H4hh07t-Qc6WZH3BUTuLJEFzYxh8Y2c/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzUyLzg1/LzEyLzUyODUxMmU2/MDA1NjY1OGVmN2Zi/MGEwZWM5MDk0YmI0/LmpwZw"
                         alt="Join us"
-                        
+                        fill
                         className="object-cover"
                         priority
                     />
                 </div>
-
             </div>
         </main>
     );

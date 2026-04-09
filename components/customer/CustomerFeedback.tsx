@@ -1,7 +1,7 @@
 'use client';
 import { motion } from 'motion/react';
 import { Quote } from 'lucide-react';
-import type { FeedbackType } from '@/constants/customer';
+import { FeedbackType } from '@/utils/Types';
 
 export function CustomerFeedback({
     FEEDBACK_LIST, styles
@@ -50,11 +50,6 @@ export function CustomerFeedback({
                 Customer Feedback
             </motion.h2>
 
-
-            {/* <div className='absolute inset-0 z-[-1] opacity-5 pointer-events-none flex justify-center items-center'>
-                <Quote size={400} className="rotate-180 text-gray-400" />
-            </div> */}
-
             <motion.div
                 variants={containerVariants}
                 initial="hidden"
@@ -71,9 +66,7 @@ export function CustomerFeedback({
                             boxShadow:
                                 "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
                         }}
-                        className="group bg-white text-card-foreground border-2 border-gray-100 
-                 lg:p-10 p-4 rounded-3xl min-w-full lg:max-w-md 
-                 snap-center transition-colors hover:border-brand-primary/20 "
+                        className="group bg-white text-card-foreground border-2 border-gray-100 lg:p-10 p-4 rounded-3xl min-w-full lg:max-w-md snap-center transition-colors hover:border-brand-primary/20 "
                     >
                         <Quote
                             className='mb-6 text-brand-primary'

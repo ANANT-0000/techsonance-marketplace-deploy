@@ -9,11 +9,11 @@ export const DeleteBtn = ({ id, toDelete, style = 'flex gap-2  text-red-600 hove
         if (!confirmed) return;
         if (toDelete === "VARIANT") {
             console.log(id, props.vendorId, props.productId)
-            const result = await deleteProductVariant(id, props.vendorId, props.productId);
+            const result = await deleteProductVariant(id, props.vendorId, props.productId,props.variantId);
             console.log(result)
             return;
         } else if (toDelete === "PRODUCT") {
-            const result = await deleteProduct(id);
+            const result = await deleteProduct(id, props.vendorId);
             console.log(result)
             return;
         }

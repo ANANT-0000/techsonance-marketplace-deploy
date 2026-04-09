@@ -37,7 +37,7 @@ export default function CustomerLoginPage() {
 
         try {
             const response = await CustomerLogin(data);
-
+            console.log("Login response:", response);
             dispatch(loginSuccess(response.data));
             if (response.status === true) {
                 router.push('/');

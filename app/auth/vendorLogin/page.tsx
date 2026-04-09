@@ -9,10 +9,9 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { use, useEffect, useState } from "react";
 import { loginEnd, loginFailure, loginStart } from "@/lib/features/auth/authSlice";
-import { Loader } from "lucide-react";
+
 import { LoaderSpinner } from "@/components/common/LoaderSpinner";
-import { set } from "zod";
-import { se } from "date-fns/locale";
+
 
 interface LoginFormData {
     email: string;
@@ -52,15 +51,16 @@ export default function VendorLoginPage() {
         setLoadingState(true);
         const result = await vendorLogin(data, dispatch);
         console.log(result);
-        if (result?.status === 201) {
+        if (result?.status === 200 ) {
             reset();
             console.log(result.user);
             router.push(`/vendor/${result.user.vendor_id}`);
             dispatch(loginEnd());
             setLoadingState(false);
         } else {
-            result?.status === false && console.log(result?.message);
+            result?.status === 401 && console.log(result?.message);
             dispatch(loginFailure(result?.message || "Login failed"));
+            setLoadingState(false);
         }
 
     };

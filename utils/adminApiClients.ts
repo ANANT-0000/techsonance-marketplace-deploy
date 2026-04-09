@@ -2,6 +2,7 @@
 import { ADMIN_BASE_URL, BASE_API_URL } from "@/constants";
 import { authToken } from "./authToken";
 import { revalidatePath } from "next/cache";
+import { error } from "console";
 
 export const fetchRoles = async () => {
     const response = await fetch(`${BASE_API_URL}roles`, {
@@ -33,17 +34,17 @@ export const fetchPermissions = async () => {
 };
 export const createRole = async (role: string) => {
     try {
-        const response = await fetch(`${BASE_API_URL}roles/create`, {
+        const response = await fetch(`${BASE_API_URL}roles`, {
             method: 'POST',
             headers: {
-                Authorization: `Bearer ${authToken()}`,
+                // Authorization: `Bearer ${await authToken()}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ role }),
         });
         console.log(response);
         if (!response.ok) {
-            throw new Error('Failed to create role');
+            console.error('Failed to create role');
         }
         return await response.json();
     } catch (error) {

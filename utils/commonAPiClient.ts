@@ -1,4 +1,5 @@
-﻿import { BASE_API_URL } from "@/constants";
+﻿import { companyDomain } from "@/config";
+import { BASE_API_URL } from "@/constants";
 
 export const fetchProduct = async (productId: string) => {
     try {
@@ -17,4 +18,26 @@ export const fetchProduct = async (productId: string) => {
         throw error;
     }
 }
+export const fetchProductVendorProducts = async () => {
+    try {
+        const response = await fetch(`${BASE_API_URL}products/all`, {
+            method: 'GET',
+            cache: "force-cache",
+            next: { revalidate: 3600 },
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                // Authorization: `Bearer ${await authToken()}`,
+            },
 
+        });
+        if (response.status !== 200) {
+            console.error('Failed to fetch vendor products');
+        }
+        console.log("Vendor Products Response:", response);
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching vendor products:', error);
+        return [];
+    }
+}

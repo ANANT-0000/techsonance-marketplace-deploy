@@ -1,7 +1,7 @@
 ﻿export interface UserProfile {
   company_id: string;
   vendor_id: string | null;
-  user_id: string;
+  id: string;
   role: string;
   email: string;
   phone: string;
@@ -44,19 +44,20 @@ export interface Address {
 
 export interface Cart {
   cart_id: string;
-  items: CartItem[];
+  items: CartItemType[];
   created_at: string;
 }
-
-export interface CartItem {
-  cart_item_id: number;
-  variant_id: number;
+  //used in cart 
+export interface CartItemType {
+  cartId: string;
+  cartItemId: string;
   quantity: number;
+  productVariantId: string;
 }
 
 export interface Wishlist {
-  wishlist_id: number;
-  items: number[]; // Array of product_ids
+  wishlist_id: string;
+  items: string[];  
 }
 
 export interface UserOrder {
@@ -224,9 +225,12 @@ export type ProductImageType = {
   id: string;
   image_url: string;
   alt_text?: string;
-  imgType: string;
+  imgType: "main" | "gallery";
   is_primary: boolean;
+  created_at?: string;
+  updated_at?: string;
   product_id: string;
+  variant_id: string;
 };
 
 export type ProductFeatureType = {
@@ -412,20 +416,17 @@ export interface tabLinkType {
 }
 
 export type FeatureType = { title: string; description: string };
-export type OptionType = { name: string; values: string };
-export type VariantType = { attributes: Record<string, string>; sku: string; price: number; stock: number };
 export type ProductFormValuesType = {
   productName: string;
   description: string;
   features: FeatureType[];
-  attributes: OptionType[];
-  basePrice: number;
-  discountPercent: number;
-  stocks: number;
+  attributes: AttributesType[];
+  basePrice: string;
+  discountPercent: string;
+  stocks: string;
   sku: string;
-  has_variants: boolean;
-  productMedia: File[];
-  featureMedia: File[];
+  productMedia: File[] | string[];
+  featureMedia: File[] | string[];
   category: string;
   status: string;
   taxProfile: string;
@@ -565,11 +566,48 @@ export type FileOrImage = File | ProductImageType;
 export type VariantFormValuesType = {
   variantName: string;
   attributes: { name: string; value: string }[];
-  basePrice: number | null;
-  discountPercent: number | null;
-  stocks: number | null;
+  basePrice: string;
+  discountPercent: string;
+  stocks: string;
   sku: string;
   variantMediaMain: FileOrImage[];
   variantMediaGallery: FileOrImage[];
   status: string;
+};
+
+export type AttributesType = {
+  name: string,
+  values: string
+}
+//used
+export type VariantsType = {
+  id: string
+  variant_name: string,
+  sku: string,
+  attributes: AttributesType[],
+  product_id: string;
+  price: string;
+  stock_quantity: number;
+  images: ProductImageType[];
+}
+//used
+export type ProductResponseType = {
+  id: string;
+  name: string;
+  description: string;
+  features: ProductFeatureType[];
+  base_price: string;
+  discount_percent: string;
+  stock_quantity: string;
+  status: "active" | "inactive";
+  has_variants: boolean;
+  created_at: string;
+  updated_at: string;
+  company_id: string;
+  vendor_id: string;
+  category_id: string;
+  images: ProductImageType[];
+  variants: VariantsType;
+  tax_profile: string,
+
 };

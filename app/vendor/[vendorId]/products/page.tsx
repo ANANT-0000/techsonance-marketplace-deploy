@@ -21,8 +21,9 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
         console.error("Error fetching products:", error);
         return [];
     });
+    console.log('vendor product list ', getProducts);
     const productList: ProductType[] = getProducts || [];
-    console.log("productList[2].variants", productList[2]?.variants?.length);
+    // console.log("productList[2].variants", productList[2]?.variants?.length);
     let count = 1
     const pageSize = 5;
     const totalPages = Math.ceil(productList.length / pageSize);
@@ -138,11 +139,10 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                                         border-b-3 hover:border-b hover:border-blue-800 text-blue-600 hover:text-blue-800 py-2 px-3 rounded-lg" title="Edit Product">
                                             Edit<Edit />
                                         </Link>
-                                        <DeleteBtn id={item.id} toDelete="PRODUCT" style="flex gap-2 border border-red-600
+                                        <DeleteBtn id={item.id} vendorId={vendorId} toDelete="PRODUCT" style="flex gap-2 border border-red-600
                                         border-b-3 hover:border-b hover:border-red-800 text-red-600 hover:text-red-800 py-2 px-3 rounded-lg" />
 
                                     </TableCell>
-
                                 </TableRow>
                             ))
                         }

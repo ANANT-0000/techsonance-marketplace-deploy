@@ -22,7 +22,8 @@ export function ProfileSidebar() {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const currentPath = usePathname();
-    const currentUserId = user?.user_id ? user.user_id : '';
+    const currentUserId = user?.id ? user.id : '';
+
     const isMobile = useMediaQuery({ maxWidth: 767 });
     const handleNavigation = (linkPath: string) => {
         if (linkPath === '/logout') {
@@ -100,12 +101,9 @@ export function ProfileSidebar() {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-8 p-6  border-l-4    flex items-center gap-4"
             >
-                {/* <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center text-brand-primary font-bold text-xl">
-                    {user?.name?.charAt(0) || 'U'}
-                </div> */}
                 <div className="overflow-hidden">
                     <h1 className="text-lg font-bold text-gray-900 truncate">
-                        {user?.name || 'User'}
+                        {`${user?.first_name} ${user?.last_name}` || 'User'}
                     </h1>
                     <p className="text-gray-500 text-xs truncate max-w-[150px]">
                         {user?.email}
@@ -124,11 +122,11 @@ export function ProfileSidebar() {
             >
                 {ProfileSidebarLink.map((link) => {
                     // Logic to determine active state
-                    const targetPath = link.path === '/customerProfile'
-                        ? `/customerProfile/${user?.user_id}`
-                        : `/customerProfile/${user?.user_id}${link.path}`;
+                    // const targetPath = link.path === '/customerProfile'
+                    //     ? `/customerProfile/${user?.user_id}`
+                    //     : `/customerProfile/${user?.user_id}${link.path}`;
 
-                    const isActive = currentPath === targetPath || (link.path !== '/customerProfile' && currentPath.startsWith(targetPath));
+                    const isActive = currentPath.includes(link.path) ? currentPath.endsWith(link.path) ? true : currentPath.startsWith(link.path) : false;
                     const isDanger = link.path === '/logout';
 
                     return (

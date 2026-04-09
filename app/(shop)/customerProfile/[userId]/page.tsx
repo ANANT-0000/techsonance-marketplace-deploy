@@ -15,7 +15,8 @@ export default function UserProfilePage() {
     const router = useRouter();
     if (!user) return null;
 
-    const activeOrders = user.orders.filter(order => order.order_status === 'Pending').length;
+    // const activeOrders = user?.orders.filter(order => order.order_status === 'Pending').length;
+    const activeOrders = 3;
 
     return (
         <motion.section
@@ -38,8 +39,8 @@ export default function UserProfilePage() {
                         className="relative"
                     >
                         <Image
-                            src={user.profileImgUrl || "https://i.pinimg.com/originals/74/a3/b6/74a3b6a8856b004dfff824ae9668fe9b.jpg"}
-                            alt={user.name || "User"}
+                            src={user?.profileImgUrl || "https://i.pinimg.com/originals/74/a3/b6/74a3b6a8856b004dfff824ae9668fe9b.jpg"}
+                            alt={user?.first_name || "User"}
                             width={128}
                             height={128}
                             className="rounded-full lg:w-32 lg:h-32 w-24 h-24 object-cover border-4 border-gray-50 shadow-md"
@@ -48,7 +49,7 @@ export default function UserProfilePage() {
                     </motion.div>
 
                     <div className="flex flex-col gap-2 lg:text-center text-start md:text-left">
-                        <h1 className="lg:text-3xl text-xl text-start font-bold text-gray-900">{user.name}</h1>
+                        <h1 className="lg:text-3xl text-xl text-start font-bold text-gray-900">{user?.first_name} {user?.last_name}</h1>
                         <div className="flex flex-wrap lg:justify-center md:justify-start lg:gap-4 text-gray-500 text-sm">
                             <span className="flex items-center gap-2 lg:px-3 py-1 lg:bg-gray-50 rounded-full lg:border border-gray-100">
                                 <Mail size={14} /> {user.email}
@@ -77,7 +78,7 @@ export default function UserProfilePage() {
 
             <div className="mt-8 flex flex-col md:flex-row gap-6">
                 {[
-                    { label: "TOTAL ORDERS", value: user.orders.length, icon: ShoppingBag, color: "bg-brand-primary", text: "text-brand-primary" },
+                    { label: "TOTAL ORDERS", value: user?.orders?.length ?? 3, icon: ShoppingBag, color: "bg-brand-primary", text: "text-brand-primary" },
                     { label: "ACTIVE ORDERS", value: activeOrders, icon: Timer, color: "bg-yellow", text: "text-yellow-500" }
                 ].map((stat, idx) => (
                     <motion.div
@@ -112,8 +113,8 @@ export default function UserProfilePage() {
                         <Link href={`/customerProfile/${user?.user_id}/addresses`}>
                             <div className="mt-4 pt-4 border-t border-gray-100">
                                 <p className="text-xs font-bold text-gray-400 uppercase mb-2">Default Address</p>
-                                {user.addresses.filter(a => a.is_default).length > 0 ? (
-                                    user.addresses.filter(a => a.is_default).map(address => (
+                                {user?.addresses?.filter(a => a.is_default).length > 0 ? (
+                                    user?.addresses?.filter(a => a.is_default).map(address => (
                                         <p key={address.address_id} className="text-sm text-gray-600 line-clamp-1">
                                             {address.address_line1}, {address.city}...
                                         </p>

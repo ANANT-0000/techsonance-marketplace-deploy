@@ -1,7 +1,8 @@
 ﻿import { loginFailure, loginSuccess } from "@/lib/features/auth/authSlice";
 import axios from "axios";
 import { UserProfile, UserRole, VendorRegisterFormData } from "./Types";
-import { ADMIN_AUTH_URL, CUSTOMER_BASE_URL, VENDOR_AUTH_URL } from "@/constants";
+import { ADMIN_AUTH_URL, CUSTOMER_AUTH_URL, CUSTOMER_BASE_URL, VENDOR_AUTH_URL } from "@/constants";
+import { CustomerRegisterSchemaType } from "./validation";
 
 
 export const vendorLogin = async (data: { email: string, password: string }, dispatch: any) => {
@@ -19,19 +20,21 @@ export const vendorLogin = async (data: { email: string, password: string }, dis
         });
         const result = await response.json();
         console.log(result);
-        if (response.status === 201) {
+        if (response.status === 200) {
             const payload: { user: UserProfile, token: string, role: UserRole } = {
                 user: result.data,
                 token: result.data.token,
                 role: result.data.user_role as UserRole
             };
             dispatch(loginSuccess(payload));
-            return { user: result.data, status: true, message: "Login successful" };
+            return { user: result.data, status: 200, message: "Login successful" };
         }
+        return { status: result.status, message: result.message || result.error || "Login failed" };
     } catch (err: any) {
+        console.log(err)
         const errorMessage = err.response?.data?.message || err.message || "Login failed";
         dispatch(loginFailure(errorMessage));
-        return { status: false, message: errorMessage };
+        return { status: 400, message: errorMessage };
     }
 }
 export const vendorRegister = async (data: VendorRegisterFormData) => {
@@ -45,11 +48,11 @@ export const vendorRegister = async (data: VendorRegisterFormData) => {
         const result = await response.json();
         console.log(result);
         if (response.status === 201) {
-            return { status: true, message: "Registration successful", data: result };
+            return { status: 201, message: "Registration successful", data: result };
         }
     } catch (error: unknown) {
         console.log('Registration failed. Please try again.', error);
-        return { status: false, message: "Registration failed. Please try again.", error };
+        return { status: 400, message: "Registration failed. Please try again.", error };
     }
 }
 
@@ -90,7 +93,7 @@ export const adminLogin = async (data: { admin_id: string, password: string }) =
 
 export const CustomerLogin = async (data: { email: string, password: string }) => {
     try {
-        const response = await fetch(`${CUSTOMER_BASE_URL}/login`, {
+        const response = await fetch(`${CUSTOMER_AUTH_URL}/login-user`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -111,8 +114,7 @@ export const CustomerLogin = async (data: { email: string, password: string }) =
         }
         const payload: { user: UserProfile, token: string, role: UserRole } = {
             user: result.data,
-            token: result.data.token,
-            role: result.data.user_role as UserRole
+            role: result.data.role as UserRole
         };
         console.log(payload);
         return { status: true, message: "Login successful", data: payload };
@@ -122,28 +124,29 @@ export const CustomerLogin = async (data: { email: string, password: string }) =
         return { status: false, message: errorMessage };
     }
 }
-export const CustomerRegister = async (data: { first_name: string | null; last_name: string | null; email: string | null; password: string | null; password_confirm: string | null }) => {
+export const CustomerRegister = async (data: CustomerRegisterSchemaType, companyId: string) => {
+    const customerData = {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email,
+        password: data.password,
+    }
+    console.log('registering customer:', customerData);
     try {
-        const response = await fetch(`${CUSTOMER_BASE_URL}/register`, {
+        const response = await fetch(`${CUSTOMER_AUTH_URL}/register-user/${companyId}`, {
             method: 'POST',
             headers: {
-
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                user_role: 'customer',
-                first_name: data.first_name,
-                last_name: data.last_name,
-                email: data.email,
-                password: data.password,
-                password_confirm: data.password_confirm,
+                customer_data: customerData
             }),
             credentials: 'include'
         });
         const result = await response.json();
         console.log(result);
         if (response.status === 201) {
-            return { status: true, message: "Registration successful", data: result };
+            return { status: response.status, message: "Registration successful", data: result };
         }
 
     } catch (error: unknown) {

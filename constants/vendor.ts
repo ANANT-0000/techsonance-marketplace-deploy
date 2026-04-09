@@ -49,6 +49,7 @@ export const VendorDocumentTypes: { label: string; value: string }[] = [
 export const VENDOR_NAV_LINKS: NavLinkType[] = [
   { Dashboard: null, icon: 'layout-dashboard' },
   { Products: "products", icon: 'package' },
+  { Category: "categories", icon: 'package-search' },
   { Orders: "orders", icon: 'shopping-cart' },
   { Inventory: "inventory", icon: 'package' },
   { Analytics: "finances", icon: 'chart-column-stacked' },

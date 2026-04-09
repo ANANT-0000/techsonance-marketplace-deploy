@@ -2,7 +2,7 @@
 import { ContactList, ContactPageContent } from "@/constants/customer";
 import { contactSchema } from "@/utils/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { id } from "date-fns/locale";
+
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { useState } from "react";
 import { useForm } from "react-hook-form";

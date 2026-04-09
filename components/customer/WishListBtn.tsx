@@ -5,28 +5,62 @@ import { useMediaQuery } from 'react-responsive'
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
-export function WishListBtn({ productId, styles, iconSize }: { productId?: string, styles?: string, iconSize?: number }) {
+import { fetchAddWishList, fetchDeleteWishList } from '@/utils/customerApiClient';
+import { companyDomain } from '@/config';
+export function WishListBtn({ productVariantId
+  , styles, iconSize }: {
+    productVariantId
+    ?: string, styles?: string, iconSize?: number
+  }) {
   const dispatch = useAppDispatch();
   const { wishItems } = useAppSelector((state: any) => state.wishlist)
   const { user } = useAppSelector((state: any) => state.auth)
-  const isAlreadyInWishlist = wishItems.some((item: any) => item.productId === productId);
+  const isAlreadyInWishlist = wishItems.some((item: any) => item.productVariantId
+    === productVariantId
+  );
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const iconSizeValue = iconSize || (isMobile ? 28 : 32);
   const router = useRouter();
 
-  const handleAddToWishlist = () => {
-    if (!user.user_role || user.user_role.toLowerCase() !== 'customer') {
+  const handleAddToWishlist = async () => {
+    if (!productVariantId
+    ) {
+      console.error('Product ID is missing');
+      return;
+    }
+    if (!user.role || user.role.toLowerCase() !== 'customer') {
       router.push('/auth/customerLogin');
       return;
     }
 
     if (isAlreadyInWishlist) {
-      dispatch(removeFromWishlist(productId));
-      console.log(`Removing product ${productId} from wishlist`);
+      dispatch(removeFromWishlist(productVariantId
+      ));
+      await fetchDeleteWishList(productVariantId
+        , user.id, companyDomain);
+      console.log(`Removing product ${productVariantId
+        } from wishlist`);
       return;
     }
-    dispatch(addToWishlist({ productId }));
-    console.log(`Adding product ${productId} to wishlist`);
+    const response = await fetchAddWishList(productVariantId
+      , user.id, companyDomain);
+    const data: {
+      id: string;
+      wishlist_id: string | null;
+      product_variant_id: string | null;
+      created_at: string | null;
+      updated_at: string | null
+    } = response.data;
+    dispatch(addToWishlist({
+      id: data.id,
+      wishlist_id: data.wishlist_id ?? '',
+      product_variant_id: productVariantId,
+      created_at: data.created_at ?? '',
+      updated_at: data.updated_at ?? '',
+
+    }));
+    console.log(`Adding product ${productVariantId
+      } to wishlist`);
   }
   return (
     <>
@@ -43,7 +77,7 @@ export function WishListBtn({ productId, styles, iconSize }: { productId?: strin
             : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
           }
       `}
-        aria-label={isAlreadyInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+      // aria-label={isAlreadyInWishlist ? "Remove from wishlist" : "Add to wishlist"}
       >
         <AnimatePresence mode="wait">
           <motion.div

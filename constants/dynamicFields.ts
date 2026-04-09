@@ -35,7 +35,7 @@ export const CUSTOMER_REGISTRATION_FIELDS = [
     { id: "last_name", label: "Last name", type: "text", placeholder: "Enter your last name" },
     { id: "email", label: "Email", type: "text", placeholder: "Enter your email" },
     { id: "password", label: "Password", type: "password", placeholder: "Password" },
-    { id: "password_confirm", label: "Confirm Password", type: "password", placeholder: "Please reenter password" },
+    { id: "confirm_password", label: "Confirm Password", type: "password", placeholder: "Please reenter password" },
 ]
 export const PASSWORD_CHANGE_FORM_FIELDS = [
     {
@@ -93,4 +93,24 @@ export const PRODUCT_FORM_PRICING_FIELDS = [
     { name: "basePrice", label: "Base Price (₹)", type: "number", placeholder: "0.00" },
     { name: "discountPercent", label: "Discount (%)", type: "number", placeholder: "0" },
     { name: "stocks", label: "Stock Quantity", type: "number", placeholder: "0" },
+    {name :'sku',label:"SKU",type:'text',placeholder: "Enter Sku"}
 ];
+export const PRODUCT_FORM_FIELDS = [
+
+    {
+        section: "Price & Inventory", icon: 'tag', fields: [
+            { name: "basePrice", label: "Base Price (₹)", type: "number", placeholder: "0.00" },
+            { name: "discountPercent", label: "Discount (%)", type: "number", placeholder: "0" },
+            { name: "stocks", label: "Stock Quantity", type: "number", placeholder: "0" },
+            { name: "sku", label: "SKU", type: "text", placeholder: "Enter SKU" },
+        ]
+    },
+    {
+        section: "Category & Taxation", icon: 'building-2', fields: [
+            { name: "category", label: "Category", type: "select", },
+            { name: "status", label: "Status", type: "select", },
+            { name: "taxProfile", label: "Tax Profile", type: "select", },
+        ]
+
+    }
+]

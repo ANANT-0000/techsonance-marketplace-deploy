@@ -12,6 +12,8 @@ import { motion, MotionConfig } from "motion/react";
 import type { RootState } from "@/lib/store";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { ProductType } from "@/utils/Types";
+import { formatCurrency } from "@/lib/utils";
 
 export function ShoppingList({
     products, styles
@@ -19,15 +21,14 @@ export function ShoppingList({
     products: ProductType[];
     styles?: string;
 }) {
-    const pageSize = 8; // Number of products to show at a time
-    const [productsState, setProductsState] = useState<ProductType[]>(products)
+    console.log(products)
+    const pageSize = 8;
     const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
-    const [count, setCount] = useState(1); // Number of products to show at a time
-    const totalPages = Math.ceil(productsState.length / pageSize);
+    const [count, setCount] = useState(1);
+    const totalPages = Math.ceil(products.length / pageSize);
     const firstIndex = (count - 1) * pageSize;
     const lastIndex = firstIndex + pageSize - 1;
     const [isLoading, setIsLoading] = useState(false);
-    const { isCartOpen } = useAppSelector((state: RootState) => state.cartSidebar);
     const dispatch = useAppDispatch();
     const sectionRef = useRef<HTMLElement>(null);
 
@@ -39,17 +40,18 @@ export function ShoppingList({
             }
         )
     }
-    const productsToShow = productsState.slice(firstIndex, lastIndex + 1)
+    console.log("firstIndex, lastIndex", firstIndex, lastIndex);
+    const productsToShow = products
+    console.log("productsToShow", productsToShow);
     return (
         <>
             <MotionConfig transition={{ duration: 0.4, ease: "easeInOut" }}>
                 <motion.section ref={sectionRef} transition={{ type: 'keyframes', }} className={`w-full  ${styles} `}>
                     <span className="flex gap-8   mb-0">
-                        <FilterSidebar PRODUCT_LIST={productsState} filterProduct={setProductsState} />
-                        {/* Container: Grid with responsive columns */}
-                        <ul className="w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-6 gap-2 items-stretch ">
+                        <FilterSidebar PRODUCT_LIST={products} />
+
+                        <ul className="w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-6 gap-2 items-start ">
                             {isLoading ? (
-                                // Show 8 skeletons while loading
                                 Array.from({ length: 8 }).map((_, i) => (
                                     <ProductSkeleton key={i} />
                                 ))
@@ -60,16 +62,16 @@ export function ShoppingList({
                                         >
 
                                             <div className="flex flex-col h-full">
-                                                <WishListBtn productId={product.id} styles="absolute top-2 right-6 z-10" />
+                                                <WishListBtn productId={product.variants[0]?.id} styles="absolute top-2 right-6 z-10" />
 
                                                 <Link href={`/shopping/${product.id}`} className="block overflow-hidden rounded-lg">
                                                     <img loading="lazy"
-                                                        className="w-full object-cover lg:aspect-9/14 aspect-9/12 rounded-lg mb-4 transform hover:scale-105 transition-transform duration-300"
-                                                        src={product.imgUrl ? product.imgUrl : "https://placehold.net/10.png"}
-                                                        alt={product.title.trim()}
+                                                        className="w-full object-contain lg:aspect-9/14 aspect-9/12 rounded-lg mb-4 transform hover:scale-105 transition-transform duration-300"
+                                                        src={product.images[0].image_url ? product.images[0].image_url : "https://placehold.net/10.png"}
+                                                        alt={product.name.trim()}
                                                     />
                                                 </Link>
-                                                <h3 className="font-semibold text-sm lg:line-clamp-1 line-clamp-2 leading-4 mb-1">{product.title}</h3>
+                                                <h3 className="font-semibold text-sm lg:line-clamp-1 line-clamp-2 leading-4 mb-1">{product.name}</h3>
                                                 <p className="lg:text-sm text-xs  text-gray-500 lg:line-clamp-2 line-clamp-2 leading-5 overflow-hidden mb-4 h-10">
                                                     {product.description}
                                                 </p>
@@ -78,16 +80,16 @@ export function ShoppingList({
 
                                             <div className="mt-auto">
                                                 <div className="flex items-baseline gap-2   flex-wrap">
-                                                    <span className="font-bold  text-gray-900 lg:text-xl text-sm">₹{product.price}</span>
-                                                    {product.discount > 0 && (
+                                                    <span className="font-bold  text-gray-900 lg:text-xl text-sm">₹{formatCurrency(Number(product.base_price))}</span>
+                                                    {Number(product.discount_percent) > 0 && (
                                                         <>
                                                             <div className="flex gap-2  ">
 
                                                                 <span className="text-xs line-through text-gray-400">
-                                                                    ₹{Math.floor(product.price / (1 - product.discount / 100))}
+                                                                    ₹{formatCurrency(Math.floor(Number(product.base_price) / (1 - Number(product.discount_percent) / 100)))}
                                                                 </span>
                                                                 <span className="text-xs font-bold text-green-500">
-                                                                    {Math.round(product.discount)}% off
+                                                                    {Math.round(Number(product.discount_percent))}% off
                                                                 </span>
                                                             </div>
                                                         </>
@@ -96,8 +98,8 @@ export function ShoppingList({
                                                 {
                                                     !isMobile &&
                                                     <div className={`flex gap-2 mt-2   justify-between items-center`}>
-                                                        <AddToCart productId={product.id} styles="w-full " />
-                                                        <BuyBtn productId={product.id} styles=" scale-[.9]" />
+                                                        <AddToCart productVariantId={product?.variants[0]?.id} styles="w-full " />
+                                                        <BuyBtn productId={product.variants[0]?.id} styles=" scale-[.9]" />
 
                                                     </div>
                                                 }

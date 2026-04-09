@@ -4,25 +4,43 @@ import { TAB_LINKS } from "@/constants/customer"
 import { DynamicIcon, IconName } from "lucide-react/dynamic"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useAppSelector } from "@/hooks/reduxHooks";
 
 
 
 export function TabNavBar() {
     const { user } = useAppSelector((state: any) => state.auth)
-    const userId= user?.user_id ? user.user_id : '';
+    const userId = user?.user_id ? user.user_id : '';
     const path = usePathname();
-    const navLinks = useMemo((() => {
-        return TAB_LINKS.map((link, index) => {
-            if (!user) {
-                link.url = link.url.toLowerCase() === '/profile' ? '/customerProfile' : link.url.toLowerCase() === '/cart' ? '/customerProfile' : link.url;
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+    const navLinks = useMemo(() => {
+      
+        return TAB_LINKS.map((link) => {
+            const newLink = { ...link };  
+
+            if (isMounted && user) {
+                const userId = user.user_id || '';
+                if (newLink.title.toLowerCase() === 'profile') {
+                    newLink.url = `/customerProfile/${userId}`;
+                } else if (newLink.title.toLowerCase() === 'cart') {
+                    newLink.url = `/customerProfile/${userId}/cart`;
+                }
             } else {
-                link.title.toLowerCase() === 'profile' ? link.url = `/customerProfile/${userId}` : link.title.toLowerCase() === 'cart' ? link.url = `/customerProfile/${userId}/cart` : link.url = link.url;
+                // Default server-safe paths
+                if (newLink.url.toLowerCase() === '/profile' || newLink.url.toLowerCase() === '/cart') {
+                    newLink.url = '/customerProfile';
+                }
             }
-            return link;
-        })
-    }), [user])
+            return newLink;
+        });
+    }, [user, isMounted]); // Add isMounted to dependency array
+
+    if (!isMounted) return null;
     return (
         <>
             <motion.footer className="lg:hidden xl:hidden fixed bottom-0 w-full bg-white   border-t-gray-300   pb-0  flex justify-around items-center   z-100 pt-1">

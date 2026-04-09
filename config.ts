@@ -1,0 +1,1 @@
+﻿export const companyDomain = "975b2777-b12e-4188-9236-954dae4397e2"

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { PRODUCT_LIST } from "@/constants/customer";
 import { AddToCart } from "./AddToCart";
@@ -12,6 +12,10 @@ import { useMediaQuery } from "react-responsive";
 import { RootState } from "@/lib/store";
 import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { companyDomain } from "@/config";
+import { fetchGetCartList } from "@/utils/customerApiClient";
+import { setItemList } from "@/lib/features/Cart";
+import { CartItemListResponse } from "@/app/(shop)/customerProfile/[userId]/cart/page";
 
 
 
@@ -19,16 +23,24 @@ export function CartSidebar() {
   const { isCartOpen } = useAppSelector((state: RootState) => state.cartSidebar);
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const { user } = useAppSelector((state: RootState) => state.auth);
-  const { items } = useAppSelector((state: RootState) => state.cart);
+  const { items, cartId, itemList } = useAppSelector((state: RootState) => state.cart);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
-
-  const cartItems = Array.isArray(PRODUCT_LIST) && Array.isArray(items)
-    ? PRODUCT_LIST.filter(product => items.some(item => item.id === product.id)).map(product => {
-      const item = items.find(item => item.id === product.id);
-      return { ...product, quantity: item?.quantity || 0 };
-    })
-    : [];
+  const [cartList, setCartList] = useState<CartItemListResponse[]>([]);
+  useEffect(() => {
+    const fetchCartList = async () => {
+      if (user?.id) {
+        try {
+          const response = await fetchGetCartList(user.id, companyDomain);
+          console.log("cart list response", response);
+          setCartList(response.data || []);
+        } catch (error) {
+          console.error("Error fetching cart list:", error);
+        }
+      }
+    };
+    fetchCartList();
+  }, [isCartOpen,items]);
   useEffect(() => {
     if (isCartOpen && isMobile) {
       const timeoutId = setTimeout(() => {
@@ -48,12 +60,12 @@ export function CartSidebar() {
               animate={{ opacity: 1, translateY: 20 }}
               exit={{ opacity: 0, translateY: -30 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              key={cartItems.length}
+              key={cartList.length}
               className="fixed z-70  w-full flex  items-center justify-center gap-6  "
             >
 
               {
-                cartItems.length !== 0 && (
+                cartList.length !== 0 && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -82,7 +94,7 @@ export function CartSidebar() {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             onMouseLeave={() => dispatch(toggleCartSidebar('close'))}
 
-            className="fixed right-0 top-0 z-[70] h-[100dvh]   bg-white shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 z-[70] h-[100dvh] max-w-xl   bg-white shadow-2xl flex flex-col"
           >
 
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -100,7 +112,7 @@ export function CartSidebar() {
 
 
             <div className="flex-1 overflow-y-auto p-6">
-              {cartItems.length === 0 ? (
+              {cartList.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-4">
                   <ShoppingBag size={48} strokeWidth={1} />
                   <p>Your cart is empty.</p>
@@ -108,10 +120,10 @@ export function CartSidebar() {
               ) : (
                 <ul className="space-y-6">
                   <AnimatePresence mode="popLayout">
-                    {cartItems.map((item) => (
+                    {cartList.map((item, idx) => (
                       <motion.li
                         layout
-                        key={item.id}
+                        key={idx}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9 }}
@@ -120,17 +132,17 @@ export function CartSidebar() {
                         <div className="flex gap-4 items-center">
                           <img
                             className="aspect-square w-16 h-16 object-cover rounded-xl border border-gray-100"
-                            src={item.imgUrl}
-                            alt={item.title}
+                            src={item.productVariant.images[0]?.image_url ?? "/placeholder.png"}
+                            alt={item.productVariant.variant_name}
                           />
                           <div>
-                            <p className="font-semibold text-gray-800 text-sm line-clamp-1">{item.title}</p>
-                            <p className="text-brand-primary font-bold text-sm">₹{item.price}</p>
+                            <p className="font-semibold text-gray-800 text-sm line-clamp-1">{item.productVariant.variant_name}</p>
+                            <p className="text-brand-primary font-bold text-sm">₹{item.productVariant.price}</p>
                           </div>
                         </div>
 
                         <div className="flex flex-col items-end gap-1">
-                          <AddToCart productId={item.id} styles="small w-24" />
+                          <AddToCart productVariantId={item.product_variant_id} styles="small w-24" />
                         </div>
                       </motion.li>
                     ))}
@@ -144,7 +156,7 @@ export function CartSidebar() {
               <Link
                 onClick={() => dispatch(toggleCartSidebar('close'))}
                 className="flex justify-center py-3 px-6 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
-                href={`/customerProfile/${user?.user_id}/cart`}
+                href={`/customerProfile/${user?.id}/cart`}
               >
                 View Full Cart
               </Link>

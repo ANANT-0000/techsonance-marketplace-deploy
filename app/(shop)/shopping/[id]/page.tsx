@@ -89,7 +89,7 @@ export default function ProductPage() {
             <section className='flex flex-col lg:flex-row gap-12 mt-20'>
                 <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className='lg:w-1/2'>
                     <h2 className='text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2'><span className="w-1 h-8 bg-brand-primary rounded-full"></span>Product Description</h2>
-                    <div className="prose prose-gray max-w-none text-gray-600 space-y-3">{product.description.split('\n').map((line, idx) => (<p key={idx}>{line}</p>))}</div>
+                    <div className="prose prose-gray max-w-none text-gray-600 space-y-3">{product.description && product.description.split('\n').map((line, idx) => (<p key={idx}>{line}</p>))}</div>
                 </motion.div>
                 <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className='lg:w-1/2'>
                     <ProductSpecifications product={product} />
