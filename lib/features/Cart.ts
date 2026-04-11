@@ -34,6 +34,7 @@ const loadCartFromLocalOrServer = async (): Promise<Omit<CartState, 'loading' | 
             const response = await fetchGetCartList(customerId, companyDomain);
             if (response.ok && Array.isArray(response.data)) {
                 const itemList: CartItemListResponse[] = response.data;
+                
                 const items: CartItemType[] = itemList.map((item) => ({
                     cartId: item.cart_id,
                     cartItemId: item.id,

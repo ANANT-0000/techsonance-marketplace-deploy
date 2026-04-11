@@ -283,3 +283,34 @@ export const billingSchema = z.object({
 });
 
 export type BillingFormData = z.infer<typeof billingSchema>;
+
+const ADDRESS_TYPE_ENUM = ['home', 'work', 'other'] as const;
+export const AddressSchema = z.object({
+  // id: z.uuid({ message: "Invalid unique identifier" }),
+  name: z.string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name is too long"),
+  phone: z.string()
+    .regex(/^\d+$/, "Phone number must contain only digits")
+    .min(10, "Phone number is too short")
+    .max(15, "Phone number is too long"),
+  address_for: z.enum(ADDRESS_TYPE_ENUM),
+
+  address_line_1: z.string().min(1, "Address line 1 is required"),
+  address_line_2: z.string().optional(),
+
+  city: z.string().min(1, "City is required"),
+
+  state: z.string().min(1, "State is required"),
+  street: z.string().min(1, "Street is required"),
+  country: z.string().min(1, "Country is required"),
+  landmark: z.string().min(1, "Landmark is required"),
+
+  postal_code: z.string()
+    .length(6, "Postal code must be exactly 6 digits")
+    .regex(/^\d+$/, "Postal code must be numeric"),
+
+  is_default: z.boolean().default(false),
+});
+
+export type AddressType = z.infer<typeof AddressSchema>;

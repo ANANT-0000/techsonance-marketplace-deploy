@@ -39,10 +39,10 @@ export default function Contact() {
         resolver: zodResolver(contactSchema),
         mode: "onChange",
         defaultValues: {
-            name: null,
-            email: null,
-            phone: null,
-            message: null
+            name: '',
+            email: '',
+            phone: '',
+            message:''
         }
     });
     const [copied, setCopied] = useState(false);
@@ -51,7 +51,7 @@ export default function Contact() {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     }
-    const onSubmit = (data: any) => {
+    const onSubmit = (data: ContactFormData) => {
         try {
             console.log("Form Data:", data);
 
@@ -82,11 +82,9 @@ export default function Contact() {
 
                             {
                                 ContactList.map(contact => (
-
-
                                     <div onClick={() => onclickCopy(contact.description)} className="flex justify-center items-center gap-4 cursor-pointer " key={contact.id} >
                                         <span className="border-2 border-gray-400 rounded-full p-2 ">
-                                            <DynamicIcon name={contact.icon as IconName} />
+                                            <DynamicIcon name={contact.icon as IconName} fallback={() => <p></p>} />
                                         </span>
                                         <span className="flex flex-col">
                                             <p className="font-bold">
@@ -102,7 +100,6 @@ export default function Contact() {
 
                         </span>
                     </div>
-
                     <form className="flex flex-col gap-4 border-2 border-gray-300 rounded-lg px-6 py-6 lg:min-w-[24rem] sm:min-w-full" onSubmit={handleSubmit(onSubmit)}>
                         {CONTACT_FORM_FIELDS.map((field) => (
                             <div className="flex flex-col gap-2" key={field.id}>
@@ -111,7 +108,7 @@ export default function Contact() {
                                 </label>
                                 {field.type === "textarea" ? (
                                     <textarea
-                                        {...register(field.id)}
+                                        {...register(field.id as keyof typeof register)}
                                         placeholder={field.placeholder}
                                         className="border-2 border-gray-300 rounded-lg py-2 px-3 h-32 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />

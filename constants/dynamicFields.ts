@@ -1,4 +1,5 @@
-﻿import { BusinessStructure, categoryOptions, COUNTRY_CODES } from "./common";
+﻿import { id, pl } from "date-fns/locale";
+import { BusinessStructure, categoryOptions, COUNTRY_CODES } from "./common";
 
 export const ORGANIZATION_DETAIL_FIELDS = [
     { id: "company_name", label: "Company Name", placeholder: "Enter your company name", type: "text" },
@@ -58,21 +59,25 @@ export const PASSWORD_CHANGE_FORM_FIELDS = [
     }
 ]
 export const ADDRESS_FIELDS = [
-    { id: "address_for", label: "Address Type", type: "select", options: ["home", "work", "other"] },
-    { id: "phone", label: "Phone", type: "text" },
-    { id: "address_line_1", label: "Address Line 1", type: "text" },
-    { id: "address_line_2", label: "Address Line 2", type: "text" },
-    { id: "city", label: "City", type: "text" },
-    { id: "state", label: "State", type: "text" },
-    { id: "postal_code", label: "Postal Code", type: "text" },
-    { id: "country", label: "Country", type: "text" },
+    { id: "address_for", label: "Address Type", type: "select", options: ["home", "work", "other"], placeholder: "Select address type", required: true },
+    { id: 'name', label: 'Recipient Name', type: 'text', placeholder: "Enter recipient's name", required: true },
+    { id: "phone", label: "Phone", type: "text", placeholder: "Enter contact number for this address", required: true },
+    { id: "address_line_1", label: "Address Line 1", type: "text", placeholder: "Enter street address", required: true },
+    { id: "address_line_2", label: "Address Line 2", type: "text", placeholder: "Enter apartment, suite, etc.", required: false },
+
+    { id: "street", label: "Street", type: "text", placeholder: "Enter street name", required: true },
+    { id: "city", label: "City", type: "text", placeholder: "Enter city", required: true },
+    { id: "state", label: "State", type: "text", placeholder: "Enter state", required: true },
+    { id: "postal_code", label: "Postal Code", type: "text", placeholder: "Enter postal code", required: true },
+    { id: "country", label: "Country", type: "text", placeholder: "Enter country", required: true },
+    { id: "landmark", label: "Landmark", type: "text", placeholder: "Enter nearby landmark", required: true },
     { id: "is_default", label: "Set as default address", type: "checkbox" }
 
-]
+] as const;
 export const PAYMENT_METHODS_FIELDS = [
     { id: 'UPI', label: 'UPI', placeholder: 'Enter your UPI ID', type: 'text', description: 'We will redirect you to your UPI app to complete the payment.' },
     { id: 'CreditCard', label: 'Credit or Debit Card', placeholder: 'Card Number', type: 'text', description: 'We accept all major credit and debit cards. Your card details are processed securely.' },
-    { id: 'cod', label: 'Cash on Delivery/Pay on Delivery', placeholder: '', type: 'text', description: 'Cash, UPI and Cards accepted. Know more.' }
+    { id: 'cod', label: 'Cash on Delivery/Pay on Delivery', placeholder: 'Enter delivery instructions', type: 'text', description: 'Cash, UPI and Cards accepted. Know more.' }
 ];
 export const AUDIT_LOG_COLUMNS = [
     { id: 'timestamp', label: 'TIMESTAMP' },
@@ -93,7 +98,7 @@ export const PRODUCT_FORM_PRICING_FIELDS = [
     { name: "basePrice", label: "Base Price (₹)", type: "number", placeholder: "0.00" },
     { name: "discountPercent", label: "Discount (%)", type: "number", placeholder: "0" },
     { name: "stocks", label: "Stock Quantity", type: "number", placeholder: "0" },
-    {name :'sku',label:"SKU",type:'text',placeholder: "Enter Sku"}
+    { name: 'sku', label: "SKU", type: 'text', placeholder: "Enter Sku" }
 ];
 export const PRODUCT_FORM_FIELDS = [
 

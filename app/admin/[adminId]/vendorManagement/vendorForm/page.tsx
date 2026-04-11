@@ -12,6 +12,9 @@ import { DocUploadInput } from "@/components/vendor/DocUploadInput";
 import FinancialCompliance from "@/components/vendor/FinancialCompliance";
 import { Button } from "@/components/common/Button";
 import { RegistrationSuccessModal } from "@/components/common/RegistrationSuccessModal";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { vendorRegisterSchema } from "@/utils/validation";
+import { vendorRegister } from "@/utils/authApiClient";
 
 const STEP_FIELDS: Record<number, (keyof VendorRegisterTypes)[]> = {
     0: ["company_name", "store_owner_first_name", "store_owner_last_name", "country_code", "phone_number", "category", "company_structure"],
@@ -31,21 +34,23 @@ export default function VendorFormPage() {
         watch,
         reset,
         formState: { errors, isSubmitting },
-    } = useForm<VendorRegisterTypes>({
+    } = useForm({
+        resolver: zodResolver(vendorRegisterSchema),
+        mode: "onChange",
         defaultValues: {
-            first_name: null,
-            last_name: null,
-            phone_number: null,
-            company_name: null,
-            store_owner_first_name: null,
-            store_owner_last_name: null,
-            category: null,
-            company_domain: null,
-            company_structure: null,
-            email: null,
-            country_code: null,
-            password: null,
-            confirm_password: null,
+            first_name: '',
+            last_name: '',
+            phone_number: '',
+            company_name: '',
+            store_owner_first_name: '',
+            store_owner_last_name: '',
+            category: '',
+            company_domain: '',
+            company_structure: '',
+            email: '',
+            country_code: '',
+            password: '',
+            confirm_password: '',
         },
     });
 

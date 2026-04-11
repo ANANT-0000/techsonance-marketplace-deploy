@@ -8,7 +8,7 @@ import { RootState } from "@/lib/store";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { use, useEffect, useState } from "react";
-import { loginEnd, loginFailure, loginStart } from "@/lib/features/auth/authSlice";
+import { loginEnd, loginFailure, loginStart, loginSuccess } from "@/lib/features/auth/authSlice";
 
 import { LoaderSpinner } from "@/components/common/LoaderSpinner";
 
@@ -38,12 +38,8 @@ export default function VendorLoginPage() {
         const auth = storedData ? JSON.parse(storedData) : null;
         if (auth && auth?.isAuthenticated && auth?.user?.user_role
             === "vendor") {
-            setLoadingState(true);
-            dispatch(loginStart());
             console.log("Already logged in as vendor.");
             router.replace(`/vendor/${auth.user.vendor_id}`);
-            setLoadingState(false);
-            dispatch(loginEnd());
         }
     }, []);
     const onSubmit = async (data: LoginFormData) => {
@@ -51,10 +47,11 @@ export default function VendorLoginPage() {
         setLoadingState(true);
         const result = await vendorLogin(data, dispatch);
         console.log(result);
-        if (result?.status === 200 ) {
+        if (result?.status === 200) {
             reset();
+            dispatch(loginSuccess(result.user));
             console.log(result.user);
-            router.push(`/vendor/${result.user.vendor_id}`);
+            router.push(`/vendor/${result.user?.user?.vendor_id}`);
             dispatch(loginEnd());
             setLoadingState(false);
         } else {

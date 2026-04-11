@@ -157,7 +157,7 @@ export const ProductVariantForm = ({
             {/* ── 1. VARIANT DETAILS & ATTRIBUTES ── */}
             <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
                 <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
-                    <DynamicIcon name="layers" size={18} className="text-indigo-500" />
+                    <DynamicIcon fallback={() => <p></p>} name="layers" size={18} className="text-indigo-500" />
                     <h2 className="text-base font-semibold text-slate-800">Variant Details</h2>
                 </div>
                 <div className="p-6 space-y-5">
@@ -174,7 +174,7 @@ export const ProductVariantForm = ({
                         />
                         {errors.variantName && (
                             <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                <DynamicIcon name="alert-circle" size={12} />{errors.variantName.message}
+                                <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={12} />{errors.variantName.message}
                             </p>
                         )}
                     </div>
@@ -188,7 +188,7 @@ export const ProductVariantForm = ({
                                 onClick={() => appendAttribute({ name: "", value: "" })}
                                 className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
                             >
-                                <DynamicIcon name="plus" size={14} /> Add Attribute
+                                <DynamicIcon fallback={() => <p></p>} name="plus" size={14} /> Add Attribute
                             </button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -199,7 +199,7 @@ export const ProductVariantForm = ({
                                         onClick={() => removeAttribute(index)}
                                         className="absolute top-2.5 right-2.5 text-slate-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 bg-white rounded-md p-1 border shadow-sm"
                                     >
-                                        <DynamicIcon name="trash-2" size={14} />
+                                        <DynamicIcon fallback={() => <p></p>} name="trash-2" size={14} />
                                     </button>
                                     <div className="mb-3">
                                         <label className="block text-xs font-semibold text-slate-600 mb-1">
@@ -231,7 +231,7 @@ export const ProductVariantForm = ({
             {/* ── 2. PRICING & INVENTORY ── */}
             <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
                 <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
-                    <DynamicIcon name="tag" size={18} className="text-blue-500" />
+                    <DynamicIcon fallback={() => <p></p>} name="tag" size={18} className="text-blue-500" />
                     <h2 className="text-base font-semibold text-slate-800">Pricing & Inventory</h2>
                 </div>
                 <div className="p-6">
@@ -250,7 +250,7 @@ export const ProductVariantForm = ({
                                     />
                                     {errors[field.name] && (
                                         <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                            <DynamicIcon name="alert-circle" size={16} />{errors[field.name]?.message as string}
+                                            <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={16} />{errors[field.name]?.message as string}
                                         </p>
                                     )}
                                 </div>
@@ -263,7 +263,7 @@ export const ProductVariantForm = ({
             {/* ── 3. MEDIA ── */}
             <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
                 <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
-                    <DynamicIcon name="image" size={18} className="text-indigo-500" />
+                    <DynamicIcon fallback={() => <p></p>} name="image" size={18} className="text-indigo-500" />
                     <h2 className="text-base font-semibold text-slate-800">Variant Images</h2>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -290,7 +290,7 @@ export const ProductVariantForm = ({
                                             )
                                         }
                                     />
-                                    <DynamicIcon name="upload-cloud" size={32} className="text-blue-400 group-hover:text-blue-600 transition mb-2" />
+                                    <DynamicIcon fallback={() => <p></p>} name="upload-cloud" size={32} className="text-blue-400 group-hover:text-blue-600 transition mb-2" />
                                     <p className="text-xs font-semibold text-blue-500 group-hover:text-blue-700">Click to upload</p>
                                     <p className="text-xs text-slate-400 mt-0.5">PNG, JPG, MP4 up to 10MB</p>
                                 </label>
@@ -322,7 +322,7 @@ export const ProductVariantForm = ({
                                                     className="absolute top-1 right-1 p-0.5 bg-red-50 text-red-400 hover:text-red-600 transition rounded-full border border-red-200"
                                                     title="Remove image"
                                                 >
-                                                    <DynamicIcon name="x" size={12} />
+                                                    <DynamicIcon fallback={() => <p></p>} name="x" size={12} />
                                                 </button>
                                             </li>
                                         ))}
@@ -349,7 +349,7 @@ export const ProductVariantForm = ({
                     className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold py-2.5 px-8 rounded-xl hover:bg-blue-700 transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                     {isSubmitting
-                        ? <><DynamicIcon name="loader-2" size={15} className="animate-spin" /> Saving…</>
+                        ? <>  <DynamicIcon fallback={() => <p></p>} name="loader-2" size={15} className="animate-spin" /> Saving…</>
                         : "Save Variant"
                     }
                 </button>

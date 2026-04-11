@@ -16,7 +16,7 @@ export const PROFILE_EDIT_FIELDS = [
 
 export default function EditProfilePage() {
     const { user } = useAppSelector((state) => state.auth);
-    const userId = user?.user_id ?? '';
+    const userId = user?.id ?? '';
     const router = useRouter();
 
     const {
@@ -28,11 +28,11 @@ export default function EditProfilePage() {
         resolver: zodResolver(profileEditSchema),
         mode: "onBlur",
         defaultValues: {
-            profile_picture: user?.profileImgUrl || "",
+            profile_picture: user?.profile_picture_url || "",
             first_name: user?.first_name || "",
             last_name: user?.last_name || "",
             email: user?.email || "",
-            phone: user?.phone || ""
+            phone: user?.phone_number || ""
         }
     });
 

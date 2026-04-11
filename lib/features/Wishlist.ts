@@ -12,6 +12,7 @@ export interface WishlistItem {
     created_at?: string;
     updated_at?: string;
 }
+
 interface WishlistServerResponse {
     id: string;
     wishlist_id: string;
@@ -20,6 +21,7 @@ interface WishlistServerResponse {
     created_at?: string;
     updated_at?: string;
 }
+
 export interface WishlistState {
     wishlistId: string;
     wishItems: WishlistItem[];
@@ -40,11 +42,21 @@ const saveWishlistToLocalStorage = (wishlistId: string, wishItems: WishlistItem[
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
-const loadWishlistFromLocalOrServer = async (): Promise<Omit<WishlistState, 'loading' | 'error'> | null> => {
-    if (!isClient) return null;
+const loadWishlistFromLocalOrServer = async (): Promise<Omit<WishlistState, 'loading' | 'error'>> => {
+    if (!isClient) return { wishlistId: '', wishItems: [] };
+
+    let localFallback: Omit<WishlistState, 'loading' | 'error'> = { wishlistId: '', wishItems: [] };
 
     try {
         const serializedWishlist = localStorage.getItem(WISHLIST_KEY);
+
+        if (serializedWishlist) {
+            const parsed = JSON.parse(serializedWishlist);
+            if (parsed && Array.isArray(parsed.wishItems)) {
+                localFallback = { ...parsed, wishItems: parsed.wishItems as WishlistItem[] };
+            }
+        }
+
         const customerId = localStorage.getItem(USER_STORAGE_KEY)
             ? JSON.parse(localStorage.getItem(USER_STORAGE_KEY) as string)?.id
             : null;
@@ -54,35 +66,35 @@ const loadWishlistFromLocalOrServer = async (): Promise<Omit<WishlistState, 'loa
 
             if (response.ok && response.data) {
                 const serverData: WishlistServerResponse[] = response.data;
-                const wishItems: WishlistItem[] = response.data.map((item: any) => ({
-                    id: item.id,
-                    wishlist_id: item.wishlist_id,
-                    product_variant_id: item.product_variant_id,
-                    created_at: item.created_at,
-                    updated_at: item.updated_at,
-                }));
-                saveWishlistToLocalStorage(serverData[0].wishlist_id, wishItems);
-                return { wishlistId: serverData[0].wishlist_id, wishItems };
-            }
-        }
-        if (serializedWishlist) {
-            const parsed = JSON.parse(serializedWishlist);
-            if (parsed?.wishlistId !== undefined) {
-                return parsed;
-            }
-        }
 
+                if (serverData.length > 0) {
+                    const wishItems: WishlistItem[] = serverData.map((item: WishlistServerResponse) => ({
+                        id: item.id,
+                        wishlist_id: item.wishlist_id,
+                        product_variant_id: item.product_variant_id,
+                        created_at: item.created_at,
+                        updated_at: item.updated_at,
+                    }));
+                    const wishlistId = serverData[0].wishlist_id;
+                    saveWishlistToLocalStorage(wishlistId, wishItems);
+                    return { wishlistId, wishItems };
+                }
+ 
+            }
+        }
     } catch (e) {
         console.error("Could not load wishlist from localStorage or server", e);
+        return localFallback;
     }
 
-    return null;
+    return localFallback;
 };
 
 
 export const loadWishlist = createAsyncThunk('wishlist/load', async () => {
     return await loadWishlistFromLocalOrServer();
 });
+
 const initialState: WishlistState = {
     wishlistId: '',
     wishItems: [],
@@ -96,19 +108,21 @@ const WishlistSlice = createSlice({
     initialState,
     reducers: {
         addToWishlist: (state, action: { payload: WishlistItem }) => {
+            if (state.loading) return;
+
             const existingItem = state.wishItems.find(
                 (item) => item.product_variant_id === action.payload.product_variant_id
             );
+
             if (!existingItem) {
                 state.wishItems.push(action.payload);
-
                 saveWishlistToLocalStorage(state.wishlistId, state.wishItems);
             }
         },
 
         removeFromWishlist: (state, action: { payload: string }) => {
             state.wishItems = state.wishItems.filter(
-                (item) => item.product_variant_id !== action.payload
+                (item) => item.id !== action.payload
             );
 
             saveWishlistToLocalStorage(state.wishlistId, state.wishItems);
@@ -119,7 +133,7 @@ const WishlistSlice = createSlice({
         },
 
         clearWishlist: (state) => {
-            state.wishlistId     = '';
+            state.wishlistId = '';
             state.wishItems = [];
             if (isClient) localStorage.removeItem(WISHLIST_KEY);
         },

@@ -1,5 +1,5 @@
 'use client';
-import { BAR_TOGGLE_ICON, TS_LOGO,  } from "@/constants/common"
+import { BAR_TOGGLE_ICON, TS_LOGO, } from "@/constants/common"
 import { toggleSidebar, type isSidebarType } from "@/lib/features/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -31,7 +31,7 @@ export function Sidebar({ basePath = " ", NAV_LINKS, id = 32 }: SidebarProps) {
                     NAV_LINKS.map((linkObj, index) => (
 
                         <Link href={Object.values(linkObj)[0] == null ? `${basePath}` : `${basePath}/${Object.values(linkObj)[0]}`} key={index} className={`flex gap-2 rounded-2xl items-center px-4 py-2 my-2 ${path === `${basePath}/${Object.values(linkObj)[0]}` ? "bg-gray-700" : ""} hover:bg-gray-700 transition ease-in-out ` + (isSidebarOpen ? "px-4" : "px-2")}>
-                            <DynamicIcon name={`${Object.values(linkObj)[1] as IconName}`} className="w-6 h-6 " />
+                            <DynamicIcon name={`${Object.values(linkObj)[1] as IconName}`} className="w-6 h-6 " fallback={() => <p></p>} />
                             {
                                 isSidebarOpen && <span className="text-sm">{Object.keys(linkObj)[0]}</span>
                             }

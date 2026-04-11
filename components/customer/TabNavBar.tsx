@@ -11,7 +11,7 @@ import { useAppSelector } from "@/hooks/reduxHooks";
 
 export function TabNavBar() {
     const { user } = useAppSelector((state: any) => state.auth)
-    const userId = user?.user_id ? user.user_id : '';
+    const userId = user?.id ? user.id : '';
     const path = usePathname();
     const [isMounted, setIsMounted] = useState(false);
 
@@ -19,12 +19,12 @@ export function TabNavBar() {
         setIsMounted(true);
     }, []);
     const navLinks = useMemo(() => {
-      
+
         return TAB_LINKS.map((link) => {
-            const newLink = { ...link };  
+            const newLink = { ...link };
 
             if (isMounted && user) {
-                const userId = user.user_id || '';
+                const userId = user.id || '';
                 if (newLink.title.toLowerCase() === 'profile') {
                     newLink.url = `/customerProfile/${userId}`;
                 } else if (newLink.title.toLowerCase() === 'cart') {
@@ -78,7 +78,10 @@ export function TabNavBar() {
                                     <DynamicIcon
                                         name={link.iconNames as IconName}
                                         size={20}
-                                        className={`${isActive ? 'text-primary' : 'text-gray-500'} z-60 transition-colors duration-200`}
+                                        fallback={() => <p></p>}
+                                        className={`${isActive ? 'text-primary' : 'text-gray-500'} z-60 transition-colors duration-200`
+
+                                        }
                                     />
                                 </Link>
                             </motion.div>

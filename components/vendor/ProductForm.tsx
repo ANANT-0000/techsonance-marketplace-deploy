@@ -200,7 +200,7 @@ export function ProductForm({
             {/* ── 1. GENERAL INFORMATION ── */}
             <div className="section">
                 <div className="section_header">
-                    <DynamicIcon name="package" size={18} className="text-indigo-500" />
+                    <DynamicIcon fallback={() => <p></p>} name="package" size={18} className="text-indigo-500" fallback={() => <p></p>} />
                     <h2 className="text-base font-semibold text-slate-800">General Information</h2>
                 </div>
                 <div className="p-6 space-y-5">
@@ -226,7 +226,7 @@ export function ProductForm({
                                 )}
                                 {errors[field.name] && (
                                     <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                        <DynamicIcon name="alert-circle" size={12} />{errors[field.name].message}
+                                        <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={12} />{errors[field.name].message}
                                     </p>
                                 )}
                             </div>
@@ -242,7 +242,7 @@ export function ProductForm({
                                 onClick={() => appendFeature({ title: "", description: "" })}
                                 className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
                             >
-                                <DynamicIcon name="plus" size={14} /> Add Feature
+                                <DynamicIcon fallback={() => <p></p>} name="plus" size={14} /> Add Feature
                             </button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -253,7 +253,7 @@ export function ProductForm({
                                         onClick={() => removeFeature(index)}
                                         className="absolute top-2.5 right-2.5 text-slate-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 bg-white rounded-md p-1 border border-slate-200 shadow-sm"
                                     >
-                                        <DynamicIcon name="trash-2" size={14} />
+                                        <DynamicIcon fallback={() => <p></p>} name="trash-2" size={14} />
                                     </button>
                                     <div className="mb-3">
                                         <label className="block text-xs font-semibold text-slate-600 mb-1">Feature Title</label>
@@ -287,7 +287,7 @@ export function ProductForm({
                                 onClick={() => appendAttribute({ name: "", values: "" })}
                                 className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
                             >
-                                <DynamicIcon name="plus" size={14} /> Add Attribute
+                                <DynamicIcon fallback={() => <p></p>} name="plus" size={14} /> Add Attribute
                             </button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -298,7 +298,7 @@ export function ProductForm({
                                         onClick={() => removeAttribute(index)}
                                         className="absolute top-2.5 right-2.5 text-slate-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 bg-white rounded-md p-1 border border-slate-200 shadow-sm"
                                     >
-                                        <DynamicIcon name="trash-2" size={14} />
+                                        <DynamicIcon fallback={() => <p></p>} name="trash-2" size={14} />
                                     </button>
                                     <div className="mb-3">
                                         <label className="block text-xs font-semibold text-slate-600 mb-1">Attribute Title</label>
@@ -328,7 +328,7 @@ export function ProductForm({
             {/* ── 2. PRICING & INVENTORY ── */}
             <div className="section">
                 <div className="section_header">
-                    <DynamicIcon name="tag" size={18} className="text-blue-500" />
+                    <DynamicIcon fallback={() => <p></p>} name="tag" size={18} className="text-blue-500" />
                     <h2 className="text-base font-semibold text-slate-800">Pricing & Inventory</h2>
                 </div>
                 <div className="p-6">
@@ -352,7 +352,7 @@ export function ProductForm({
 
                                     {errors[field.name as keyof ProductFormValuesType] && (
                                         <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                            <DynamicIcon name="alert-circle" size={16} />{errors[field.name as keyof ProductFormValuesType]?.message as string}
+                                            <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={16} />{errors[field.name as keyof ProductFormValuesType]?.message as string}
                                         </p>
                                     )}
                                 </div>
@@ -365,7 +365,7 @@ export function ProductForm({
             {/* ── 3. MEDIA ── */}
             <div className="section">
                 <div className="section_header">
-                    <DynamicIcon name="image" size={18} className="text-indigo-500" />
+                    <DynamicIcon fallback={() => <p></p>} name="image" size={18} className="text-indigo-500" />
                     <h2 className="text-base font-semibold text-slate-800">Media</h2>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -385,7 +385,7 @@ export function ProductForm({
                                         className="hidden"
                                         onChange={(e) => handleFileSelect(e, files, setFiles as React.Dispatch<React.SetStateAction<FileOrImage[]>>, fieldName)}
                                     />
-                                    <DynamicIcon name="upload-cloud" size={32} className="text-blue-400 group-hover:text-blue-600 transition mb-2" />
+                                    <DynamicIcon fallback={() => <p></p>} name="upload-cloud" size={32} className="text-blue-400 group-hover:text-blue-600 transition mb-2" />
                                     <p className="text-xs font-semibold text-blue-500 group-hover:text-blue-700">Click to upload</p>
                                     <p className="text-xs text-slate-400 mt-0.5">PNG, JPG, MP4 up to 10MB</p>
                                 </label>
@@ -417,7 +417,7 @@ export function ProductForm({
                                                     className="absolute top-1 right-1 p-0.5 bg-red-50 text-red-400 hover:text-red-600 transition rounded-full border border-red-200"
                                                     title="Remove image"
                                                 >
-                                                    <DynamicIcon name="x" size={12} />
+                                                    <DynamicIcon fallback={() => <p></p>} name="x" size={12} />
                                                 </button>
                                             </li>
                                         ))}
@@ -432,7 +432,7 @@ export function ProductForm({
             {/* ── 4. CATEGORY & TAXATION ── */}
             <div className="section">
                 <div className="section_header">
-                    <DynamicIcon name="building-2" size={18} className="text-blue-500" />
+                    <DynamicIcon fallback={() => <p></p>} name="building-2" size={18} className="text-blue-500" />
                     <h2 className="text-base font-semibold text-slate-800">Product Category & Taxation (GST)</h2>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -446,11 +446,11 @@ export function ProductForm({
                                     <option key={idx} value={c.value}>{c.label}</option>
                                 ))}
                             </select>
-                            <DynamicIcon name="chevron-down" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            <DynamicIcon fallback={() => <p></p>} name="chevron-down" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         </div>
                         {errors.category && (
                             <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                <DynamicIcon name="alert-circle" size={12} />{errors.category.message}
+                                <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={12} />{errors.category.message}
                             </p>
                         )}
                     </div>
@@ -465,11 +465,11 @@ export function ProductForm({
                                     <option value={value} key={idx}>{label}</option>
                                 ))}
                             </select>
-                            <DynamicIcon name="chevron-down" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            <DynamicIcon fallback={() => <p></p>} name="chevron-down" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         </div>
                         {errors.taxProfile && (
                             <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                <DynamicIcon name="alert-circle" size={12} />{errors.taxProfile.message}
+                                <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={12} />{errors.taxProfile.message}
                             </p>
                         )}
                     </div>
@@ -483,11 +483,11 @@ export function ProductForm({
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
                             </select>
-                            <DynamicIcon name="chevron-down" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            <DynamicIcon fallback={() => <p></p>} name="chevron-down" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         </div>
                         {errors.status && (
                             <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                <DynamicIcon name="alert-circle" size={12} />{errors.status.message}
+                                <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={12} />{errors.status.message}
                             </p>
                         )}
                     </div>
@@ -502,7 +502,7 @@ export function ProductForm({
                     className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold py-2.5 px-8 rounded-xl hover:bg-blue-700 transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                     {isSubmitting
-                        ? <><DynamicIcon name="loader-2" size={15} className="animate-spin" /> Publishing…</>
+                        ? <>  <DynamicIcon fallback={() => <p></p>} name="loader-2" size={15} className="animate-spin" /> Publishing…</>
                         : "Publish Product"
                     }
                 </button>

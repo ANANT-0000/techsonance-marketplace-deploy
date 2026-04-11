@@ -74,7 +74,7 @@ export function Footer({ styles }: { styles?: string }) {
                                                     name={link.icon as IconName}
                                                     className={link.styles}
                                                     size={28}
-
+                                                    fallback={() => <p></p>}
                                                 />
 
                                             )}

@@ -32,7 +32,7 @@ export function CartSidebar() {
       if (user?.id) {
         try {
           const response = await fetchGetCartList(user.id, companyDomain);
-          console.log("cart list response", response);
+
           setCartList(response.data || []);
         } catch (error) {
           console.error("Error fetching cart list:", error);
@@ -40,7 +40,7 @@ export function CartSidebar() {
       }
     };
     fetchCartList();
-  }, [isCartOpen,items]);
+  }, [isCartOpen, items]);
   useEffect(() => {
     if (isCartOpen && isMobile) {
       const timeoutId = setTimeout(() => {

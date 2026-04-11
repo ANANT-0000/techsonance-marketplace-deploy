@@ -1,4 +1,40 @@
-﻿export interface UserProfile {
+﻿import InventoryPage from "@/app/vendor/[vendorId]/inventory/page";
+import { VendorRegisterSchemaType } from "./validation";
+export enum UserStatusEnum {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+  SUSPENDED = 'suspended'
+}
+export enum UserRole {
+  Admin = 'admin',
+  Vendor = 'vendor',
+  Customer = 'customer'
+}
+export enum UserAddressTypeEnum {
+  HOME = 'home',
+  WORK = 'work',
+  OTHER = 'other'
+}
+export enum OrderStatusEnum {
+  PENDING = 'pending',
+  SHIPPING = 'shipping',
+  SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
+  CANCELLED = 'cancelled'
+}
+export enum PermissionEnum {
+  READ = 'read',
+  CREATE = 'create',
+  DELETE = 'delete',
+  UPDATE = 'update',
+}
+export enum InventoryItemStatusEnum {
+  IN_STOCK = 'in stock',
+  LOW_STOCK = 'low stock',
+  OUT_OF_STOCK = 'out of stock'
+}
+export interface VendorUserType {
   company_id: string;
   vendor_id: string | null;
   id: string;
@@ -15,24 +51,28 @@
   category: string
   vendor_status: string
   joined_at: Date;
-
-
-  // Linked Addresses (from 'addresses' table)
-  addresses: Address[] | null;
-
-  // Active Shopping State
-  cart: Cart | null;
-  wishlist: Wishlist | null;
-
-  // History
-  orders: UserOrder[];
 }
 
+export interface UserType {
+  id: string;
+  profile_picture_url: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  country_code: string | null;
+  phone_number: string | null;
+  password_hash: string;
+  user_status: | null;
+  created_at: Date;
+  updated_at: Date;
+  company_id: string | null;
+  role_id: string | null;
+}
 // Supporting Interfaces based on your schema
 export interface Address {
   address_id: string;
   name?: string;
-  address_for: 'home' | 'work' | 'other';
+  address_for: UserAddressTypeEnum;
   address_line1: string;
   city: string;
   state: string;
@@ -47,7 +87,7 @@ export interface Cart {
   items: CartItemType[];
   created_at: string;
 }
-  //used in cart 
+//used in cart 
 export interface CartItemType {
   cartId: string;
   cartItemId: string;
@@ -57,12 +97,12 @@ export interface CartItemType {
 
 export interface Wishlist {
   wishlist_id: string;
-  items: string[];  
+  items: string[];
 }
 
 export interface UserOrder {
   order_id: number;
-  order_status: 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
+  order_status: OrderStatusEnum;
   delivered_at?: string;
   shippingTo: Address | string;
   products?: { product_id: string; quantity: number }[];
@@ -70,34 +110,30 @@ export interface UserOrder {
   address_id: number;
   created_at: string;
 }
-export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered';
+
 
 export interface Order {
   orderId: string;
   customerName: string;
-  status: OrderStatus;
+  status: OrderStatusEnum;
   amount: number;
   action: 'Ship Now' | 'View';
 }
-export enum UserRole {
-  Admin = 'admin',
-  Vendor = 'vendor',
-  Customer = 'customer'
-}
 
-export type Permission = 'read' | 'create' | 'delete' | 'update';
+
+
 export interface RoleDefinition {
-  can: Permission[];
+  can: PermissionEnum[];
 }
 export const role: Record<UserRole, RoleDefinition> = {
   [UserRole.Admin]: {
-    can: ['read', 'create', 'delete', 'update']
+    can: [PermissionEnum.CREATE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.DELETE]
   },
   [UserRole.Vendor]: {
-    can: ['read', 'create', 'update']
+    can: [PermissionEnum.CREATE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.DELETE]
   },
   [UserRole.Customer]: {
-    can: ['read']
+    can: [PermissionEnum.READ,]
   }
 }
 
@@ -172,24 +208,9 @@ export interface OrderFailedStatusTypes {
   possibleReasons?: string[];
 }
 
-export interface VendorRegisterTypes {
-  company_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  phone_number: string | null;
-  store_owner_first_name: string | null;
-  store_owner_last_name: string | null;
-  company_domain: string | null;
-  company_structure: string | null;
-  category: string | null;
-  country_code?: string | null;
-  email: string | null;
-  password: string | null;
-  confirm_password: string | null;
-}
 export interface VendorRegisterFormData {
-  vendor: VendorRegisterTypes;
-  documents: File[] | undefined
+  vendor: VendorRegisterSchemaType;
+  documents: File[] | undefined | FormData
 
 }
 
@@ -234,8 +255,8 @@ export type ProductImageType = {
 };
 
 export type ProductFeatureType = {
-  key: string;
-  value: string | boolean | number;
+  title: string;
+  description: string | boolean | number;
 };
 
 export type ProductType = {
@@ -252,7 +273,7 @@ export type ProductType = {
   vendor_id: string;
   features: ProductFeatureType[];
   images: ProductImageType[];
-  variants?: VariantType[];
+  variants?: VariantsType[];
   created_at: string;
   updated_at: string;
 };
@@ -316,12 +337,14 @@ export interface VendorRequestEntryType {
   category: string;
   submittedAt: string;
   status: "Pending" | "Approved" | "Rejected";
-}export interface AuditLogEntryType {
+}
+
+export interface AuditLogEntryType {
   id: number;
   timestamp: string;
   actor: string;
   tenant: string;
-  actionType: "Active" | "Inactive" | "Pending" | "Suspended";
+  actionType: UserStatusEnum
   targetEntity: string;
   details: string;
   ipAddress: string;
@@ -344,13 +367,25 @@ export interface SupportTicketType {
   time: string;
   messages: TicketMessageType[];
 }
+export enum VendorApplicationStatusEnum {
+  PENDING = 'pending',
+  REJECTED = 'rejected',
+  ACCEPTED = 'accepted'
+}
+export enum CouponDiscountTypeEum {
+  PERCENTAGE = 'percentage',
+  FLAT_AMOUNT = 'flat amount'
+}
+export enum CouponStatusEnum {
+  ACTIVE = 'active', EXPIRED = 'expired', INACTIVE = 'inactive'
+}
 export interface VendorApplicationType {
   business_profile: {
     business_name: string;
     owner_name: string;
     owner_email: string;
     submission_date: string;
-    status: 'verified' | 'pending' | 'rejected';
+    status: VendorApplicationStatusEnum;
   };
   submitted_documents: {
     file_name: string;
@@ -364,20 +399,6 @@ export interface VendorApplicationType {
   };
 }
 
-export interface User {
-  id: string;
-  profile_picture_url: string | null;
-  first_name: string;
-  last_name: string;
-  email: string;
-  country_code: string;
-  phone_number: string;
-  user_status: string;
-  created_at: string;
-  updated_at: string;
-  company_id: string;
-  role_id: string;
-}
 
 export interface Company {
   id: string;
@@ -391,7 +412,7 @@ export interface Company {
 
 export interface VendorApplication {
   vendor: Vendor;
-  user: User;
+  user: UserType;
   company: Company;
 }
 export interface NavLinkType {
@@ -461,13 +482,14 @@ export interface UserReviewType {
   time_posted: string;
   actions: { can_reply: boolean; can_report: boolean };
 }
+
 export interface CouponType {
   id: number;
   code: string;
-  discount_type: 'PERCENTAGE' | 'FLAT_AMOUNT';
+  discount_type: CouponDiscountTypeEum;
   value: number;
   currency?: string;
-  status: 'ACTIVE' | 'EXPIRED' | 'INACTIVE';
+  status: CouponStatusEnum;
   conditions: {
     min_purchase_amount?: number;
     customer_segment?: 'ALL' | 'NEW_CUSTOMERS';
@@ -491,7 +513,7 @@ export interface InventoryProductType {
   stock: number;
   price: number;
   warehouse: 'Main Warehouse' | 'North Hub';
-  status: 'In Stock' | 'Low Stock' | 'Out of Stock';
+  status: InventoryItemStatusEnum;
   imageUrl: string;
 }export interface WarehouseType {
   warehouse_id: number;
@@ -514,7 +536,7 @@ export type OrderDetailType = {
     name: string;
     location: string;
   };
-  status: 'Pending' | 'Shipped' | 'Delivered';
+  status: OrderStatusEnum;
   total: number;
   paymentMethod: 'Paid (UPI)' | 'COD' | 'Refunded' | 'Card payment';
 };
@@ -535,12 +557,14 @@ export interface VendorProductType {
   stock: number;
   reorderLevel: number;
   price: number;
-  status: "In Stock" | "Low Stock" | "Out of Stock";
+  status: InventoryItemStatusEnum;
 }
+
+
 export interface VendorOrderType {
   orderId: string;
   customerName: string;
-  status: "Pending" | "Shipped" | "Delivered";
+  status: OrderStatusEnum,
   amount: number;
   action: "Ship Now" | "View";
   date?: string;

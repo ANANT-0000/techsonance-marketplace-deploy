@@ -48,7 +48,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                 <div className={" mt-2 justify-between rounded-2xl flex border-gray-300    items-center  py-2 gap-4   bg-white  filter  "}>
                     <span className="border flex   flex-3 items-center justify-between gap-0 border-gray-400 px-4 rounded-lg ">
                         <button className="rounded-full w-8 h-8">
-                            <DynamicIcon name="search" />
+                            <DynamicIcon name="search" fallback={() => <p></p>} />
                         </button>
 
                         <input type="text" className="  text-xl py-2 px-4 w-full " placeholder="Search by name,email or domain" />
@@ -101,7 +101,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                                         {item.variants?.length > 0 ? (
                                             <div className="flex flex-col items-center border p-2 gap-2   border-emerald-600 border-b-3  hover:border-b-1 hover:border-emerald-800 rounded-lg">
                                                 <Link href={`/vendor/${vendorId}/products/${item.id}/variants`} className="flex gap-2 text-emerald-600 hover:text-emerald-800 items-center justify-center" title="View Variants">
-                                                    {item.variants?.length} Variants <DynamicIcon name="tag" size={18} />
+                                                    {item.variants?.length} Variants <DynamicIcon name="tag" size={18} fallback={() => <p></p>}/>
                                                 </Link>
                                             </div>
                                         ) : (
@@ -109,7 +109,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                                                 href={`/vendor/${vendorId}/products/variantForm/${item.id}`}
                                                 className="flex gap-2 text-emerald-600 hover:text-emerald-800 items-center justify-center"
                                                 title="Add Variant">
-                                                Create Variant    <DynamicIcon name="plus" size={18} />
+                                                Create Variant    <DynamicIcon name="plus" size={18} fallback={() => <p></p>} />
                                             </Link>
                                         )
                                         }

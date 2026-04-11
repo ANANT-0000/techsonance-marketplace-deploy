@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Counter } from "@/components/customer/Counter";
 import { containerVariants, itemVariants, ManagementCard } from "@/components/customer/ManagementCard";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { ProfileSidebar } from "@/components/customer/ProfileSidebar";
 export default function UserProfilePage() {
     const { user } = useAppSelector((state) => state.auth);
     const { userId } = useParams()
@@ -20,7 +21,7 @@ export default function UserProfilePage() {
 
     return (
         <motion.section
-            className="w-full mx-auto lg:px-4 py-0 px-2 mb-4"
+            className="w-full mx-auto lg:px-4  lg:py-2 py-1 px-2 mb-0 lg:mb-4"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -63,7 +64,7 @@ export default function UserProfilePage() {
                         </p>
                     </div>
                 </div>
-                <Link href={`/customerProfile/${user?.user_id}/editProfile`}>
+                <Link href={`/customerProfile/${user?.id}/editProfile`}>
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -74,9 +75,7 @@ export default function UserProfilePage() {
                 </Link>
             </motion.section>
 
-
-
-            <div className="mt-8 flex flex-col md:flex-row gap-6">
+            <div className="mt-8 lg:flex flex-col md:flex-row gap-6 hidden  ">
                 {[
                     { label: "TOTAL ORDERS", value: user?.orders?.length ?? 3, icon: ShoppingBag, color: "bg-brand-primary", text: "text-brand-primary" },
                     { label: "ACTIVE ORDERS", value: activeOrders, icon: Timer, color: "bg-yellow", text: "text-yellow-500" }
@@ -101,32 +100,34 @@ export default function UserProfilePage() {
             </div>
 
 
-            <motion.section variants={itemVariants} className="my-8">
+            <motion.section variants={itemVariants} className="my-8 hidden lg:block">
                 <h1 className="font-bold lg:text-2xl text-xl text-gray-900 mb-6">Account Management</h1>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <ManagementCard
+                        link={`/customerProfile/${user?.id}/addresses`}
                         icon={<MapPin size={28} className="text-blue-600" />}
                         color="bg-blue-50"
                         title="Saved Addresses"
                         description="Manage your saved addresses for faster checkout and delivery."
                     >
-                        <Link href={`/customerProfile/${user?.user_id}/addresses`}>
-                            <div className="mt-4 pt-4 border-t border-gray-100">
-                                <p className="text-xs font-bold text-gray-400 uppercase mb-2">Default Address</p>
-                                {user?.addresses?.filter(a => a.is_default).length > 0 ? (
-                                    user?.addresses?.filter(a => a.is_default).map(address => (
-                                        <p key={address.address_id} className="text-sm text-gray-600 line-clamp-1">
-                                            {address.address_line1}, {address.city}...
-                                        </p>
-                                    ))
-                                ) : (
-                                    <p className="text-sm text-gray-400 italic">No default address set</p>
-                                )}
-                            </div>
-                        </Link>
+
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                            <p className="text-xs font-bold text-gray-400 uppercase mb-2">Default Address</p>
+                            {user?.addresses?.filter(a => a.is_default).length > 0 ? (
+                                user?.addresses?.filter(a => a.is_default).map(address => (
+                                    <p key={address.address_id} className="text-sm text-gray-600 line-clamp-1">
+                                        {address.address_line1}, {address.city}...
+                                    </p>
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-400 italic">No default address set</p>
+                            )}
+                        </div>
+
                     </ManagementCard>
 
                     <ManagementCard
+                        link=""
                         icon={<Lock size={28} className="text-green-600" />}
                         color="bg-green-50"
                         title="Login & Security"
@@ -134,6 +135,7 @@ export default function UserProfilePage() {
                     />
 
                     <ManagementCard
+                        link=""
                         icon={<Bell size={28} className="text-yellow-600" />}
                         color="bg-yellow-50"
                         title="Notifications"

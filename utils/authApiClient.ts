@@ -1,6 +1,6 @@
 ﻿import { loginFailure, loginSuccess } from "@/lib/features/auth/authSlice";
 import axios from "axios";
-import { UserProfile, UserRole, VendorRegisterFormData } from "./Types";
+import { VendorUserType, UserRole, VendorRegisterFormData, UserType } from "./Types";
 import { ADMIN_AUTH_URL, CUSTOMER_AUTH_URL, CUSTOMER_BASE_URL, VENDOR_AUTH_URL } from "@/constants";
 import { CustomerRegisterSchemaType } from "./validation";
 
@@ -21,13 +21,12 @@ export const vendorLogin = async (data: { email: string, password: string }, dis
         const result = await response.json();
         console.log(result);
         if (response.status === 200) {
-            const payload: { user: UserProfile, token: string, role: UserRole } = {
-                user: result.data,
+            const payload: { user: VendorUserType, token: string, role: UserRole } = {
+                user: result.data.user,
                 token: result.data.token,
-                role: result.data.user_role as UserRole
+                role: result.data.user.role as UserRole
             };
-            dispatch(loginSuccess(payload));
-            return { user: result.data, status: 200, message: "Login successful" };
+            return { user: payload, status: 200, message: "Login successful" };
         }
         return { status: result.status, message: result.message || result.error || "Login failed" };
     } catch (err: any) {
@@ -37,10 +36,10 @@ export const vendorLogin = async (data: { email: string, password: string }, dis
         return { status: 400, message: errorMessage };
     }
 }
-export const vendorRegister = async (data: VendorRegisterFormData) => {
+export const vendorRegister = async (data: FormData) => {
     console.log("data", data);
     try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+        // const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
         const response = await fetch(`${VENDOR_AUTH_URL}/register-vendor`, {
             method: 'POST',
             body: data as any,
@@ -112,7 +111,7 @@ export const CustomerLogin = async (data: { email: string, password: string }) =
             console.log(errorMessage);
             return { status: false, message: errorMessage };
         }
-        const payload: { user: UserProfile, token: string, role: UserRole } = {
+        const payload: { user: UserType, role: UserRole } = {
             user: result.data,
             role: result.data.role as UserRole
         };

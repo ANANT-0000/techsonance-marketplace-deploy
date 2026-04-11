@@ -45,8 +45,6 @@ const PriceTicker = ({ value }: { value: number }) => {
     );
 };
 
-// ─── CartList ─────────────────────────────────────────────────────────────────
-
 export default function CartList() {
     const { items } = useAppSelector((state) => state.cart);
     const { userId }: { userId: string } = useParams();
@@ -157,7 +155,7 @@ export default function CartList() {
                             </AnimatePresence>
                         </div>
 
-                        {/* ── Order Summary ── */}
+                      
                         <motion.div
                             layout
                             className="lg:col-span-1 w-full sticky lg:top-8 top-2 border border-gray-200 lg:py-6 py-2 lg:px-6 px-2 rounded-2xl bg-gray-50/50 shadow-sm"
@@ -170,7 +168,6 @@ export default function CartList() {
                             <div className="space-y-4">
                                 <div className="flex justify-between text-gray-600">
                                     <span>Total Items</span>
-                                    {/* FIX #3: Reflect actual total quantity from cartList */}
                                     <span>{totalItemCount}</span>
                                 </div>
 
@@ -201,7 +198,7 @@ export default function CartList() {
                                 </div>
                             </div>
 
-                            <BuyBtn styles="lg:mt-8 mt-4 w-full lg:py-4 text-lg rounded-xl shadow-lg text-primary bg-primary-foreground" />
+                            <BuyBtn styles="lg:mt-8 mt-4 w-full lg:py-4 text-lg rounded-xl shadow-lg text-primary bg-primary-foreground"  />
                         </motion.div>
 
                     </section>

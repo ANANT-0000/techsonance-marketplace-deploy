@@ -71,7 +71,7 @@ export const DocUploadInput = (
                     </div>
                     {fileMap.length === 0 && (
                         <div className="mb-2 flex flex-col items-center justify-center py-2 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-400">
-                            <DynamicIcon name="file-text" className="w-4 h-4 mb-2 opacity-40" />
+                            <DynamicIcon name="file-text" className="w-4 h-4 mb-2 opacity-40" fallback={() => <p></p>} />
                             <p className="text-sm">No documents added yet</p>
                         </div>
                     )}

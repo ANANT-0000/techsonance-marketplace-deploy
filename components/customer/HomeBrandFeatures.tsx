@@ -12,6 +12,7 @@ export function HomeBrandFeatures() {
                             name={feature.icon as IconName}
                             size={20}
                             className="lg:h-8 lg:w-8 h-6 w-6 text-primary"
+                            fallback={() => <p></p>}
                         />
                     </span>
                     <p className="lg:px-2 lg:py-1 py-0 px-1 font-bold text-center lg:text-lg text-sm text-brand-primary-foreground">
