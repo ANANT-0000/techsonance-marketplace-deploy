@@ -1,7 +1,7 @@
 ﻿import { SendHorizontal } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
-import { SupportTicketType, TicketMessage } from "@/constants";
 import { useEffect, useState } from "react";
+import { SupportTicketType, TicketMessageType } from "@/utils/Types";
 
 export const ChatWindow = ({ ticket }: { ticket: SupportTicketType }) => {
     const [inputText, setInputText] = useState("");
@@ -13,7 +13,7 @@ export const ChatWindow = ({ ticket }: { ticket: SupportTicketType }) => {
 
     const handleSend = () => {
         if (!inputText.trim()) return;
-        const newMessage: TicketMessage = {
+        const newMessage: TicketMessageType = {
             id: Date.now(),
             sender: "You",
             role: "Super Admin",

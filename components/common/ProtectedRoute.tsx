@@ -12,14 +12,14 @@ export function ProtectedRoute({
     allowedRoles: string[]
 }) {
     const router = useRouter();
-    const { isAuthenticated, user, loading } = useAppSelector(
+    const { isAuthenticated, user, loading, role } = useAppSelector(
         (state: RootState) => state.auth
     );
 
 
     useEffect(() => {
         if (loading) return; // wait for auth state to resolve
-        const userRole = user?.role?.toLowerCase() ?? null;
+        const userRole = role?.toLowerCase() ?? null;
         const isAuthorized = userRole !== null && allowedRoles
             .map(r => r.toLowerCase())
             .includes(userRole);
@@ -31,7 +31,7 @@ export function ProtectedRoute({
 
     // Show spinner while auth state is loading
     if (loading) return <LoaderSpinner />;
-    const userRole = user?.role?.toLowerCase() ?? null;
+    const userRole = role?.toLowerCase() ?? null;
     const isAuthorized = userRole !== null && allowedRoles
         .map(r => r.toLowerCase())
         .includes(userRole);

@@ -1,6 +1,7 @@
-﻿import {type TicketMessage } from "@/constants";
+﻿import { TicketMessageType } from "@/utils/Types";
 
-export const MessageBubble = ({ message }: { message: TicketMessage }) => {
+
+export const MessageBubble = ({ message }: { message: TicketMessageType }) => {
     const isVendor = message.type === "vendor";
 
     return (

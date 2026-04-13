@@ -281,7 +281,7 @@ export type ProductType = {
   discount_percent: string;
   stock_quantity: number;
   has_variants: boolean;
-  status: ProductStatus;
+  status: ProductStatusEnum;
   category_id: string;
   company_id: string;
   vendor_id: string;

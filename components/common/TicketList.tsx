@@ -1,4 +1,4 @@
-﻿import { SupportTicketType } from "@/constants";
+﻿import { SupportTicketType } from "@/utils/Types";
 
 export const TicketList = ({ tickets, onSelect, activeId }: { tickets: SupportTicketType[]; onSelect: (ticket: SupportTicketType) => void; activeId: string }) => {
     return (

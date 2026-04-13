@@ -2,7 +2,6 @@
 import { ADMIN_BASE_URL, BASE_API_URL } from "@/constants";
 import { authToken } from "./authToken";
 import { revalidatePath } from "next/cache";
-import { error } from "console";
 
 export const fetchRoles = async () => {
     const response = await fetch(`${BASE_API_URL}roles`, {
@@ -142,11 +141,12 @@ export const fetchRolePermissions = async () => {
         method: "GET",
         headers: { Authorization: `Bearer ${authToken()}` },
     });
+    const res = await response.json();
     if (response.status !== 200) {
-        console.error('Error fetching role permissions:', response.message);
+        console.error('Error fetching role permissions:', res.message);
     }
     console.log("api response role permissions", response);
-    return await response.json();
+    return res
 };
 export const handleAssignPermission = async (adminId: string, roleId: string, permissionId: string) => {
     await fetch(`${BASE_API_URL}roles/add-permission-to-role`, {

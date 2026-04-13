@@ -1,5 +1,5 @@
 ﻿'use client';
-import { FileOrImage, ProductImageType, VariantFormValuesType } from "@/utils/Types";
+import { FileOrImage, ProductImageType, ProductStatusEnum, VariantFormValuesType } from "@/utils/Types";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useCallback, useState } from "react";
@@ -49,7 +49,7 @@ export const ProductVariantForm = ({
             sku: "",
             variantMediaMain: [],
             variantMediaGallery: [],
-            status: "active",
+            status: ProductStatusEnum.INACTIVE,
         },
     });
 

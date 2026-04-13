@@ -39,7 +39,7 @@ export const VariantImgGrid = ({
             >
               <Image
                 src={img.image_url}
-                alt={img.alt_text}
+                alt={img?.alt_text || "Variant Image"}
                 fill
                 className="object-cover"
               />
@@ -53,7 +53,7 @@ export const VariantImgGrid = ({
         {activeImage ? (
           <Image
             src={activeImage.image_url}
-            alt={activeImage.alt_text}
+            alt={activeImage?.alt_text || "Variant Image"}
             fill
             priority
             className="object-contain p-2"
