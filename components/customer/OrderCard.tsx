@@ -1,22 +1,22 @@
-﻿import { PRODUCT_LIST } from "@/constants";
+﻿
 import { formatCurrency } from "@/lib/utils";
-import { PRODUCT_LIST_TYPE, UserOrder } from "@/utils/Types";
+import { ProductType, UserOrder, VariantsType } from "@/utils/Types";
 import { motion } from "motion/react";
 import Link from "next/link";
 export const OrderCard = ({ order, isMobile }: { order: UserOrder, isMobile: boolean }) => {
     const productId: string | undefined = order.products?.[0]?.product_id;
     const quantity: number = order.products?.[0]?.quantity ?? 0;
 
-    const productDetails: PRODUCT_LIST_TYPE | undefined = PRODUCT_LIST.find(p => p.id === productId)
-    const product: PRODUCT_LIST_TYPE | undefined = Array.isArray(productDetails) ? productDetails[0] : productDetails;
+    const productDetails: VariantsType | undefined | [] = []
+    const product: VariantsType | undefined = Array.isArray(productDetails) ? productDetails[] : productDetails;
 
     if (isMobile) {
         return (
             <motion.div className="w-full flex border-2 border-gray-300 rounded-xl gap-4 py-1">
-                <img src={product?.imgUrl ? product.imgUrl : "https://placehold.net/10.png"} alt={product?.title} className="ml-1 rounded-lg h-24 w-24 object-cover" />
+                <img src={product ? product : "https://placehold.net/10.png"} alt={product} className="ml-1 rounded-lg h-24 w-24 object-cover" />
                 <div className="flex flex-col justify-start items-start gap-2">
-                    <p className="text-blue-600 line-clamp-1">{product?.title}</p>
-                    {order.order_status === 'Delivered' ? <p className="text-green-600">Delivered</p> : <p className="text-orange-600">Pending</p>}
+                    <p className="text-blue-600 line-clamp-1">{product}</p>
+                    {order.order_status === 'delivered' ? <p className="text-green-600">Delivered</p> : <p className="text-orange-600">Pending</p>}
                     <p>ordered on {new Date(order.created_at).toLocaleDateString()}</p>
                 </div>
             </motion.div>
@@ -50,17 +50,17 @@ export const OrderCard = ({ order, isMobile }: { order: UserOrder, isMobile: boo
                     </span>
                 </div>
             </header>
-            {order.order_status == 'Pending' && <motion.div className="mb-2 rounded text-lg font-semibold">
+            {order.order_status == 'pending' && <motion.div className="mb-2 rounded text-lg font-semibold">
                 Order will Deliver soon
             </motion.div>}
             <div className="flex justify-start items-start gap-4">
-                <img src={product?.imgUrl ? product.imgUrl : "https://placehold.net/10.png"} alt={product?.title} className="w-24 h-24 object-cover rounded" />
+                <img src={product ? product : "https://placehold.net/10.png"} alt={product} className="w-24 h-24 object-cover rounded" />
                 <div>
-                    <p className="text-blue-600 line-clamp-1">{product?.title}</p>
+                    <p className="text-blue-600 line-clamp-1">{product}</p>
                     <p className="text-gray-600">Quantity: {quantity}</p>
                 </div>
                 <div className="flex justify-end items-end ml-auto gap-4">
-                    {order.order_status === 'Delivered' && <motion.button className="text-blue-400 hover:underline justify-self-end">Write review</motion.button>}
+                    {order.order_status === 'delivered' && <motion.button className="text-blue-400 hover:underline justify-self-end">Write review</motion.button>}
                 </div>
             </div>
         </motion.div>

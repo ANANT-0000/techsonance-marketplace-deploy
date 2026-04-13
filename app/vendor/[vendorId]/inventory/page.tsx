@@ -3,15 +3,14 @@ import { Pagination } from "@/components/common/Pagination";
 import { useState } from "react";
 import { searchImgDark } from "@/constants/common";
 import Navbar from "@/components/vendor/Navbar";
-import { WAREHOUSE_DATA, INVENTORY_PRODUCTS } from "@/constants/vendor";
 
 export default function InventoryPage() {
     const [count, setCount] = useState(1);
     const pageSize = 5;
-    const totalPages = Math.ceil(INVENTORY_PRODUCTS.length / pageSize);
-    const startIndex = (count - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const currentData = INVENTORY_PRODUCTS.slice(startIndex, endIndex);
+    // const totalPages = Math.ceil(INVENTORY_PRODUCTS.length / pageSize);
+    // const startIndex = (count - 1) * pageSize;
+    // const endIndex = startIndex + pageSize;
+    // const currentData = INVENTORY_PRODUCTS.slice(startIndex, endIndex);
 
     return (
         <>
@@ -23,7 +22,7 @@ export default function InventoryPage() {
                 </div>
 
                 <div className="flex gap-3 justify-between flex-wrap mb-6">
-                    {WAREHOUSE_DATA.map((warehouse) => (
+                    {/* {WAREHOUSE_DATA.map((warehouse) => (
                         <div key={warehouse.warehouse_id} className="mb-4 p-4 border-2 border-gray-300 rounded-lg bg-white w-1/5 hover:border-blue-500 hover:shadow-lg cursor-pointer">
                             <div className="flex flex-col justify-between min-h-36 w-full">
                                 <span>
@@ -41,7 +40,7 @@ export default function InventoryPage() {
                                 </div>
                             </div>
                         </div>
-                    ))}
+                    ))} */}
                 </div>
                 <div className="mt-2 justify-between rounded-2xl flex border-gray-300 items-center py-2 gap-4 bg-white filter">
                     <span className="border flex flex-3 items-center justify-between gap-0 border-gray-400 px-4 rounded-lg">
@@ -71,7 +70,7 @@ export default function InventoryPage() {
                             </tr>
                         </thead>
                         <tbody className="text-left">
-                            {currentData.map((item, index) => (
+                            {/* {currentData.map((item, index) => (
                                 <tr key={item.id} className={`hover:bg-gray-100 ${index === currentData.length - 1 ? 'border-b-0' : 'border-b border-gray-400'}`}>
                                     <td className="p-4"><img className="w-16 h-16" src={item.imageUrl} alt="product image" /></td>
                                     <td className="p-4 w-56">{item.productName}</td>
@@ -92,13 +91,13 @@ export default function InventoryPage() {
                                             <button className="min-w-24 cursor-pointer bg-red-100 border-2 border-red-500 text-red-800 py-1 px-3 rounded-lg text-sm">Restock</button>}
                                     </td>
                                 </tr>
-                            ))}
+                            ))} */}
                         </tbody>
                     </table>
                 </div>
                 <span className="w-full flex justify-between items-center">
-                    <p className="text-stone-500">Showing {currentData.length} of {INVENTORY_PRODUCTS.length} products</p>
-                    <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" />
+                    {/* <p className="text-stone-500">Showing {currentData.length} of {INVENTORY_PRODUCTS.length} products</p>
+                    <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" /> */}
                 </span>
             </main>
         </>

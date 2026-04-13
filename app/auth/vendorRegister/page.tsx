@@ -5,18 +5,18 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { COUNTRIES, } from "@/constants/common";
 import { vendorRegister } from "@/utils/authApiClient";
-import { VendorRegisterFormData, VendorRegisterTypes } from "@/utils/Types";
+import { VendorRegisterFormData, } from "@/utils/Types";
 import { RegistrationSuccessModal } from "@/components/common/RegistrationSuccessModal";
 import FinancialCompliance from "@/components/vendor/FinancialCompliance";
 import { DocUploadInput, DocUploadInputRef } from "@/components/vendor/DocUploadInput";
 import { VendorDocumentTypes } from "@/constants";
-import { ORGANIZATION_DETAIL_FIELDS, RegistrationStages } from "@/constants/dynamicFields";
+import { BUSINESS_ADMIN_ACCOUNT_FIELDS, ORGANIZATION_DETAIL_FIELDS, RegistrationStages } from "@/constants/dynamicFields";
 import { Button } from "@/components/common/Button";
-import { vendorRegisterSchema } from "@/utils/validation";
+import { vendorRegisterSchema, VendorRegisterSchemaType } from "@/utils/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 // Fields that belong to each step — used for per-step validation
-const STEP_FIELDS: Record<number, (keyof VendorRegisterFormData)[]> = {
+const STEP_FIELDS: Record<number, string[]> = {
     0: ["company_name", "store_owner_first_name", "store_owner_last_name", "country_code", "phone_number", "category", "company_structure"],
     1: ["company_domain"],
     2: [],
@@ -42,37 +42,37 @@ export default function VendorRegisterPage() {
         reset,
         control,
         formState: { errors, isSubmitting },
-    } = useForm<VendorRegisterTypes>({
+    } = useForm({
         mode: "onChange",
         resolver: zodResolver(vendorRegisterSchema),
         defaultValues: {
-            first_name: null,
-            last_name: null,
-            phone_number: null,
-            company_name: null,
-            store_owner_first_name: null,
-            store_owner_last_name: null,
-            category: null,
-            company_domain: null,
-            company_structure: null,
-            email: null,
-            country_code: null,
-            password: null,
-            confirm_password: null,
+            first_name: '',
+            last_name: '',
+            phone_number: '',
+            company_name: '',
+            store_owner_first_name: '',
+            store_owner_last_name: '',
+            category: '',
+            company_domain: '',
+            company_structure: '',
+            email: '',
+            country_code: '',
+            password: '',
+            confirm_password: '',
         },
     });
 
     // Validate only the current step's fields before advancing
     const nextStep = async () => {
         const fields = STEP_FIELDS[formStep];
-        const valid = fields.length > 0 ? await trigger(fields) : true;
+        const valid = fields.length > 0 ? await trigger(fields as keyof typeof register) : true;
         if (!valid) return;
         setFormStep((prev) => Math.min(prev + 1, totalSteps - 1));
     };
 
     const prevStep = () => setFormStep((prev) => Math.max(prev - 1, 0));
 
-    const onSubmit = async (data: VendorRegisterTypes) => {
+    const onSubmit = async (data: VendorRegisterSchemaType) => {
         setGlobalError(null);
         const formData = new FormData();
         fileMap.forEach(({ file, type }) => {
@@ -86,11 +86,11 @@ export default function VendorRegisterPage() {
         console.log(formData.get("vendor"));
         try {
             const result = await vendorRegister(formData);
-            if (result.status) {
+            if (result?.status) {
                 reset();
                 setShowSuccessModal(true);
             } else {
-                setGlobalError(result.message ?? "Registration failed. Please try again.");
+                setGlobalError(result?.message ?? "Registration failed. Please try again.");
             }
         } catch {
             setGlobalError("Something went wrong. Please try again.");
@@ -133,10 +133,10 @@ export default function VendorRegisterPage() {
                                                         {subField.type === "select" ? (
                                                             <select
                                                                 className={`input-class w-full ${subField.styles ?? ""}`}
-                                                                {...register(subField.id as keyof VendorRegisterTypes)}
+                                                                {...register(subField.id as keyof VendorRegisterSchemaType)}
                                                                 onChange={(e) => {
                                                                     setCountryCode(e.target.value);
-                                                                    register(subField.id as keyof VendorRegisterTypes).onChange(e);
+                                                                    register(subField.id as keyof VendorRegisterSchemaType).onChange(e);
                                                                 }}
                                                             >
                                                                 <option value="">Code</option>
@@ -149,13 +149,13 @@ export default function VendorRegisterPage() {
                                                                 type={subField.type ?? "text"}
                                                                 className={`input-class w-full ${subField.styles ?? ""}`}
                                                                 placeholder={subField.placeholder}
-                                                                {...register(subField.id as keyof VendorRegisterTypes)}
+                                                                {...register(subField.id as keyof VendorRegisterSchemaType)}
                                                             />
                                                         )}
 
-                                                        {errors[subField.id as keyof VendorRegisterTypes] && (
+                                                        {errors[subField.id as keyof VendorRegisterSchemaType] && (
                                                             <p className="input-error text-xs">
-                                                                {errors[subField.id as keyof VendorRegisterTypes]?.message}
+                                                                {errors[subField.id as keyof VendorRegisterSchemaType]?.message}
                                                             </p>
                                                         )}
                                                     </div>
@@ -167,11 +167,11 @@ export default function VendorRegisterPage() {
                                                     type={field.type ?? "text"}
                                                     className="input-class"
                                                     placeholder={field.placeholder}
-                                                    {...register(field.id as keyof VendorRegisterFormData)}
+                                                    {...register(field.id as keyof VendorRegisterSchemaType)}
                                                 />
-                                                {errors[field.id as keyof VendorRegisterFormData] && (
+                                                {errors[field.id as keyof VendorRegisterSchemaType] && (
                                                     <p className="input-error">
-                                                        {errors[field.id as keyof VendorRegisterFormData]?.message}
+                                                        {errors[field.id as keyof VendorRegisterSchemaType]?.message}
                                                     </p>
                                                 )}
                                             </>
@@ -232,8 +232,6 @@ export default function VendorRegisterPage() {
                             <DocUploadInput
                                 setFileMap={setFileMap}
                                 fileMap={fileMap}
-
-
                                 typeList={COUNTRIES.find((c) => c.country_code === countryCode)?.fields || []}
                                 title="Financial Documents"
                             />
@@ -278,7 +276,7 @@ export default function VendorRegisterPage() {
                                             type={field.type}
                                             placeholder={field.placeholder}
                                             className="input-class"
-                                            {...register(field.id as keyof VendorRegisterFormData, {
+                                            {...register(field.id as keyof VendorRegisterSchemaType, {
                                                 required: `${field.label} is required`,
                                                 // Extra rule: confirm_password must match password
                                                 ...(field.id === "confirm_password" && {
@@ -287,9 +285,9 @@ export default function VendorRegisterPage() {
                                                 }),
                                             })}
                                         />
-                                        {errors[field.id as keyof VendorRegisterFormData] && (
+                                        {errors[field.id as keyof VendorRegisterSchemaType] && (
                                             <p className="input-error">
-                                                {errors[field.id as keyof VendorRegisterFormData]?.message}
+                                                {errors[field.id as keyof VendorRegisterSchemaType]?.message}
                                             </p>
                                         )}
                                     </div>

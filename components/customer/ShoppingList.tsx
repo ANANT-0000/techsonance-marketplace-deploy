@@ -41,7 +41,7 @@ export function ShoppingList({
         )
     }
     console.log("firstIndex, lastIndex", firstIndex, lastIndex);
-    const productsToShow = products
+    const productsToShow: ProductType[] = products
     console.log("productsToShow", productsToShow);
     return (
         <>
@@ -62,7 +62,7 @@ export function ShoppingList({
                                         >
 
                                             <div className="flex flex-col h-full">
-                                                <WishListBtn productVariantId={product?.variants[0]?.id} styles="absolute top-2 right-6 z-10" />
+                                                <WishListBtn productVariantId={product.variants && product.variants.length > 0 ? product.variants[0].id : ''} styles="absolute top-2 right-6 z-10" />
 
                                                 <Link href={`/shopping/${product.id}`} className="block overflow-hidden rounded-lg">
                                                     <img loading="lazy"
@@ -98,8 +98,8 @@ export function ShoppingList({
                                                 {
                                                     !isMobile &&
                                                     <div className={`flex gap-2 mt-2   justify-between items-center`}>
-                                                        <AddToCart productVariantId={product?.variants[0]?.id} styles="w-full " />
-                                                        <BuyBtn productId={product.variants[0]?.id} styles=" scale-[.9]" />
+                                                        <AddToCart productVariantId={product?.variants && product.variants.length > 0 ? product.variants[0].id : ''} styles="w-full " />
+                                                        <BuyBtn productId={product?.variants && product.variants.length > 0 ? product.variants[0].id : ''} styles=" scale-[.9]" />
 
                                                     </div>
                                                 }

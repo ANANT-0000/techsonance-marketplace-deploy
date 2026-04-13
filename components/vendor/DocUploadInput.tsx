@@ -1,6 +1,8 @@
 ﻿"use client";
+import { type VendorDocumentTypes } from "@/constants";
+import { ComplianceFieldType, CountryComplianceType } from "@/utils/Types";
 import { DynamicIcon } from "lucide-react/dynamic";
-import { useState, useCallback, useImperativeHandle, forwardRef } from "react";
+import { useState, useCallback, useImperativeHandle, forwardRef, Dispatch, SetStateAction } from "react";
 
 
 type FileEntry = {
@@ -28,7 +30,16 @@ function truncateWords(text: string, wordLimit: number): string {
     return words.slice(0, wordLimit).join('') + '...';
 }
 export const DocUploadInput = (
-    ({ setFileMap, fileMap, typeList, title }) => {
+    ({ setFileMap, fileMap, typeList, title }: {
+        setFileMap: Dispatch<SetStateAction<{
+            file: File | null;
+            type: string;
+        }[]>>,
+        fileMap: {
+            file: File | null;
+            type: string;
+        }[], typeList: ComplianceFieldType[] | typeof VendorDocumentTypes, title: string
+    }) => {
         const [showField, setShowField] = useState(false);
         // Expose getPairs() to parent via ref
         const handleFileChange = (
@@ -37,9 +48,9 @@ export const DocUploadInput = (
             index: number
         ) => {
             const file = e.target.files?.[0] ?? null;
-            setFileMap((prevMap) => {
+            setFileMap((prevMap: any) => {
                 // 1. Check if an entry with this index already exists
-                const existingIndex = prevMap.findIndex((item) => item.index === index);
+                const existingIndex = prevMap.findIndex((item: any) => item.index === index);
                 if (existingIndex !== -1) {
                     // 2. If it exists, create a copy and replace the item at that position
                     const updatedMap = [...prevMap];
@@ -78,7 +89,7 @@ export const DocUploadInput = (
                     {showField && (
                         <div className="flex flex-col gap-3">
                             {typeList.map((field, index) => {
-                                const entry = fileMap[field.value];
+                                const entry = fileMap[field.value as any];
                                 // const isPaired = !!entry?.file && !!entry?.type;
 
                                 return (
@@ -145,4 +156,4 @@ export const DocUploadInput = (
     }
 );
 
-DocUploadInput.displayName = "DocUploadInput";
+// DocUploadInput.displayName = "DocUploadInput";

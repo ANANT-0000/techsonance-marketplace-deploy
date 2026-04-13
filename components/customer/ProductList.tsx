@@ -100,7 +100,7 @@ function ProductCard({ product, isMobile }: { product: ProductType, isMobile: bo
         >
 
             <div className="flex flex-col h-full">
-                <WishListBtn productId={product.id} styles="absolute top-2 right-6 z-10" />
+                <WishListBtn productVariantId={product?.id} styles="absolute top-2 right-6 z-10" />
 
                 <Link href={`/shopping/${product.id}`} className="block overflow-hidden rounded-lg">
                     <img
@@ -109,7 +109,7 @@ function ProductCard({ product, isMobile }: { product: ProductType, isMobile: bo
                         alt={product.name?.trim()}
                     />
                 </Link>
-                <h3 className="font-semibold text-sm lg:line-clamp-1 line-clamp-2 leading-4 mb-1">{product.title}</h3>
+                <h3 className="font-semibold text-sm lg:line-clamp-1 line-clamp-2 leading-4 mb-1">{product.name}</h3>
                 <p className="lg:text-sm text-xs  text-gray-500 lg:line-clamp-2 line-clamp-2 leading-5 overflow-hidden mb-4 h-10">
                     {product.description}
                 </p>
@@ -118,16 +118,16 @@ function ProductCard({ product, isMobile }: { product: ProductType, isMobile: bo
 
             <div className="mt-auto">
                 <div className="flex items-baseline gap-2   flex-wrap">
-                    <span className="font-bold  text-gray-900 lg:text-xl text-sm">₹{product.price}</span>
-                    {product.discount > 0 && (
+                    <span className="font-bold  text-gray-900 lg:text-xl text-sm">₹{product.base_price}</span>
+                    {Number(product.discount_percent) > 0 && (
                         <>
                             <div className="flex gap-2  ">
 
                                 <span className="text-xs line-through text-gray-400">
-                                    ₹{Math.floor(product.price / (1 - product.discount / 100))}
+                                    ₹{Math.floor(Number(product.base_price) / (1 - Number(product.discount_percent) / 100))}
                                 </span>
                                 <span className="text-xs font-bold text-green-500">
-                                    {Math.round(product.discount)}% off
+                                    {Math.round(Number(product.discount_percent))}% off
                                 </span>
                             </div>
                         </>
@@ -136,7 +136,7 @@ function ProductCard({ product, isMobile }: { product: ProductType, isMobile: bo
                 {
                     !isMobile &&
                     <div className={`flex gap-2 mt-2   justify-between items-center`}>
-                        <AddToCart productId={product.id} styles="w-full " />
+                        <AddToCart productVariantId={product.id} styles="w-full " />
                         <BuyBtn productId={product.id} styles=" scale-[.9]" />
 
                     </div>

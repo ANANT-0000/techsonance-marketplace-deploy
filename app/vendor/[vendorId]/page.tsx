@@ -1,12 +1,17 @@
 'use client';
+// @ts-ignore
+import './index.css';
 import Navbar from "@/components/vendor/Navbar";
 import { Pagination } from "@/components/common/Pagination";
-import { VENDOR_DASHBOARD_STATS, VENDOR_ORDER_DATA } from "@/constants/vendor";
+import { VENDOR_DASHBOARD_STATS, } from "@/constants/vendor";
 import { useState } from "react";
 import Link from "next/link";
-import './index.css';
-import { formatCurrency, formatNumber,   } from "@/lib/utils";
+import { formatCurrency, formatNumber, } from "@/lib/utils";
 const tableHeaders = ["Order ID", "Customer Name", "Status", "Amount", "Action"];
+const VENDOR_ORDER_DATA = [
+    { orderId: "1001", customerName: "John Doe", status: "pending", amount: 2500, action: "Ship Now" },
+    { orderId: "1002", customerName: "Jane Smith", status: "shipped", amount: 1500, action: "View" },
+]
 export default function DashboardPage() {
 
     const [count, setCount] = useState(1);
@@ -60,9 +65,9 @@ export default function DashboardPage() {
                                     <td className="p-4">{order.orderId}</td>
                                     <td className="p-4">{order.customerName}</td>
                                     <td className="p-4">
-                                        {order.status === "Pending" ? (
+                                        {order.status === "pending" ? (
                                             <span className="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-lg text-sm">Pending</span>
-                                        ) : order.status === "Shipped" ? (
+                                        ) : order.status === "shipped" ? (
                                             <span className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-sm">Shipped</span>
                                         ) : (
                                             <span className="bg-gray-100 text-gray-800 py-1 px-3 rounded-lg text-sm">Delivered</span>

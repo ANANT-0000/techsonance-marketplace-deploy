@@ -1,7 +1,7 @@
-﻿import { fetchVendorOneProducts, fetchVendorsProductsCategory, updateProduct } from "@/utils/vendorApiClient";
+﻿import { fetchVendorOneProducts, fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
 import { ProductForm } from "@/components/vendor/ProductForm";
-import { ProductFormValuesType, ProductResponseType } from "@/utils/Types";
-
+import { ProductResponseType, ProductStatusEnum } from "@/utils/Types";
+import { ProductFormInput, ProductFormOutput, ProductFormValuesType } from "@/utils/validation";
 
 export default async function ProductFormPage({ params }: { params: Promise<{ vendorId: string, id: string }> }) {
 
@@ -14,20 +14,19 @@ export default async function ProductFormPage({ params }: { params: Promise<{ ve
     }) : null;
     // console.log(getExitingProduct)
 
-    const exitingData: Partial<ProductFormValuesType> = {
+    const exitingData: Partial<ProductFormInput | ProductFormOutput> = {
         productName: getExitingProduct?.name || '',
         description: getExitingProduct?.description || '',
-        features: getExitingProduct?.features || [],
+        features: getExitingProduct?.features ? getExitingProduct.features : [],
         attributes: getExitingProduct?.variants ? getExitingProduct.variants.attributes : [],
         basePrice: getExitingProduct?.base_price || '',
         discountPercent: getExitingProduct?.discount_percent || '',
         stocks: String(getExitingProduct?.stock_quantity) || '',
         sku: getExitingProduct?.variants ? getExitingProduct.variants.sku : '',
-        has_variants: getExitingProduct?.has_variants || false,
-        productMedia: getExitingProduct?.images.filter((img) => img.imgType === "main") || [],
-        featureMedia: getExitingProduct?.images.filter((img) => img.imgType === "gallery") || [],
+        productMedia: getExitingProduct?.images.filter((img) => img?.imgType === "main") || [],
+        featureMedia: getExitingProduct?.images.filter((img) => img?.imgType === "gallery") || [],
         category: getExitingProduct?.category_id || '',
-        status: getExitingProduct?.status || '',
+        status: getExitingProduct?.status as ProductStatusEnum || '',
         taxProfile: getExitingProduct?.tax_profile || '',
         variantId: getExitingProduct?.variants.id
     }

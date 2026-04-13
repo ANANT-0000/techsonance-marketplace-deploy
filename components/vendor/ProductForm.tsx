@@ -2,14 +2,14 @@
 import { BASE_API_URL, ORGANIZATION_TAXATION_OPTIONS, PRODUCT_FORM_FIELDS, PRODUCT_FORM_PRICING_FIELDS } from "@/constants";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { usePreviewUrls } from "@/lib/clientUtils";
-import { FileOrImage, ProductImageType } from "@/utils/Types";
-import { ProductFormValuesType, productSchema } from "@/utils/validation";
+import { FileOrImage, ProductImageType, ProductStatusEnum, VendorUserType } from "@/utils/Types";
+import { ProductFormInput, ProductFormOutput, ProductFormValuesType, productSchema } from "@/utils/validation";
 import { createProduct } from "@/utils/vendorApiClient";
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod.js";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect, useCallback, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { FieldErrors, useFieldArray, useForm } from "react-hook-form";
 
 
 const FILE_UPLOAD_FIELD_LABELS = [
@@ -41,7 +41,7 @@ export function ProductForm({
 }: {
     categoryOptions: { value: string; label: string }[];
     vendorId: string;
-    existingData?: Partial<ProductFormValuesType>;
+    existingData?: Partial<ProductFormInput | ProductFormOutput>;
     productId?: string
 }) {
     const {
@@ -51,7 +51,7 @@ export function ProductForm({
         handleSubmit,
         setValue,
         formState: { errors, isSubmitting },
-    } = useForm<ProductFormValuesType>({
+    } = useForm({
         resolver: zodResolver(productSchema),
         mode: "onChange",
         defaultValues: {
@@ -63,11 +63,10 @@ export function ProductForm({
             discountPercent: "",
             stocks: "",
             sku: "",
-            has_variants: false,
             productMedia: [],
             featureMedia: [],
             category: "",
-            status: "inactive",
+            status: ProductStatusEnum.INACTIVE,
             taxProfile: "",
         },
     });
@@ -89,8 +88,20 @@ export function ProductForm({
         featureMedia: { files: featureFiles, setFiles: setFeatureFiles },
     } as const;
     useEffect(() => {
-        if (productId && existingData) {
-            reset({ ...existingData, category: existingData.category ?? '', taxProfile: existingData.taxProfile ?? '', status: existingData.status ?? 'inactive' });
+        if (productId && existingData?.category && existingData?.status && existingData?.taxProfile) {
+            reset({
+                productName: existingData.productName || "",
+                description: existingData.description || "",
+                features: existingData.features ? existingData.features.map((feat) => ({ title: feat.title, description: feat.description })) : [{ title: "", description: "" }],
+                attributes: existingData.attributes ? existingData.attributes.map((attr) => ({ name: attr.name, values: attr.values })) : [{ name: "", values: "" }],
+                basePrice: String(existingData.basePrice) || "",
+                discountPercent: String(existingData.discountPercent) || "",
+                stocks: String(existingData.stocks) || "",
+                sku: existingData.sku || "",
+                category: existingData.category || "",
+                status: existingData.status || ProductStatusEnum.INACTIVE,
+                taxProfile: existingData.taxProfile || "",
+            });
             setProductFiles(existingData.productMedia || []);
             setFeatureFiles(existingData.featureMedia || []);
         }
@@ -138,7 +149,7 @@ export function ProductForm({
             console.warn("Product or feature files are missing.");
             return;
         }
-        if (!user || !user.vendor_id || !user.company_id) {
+        if (!user || 'vendor_id' in user && !user.vendor_id || !user.company_id) {
             console.warn("User vendor and company information is missing.");
             return;
         }
@@ -154,7 +165,7 @@ export function ProductForm({
             base_price: String(data.basePrice),
             discount_percent: String(data.discountPercent),
             stock_quantity: Number(data.stocks),
-            sku: data.has_variants ? undefined : data.sku,
+            sku: data.sku,
         };
         const payload = isUpdate ? {
             ...newProduct, variant_name: data.productName,
@@ -200,7 +211,7 @@ export function ProductForm({
             {/* ── 1. GENERAL INFORMATION ── */}
             <div className="section">
                 <div className="section_header">
-                    <DynamicIcon fallback={() => <p></p>} name="package" size={18} className="text-indigo-500" fallback={() => <p></p>} />
+                    <DynamicIcon fallback={() => <p></p>} name="package" size={18} className="text-indigo-500" />
                     <h2 className="text-base font-semibold text-slate-800">General Information</h2>
                 </div>
                 <div className="p-6 space-y-5">
@@ -226,7 +237,7 @@ export function ProductForm({
                                 )}
                                 {errors[field.name] && (
                                     <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                        <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={12} />{errors[field.name].message}
+                                        <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={12} />{errors[field.name as keyof ProductFormValuesType]?.message as string}
                                     </p>
                                 )}
                             </div>
@@ -370,7 +381,7 @@ export function ProductForm({
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     {FILE_UPLOAD_FIELD_LABELS.map(({ label, fieldName }) => {
-                        const { files, setFiles } = fileStateMap[fieldName];
+                        const { files, setFiles } = fileStateMap[fieldName as keyof typeof fileStateMap];
                         console.log("files", files)
                         return (
                             <div key={fieldName} className="border border-slate-200 rounded-xl p-4 bg-slate-50">
@@ -393,7 +404,7 @@ export function ProductForm({
                                 {/* Preview list */}
                                 {files.length > 0 && (
                                     <ul className="flex flex-wrap gap-3 mt-4">
-                                        {files.map((file, i) => (
+                                        {files.map((file: FileOrImage, i: number) => (
                                             <li
                                                 key={i}
                                                 className="relative bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm w-20 h-20"
@@ -411,7 +422,7 @@ export function ProductForm({
                                                             files,
                                                             setFiles as React.Dispatch<React.SetStateAction<FileOrImage[]>>,
                                                             fieldName,
-                                                            file.id ? file.id : undefined
+                                                            (file as { id?: string }).id ?? undefined
                                                         )
                                                     }
                                                     className="absolute top-1 right-1 p-0.5 bg-red-50 text-red-400 hover:text-red-600 transition rounded-full border border-red-200"

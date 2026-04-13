@@ -237,7 +237,7 @@ export const fetchProductVariants = async (productId: string) => {
         throw error;
     }
 }
-export const deleteProductVariant = async (variantId: string, vendorId: string, productId: string) => {
+export const deleteProductVariant = async (productId: string, variantId: string, vendorId: string) => {
     try {
         const response = await fetch(`${BASE_API_URL}product-variant/${variantId}`, {
             method: 'DELETE',

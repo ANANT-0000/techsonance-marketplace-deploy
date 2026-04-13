@@ -1,26 +1,28 @@
 ﻿"use client"
 import { deleteProduct, deleteProductVariant } from '@/utils/vendorApiClient';
 import { Delete, Trash2 } from 'lucide-react'
-import React from 'react';
+type DeleteBtnProps =
+    | { id: string; toDelete: "PRODUCT"; style?: string; vendorId: string }
+    | { id: string; toDelete: "VARIANT"; style?: string; vendorId: string; variantId: string }
 
-export const DeleteBtn = ({ id, toDelete, style = 'flex gap-2  text-red-600 hover:text-red-800', ...props }: { id: string; toDelete: string; style?: string; } & React.ProfilerProps) => {
-    const handleDelete = async (id: string) => {
+export const DeleteBtn = (props: DeleteBtnProps) => {
+    const handleDelete = async (productId: string) => {
         const confirmed = window.confirm(`Are you sure you want to delete this product? This action cannot be undone.`);
         if (!confirmed) return;
-        if (toDelete === "VARIANT") {
-            console.log(id, props.vendorId, props.productId)
-            const result = await deleteProductVariant(id, props.vendorId, props.productId,props.variantId);
+        if (props.toDelete === "VARIANT") {
+            console.log(props.id, props.vendorId, props?.variantId)
+            const result = await deleteProductVariant(productId, props.variantId, props.vendorId,);
             console.log(result)
             return;
-        } else if (toDelete === "PRODUCT") {
-            const result = await deleteProduct(id, props.vendorId);
+        } else if (props.toDelete === "PRODUCT") {
+            const result = await deleteProduct(productId, props.vendorId);
             console.log(result)
             return;
         }
     }
 
     return (
-        <button onClick={(() => handleDelete(id))} className={style} >
+        <button onClick={(() => handleDelete(props.id))} className={props.style} >
             Delete <Trash2 />
         </button>
     )

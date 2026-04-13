@@ -47,7 +47,7 @@ export default function VendorLoginPage() {
         setLoadingState(true);
         const result = await vendorLogin(data, dispatch);
         console.log(result);
-        if (result?.status === 200) {
+        if (result?.status === 200 && result?.user) {
             reset();
             dispatch(loginSuccess(result.user));
             console.log(result.user);

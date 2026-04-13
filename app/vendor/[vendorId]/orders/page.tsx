@@ -6,7 +6,7 @@ import Navbar from "@/components/vendor/Navbar";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Pagination } from "@/components/common/Pagination";
-import { VENDOR_ORDERS_DETAIL } from "@/constants/vendor";
+ 
 
 export default function OrdersPage() {
     const [date, setDate] = useState<Date | undefined>(new Date())
@@ -18,11 +18,11 @@ export default function OrdersPage() {
         setIsOpen(false);
     }
 
-    const pageSize = 5;
-    const totalPages = Math.ceil(VENDOR_ORDERS_DETAIL.length / pageSize);
-    const startIndex = (count - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const currentData = VENDOR_ORDERS_DETAIL.slice(startIndex, endIndex);
+    // const pageSize = 5;
+    // const totalPages = Math.ceil(VENDOR_ORDERS_DETAIL.length / pageSize);
+    // const startIndex = (count - 1) * pageSize;
+    // const endIndex = startIndex + pageSize;
+    // const currentData = VENDOR_ORDERS_DETAIL.slice(startIndex, endIndex);
 
     return (
         <>
@@ -75,7 +75,7 @@ export default function OrdersPage() {
                             </tr>
                         </thead>
                         <tbody className="text-center">
-                            {currentData.map((item, index) => (
+                            {/* {currentData.map((item, index) => (
                                 <tr key={item.id} className={`hover:bg-gray-100 ${index === currentData.length - 1 ? 'border-b-0' : 'border-b border-gray-400'}`}>
                                     <td className="p-4 w-56">{item.orderNumber}<br /><span className="text-sm font-light text-gray-500">{item.dateTime}</span></td>
                                     <td className="p-4">{item.customer.name}<br /><span className="text-sm font-light text-gray-500">{item.customer.location}</span></td>
@@ -90,12 +90,12 @@ export default function OrdersPage() {
                                             <span className="bg-gray-200 text-black py-1 px-3 rounded-lg text-sm">{item.paymentMethod}</span>}
                                     </td>
                                 </tr>
-                            ))}
+                            ))} */}
                         </tbody>
                     </table>
                 </div>
                 <span className="flex justify-end">
-                    <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" />
+                    {/* <Pagination setCount={setCount} count={count} totalPages={totalPages ?? 0} style="relative right-0 w-54" /> */}
                 </span>
             </main>
         </>

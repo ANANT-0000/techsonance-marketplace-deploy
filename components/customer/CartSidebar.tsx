@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from "react";
 
-import { PRODUCT_LIST } from "@/constants/customer";
 import { AddToCart } from "./AddToCart";
 
 import { X, ShoppingBag } from "lucide-react";

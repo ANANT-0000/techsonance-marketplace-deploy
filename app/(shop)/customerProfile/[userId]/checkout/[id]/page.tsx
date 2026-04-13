@@ -45,15 +45,15 @@ export default function CheckoutPage() {
             </h2>
             <div className="bg-gray-50 rounded-lg lg:p-4 px-2">
               <h3 className="font-semibold text-gray-900 mb-1">
-                {user?.name || 'Guest User'}
+                {user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : 'Guest User'}
               </h3>
-              {user?.addresses?.filter(addr => addr.is_default === true).map((adr, idx) => (
+              {/* {user?.addresses?.filter(addr => addr.is_default === true).map((adr, idx) => (
                 <p key={idx} className="text-gray-700 text-sm leading-relaxed">
                   {adr.address_line1}, {adr.city}, {adr.state}, {adr.postal_code}, {adr.country}
                 </p>
-              ))}
+              ))} */}
             </div>
-            <Link href={`/customerProfile/${user?.user_id}/addresses`}>
+            <Link href={`/customerProfile/${user?.id}/addresses`}>
               <motion.button
                 className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                 whileHover={{ scale: 1.05 }}>

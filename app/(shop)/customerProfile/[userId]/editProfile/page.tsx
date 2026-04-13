@@ -28,11 +28,11 @@ export default function EditProfilePage() {
         resolver: zodResolver(profileEditSchema),
         mode: "onBlur",
         defaultValues: {
-            profile_picture: user?.profile_picture_url || "",
-            first_name: user?.first_name || "",
-            last_name: user?.last_name || "",
-            email: user?.email || "",
-            phone: user?.phone_number || ""
+            profile_picture: user && "profile_picture_url" in user ? user.profile_picture_url || "" : "",
+            first_name: user && "first_name" in user ? user.first_name || "" : "",
+            last_name: user && "last_name" in user ? user.last_name || "" : "",
+            email: user && "email" in user ? user.email || "" : "",
+            phone: user && "phone_number" in user ? user.phone_number || "" : ""
         }
     });
 

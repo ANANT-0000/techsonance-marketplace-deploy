@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { COUNTRIES } from "@/constants/common";
 import { useRouter } from "next/navigation";
-import { VendorRegisterTypes } from "@/utils/Types";
 import { useState } from "react";
 import { VendorDocumentTypes } from "@/constants";
 import { BUSINESS_ADMIN_ACCOUNT_FIELDS, ORGANIZATION_DETAIL_FIELDS, RegistrationStages } from "@/constants/dynamicFields";
@@ -13,10 +12,10 @@ import FinancialCompliance from "@/components/vendor/FinancialCompliance";
 import { Button } from "@/components/common/Button";
 import { RegistrationSuccessModal } from "@/components/common/RegistrationSuccessModal";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { vendorRegisterSchema } from "@/utils/validation";
+import { vendorRegisterSchema, VendorRegisterSchemaType } from "@/utils/validation";
 import { vendorRegister } from "@/utils/authApiClient";
 
-const STEP_FIELDS: Record<number, (keyof VendorRegisterTypes)[]> = {
+const STEP_FIELDS: Record<number, (keyof VendorRegisterSchemaType)[]> = {
     0: ["company_name", "store_owner_first_name", "store_owner_last_name", "country_code", "phone_number", "category", "company_structure"],
     1: ["company_domain"],
     2: [],
@@ -71,7 +70,7 @@ export default function VendorFormPage() {
     const prevStep = () => setFormStep((prev) => Math.max(prev - 1, 0));
 
     // Fix 2: single onSubmit — removed the dead first version
-    const onSubmit = async (data: VendorRegisterTypes) => {
+    const onSubmit = async (data: VendorRegisterSchemaType) => {
         setGlobalError(null);
 
 
@@ -86,7 +85,7 @@ export default function VendorFormPage() {
 
         try {
             const result = await vendorRegister(formData);
-            if (result.status) {
+            if (result?.status) {
                 reset();
                 setShowSuccessModal(true);
                 setTimeout(() => {
@@ -94,7 +93,7 @@ export default function VendorFormPage() {
                     router.back();
                 }, 2000);
             } else {
-                setGlobalError(result.message ?? "Registration failed. Please try again.");
+                setGlobalError(result?.message ?? "Registration failed. Please try again.");
             }
         } catch {
             setGlobalError("Something went wrong. Please try again.");
@@ -130,12 +129,12 @@ export default function VendorFormPage() {
                                                         {subField.type === "select" ? (
                                                             <select
                                                                 className={`input-class w-full ${subField.styles ?? ""}`}
-                                                                {...register(subField.id as keyof VendorRegisterTypes, {
+                                                                {...register(subField.id as keyof VendorRegisterSchemaType, {
                                                                     required: "Country code is required",
                                                                 })}
                                                                 onChange={(e) => {
                                                                     setCountryCode(e.target.value);
-                                                                    register(subField.id as keyof VendorRegisterTypes).onChange(e);
+                                                                    register(subField.id as keyof VendorRegisterSchemaType).onChange(e);
                                                                 }}
                                                             >
                                                                 <option value="">Code</option>
@@ -148,15 +147,15 @@ export default function VendorFormPage() {
                                                                 type={subField.type ?? "text"}
                                                                 className={`input-class w-full ${subField.styles ?? ""}`}
                                                                 placeholder={subField.placeholder}
-                                                                {...register(subField.id as keyof VendorRegisterTypes, {
+                                                                {...register(subField.id as keyof VendorRegisterSchemaType, {
                                                                     required: "Phone number is required",
                                                                     pattern: { value: /^[0-9\-]+$/, message: "Please use format 123-456-7890" },
                                                                 })}
                                                             />
                                                         )}
-                                                        {errors[subField.id as keyof VendorRegisterTypes] && (
+                                                        {errors[subField.id as keyof VendorRegisterSchemaType] && (
                                                             <p className="input-error">
-                                                                {errors[subField.id as keyof VendorRegisterTypes]?.message}
+                                                                {errors[subField.id as keyof VendorRegisterSchemaType]?.message}
                                                             </p>
                                                         )}
                                                     </span>
@@ -167,7 +166,7 @@ export default function VendorFormPage() {
                                             <>
                                                 <select
                                                     className="input-class"
-                                                    {...register(field.id as keyof VendorRegisterTypes, {
+                                                    {...register(field.id as keyof VendorRegisterSchemaType, {
                                                         required: `${field.label} is required`,
                                                     })}
                                                 >
@@ -176,9 +175,9 @@ export default function VendorFormPage() {
                                                         <option key={o.value} value={o.value}>{o.label}</option>
                                                     ))}
                                                 </select>
-                                                {errors[field.id as keyof VendorRegisterTypes] && (
+                                                {errors[field.id as keyof VendorRegisterSchemaType] && (
                                                     <p className="input-error">
-                                                        {errors[field.id as keyof VendorRegisterTypes]?.message}
+                                                        {errors[field.id as keyof VendorRegisterSchemaType]?.message}
                                                     </p>
                                                 )}
                                             </>
@@ -189,13 +188,13 @@ export default function VendorFormPage() {
                                                     type={field.type ?? "text"}
                                                     className="input-class"
                                                     placeholder={field.placeholder}
-                                                    {...register(field.id as keyof VendorRegisterTypes, {
+                                                    {...register(field.id as keyof VendorRegisterSchemaType, {
                                                         required: `${field.label} is required`,
                                                     })}
                                                 />
-                                                {errors[field.id as keyof VendorRegisterTypes] && (
+                                                {errors[field.id as keyof VendorRegisterSchemaType] && (
                                                     <p className="input-error">
-                                                        {errors[field.id as keyof VendorRegisterTypes]?.message}
+                                                        {errors[field.id as keyof VendorRegisterSchemaType]?.message}
                                                     </p>
                                                 )}
                                             </>
@@ -302,7 +301,7 @@ export default function VendorFormPage() {
                                             type={field.type}
                                             placeholder={field.placeholder}
                                             className="input-class"
-                                            {...register(field.id as keyof VendorRegisterTypes, {
+                                            {...register(field.id as keyof VendorRegisterSchemaType, {
                                                 required: `${field.label} is required`,
                                                 ...(field.id === "confirm_password" && {
                                                     validate: (val) =>
@@ -313,9 +312,9 @@ export default function VendorFormPage() {
                                                 }),
                                             })}
                                         />
-                                        {errors[field.id as keyof VendorRegisterTypes] && (
+                                        {errors[field.id as keyof VendorRegisterSchemaType] && (
                                             <p className="input-error">
-                                                {errors[field.id as keyof VendorRegisterTypes]?.message}
+                                                {errors[field.id as keyof VendorRegisterSchemaType]?.message}
                                             </p>
                                         )}
                                     </div>

@@ -5,16 +5,16 @@ import { Dot, Edit, Landmark, AlertCircle, UploadCloud, Trash2 } from 'lucide-re
 import { useEffect, useState } from 'react';
 import { billingSchema, BillingFormData } from '@/utils/validation';
 
-const DEFAULT_SETTINGS = {
-    gstin: "24ABCDE1234F1Z5",
-    pan: "ABCDE1234F",
-    businessName: "TechWorld Innovations Pvt Ltd",
-    prefix: "INV",
-    year: 2026,
-    startSequence: 467,
-    termsAndNotes: "Thank you for your business..."
-};
-
+// const DEFAULT_SETTINGS = {
+//     gstin: "24ABCDE1234F1Z5",
+//     pan: "ABCDE1234F",
+//     businessName: "TechWorld Innovations Pvt Ltd",
+//     prefix: "INV",
+//     year: 2026,
+//     startSequence: 467,
+//     termsAndNotes: "Thank you for your business..."
+//     signatureUrl: ''
+// };
 export default function BillingAndBankingPage() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -27,7 +27,16 @@ export default function BillingAndBankingPage() {
     } = useForm<BillingFormData>({
         resolver: zodResolver(billingSchema),
         mode: "onChange",
-        defaultValues: DEFAULT_SETTINGS
+        defaultValues: {
+            gstin: "",
+            pan: "",
+            businessName: "",
+            prefix: "",
+            year: 0,
+            startSequence: 1,
+            termsAndNotes: "",
+            signatureUrl: ''
+        }
     });
 
     const watchedPrefix = watch("prefix");
@@ -100,7 +109,7 @@ export default function BillingAndBankingPage() {
                             <div className="flex">
                                 <input {...register("prefix")} className="form_input rounded-r-none border-r-0 w-24 text-center uppercase" />
                                 <div className="bg-gray-100 border-y border-gray-300 flex items-center px-3 text-gray-400">-</div>
-                                <select {...register("year")} className="form_input rounded-l-none">
+                                <select {...register("year", { valueAsNumber: true })}className="form_input rounded-l-none">
                                     {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
                                 </select>
                             </div>
@@ -111,7 +120,7 @@ export default function BillingAndBankingPage() {
 
                         <div className="space-y-4">
                             <label className="text-sm font-semibold block">Starting Sequence</label>
-                            <input type="number" {...register("startSequence")} className="form_input" />
+                            <input type="number" {...register("startSequence", { valueAsNumber: true })} className="form_input" />
                         </div>
                     </div>
 

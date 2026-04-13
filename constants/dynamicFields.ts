@@ -58,7 +58,14 @@ export const PASSWORD_CHANGE_FORM_FIELDS = [
         type: "password"
     }
 ]
-export const ADDRESS_FIELDS = [
+export const ADDRESS_FIELDS: {
+    id: string;
+    label: string;
+    type: string;
+    placeholder?: string;
+    required?: boolean;
+    options?: string[];
+}[] = [
     { id: "address_for", label: "Address Type", type: "select", options: ["home", "work", "other"], placeholder: "Select address type", required: true },
     { id: 'name', label: 'Recipient Name', type: 'text', placeholder: "Enter recipient's name", required: true },
     { id: "phone", label: "Phone", type: "text", placeholder: "Enter contact number for this address", required: true },

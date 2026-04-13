@@ -1,6 +1,6 @@
 'use client';
+import { CATEGORY_LIST_TYPE } from "@/utils/Types";
 import { motion } from "motion/react";
-import type { CATEGORY_LIST_TYPE } from "@/constants/customer";
 
 export function CategoryList({ categories, styles }: { categories?: CATEGORY_LIST_TYPE[], styles?: string }) {
 

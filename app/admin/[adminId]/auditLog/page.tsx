@@ -1,7 +1,6 @@
 'use client';
 import { Navbar } from "@/components/admin/Navbar";
 import { Pagination } from "@/components/common/Pagination";
-import { AUDIT_LOG_DATA } from "@/constants/admin";
 import { searchImgDark } from "@/constants/common";
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
@@ -12,7 +11,7 @@ import { AUDIT_LOG_COLUMNS, AUTH_LOG_FILTERS } from "@/constants/dynamicFields";
 export default function AuditLogPage() {
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [isOpen, setIsOpen] = useState(false);
-    const [logs] = useState(AUDIT_LOG_DATA);
+    const [logs] = useState([]);
     const { theme } = useAppSelector((state: any) => state.adminTheme);
     const [count, setCount] = useState(1);
 
@@ -79,11 +78,11 @@ export default function AuditLogPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {currentData.map((log) => (
+                            {/* {currentData.map((log) => (
                                 <tr key={log.id} className="hover:bg-gray-100 border-b border-gray-400">
-                                    <td className="p-4">{log.timestamp}</td>
-                                    <td className="p-4">{log.actor}</td>
-                                    <td className="p-4">{log.tenant}</td>
+                                    <td className="p-4">{log?.timestamp}</td>
+                                    <td className="p-4">{log?.actor}</td>
+                                    <td className="p-4">{log?.tenant}</td>
                                     <td className="p-4">
                                         <span className={`py-1 px-3 text-nowrap-sm items-center ${log.actionType === "Active" ? "bg-green-100 text-green-500" : log.actionType === "Pending" ? "bg-yellow-100 text-yellow-500" : "bg-gray-100 text-gray-500"}`}>{log.actionType}</span>
                                     </td>
@@ -91,7 +90,7 @@ export default function AuditLogPage() {
                                     <td className="p-4"><a href="#" className="text-blue-600 underline">View JSON</a></td>
                                     <td className="p-4">{log.ipAddress}</td>
                                 </tr>
-                            ))}
+                            ))} */}
                         </tbody>
                     </table>
                 </div>

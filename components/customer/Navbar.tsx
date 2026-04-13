@@ -14,7 +14,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 
 
 
-export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: { styles?: string, logoUrl?: string, menuLinks?: { [key: string]: string }[] }) {
+export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: { styles?: string, logoUrl?: string, menuLinks?: { [key: string]: string | null }[] }) {
     const searchImg = false ? searchImgLight : searchImgDark;
     const { items } = useAppSelector((state: RootState) => state.cart);
     const { wishItems } = useAppSelector((state: RootState) => state.wishlist);
@@ -62,7 +62,7 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: 
                     return (
                         <li key={label} className="relative py-1 px-4">
                             <Link
-                                href={href}
+                                href={href || '#'}
                                 className={`relative z-10 transition-colors duration-300 font-bold ${isActive ? 'text-white' : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >

@@ -1,7 +1,7 @@
-﻿import { OrderSuccessStatusTypes, UserOrder } from "@/utils/Types";
+﻿import { OrderStatusEnum, OrderSuccessStatusTypes, UserOrder } from "@/utils/Types";
 import { motion } from "motion/react";
 import { OrderCard } from "./OrderCard";
-export const OrdersList = ({ orders, status, isMobile }: { orders: UserOrder[], status: OrderSuccessStatusTypes, isMobile: boolean }) => {
+export const OrdersList = ({ orders, status, isMobile }: { orders: UserOrder[], status: OrderStatusEnum, isMobile: boolean }) => {
     const filteredOrders = orders.filter(order => order.order_status === status);
 
     return (

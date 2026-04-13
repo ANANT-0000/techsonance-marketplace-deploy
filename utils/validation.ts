@@ -1,4 +1,5 @@
 ﻿import * as z from 'zod'
+import { CouponDiscountTypeEum, ProductStatusEnum } from './Types';
 export const passwordValidation = new RegExp(
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
 );
@@ -74,6 +75,7 @@ export const customerRegisterSchema = z.object({
 export type CustomerRegisterSchemaType = Partial<z.infer<typeof customerRegisterSchema>>;
 
 export const productSchema = z.object({
+  variantId: z.string().optional(),
   productName: z
     .string()
     .min(1, { message: "Product name is required" })
@@ -84,7 +86,12 @@ export const productSchema = z.object({
   features: z.array(
     z.object({
       title: z.string().min(1, { message: "Feature title required" }).max(355, { message: "Feature title is too long" }),
-      description: z.string().min(1, { message: "Feature details required" }).max(5000, { message: "Feature details cannot exceed 5000 characters" }),
+      description: z
+        .string()
+        .min(1, { message: "Feature details required" })
+        .max(5000, { message: "Feature details cannot exceed 5000 characters" })
+        .or(z.number())
+        .or(z.boolean()),
     })
   ).min(1, { message: "Add at least one feature" }),
 
@@ -117,16 +124,58 @@ export const productSchema = z.object({
 
   category: z.string().min(1, { message: "Please select a category" }),
 
-  status: z.enum(["active", "inactive",], {
+  status: z.enum(ProductStatusEnum, {
     error: () => ({ message: "Please select a status" }),
   }),
-  has_variants: z.boolean().optional(),
   taxProfile: z.string().min(1, { message: "Tax profile is required" }),
   productMedia: z.array(z.any()).min(0, { message: "At least one product image is required" }).max(1, { message: "You can upload up to 1 image" }),
   featureMedia: z.array(z.any()).min(0, { message: "At least one feature image is required" }).max(10, { message: "You can upload up to 10 images" }),
 });
-
+// Replace z.infer with these two:
+export type ProductFormInput = z.input<typeof productSchema>;
+export type ProductFormOutput = z.output<typeof productSchema>;
 export type ProductFormValuesType = z.infer<typeof productSchema>;
+
+export const productVariantSchema = z.object({
+  variantId: z.string().optional(),
+  variantName: z
+    .string()
+    .min(1, { message: "Variant name is required" })
+    .max(355, { message: "Name is too long" }),
+  attributes: z.array(
+    z.object({
+      name: z.string().min(1, { message: "Attribute name required" }).max(355, { message: "Attribute name is too long" }),
+      value: z.string().min(1, { message: "Attribute value required" }).max(355, { message: "Attribute value is too long" }),
+    })
+  ),
+  basePrice: z.string()
+    .min(1, { message: "Price is required" })
+    .regex(/^\d+(\.\d{1,2})?$/, {
+      message: "Invalid price format. Use numbers like 99 or 99.99"
+    })
+    .transform((val) => parseFloat(val)),
+
+  discountPercent: z.string()
+    .regex(/^\d+(\.\d{1,2})?$/, { message: "Invalid discount format" })
+    .optional()
+    .or(z.literal(''))
+    .transform((val) => val ? parseFloat(val) : null),
+
+  stocks: z.string()
+    .regex(/^\d+$/, { message: "Stock must be a non-negative integer" })
+    .optional()
+    .or(z.literal(''))
+    .transform((val) => val ? parseInt(val, 10) : null),
+
+  sku: z.string().optional(),
+  status: z.enum(ProductStatusEnum, {
+    error: () => ({ message: "Please select a status" }),
+  }),
+  variantMediaMain: z.array(z.any()).min(0, { message: "At least one product image is required" }).max(1, { message: "You can upload up to 1 image" }),
+  variantMediaGallery: z.array(z.any()).min(0, { message: "At least one feature image is required" }).max(10, { message: "You can upload up to 10 images" }),
+});
+
+export type ProductVariantFormValuesType = z.infer<typeof productVariantSchema>;
 
 export const contactSchema = z.object({
   name: z
@@ -227,20 +276,37 @@ export const ticketSchema = z.object({
 export type TicketFormData = z.infer<typeof ticketSchema>;
 
 export const couponSchema = z.object({
-  type: z.enum(["percentage", "flat"]),
+  type: z.enum(CouponDiscountTypeEum, {
+    error: () => ({ message: "Please select a valid discount type" }),
+  }),
   code: z
     .string()
     .min(3, { message: "Code must be at least 3 characters" }).max(20, { message: "Code cannot exceed 20 characters" })
     .regex(/^[A-Z0-9]+$/, { message: "Code must be uppercase alphanumeric" }),
-  value: z.coerce
-    .number()
-    .min(1, { message: "Value must be greater than 0" }),
-  rules: z.array(
-    z.object({
-      rule_type: z.string().min(1, { message: "Required" }).max(50, { message: "Rule type is too long" }),
-      rule_value: z.string().min(1, { message: "Required" }).max(100, { message: "Rule value is too long" }),
-    })
-  ).optional(),
+  value: z
+    .number({ message: "Value is required and must be a number" })
+    // Prevents negative numbers and 0
+    .positive({ message: "Discount value must be strictly greater than zero" })
+    // Prevents absurdly high numbers that might break your database
+    .max(1000000, { message: "Discount value is unusually high" }),
+
+  rules: z
+    .array(
+      z.object({
+        // Prevents empty strings and limits length
+        rule_type: z
+          .string()
+          .min(1, { message: "Rule type is required" })
+          .max(50, { message: "Rule type cannot exceed 50 characters" }),
+
+        rule_value: z
+          .string()
+          .min(1, { message: "Rule value is required" })
+          .max(200, { message: "Rule value cannot exceed 200 characters" })
+      })
+    )
+    .max(10, { message: "You can only add a maximum of 10 rules" })
+    .optional()
 });
 
 export type CouponFormData = z.infer<typeof couponSchema>;
@@ -270,15 +336,14 @@ export const billingSchema = z.object({
     .min(1, { message: "Prefix is required" })
     .max(5, { message: "Prefix too long (max 5)" }),
 
-  year: z.coerce.number(),
+  year: z.number({
+    message: "Year is required and must be a number"
+  }),
 
-  startSequence: z.coerce
-    .number()
-    .min(1, { message: "Sequence must start at 1 or higher" }),
-
+  startSequence: z.number({
+    message: "Sequence is required and must be a number"
+  }).min(1, { message: "Sequence must start at 1 or higher" }),
   termsAndNotes: z.string().optional(),
-
-  // Note: signatureUrl is handled as a string URL in the final data
   signatureUrl: z.string().optional(),
 });
 
@@ -314,3 +379,25 @@ export const AddressSchema = z.object({
 });
 
 export type AddressType = z.infer<typeof AddressSchema>;
+
+export enum LocationForEnum {
+  WAREHOUSE = "warehouse",
+  HUB = "hub"
+}
+export const locationSchema = z.object({
+  default: z.string().transform(val => val === 'true'), // Converts string "true" to boolean true
+  name: z.string().min(3, { message: "Name must be at least 3 characters" }),
+  type: z.enum(LocationForEnum, {
+    message: "Please select a valid type"
+  }),
+  address: z.string().min(5, { message: "Address must be at least 5 characters" }),
+  city: z.string().min(2, { message: "City is required" }),
+  state: z.string().min(2, { message: "State is required" }),
+  contactPerson: z.string().optional(),
+  phone: z.string()
+    .refine(val => !val || /^\+?[0-9\s\-]{7,15}$/.test(val), {
+      message: "Invalid phone number format"
+    }),
+});
+
+export type LocationFormData = z.infer<typeof locationSchema>;

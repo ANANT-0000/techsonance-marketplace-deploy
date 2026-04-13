@@ -55,14 +55,14 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     };
 
     const handleIncrement = async () => {
-        if (!user) {
+        if (!user?.id) {
             router.push('/auth/customerLogin');
             return;
         }
 
         try {
             const newQuantity = quantity === 0 ? 1 : quantity + 1;
-            const response = await fetchAddToCart(productVariantId, newQuantity, user.id, companyDomain);
+            const response = await fetchAddToCart(productVariantId, newQuantity, user?.id, companyDomain);
             const cartResponse: CartItemResponse = response.data;
 
 
@@ -82,11 +82,11 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     };
 
     const handleDecrement = async () => {
-        if (!user || !cartItem) return;
+        if (!user?.id || !cartItem) return;
 
         try {
             const response = await fetchRemoveFromCart(
-                user.id,
+                user?.id,
                 cartItem.cartId,
                 cartItem.cartItemId,
                 companyDomain

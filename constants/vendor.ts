@@ -1,7 +1,7 @@
 import type { Link } from "@/components/common/InnerSideBar";
-import { CouponType, CustomerTicketType, GstInvoiceType, InventoryItemType, NavLinkType, OrderDetailType, UserReviewType, VendorOrderType, VendorProductType, WarehouseType } from "@/utils/Types";
+import { CouponType, CustomerTicketType, GstInvoiceType, InventoryItemType, InventoryProductType, NavLinkType, OrderDetailType, UserReviewType, VendorOrderType, VendorProductType, WarehouseType } from "@/utils/Types";
 
-
+//used
 export const VendorDocumentTypes: { label: string; value: string }[] = [
   {
     label: 'Business Registration',
@@ -45,7 +45,7 @@ export const VendorDocumentTypes: { label: string; value: string }[] = [
 // ============================================================
 // VENDOR NAVIGATION LINKS
 // ============================================================
-
+//used
 export const VENDOR_NAV_LINKS: NavLinkType[] = [
   { Dashboard: null, icon: 'layout-dashboard' },
   { Products: "products", icon: 'package' },
@@ -62,7 +62,7 @@ export const VENDOR_NAV_LINKS: NavLinkType[] = [
 // ============================================================
 // VENDOR SETTINGS LINKS
 // ============================================================
-
+//used
 export const VENDOR_SETTINGS_LINKS: Link[] = [
   {
     section: "general",
@@ -105,44 +105,44 @@ export const VENDOR_DASHBOARD_STATS = {
 // ============================================================
 
 
-export const VENDOR_ORDER_DATA: VendorOrderType[] = [
-  { orderId: "#ORD-2024-001", customerName: "Rahul Kumar", status: "Pending", amount: 1499, action: "Ship Now", date: "2026-03-10", items: 2 },
-  { orderId: "#ORD-2024-002", customerName: "Anita Singh", status: "Shipped", amount: 3499, action: "View", date: "2026-03-09", items: 1 },
-  { orderId: "#ORD-2024-003", customerName: "Nitish Kumar", status: "Delivered", amount: 2499, action: "View", date: "2026-03-08", items: 3 },
-  { orderId: "#ORD-2024-004", customerName: "Rudra Kumar", status: "Pending", amount: 4499, action: "Ship Now", date: "2026-03-07", items: 1 },
-  { orderId: "#ORD-2024-005", customerName: "Rudra Kumar", status: "Delivered", amount: 4099, action: "View", date: "2026-03-06", items: 4 },
-  { orderId: "#ORD-2024-006", customerName: "Akash Kumar", status: "Delivered", amount: 2099, action: "View", date: "2026-03-05", items: 2 },
-  { orderId: "#ORD-2024-007", customerName: "Akash Kumar", status: "Delivered", amount: 2099, action: "View", date: "2026-03-04", items: 1 },
-  { orderId: "#ORD-2024-008", customerName: "Akash Kumar", status: "Delivered", amount: 1499, action: "View", date: "2026-03-03", items: 2 },
-  { orderId: "#ORD-2024-009", customerName: "Priya Sharma", status: "Shipped", amount: 2999, action: "View", date: "2026-03-02", items: 3 },
-  { orderId: "#ORD-2024-010", customerName: "Vikram Singh", status: "Pending", amount: 5499, action: "Ship Now", date: "2026-03-01", items: 1 },
-  { orderId: "#ORD-2024-011", customerName: "Neha Gupta", status: "Delivered", amount: 1299, action: "View", date: "2026-02-28", items: 2 },
-  { orderId: "#ORD-2024-012", customerName: "Sanjay Verma", status: "Shipped", amount: 3899, action: "View", date: "2026-02-27", items: 1 },
-  { orderId: "#ORD-2024-013", customerName: "Pooja Patel", status: "Pending", amount: 2199, action: "Ship Now", date: "2026-02-26", items: 3 },
-  { orderId: "#ORD-2024-014", customerName: "Amit Mishra", status: "Delivered", amount: 999, action: "View", date: "2026-02-25", items: 1 },
-  { orderId: "#ORD-2024-015", customerName: "Sneha Reddy", status: "Shipped", amount: 4599, action: "View", date: "2026-02-24", items: 2 },
-  { orderId: "#ORD-2024-016", customerName: "Karan Malhotra", status: "Pending", amount: 6299, action: "Ship Now", date: "2026-02-23", items: 4 },
-  { orderId: "#ORD-2024-017", customerName: "Divya Joshi", status: "Delivered", amount: 1899, action: "View", date: "2026-02-22", items: 1 },
-  { orderId: "#ORD-2024-018", customerName: "Rohit Nair", status: "Shipped", amount: 7499, action: "View", date: "2026-02-21", items: 2 },
-];
+// export const VENDOR_ORDER_DATA: VendorOrderType[] = [
+//   { orderId: "#ORD-2024-001", customerName: "Rahul Kumar", status: "Pending", amount: 1499, action: "Ship Now", date: "2026-03-10", items: 2 },
+//   { orderId: "#ORD-2024-002", customerName: "Anita Singh", status: "Shipped", amount: 3499, action: "View", date: "2026-03-09", items: 1 },
+//   { orderId: "#ORD-2024-003", customerName: "Nitish Kumar", status: "Delivered", amount: 2499, action: "View", date: "2026-03-08", items: 3 },
+//   { orderId: "#ORD-2024-004", customerName: "Rudra Kumar", status: "Pending", amount: 4499, action: "Ship Now", date: "2026-03-07", items: 1 },
+//   { orderId: "#ORD-2024-005", customerName: "Rudra Kumar", status: "Delivered", amount: 4099, action: "View", date: "2026-03-06", items: 4 },
+//   { orderId: "#ORD-2024-006", customerName: "Akash Kumar", status: "Delivered", amount: 2099, action: "View", date: "2026-03-05", items: 2 },
+//   { orderId: "#ORD-2024-007", customerName: "Akash Kumar", status: "Delivered", amount: 2099, action: "View", date: "2026-03-04", items: 1 },
+//   { orderId: "#ORD-2024-008", customerName: "Akash Kumar", status: "Delivered", amount: 1499, action: "View", date: "2026-03-03", items: 2 },
+//   { orderId: "#ORD-2024-009", customerName: "Priya Sharma", status: "Shipped", amount: 2999, action: "View", date: "2026-03-02", items: 3 },
+//   { orderId: "#ORD-2024-010", customerName: "Vikram Singh", status: "Pending", amount: 5499, action: "Ship Now", date: "2026-03-01", items: 1 },
+//   { orderId: "#ORD-2024-011", customerName: "Neha Gupta", status: "Delivered", amount: 1299, action: "View", date: "2026-02-28", items: 2 },
+//   { orderId: "#ORD-2024-012", customerName: "Sanjay Verma", status: "Shipped", amount: 3899, action: "View", date: "2026-02-27", items: 1 },
+//   { orderId: "#ORD-2024-013", customerName: "Pooja Patel", status: "Pending", amount: 2199, action: "Ship Now", date: "2026-02-26", items: 3 },
+//   { orderId: "#ORD-2024-014", customerName: "Amit Mishra", status: "Delivered", amount: 999, action: "View", date: "2026-02-25", items: 1 },
+//   { orderId: "#ORD-2024-015", customerName: "Sneha Reddy", status: "Shipped", amount: 4599, action: "View", date: "2026-02-24", items: 2 },
+//   { orderId: "#ORD-2024-016", customerName: "Karan Malhotra", status: "Pending", amount: 6299, action: "Ship Now", date: "2026-02-23", items: 4 },
+//   { orderId: "#ORD-2024-017", customerName: "Divya Joshi", status: "Delivered", amount: 1899, action: "View", date: "2026-02-22", items: 1 },
+//   { orderId: "#ORD-2024-018", customerName: "Rohit Nair", status: "Shipped", amount: 7499, action: "View", date: "2026-02-21", items: 2 },
+// ];
 
 // ============================================================
 // VENDOR — INVENTORY MOCK DATA
 // ============================================================
 
 
-export const VENDOR_INVENTORY_DATA: InventoryItemType[] = [
-  { id: "INV-001", name: "Sony WH-1000XM5", sku: "SNY-WH-XM5", category: "Headphones", stock: 45, reorderLevel: 10, price: 29990, status: "In Stock" },
-  { id: "INV-002", name: "Blue Yeti USB Mic", sku: "BLU-YETI-USB", category: "Microphones", stock: 8, reorderLevel: 10, price: 10999, status: "Low Stock" },
-  { id: "INV-003", name: "Marshall Emberton", sku: "MAR-EMB-BLK", category: "Speakers", stock: 32, reorderLevel: 15, price: 14999, status: "In Stock" },
-  { id: "INV-004", name: "Shure SM7B", sku: "SHR-SM7B", category: "Microphones", stock: 0, reorderLevel: 5, price: 36500, status: "Out of Stock" },
-  { id: "INV-005", name: "JBL Flip 6", sku: "JBL-FLP-6", category: "Speakers", stock: 67, reorderLevel: 20, price: 9999, status: "In Stock" },
-  { id: "INV-006", name: "Beats Studio3", sku: "BTS-STD-3", category: "Headphones", stock: 3, reorderLevel: 10, price: 25900, status: "Low Stock" },
-  { id: "INV-007", name: "Audio-Technica LP60X", sku: "AT-LP60X", category: "Audio Players", stock: 22, reorderLevel: 8, price: 13999, status: "In Stock" },
-  { id: "INV-008", name: "HyperX Cloud II", sku: "HPX-CLD-2", category: "Gaming Audio", stock: 0, reorderLevel: 15, price: 8490, status: "Out of Stock" },
-  { id: "INV-009", name: "Bose QC45", sku: "BOSE-QC45", category: "Headphones", stock: 18, reorderLevel: 10, price: 29900, status: "In Stock" },
-  { id: "INV-010", name: "Rode PodMic", sku: "RODE-PDMC", category: "Microphones", stock: 14, reorderLevel: 8, price: 9500, status: "In Stock" },
-];
+// export const VENDOR_INVENTORY_DATA: InventoryItemType[] = [
+//   { id: "INV-001", name: "Sony WH-1000XM5", sku: "SNY-WH-XM5", category: "Headphones", stock: 45, reorderLevel: 10, price: 29990, status: "In Stock" },
+//   { id: "INV-002", name: "Blue Yeti USB Mic", sku: "BLU-YETI-USB", category: "Microphones", stock: 8, reorderLevel: 10, price: 10999, status: "Low Stock" },
+//   { id: "INV-003", name: "Marshall Emberton", sku: "MAR-EMB-BLK", category: "Speakers", stock: 32, reorderLevel: 15, price: 14999, status: "In Stock" },
+//   { id: "INV-004", name: "Shure SM7B", sku: "SHR-SM7B", category: "Microphones", stock: 0, reorderLevel: 5, price: 36500, status: "Out of Stock" },
+//   { id: "INV-005", name: "JBL Flip 6", sku: "JBL-FLP-6", category: "Speakers", stock: 67, reorderLevel: 20, price: 9999, status: "In Stock" },
+//   { id: "INV-006", name: "Beats Studio3", sku: "BTS-STD-3", category: "Headphones", stock: 3, reorderLevel: 10, price: 25900, status: "Low Stock" },
+//   { id: "INV-007", name: "Audio-Technica LP60X", sku: "AT-LP60X", category: "Audio Players", stock: 22, reorderLevel: 8, price: 13999, status: "In Stock" },
+//   { id: "INV-008", name: "HyperX Cloud II", sku: "HPX-CLD-2", category: "Gaming Audio", stock: 0, reorderLevel: 15, price: 8490, status: "Out of Stock" },
+//   { id: "INV-009", name: "Bose QC45", sku: "BOSE-QC45", category: "Headphones", stock: 18, reorderLevel: 10, price: 29900, status: "In Stock" },
+//   { id: "INV-010", name: "Rode PodMic", sku: "RODE-PDMC", category: "Microphones", stock: 14, reorderLevel: 8, price: 9500, status: "In Stock" },
+// ];
 
 // ============================================================
 // VENDOR — PRODUCT MANAGEMENT MOCK DATA
@@ -208,29 +208,29 @@ export const VENDOR_MARKETING_DATA = {
 // ============================================================
 
 
-export const VENDOR_ORDERS_DETAIL: OrderDetailType[] = [
-  { id: "order_001", orderNumber: "#ORD-2024-001", dateTime: "Today, 10:23 AM", customer: { name: "Rahul Kumar", location: "Mumbai, MH" }, status: "Pending", total: 1499, paymentMethod: "Paid (UPI)" },
-  { id: "order_002", orderNumber: "#ORD-2024-002", dateTime: "11-01-26, 11:34 PM", customer: { name: "Anita Singh", location: "Bangalore, KA" }, status: "Shipped", total: 3499, paymentMethod: "COD" },
-  { id: "order_003", orderNumber: "#ORD-2024-003", dateTime: "10-01-26, 4:34 PM", customer: { name: "Nitish kumar", location: "Kolkata, WB" }, status: "Delivered", total: 2499, paymentMethod: "COD" },
-  { id: "order_004", orderNumber: "#ORD-2024-004", dateTime: "5-01-26, 1:34 PM", customer: { name: "Rudra kumar", location: "Surat, GJ" }, status: "Shipped", total: 4499, paymentMethod: "Paid (UPI)" },
-  { id: "order_005", orderNumber: "#ORD-2024-005", dateTime: "5-01-26, 1:34 PM", customer: { name: "Rudra kumar", location: "Surat, GJ" }, status: "Delivered", total: 4099, paymentMethod: "COD" },
-  { id: "order_006", orderNumber: "#ORD-2024-006", dateTime: "5-01-26, 1:34 PM", customer: { name: "Akash kumar", location: "Kolkata, WB" }, status: "Delivered", total: 2099, paymentMethod: "Paid (UPI)" },
-  { id: "order_007", orderNumber: "#ORD-2024-007", dateTime: "5-01-26, 1:34 PM", customer: { name: "Akash kumar", location: "Kolkata, WB" }, status: "Delivered", total: 2099, paymentMethod: "COD" },
-  { id: "order_008", orderNumber: "#ORD-2024-008", dateTime: "5-01-26, 1:34 PM", customer: { name: "Niraj kumar", location: "Guwahati, AS" }, status: "Delivered", total: 1499, paymentMethod: "Paid (UPI)" },
-];
+// export const VENDOR_ORDERS_DETAIL: OrderDetailType[] = [
+//   { id: "order_001", orderNumber: "#ORD-2024-001", dateTime: "Today, 10:23 AM", customer: { name: "Rahul Kumar", location: "Mumbai, MH" }, status: "pending", total: 1499, paymentMethod: "Paid (UPI)" },
+//   { id: "order_002", orderNumber: "#ORD-2024-002", dateTime: "11-01-26, 11:34 PM", customer: { name: "Anita Singh", location: "Bangalore, KA" }, status: "shipped", total: 3499, paymentMethod: "COD" },
+//   { id: "order_003", orderNumber: "#ORD-2024-003", dateTime: "10-01-26, 4:34 PM", customer: { name: "Nitish kumar", location: "Kolkata, WB" }, status: "Delivered", total: 2499, paymentMethod: "COD" },
+//   { id: "order_004", orderNumber: "#ORD-2024-004", dateTime: "5-01-26, 1:34 PM", customer: { name: "Rudra kumar", location: "Surat, GJ" }, status: "shipped", total: 4499, paymentMethod: "Paid (UPI)" },
+//   { id: "order_005", orderNumber: "#ORD-2024-005", dateTime: "5-01-26, 1:34 PM", customer: { name: "Rudra kumar", location: "Surat, GJ" }, status: "Delivered", total: 4099, paymentMethod: "COD" },
+//   { id: "order_006", orderNumber: "#ORD-2024-006", dateTime: "5-01-26, 1:34 PM", customer: { name: "Akash kumar", location: "Kolkata, WB" }, status: "Delivered", total: 2099, paymentMethod: "Paid (UPI)" },
+//   { id: "order_007", orderNumber: "#ORD-2024-007", dateTime: "5-01-26, 1:34 PM", customer: { name: "Akash kumar", location: "Kolkata, WB" }, status: "Delivered", total: 2099, paymentMethod: "COD" },
+//   { id: "order_008", orderNumber: "#ORD-2024-008", dateTime: "5-01-26, 1:34 PM", customer: { name: "Niraj kumar", location: "Guwahati, AS" }, status: "Delivered", total: 1499, paymentMethod: "Paid (UPI)" },
+// ];
 
 // ============================================================
 // VENDOR — WAREHOUSE MOCK DATA
 // ============================================================
 
 
-export const WAREHOUSE_DATA: WarehouseType[] = [
-  { warehouse_id: 1, company_id: 101, name: "Main Warehouse (Surat)", location: "Ring Road, Surat, Gujarat", is_active: true, total_units: 4520, is_default: true },
-  { warehouse_id: 2, company_id: 101, name: "North Hub (Delhi)", location: "Okhla Ind. Estate, Delhi", is_active: true, total_units: 2520, is_default: false },
-  { warehouse_id: 3, company_id: 101, name: "South Hub (Bengaluru)", location: "Whitefield, Bengaluru, Karnataka", is_active: true, total_units: 3150, is_default: false },
-  { warehouse_id: 4, company_id: 101, name: "West Hub (Mumbai)", location: "Bhiwandi, Thane, Maharashtra", is_active: true, total_units: 1890, is_default: false },
-  { warehouse_id: 5, company_id: 101, name: "East Hub (Kolkata)", location: "Salt Lake Sector V, Kolkata, WB", is_active: true, total_units: 1240, is_default: false },
-];
+// export const WAREHOUSE_DATA: WarehouseType[] = [
+//   { warehouse_id: 1, company_id: 101, name: "Main Warehouse (Surat)", location: "Ring Road, Surat, Gujarat", is_active: true, total_units: 4520, is_default: true },
+//   { warehouse_id: 2, company_id: 101, name: "North Hub (Delhi)", location: "Okhla Ind. Estate, Delhi", is_active: true, total_units: 2520, is_default: false },
+//   { warehouse_id: 3, company_id: 101, name: "South Hub (Bengaluru)", location: "Whitefield, Bengaluru, Karnataka", is_active: true, total_units: 3150, is_default: false },
+//   { warehouse_id: 4, company_id: 101, name: "West Hub (Mumbai)", location: "Bhiwandi, Thane, Maharashtra", is_active: true, total_units: 1890, is_default: false },
+//   { warehouse_id: 5, company_id: 101, name: "East Hub (Kolkata)", location: "Salt Lake Sector V, Kolkata, WB", is_active: true, total_units: 1240, is_default: false },
+// ];
 
 // ============================================================
 // VENDOR — INVENTORY PRODUCT LIST MOCK DATA
@@ -238,23 +238,23 @@ export const WAREHOUSE_DATA: WarehouseType[] = [
 
 
 
-export const INVENTORY_PRODUCTS: InventoryProduct[] = [
-  { id: "prod-001", productName: "Noise Air Clips Wireless Open Ear Earbuds", sku: "AUD-MIC-001", category: "Audio", stock: 5, price: 8999, warehouse: "Main Warehouse", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-MIC-001/200/200" },
-  { id: "prod-002", productName: "boAt 2025 Launch Rockerz 113", sku: "AUD-HDP-002", category: "Audio", stock: 220, price: 2099, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-HDP-002/200/200" },
-  { id: "prod-003", productName: "Noise Airwave Bluetooth in Ear Neckband", sku: "AUD-SPK-003", category: "Audio", stock: 400, price: 12999, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-SPK-003/200/200" },
-  { id: "prod-004", productName: "OnePlus Bullets Wireless Z3 in-Ear Neckband", sku: "AUD-SND-004", category: "Audio", stock: 10, price: 4099, warehouse: "North Hub", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-004/200/200" },
-  { id: "prod-005", productName: "pTron Tangent Buzz w", sku: "AUD-SND-005", category: "Audio", stock: 40, price: 4099, warehouse: "North Hub", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-005/200/200" },
-  { id: "prod-006", productName: "ZEBRONICS Duke Plus, Wireless Over Ear Headphone", sku: "AUD-SND-006", category: "Audio", stock: 20, price: 1299, warehouse: "North Hub", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-006/200/200" },
-  { id: "prod-007", productName: "Sony WF-C510 Wireless Bluetooth Earbuds", sku: "AUD-SND-007", category: "Audio", stock: 2200, price: 3499, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-007/200/200" },
-  { id: "prod-008", productName: "Boat New Launch Rockerz 650 Pro", sku: "AUD-SND-008", category: "Audio", stock: 40, price: 3499, warehouse: "North Hub", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-008/200/200" },
-  { id: "prod-009", productName: "JBL Tune 760NC", sku: "AUD-HDP-009", category: "Audio", stock: 36, price: 2099, warehouse: "Main Warehouse", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-HDP-009/200/200" },
-  { id: "prod-010", productName: "Sennheiser Momentum 4", sku: "AUD-HDP-010", category: "Audio", stock: 183, price: 4099, warehouse: "North Hub", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-HDP-010/200/200" },
-  { id: "prod-011", productName: "Samsung Galaxy Buds2 Pro", sku: "AUD-WLS-011", category: "Audio", stock: 91, price: 1499, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-WLS-011/200/200" },
-  { id: "prod-012", productName: "Bose QuietComfort Ultra", sku: "AUD-HDP-012", category: "Audio", stock: 198, price: 2099, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-HDP-012/200/200" },
-  { id: "prod-013", productName: "Realme Buds Air 5", sku: "AUD-WLS-013", category: "Audio", stock: 197, price: 24999, warehouse: "North Hub", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-WLS-013/200/200" },
-  { id: "prod-014", productName: "Skullcandy Crusher ANC 2", sku: "AUD-SND-014", category: "Audio", stock: 181, price: 12999, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-014/200/200" },
-  { id: "prod-015", productName: "Marshall Major IV", sku: "AUD-HDP-015", category: "Audio", stock: 0, price: 12999, warehouse: "North Hub", status: "Out of Stock", imageUrl: "https://picsum.photos/seed/AUD-HDP-015/200/200" },
-];
+// export const INVENTORY_PRODUCTS: InventoryProductType[] = [
+//   { id: "prod-001", productName: "Noise Air Clips Wireless Open Ear Earbuds", sku: "AUD-MIC-001", category: "Audio", stock: 5, price: 8999, warehouse: "Main Warehouse", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-MIC-001/200/200" },
+//   { id: "prod-002", productName: "boAt 2025 Launch Rockerz 113", sku: "AUD-HDP-002", category: "Audio", stock: 220, price: 2099, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-HDP-002/200/200" },
+//   { id: "prod-003", productName: "Noise Airwave Bluetooth in Ear Neckband", sku: "AUD-SPK-003", category: "Audio", stock: 400, price: 12999, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-SPK-003/200/200" },
+//   { id: "prod-004", productName: "OnePlus Bullets Wireless Z3 in-Ear Neckband", sku: "AUD-SND-004", category: "Audio", stock: 10, price: 4099, warehouse: "North Hub", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-004/200/200" },
+//   { id: "prod-005", productName: "pTron Tangent Buzz w", sku: "AUD-SND-005", category: "Audio", stock: 40, price: 4099, warehouse: "North Hub", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-005/200/200" },
+//   { id: "prod-006", productName: "ZEBRONICS Duke Plus, Wireless Over Ear Headphone", sku: "AUD-SND-006", category: "Audio", stock: 20, price: 1299, warehouse: "North Hub", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-006/200/200" },
+//   { id: "prod-007", productName: "Sony WF-C510 Wireless Bluetooth Earbuds", sku: "AUD-SND-007", category: "Audio", stock: 2200, price: 3499, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-007/200/200" },
+//   { id: "prod-008", productName: "Boat New Launch Rockerz 650 Pro", sku: "AUD-SND-008", category: "Audio", stock: 40, price: 3499, warehouse: "North Hub", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-008/200/200" },
+//   { id: "prod-009", productName: "JBL Tune 760NC", sku: "AUD-HDP-009", category: "Audio", stock: 36, price: 2099, warehouse: "Main Warehouse", status: "Low Stock", imageUrl: "https://picsum.photos/seed/AUD-HDP-009/200/200" },
+//   { id: "prod-010", productName: "Sennheiser Momentum 4", sku: "AUD-HDP-010", category: "Audio", stock: 183, price: 4099, warehouse: "North Hub", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-HDP-010/200/200" },
+//   { id: "prod-011", productName: "Samsung Galaxy Buds2 Pro", sku: "AUD-WLS-011", category: "Audio", stock: 91, price: 1499, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-WLS-011/200/200" },
+//   { id: "prod-012", productName: "Bose QuietComfort Ultra", sku: "AUD-HDP-012", category: "Audio", stock: 198, price: 2099, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-HDP-012/200/200" },
+//   { id: "prod-013", productName: "Realme Buds Air 5", sku: "AUD-WLS-013", category: "Audio", stock: 197, price: 24999, warehouse: "North Hub", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-WLS-013/200/200" },
+//   { id: "prod-014", productName: "Skullcandy Crusher ANC 2", sku: "AUD-SND-014", category: "Audio", stock: 181, price: 12999, warehouse: "Main Warehouse", status: "In Stock", imageUrl: "https://picsum.photos/seed/AUD-SND-014/200/200" },
+//   { id: "prod-015", productName: "Marshall Major IV", sku: "AUD-HDP-015", category: "Audio", stock: 0, price: 12999, warehouse: "North Hub", status: "Out of Stock", imageUrl: "https://picsum.photos/seed/AUD-HDP-015/200/200" },
+// ];
 
 // ============================================================
 // VENDOR — GST INVOICES MOCK DATA (FINANCES)
@@ -287,10 +287,10 @@ export const VENDOR_FINANCE_STATS = {
 
 
 
-export const COUPON_DATA: CouponType[] = [
-  { id: 1, code: "WINTER26", discount_type: "PERCENTAGE", value: 25, status: "ACTIVE", conditions: { min_purchase_amount: 1000, customer_segment: "ALL", expiry_text: "Expires in 12 days" } },
-  { id: 2, code: "WELCOME2026", discount_type: "FLAT_AMOUNT", value: 100, currency: "INR", status: "ACTIVE", conditions: { customer_segment: "NEW_CUSTOMERS", expiry_text: "No expiry" } },
-];
+// export const COUPON_DATA: CouponType[] = [
+//   { id: 1, code: "WINTER26", discount_type: "PERCENTAGE", value: 25, status: "ACTIVE", conditions: { min_purchase_amount: 1000, customer_segment: "ALL", expiry_text: "Expires in 12 days" } },
+//   { id: 2, code: "WELCOME2026", discount_type: "FLAT_AMOUNT", value: 100, currency: "INR", status: "ACTIVE", conditions: { customer_segment: "NEW_CUSTOMERS", expiry_text: "No expiry" } },
+// ];
 
 export const COUPON_COLORS = {
   text: ["text-blue-800", "text-green-800", "text-yellow-800", "text-gray-800", "text-purple-800", "text-pink-800", "text-indigo-800", "text-orange-800", "text-teal-800", "text-cyan-800"],

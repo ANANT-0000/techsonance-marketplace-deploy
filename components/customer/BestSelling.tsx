@@ -1,7 +1,8 @@
 'use client';
+import { BestSellingProductType } from "@/utils/Types";
 import { motion, useInView } from "motion/react";
 import { useRef, useEffect, useState } from "react";
-import type { BestSellingProductType } from '@/constants/customer';
+
 
 export function BestSelling({
   product, styles

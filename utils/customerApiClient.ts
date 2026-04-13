@@ -201,7 +201,8 @@ export const fetchCreateUserAddress = async (customerId: string, addressData: an
             console.log('Failed to create address');
             return {
                 success: false,
-                message: 'Failed to create address'
+                message: 'Failed to create address',
+                data: null
             }
         }
         const responseData = await response.json();

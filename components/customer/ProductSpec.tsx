@@ -1,4 +1,4 @@
-﻿import { AttributesType, ProductFeatureType, ProductResponseType, VariantsType } from "@/utils/Types";
+﻿import { ProductFeatureType, ProductResponseType, VariantsType } from "@/utils/Types";
 
 
 export const ProductSpecifications = ({ product }: { product: ProductFeatureType[] }) => {

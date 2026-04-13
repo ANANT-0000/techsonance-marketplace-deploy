@@ -1,8 +1,9 @@
 'use client';
+// @ts-ignore
+import './index.css';
 import { Sidebar } from "@/components/common/Sidebar";
 import { VENDOR_NAV_LINKS } from "@/constants/vendor";
 import { useParams, useRouter } from "next/navigation";
-import './index.css';
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useEffect } from "react";
 import { RootState } from "@/lib/store";
@@ -22,7 +23,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
     }, [])
     return (
         <>
-            <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={`/vendor/${vendorId}`} id={vendorId} />
+            <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={`/vendor/${vendorId}`}  />
             <main className={`vendor_dashboard mr-6 ${isSidebarOpen ? 'ml-50' : 'ml-24'}`}>
                 {children}
             </main>

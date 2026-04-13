@@ -8,6 +8,8 @@ import { DynamicIcon } from "lucide-react/dynamic";
 import { createProductVariant, updateProductVariant } from "@/utils/vendorApiClient";
 import { usePreviewUrls } from "@/lib/clientUtils";
 import { PRODUCT_FORM_PRICING_FIELDS } from "@/constants";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ProductVariantFormValuesType, productVariantSchema } from "@/utils/validation";
 const FILE_UPLOAD_FIELD_LABELS = [
     { label: "Product Images / Thumbnail", fieldName: "variantMediaMain" as keyof VariantFormValuesType },
     { label: "Feature / Specification Media", fieldName: "variantMediaGallery" as keyof VariantFormValuesType },
@@ -35,13 +37,15 @@ export const ProductVariantForm = ({
         handleSubmit,
         setValue,
         formState: { errors, isSubmitting },
-    } = useForm<VariantFormValuesType>({
-        defaultValues: existVariant ?? {
+    } = useForm({
+        resolver: zodResolver(productVariantSchema),
+        mode: "onChange",
+        defaultValues: {
             variantName: "",
             attributes: [{ name: "", value: "" }],
-            basePrice: null,
-            discountPercent: null,
-            stocks: null,
+            basePrice: '',
+            discountPercent: '',
+            stocks: '',
             sku: "",
             variantMediaMain: [],
             variantMediaGallery: [],
@@ -52,7 +56,6 @@ export const ProductVariantForm = ({
     const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } =
         useFieldArray({ control, name: "attributes" });
     const [deletedImgs, setDeletedImgs] = useState<string[]>([])
-    // ── File state ──
     const [productFiles, setProductFiles] = useState<FileOrImage[]>(() =>
         existVariant?.variantMediaMain ?? []
     );
@@ -106,8 +109,8 @@ export const ProductVariantForm = ({
     );
 
     // ── Submit ──
-    const onSubmit = async (data: VariantFormValuesType) => {
-        if (!user?.vendor_id || !user?.company_id) return;
+    const onSubmit = async (data: ProductVariantFormValuesType) => {
+        if (user && 'vendor_id' in user && user.vendor_id && !user.company_id) return;
 
         const payload = {
             product_id: productId,
@@ -136,7 +139,7 @@ export const ProductVariantForm = ({
             response = await createProductVariant(formData, vendorId, productId);
         }
         console.log("response", response)
-        if (result?.status === 201) {
+        if (response?.status === 201) {
             router.push(`/vendor/${vendorId}/products`);
         }
     };
@@ -246,11 +249,11 @@ export const ProductVariantForm = ({
                                         type={field.type}
                                         className=" form_input w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
                                         placeholder={field.placeholder}
-                                        {...register(field.name, { required: "Required" })}
+                                        {...register(field.name as keyof ProductVariantFormValuesType, { required: "Required" })}
                                     />
-                                    {errors[field.name] && (
+                                    {errors[field.name as keyof ProductVariantFormValuesType] && (
                                         <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                            <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={16} />{errors[field.name]?.message as string}
+                                            <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={16} />{errors[field.name as keyof ProductVariantFormValuesType]?.message as string}
                                         </p>
                                     )}
                                 </div>
@@ -268,7 +271,7 @@ export const ProductVariantForm = ({
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     {FILE_UPLOAD_FIELD_LABELS.map(({ label, fieldName }) => {
-                        const { files, setFiles } = fileStateMap[fieldName];
+                        const { files, setFiles } = fileStateMap[fieldName as keyof typeof fileStateMap];
 
                         return (
                             <div key={fieldName} className="border border-slate-200 rounded-xl p-4 bg-slate-50">
@@ -316,7 +319,7 @@ export const ProductVariantForm = ({
                                                             files,
                                                             setFiles as React.Dispatch<React.SetStateAction<FileOrImage[]>>,
                                                             fieldName,
-                                                            file?.id
+                                                            'id' in file ? file.id : ''
                                                         )
                                                     }
                                                     className="absolute top-1 right-1 p-0.5 bg-red-50 text-red-400 hover:text-red-600 transition rounded-full border border-red-200"

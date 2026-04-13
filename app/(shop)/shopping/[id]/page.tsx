@@ -10,7 +10,6 @@ import { ProductList } from '@/components/customer/ProductList';
 import { ProductReview } from '@/components/customer/ProductReview';
 import { ProductSpecifications } from '@/components/customer/ProductSpec';
 import { ProductImageType, ProductType, VariantsType } from '@/utils/Types';
-import { PRODUCT_LIST } from '@/constants';
 import { formatCurrency } from '@/lib/utils';
 import { fetchProduct } from '@/utils/commonAPiClient';
 
@@ -36,9 +35,11 @@ export default function ProductPage() {
             console.log("product response", response.data);
             const productData = response.data as ProductType;
             setProduct(productData);
-            setActiveVariant(productData?.variants[0]);
-            setProductImages(productData?.variants[0]?.images || []);
-            setActiveImage(productData?.variants[0]?.images[0]?.image_url || undefined);
+            if (productData?.variants && productData.variants.length > 0) {
+                setActiveVariant(productData.variants[0]);
+                setProductImages(productData.variants[0].images);
+                setActiveImage(productData.variants[0].images[0]?.image_url);
+            }
         }
         getProduct();
 
@@ -137,16 +138,21 @@ export default function ProductPage() {
                     <div className="prose prose-gray max-w-none text-gray-600 space-y-3">{product?.description && product.description.split('\n').map((line, idx) => (<p key={idx}>{line}</p>))}</div>
                 </motion.div>
                 <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className='lg:w-1/2'>
-                    <ProductSpecifications product={product?.features} />
+                    {product?.features &&
+                        <ProductSpecifications product={product?.features} />
+                    }
                 </motion.div>
             </section>
             <section className='mt-20'>
                 <h2 className='text-2xl font-bold text-gray-900 mb-8'>Customer Reviews</h2>
+                {
+product?.reviews &&
                 <ProductReview product={product} />
+                }
             </section>
             <section className='mt-20'>
                 <h2 className='text-2xl font-bold text-gray-900 mb-8'>You might also like</h2>
-                <ProductList products={PRODUCT_LIST} />
+                {/* <ProductList products={product?.variants || []} /> */}
             </section>
         </main >
     );

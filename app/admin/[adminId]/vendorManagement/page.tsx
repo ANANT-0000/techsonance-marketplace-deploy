@@ -24,7 +24,9 @@ const getVendorRequests = async () => {
             credentials: 'include'
         });
         const resJson: {
-            data: [];
+            data:{company:{
+                company_status:string
+            }} [];
             message: string;
             status: string;
         } = await response.json();
@@ -32,7 +34,7 @@ const getVendorRequests = async () => {
         let count = 0;
         if (resJson.data?.length !== undefined) {
             for (const application of resJson.data) {
-                if (application.company.company_status === 'Pending') {
+                if (application?.company?.company_status === 'pending') {
                     count++;
                 }
             }

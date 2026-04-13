@@ -2,6 +2,7 @@
 
 import { Sidebar } from "@/components/common/Sidebar";
 import { ADMIN_NAV_LINKS } from "@/constants/admin";
+// @ts-ignore
 import './index.css';
 import { useParams } from "next/navigation";
 import { useAppSelector } from "@/hooks/reduxHooks";

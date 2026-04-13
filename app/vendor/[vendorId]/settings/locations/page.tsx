@@ -1,53 +1,64 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import React, { useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { locationSchema, LocationFormData, LocationForEnum } from '@/utils/validation'; // Adjust import path as needed
 
-interface LocationType {
+export interface LocationType {
     id: string;              // Unique identifier (e.g., WH001, HUB001)
     name: string;            // Display name (e.g., "Main Warehouse (Surat)")
-    type: "Warehouse" | "Hub"; // Type of location
+    type: LocationForEnum;   // Type of location
     address: string;         // Street/area address
     city: string;            // City name
     state: string;           // State/region
     default: boolean;        // Marks if this is the default location
     contactPerson?: string;  // Optional contact person
     phone?: string;
-              // Optional default flag
 }
 
-const locations: LocationType[] = [
+const initialLocations: LocationType[] = [
     {
-        "id": "WH001",
-        "name": "Main Warehouse (Surat)",
-        "type": "Warehouse",
-        "address": "123, Ring Road, Industrial Area",
-        "city": "Surat",
-        "state": "Gujarat",
-        "default": true,
-        "contactPerson": "Rajesh Patel",
-        "phone": "+91-9876543210"
+        id: "WH001",
+        name: "Main Warehouse (Surat)",
+        type: LocationForEnum.WAREHOUSE,
+        address: "123, Ring Road, Industrial Area",
+        city: "Surat",
+        state: "Gujarat",
+        default: true,
+        contactPerson: "Rajesh Patel",
+        phone: "+91-9876543210"
     },
     {
-        "id": "HUB001",
-        "name": "North Hub (Delhi)",
-        "type": "Hub",
-        "address": "Okhla Industrial Estate",
-        "city": "Delhi",
-        "state": "Delhi",
-        "default": false,
-        "contactPerson": "Anil Sharma",
-        "phone": "+91-9123456780"
+        id: "HUB001",
+        name: "North Hub (Delhi)",
+        type: LocationForEnum.HUB,
+        address: "Okhla Industrial Estate",
+        city: "Delhi",
+        state: "Delhi",
+        default: false,
+        contactPerson: "Anil Sharma",
+        phone: "+91-9123456780"
     }
-]
-
-
+];
 
 export default function LocationsPage() {
-    const { register, reset, watch, handleSubmit } = useForm({
+    const [locationList, setLocationList] = useState<LocationType[]>(initialLocations);
+    const locationFormRef = useRef<HTMLFormElement>(null);
+    const [closedLocationForm, setClosedLocationForm] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState<LocationType | null>(null);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+
+    const {
+        register,
+        reset,
+        handleSubmit,
+        formState: { errors }
+    } = useForm({
+        resolver: zodResolver(locationSchema),
         defaultValues: {
-            default: false,
+            default: 'false' as any,
             name: '',
-            type: 'Warehouse',
+            type: LocationForEnum.WAREHOUSE,
             address: '',
             city: '',
             state: '',
@@ -55,180 +66,278 @@ export default function LocationsPage() {
             phone: ''
         }
     });
-    const [locationList, setLocationList] = React.useState<LocationType[]>(locations);
-    const locationFormRef = useRef(null);
-    const [closedLocationForm, setClosedLocationForm] = useState(false);
-    const [selectedLocation, setSelectedLocation] = React.useState<LocationType | null>(null);
-    const [isEditing, setIsEditing] = React.useState<boolean>(false);
+
     const deleteLocation = (id: string) => {
         const updatedLocations = locationList.filter(location => location.id !== id);
         setLocationList(updatedLocations);
-    }
-    console.log('colse', closedLocationForm)
-    console.log('slec', !!selectedLocation)
-    console.log('edt', isEditing)
+    };
 
     const handleEditLocation = (location: LocationType) => {
         setSelectedLocation(location);
         setIsEditing(true);
         setClosedLocationForm(true);
-    }
-    const onSubmit = (data: any) => {
+    };
+
+    const onSubmit = (data: LocationFormData) => {
         setLocationList(prev => {
             if (isEditing && selectedLocation) {
-                return prev.map(location => location.id === selectedLocation.id ? { ...location, ...data } : location);
+                return prev.map(location =>
+                    location.id === selectedLocation.id ? { ...location, ...data } : location
+                );
             } else {
                 const newLocation: LocationType = {
                     id: `LOC${Date.now()}`,
-                    default: false,
                     ...data
-                }
+                };
                 return [...prev, newLocation];
             }
         });
+        closeModal();
+    };
+
+    const closeModal = () => {
         setClosedLocationForm(false);
         setIsEditing(false);
         setSelectedLocation(null);
-    }
-    const chooseExist = (name) => {
-        if (!!selectedLocation) {
-            return selectedLocation[name];
-        }
-        return '';
-    }
+    };
+
+    // Handle form reset based on mode (Edit vs Create)
     useEffect(() => {
         if (isEditing && selectedLocation) {
             reset({
-                name: chooseExist('name'),
-                type: chooseExist('type'),
-                address: chooseExist('address'),
-                city: chooseExist('city'),
-                state: chooseExist('state'),
-                contactPerson: chooseExist('contactPerson'),
-                phone: chooseExist('phone'),
-                default: chooseExist('default'),
-            })
-        } else if(closedLocationForm)  {
+                default: selectedLocation.default ? 'true' : 'false',
+                name: selectedLocation.name,
+                type: selectedLocation.type,
+                address: selectedLocation.address,
+                city: selectedLocation.city,
+                state: selectedLocation.state,
+                contactPerson: selectedLocation.contactPerson || '',
+                phone: selectedLocation.phone || ''
+            });
+        } else if (closedLocationForm) {
             reset({
                 name: '',
-                type: 'Warehouse',
+                type: LocationForEnum.WAREHOUSE,
                 address: '',
                 city: '',
                 state: '',
                 contactPerson: '',
                 phone: '',
-                default: false,
-            })
+                default: 'false' as any,
+            });
         }
-    }, [isEditing, selectedLocation, closedLocationForm]);
+    }, [isEditing, selectedLocation, closedLocationForm, reset]);
+
+    // Close modal on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (locationFormRef.current && !locationFormRef.current.contains(event.target)) {
-                setClosedLocationForm(false);
-                setIsEditing(false);
-                setSelectedLocation(null);
-                console.log('mouse over')
+            if (locationFormRef.current && !locationFormRef.current.contains(event.target as Node)) {
+                closeModal();
             }
+        };
 
+        if (closedLocationForm) {
+            document.addEventListener('mousedown', handleClickOutside);
         }
-
-        document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
-        }
-    }, [locationFormRef])
-    console.log(chooseExist('name'))
+        };
+    }, [closedLocationForm]);
+
     return (
-        <>
-        
-             
-    <main className={`mt-6 `}>
-               
-                {
-                    closedLocationForm && (
+        <main className="mt-6 relative">
+            {closedLocationForm && (
+                <section className="fixed inset-0 bg-black/40 backdrop-blur-sm z-10 flex justify-center items-center">
+                    <form
+                        className="bg-white p-6 rounded-xl shadow-2xl flex flex-col w-full max-w-md z-20 relative"
+                        ref={locationFormRef}
+                        onSubmit={handleSubmit(onSubmit)}
+                    >
+                        {/* Close button */}
+                        <button
+                            type="button"
+                            onClick={closeModal}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold"
+                        >
+                            ✕
+                        </button>
 
-                        <section className=" absolute blur-4xl bg-black/20 w-full h-full top-0 left-0 z-10"   >
-                            <form className=" absolute top-[50%] bottom-[50%] left-[50%] right-[50%] translate-x-[-50%] translate-y-[-50%] z-20 " ref={locationFormRef} onSubmit={handleSubmit(onSubmit)} >
-                                <div className=" flex flex-col justify-center items-center h-full  ">
-                                    <div className=" bg-white  p-6 rounded-lg shadow-lg flex flex-col   w-96 ">
-                                        <h2 className=" text-2xl font-bold my-2 ">{isEditing ? 'Edit Location' : 'Create Location'}</h2>
-                                        <select className="my-2 border-2 py-1 px-2  border-gray-300 rounded-md" id="type"
-                                            {...register('default')}
+                        <h2 className="text-2xl font-bold mb-4">
+                            {isEditing ? 'Edit Location' : 'Create Location'}
+                        </h2>
+
+                        <div className="flex flex-col mb-3">
+                            <label className="text-sm font-semibold mb-1" htmlFor="default">Location Status</label>
+                            <select
+                                className={`border py-2 px-3 rounded-md ${errors.default ? 'border-red-500' : 'border-gray-300'}`}
+                                id="default"
+                                {...register('default')}
+                            >
+                                <option value="false">Standard</option>
+                                <option value="true">Default Location</option>
+                            </select>
+                        </div>
+
+                        <div className="flex flex-col mb-3">
+                            <label className="text-sm font-semibold mb-1" htmlFor="type">Location Type</label>
+                            <select
+                                className={`border py-2 px-3 rounded-md ${errors.type ? 'border-red-500' : 'border-gray-300'}`}
+                                id="type"
+                                {...register('type')}
+                            >
+                                <option value="Warehouse">Warehouse</option>
+                                <option value="Hub">Hub</option>
+                            </select>
+                            {errors.type && <span className="text-red-500 text-xs mt-1">{errors.type.message}</span>}
+                        </div>
+
+                        <div className="flex flex-col mb-3 gap-1">
+                            <label className="text-sm font-semibold" htmlFor="name">Location Name</label>
+                            <input
+                                className={`py-2 px-3 border rounded-md ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                                type="text"
+                                id="name"
+                                placeholder="e.g. South Hub"
+                                {...register('name')}
+                            />
+                            {errors.name && <span className="text-red-500 text-xs">{errors.name.message}</span>}
+                        </div>
+
+                        <div className="flex flex-col mb-3 gap-1">
+                            <label className="text-sm font-semibold" htmlFor="address">Address</label>
+                            <input
+                                className={`py-2 px-3 border rounded-md ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
+                                type="text"
+                                id="address"
+                                placeholder="Street address"
+                                {...register('address')}
+                            />
+                            {errors.address && <span className="text-red-500 text-xs">{errors.address.message}</span>}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mb-3">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-semibold" htmlFor="city">City</label>
+                                <input
+                                    className={`py-2 px-3 border rounded-md ${errors.city ? 'border-red-500' : 'border-gray-300'}`}
+                                    type="text"
+                                    id="city"
+                                    {...register('city')}
+                                />
+                                {errors.city && <span className="text-red-500 text-xs">{errors.city.message}</span>}
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-semibold" htmlFor="state">State</label>
+                                <input
+                                    className={`py-2 px-3 border rounded-md ${errors.state ? 'border-red-500' : 'border-gray-300'}`}
+                                    type="text"
+                                    id="state"
+                                    {...register('state')}
+                                />
+                                {errors.state && <span className="text-red-500 text-xs">{errors.state.message}</span>}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mb-5">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-semibold" htmlFor="contactPerson">Contact Person</label>
+                                <input
+                                    className={`py-2 px-3 border rounded-md ${errors.contactPerson ? 'border-red-500' : 'border-gray-300'}`}
+                                    type="text"
+                                    id="contactPerson"
+                                    {...register('contactPerson')}
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-semibold" htmlFor="phone">Phone</label>
+                                <input
+                                    className={`py-2 px-3 border rounded-md ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
+                                    type="text"
+                                    id="phone"
+                                    {...register('phone')}
+                                />
+                                {errors.phone && <span className="text-red-500 text-xs">{errors.phone.message}</span>}
+                            </div>
+                        </div>
+
+                        <button
+                            className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg font-bold hover:bg-blue-700 transition-colors"
+                            type="submit"
+                        >
+                            {isEditing ? 'Update Location' : 'Create Location'}
+                        </button>
+                    </form>
+                </section>
+            )}
+
+            <section className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm max-w-4xl mx-auto">
+                <div className="flex justify-between items-center mb-6 border-b pb-4">
+                    <h1 className="text-2xl font-bold text-gray-800">Pickup Locations</h1>
+                    <button
+                        className="px-6 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+                        onClick={() => setClosedLocationForm(true)}
+                    >
+                        + Add New
+                    </button>
+                </div>
+
+                <div className="space-y-4">
+                    {locationList.length === 0 ? (
+                        <p className="text-gray-500 text-center py-8">No locations added yet.</p>
+                    ) : (
+                        locationList.map((location) => (
+                            <div
+                                key={location.id}
+                                className={`group border-2 p-5 rounded-xl transition-all ${location.default
+                                    ? 'border-blue-500 bg-blue-50/50'
+                                    : 'border-gray-200 hover:border-blue-300 hover:shadow-md bg-white'
+                                    }`}
+                            >
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        {location.default && (
+                                            <span className="inline-block py-1 px-3 rounded-full text-xs font-bold text-blue-700 bg-blue-100 mb-3">
+                                                Default Location
+                                            </span>
+                                        )}
+                                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                            {location.name}
+                                            <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded border">
+                                                {location.type}
+                                            </span>
+                                        </h2>
+                                        <p className="text-gray-600 text-sm mt-1">{location.address}, {location.city}, {location.state}</p>
+
+                                        <div className="flex gap-6 mt-3 text-sm text-gray-500">
+                                            {location.contactPerson && (
+                                                <p><span className="font-semibold text-gray-700">Contact:</span> {location.contactPerson}</p>
+                                            )}
+                                            {location.phone && (
+                                                <p><span className="font-semibold text-gray-700">Phone:</span> {location.phone}</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            className="px-4 py-1.5 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200"
+                                            onClick={() => handleEditLocation(location)}
                                         >
-                                            <option value="false">Not Default</option>
-                                            <option value="true">Default</option>
-
-                                        </select>
-                                        <select className="my-2 border-2 py-1 px-2  border-gray-300 rounded-md" id="type"
-                                            {...register('type')}
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => deleteLocation(location.id)}
+                                            className="px-4 py-1.5 bg-red-50 text-red-600 font-semibold rounded-lg hover:bg-red-100"
                                         >
-                                            <option value="Warehouse">Warehouse</option>
-                                            <option value="Hub">Hub</option>
-
-                                        </select>
-                                        <div className="flex flex-col my-2 gap-2">
-                                            <label htmlFor="name">Location Name</label>
-                                            <input className="py-1 px-2 border-2 border-gray-300 rounded-md" type="text" id="name"
-                                                {...register('name', { required: true, })} />
-                                        </div>
-                                        <div className="flex flex-col my-2 gap-2">
-                                            <label htmlFor="address">Address</label>
-                                            <input className="py-1 px-2 border-2 border-gray-300 rounded-md" type="text" defaultValue={selectedLocation?.address} id="address" {...register('address', { required: true })} />
-                                        </div>
-                                        <div className="flex flex-col my-2 gap-2">
-                                            <label htmlFor="city">City</label>
-                                            <input className="py-1 px-2 border-2 border-gray-300 rounded-md" type="text" id="city" {...register('city', { required: true })} />
-                                        </div>
-                                        <div className="flex flex-col my-2 gap-2">
-                                            <label htmlFor="state">State</label>
-                                            <input className="py-1 px-2 border-2 border-gray-300 rounded-md" type="text" id="state" {...register('state', { required: true })} />
-                                        </div>
-                                        <div className="flex flex-col my-2 gap-2">
-                                            <label htmlFor="contactPerson">Contact Person</label>
-                                            <input className="py-1 px-2 border-2 border-gray-300 rounded-md" type="text" id="contactPerson" {...register('contactPerson')} />
-                                        </div>
-                                        <div className="flex flex-col my-2 gap-2">
-                                            <label htmlFor="phone">Phone</label>
-                                            <input className="py-1 px-2 border-2 border-gray-300 rounded-md" type="text" id="phone" {...register('phone')} />
-                                        </div>
-
-
-                                        <input className="mt-2 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 " value="Create" type="submit" />
+                                            Delete
+                                        </button>
                                     </div>
                                 </div>
-                            </form>
-                        </section>
-                    )
-
-                }
-                <section className="vendor_settings_content ml-74   p-6 bg-white rounded-lg border-2 border-gray-300 ">
-
-                    <div className=' flex justify-between items-center mb-6'>
-                        <h1 className='text-2xl font-bold'>Pickup Locations</h1>
-                        <button className='px-6 py-2 border-2 border-gray-300 rounded-lg' onClick={() => setClosedLocationForm(true)}>+ Add new</button>
-                    </div>
-
-                    {
-                        locationList.map((location) => (
-                            <div key={location.id} className={`my-6 hover:border-blue-500 hover:bg-blue-50 border-2  ${location.default ? 'border-blue-500 bg-blue-50' : 'border-gray-300'} px-6 py-6 mb-4 rounded-lg`}>
-                                {location.default && (
-                                    <span className="py-2 px-4 rounded-xl text-sm font-semibold text-blue-600  border-blue-500 bg-blue-100 mb-2 inline-block">Default Location</span>
-                                )}
-                                <h2 className="text-xl font-bold mb-2">{location.name} ({location.type})</h2>
-                                <p className="mb-1">{location.address}, {location.city}, {location.state}</p>
-                                {location.contactPerson && <p className="mb-1">Contact Person: {location.contactPerson}</p>}
-                                {location.phone && <p className="mb-1">Phone: {location.phone}</p>}
-                                <div className="mt-4 flex gap-4">
-                                    <button className="px-4 py-2 min-w-24 bg-blue-200 text-blue-600 font-semibold rounded-lg" onClick={() => { handleEditLocation(location) }}>Edit</button>
-                                    <button onClick={() => deleteLocation(location.id)} className="px-4 py-2 min-w-24 bg-red-200 text-red-600 font-semibold rounded-lg">Delete</button>
-                                </div>
                             </div>
-                        )
-                        )
-                    }
-                </section>
-
-            </main>
-        </>
-    )
+                        ))
+                    )}
+                </div>
+            </section>
+        </main>
+    );
 }

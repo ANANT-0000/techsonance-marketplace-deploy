@@ -10,6 +10,7 @@ import { AddressModal } from "@/components/customer/AddressModel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { fetchDeleteUserAddress, fetchGetUserAddresses, fetchSetDefaultAddress } from "@/utils/customerApiClient";
+import { AddressOperationEnum } from "@/utils/Types";
 export interface AddressType {
     address_line1: string;
     address_line2: string;
@@ -33,12 +34,12 @@ export default function Addresses() {
     const user = useAppSelector((state: RootState) => state.auth.user);
     const dispatch = useAppDispatch();
     const [isModalOpen, setModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+    const [modalMode, setModalMode] = useState<AddressOperationEnum>(AddressOperationEnum.ADD);
     const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
     const [addressList, setAddressList] = useState<AddressType[]>([]);
     useEffect(() => {
         const fetchAddresses = async () => {
-            if (user) {
+            if (user?.id) {
                 const response = await fetchGetUserAddresses(user.id);
                 console.log("address Response", response);
                 setAddressList(response.data);
@@ -48,13 +49,13 @@ export default function Addresses() {
     }, [user, addressList.length]);
     const router = useRouter()
     const openAdd = () => {
-        setModalMode('add');
+        setModalMode(AddressOperationEnum.ADD);
         setSelectedId(undefined);
         setModalOpen(true);
     };
 
     const openEdit = (id: string) => {
-        setModalMode('edit');
+        setModalMode(AddressOperationEnum.EDIT);
         setSelectedId(id);
         setModalOpen(true);
     };
@@ -113,7 +114,7 @@ export default function Addresses() {
 
 
             <AnimatePresence>
-                {isModalOpen && user && (
+                {isModalOpen && user?.id && (
                     <AddressModal
                         user={user}
                         addressId={selectedId}

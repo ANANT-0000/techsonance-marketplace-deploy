@@ -15,7 +15,7 @@ export function WishListBtn({ productVariantId
   }) {
   const dispatch = useAppDispatch();
   const { wishItems } = useAppSelector((state: RootState) => state.wishlist)
-  const { user } = useAppSelector((state: RootState) => state.auth)
+  const { user ,role} = useAppSelector((state: RootState) => state.auth)
   const existingWishlistItem = wishItems.some(
     (item) => item.product_variant_id === productVariantId
   );
@@ -38,7 +38,7 @@ export function WishListBtn({ productVariantId
       console.error('Product ID is missing');
       return;
     }
-    if (!user?.role || user?.role.toLowerCase() !== 'customer') {
+    if (!user?.id || role?.toLowerCase() !== 'customer') {
       router.push('/auth/customerLogin');
       return;
     }

@@ -30,12 +30,12 @@ export default function PasswordForm() {
     const onSubmit = (data: ChangePasswordData) => {
         console.log("Submit Data:", data);
         reset();
-        router.push(`/customerProfile/${user?.user_id}`);
+        router.push(`/customerProfile/${user?.id}`);
     };
 
     const onCancel = () => {
         reset();
-        router.push(`/customerProfile/${user?.user_id}`);
+        router.push(`/customerProfile/${user?.id}`);
     };
 
     return (

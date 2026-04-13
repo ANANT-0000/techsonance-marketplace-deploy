@@ -1,5 +1,4 @@
 import { ShoppingList } from "@/components/customer/ShoppingList";
-import { PRODUCT_LIST } from "@/constants/customer";
 import { fetchProductVendorProducts } from "@/utils/commonAPiClient";
 
 export default async function ShoppingPage({ Params }: { Params: { id: string } }) {

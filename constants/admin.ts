@@ -1,4 +1,4 @@
-import { ActiveInstanceType, AuditLogEntryType, SupportTicketType, VendorApplicationType, VendorManagementEntryType, VendorRequestEntryType, type NavLinkType } from "@/utils/Types";
+import { ActiveInstanceType, AuditLogEntryType, SupportTicketType, VendorApplicationStatusEnum, VendorApplicationType, VendorManagementEntryType, VendorRequestEntryType, type NavLinkType } from "@/utils/Types";
 // ============================================================
 // ADMIN NAVIGATION LINKS
 // ============================================================
@@ -83,23 +83,23 @@ export const VENDOR_REQUESTS: VendorRequestEntryType[] = [
 // ============================================================
 
 
-export const AUDIT_LOG_DATA: AuditLogEntryType[] = [
-  { id: 1, timestamp: "Oct 24, 14:45:12", actor: "akash jain", tenant: "System(Global)", actionType: "Active", targetEntity: "Vendor #882", details: "View JSON", ipAddress: "192.168.1.12" },
-  { id: 2, timestamp: "Oct 24, 14:38:05", actor: "sarah connor", tenant: "TechWorld Inc.", actionType: "Pending", targetEntity: "Payment Gateway", details: "View JSON", ipAddress: "10.0.0.45" },
-  { id: 3, timestamp: "Oct 24, 14:32:01", actor: "Super Admin", tenant: "System(Global)", actionType: "Active", targetEntity: "User: john.smith", details: "View JSON", ipAddress: "192.168.1.1" },
-  { id: 4, timestamp: "Oct 24, 13:15:00", actor: "System Bot", tenant: "System(Global)", actionType: "Inactive", targetEntity: "API Key: pk_live_...", details: "View JSON", ipAddress: "127.0.0.1" },
-  { id: 5, timestamp: "Oct 24, 11:20:44", actor: "akash jain", tenant: "ShoesWorld Inc.", actionType: "Active", targetEntity: "Domain: shoes.com", details: "View JSON", ipAddress: "192.168.1.12" },
-  { id: 6, timestamp: "Oct 24, 09:45:22", actor: "Super Admin", tenant: "System(Global)", actionType: "Suspended", targetEntity: "Vendor #901", details: "View JSON", ipAddress: "192.168.1.1" },
-  { id: 7, timestamp: "Oct 23, 18:30:10", actor: "david rose", tenant: "FashionHub Inc.", actionType: "Active", targetEntity: "User: david.r", details: "View JSON", ipAddress: "172.16.0.23" },
-  { id: 8, timestamp: "Oct 23, 16:12:00", actor: "Super Admin", tenant: "System(Global)", actionType: "Active", targetEntity: "Vendor #882", details: "View JSON", ipAddress: "192.168.1.1" },
-  { id: 9, timestamp: "Oct 23, 14:05:33", actor: "john smith", tenant: "System(Global)", actionType: "Inactive", targetEntity: "Session #4451", details: "View JSON", ipAddress: "192.168.1.55" },
-  { id: 10, timestamp: "Oct 23, 09:00:01", actor: "Automated Job", tenant: "System(Global)", actionType: "Active", targetEntity: "Daily Backup", details: "View JSON", ipAddress: "10.0.0.1" },
-  { id: 11, timestamp: "Oct 22, 20:15:30", actor: "priya sharma", tenant: "VibeStation Music", actionType: "Active", targetEntity: "Product Catalog Update", details: "View JSON", ipAddress: "192.168.2.10" },
-  { id: 12, timestamp: "Oct 22, 17:30:00", actor: "Super Admin", tenant: "System(Global)", actionType: "Pending", targetEntity: "Vendor #915", details: "View JSON", ipAddress: "192.168.1.1" },
-  { id: 13, timestamp: "Oct 22, 15:45:22", actor: "System Bot", tenant: "System(Global)", actionType: "Active", targetEntity: "SSL Certificate Renewal", details: "View JSON", ipAddress: "10.0.0.1" },
-  { id: 14, timestamp: "Oct 22, 10:00:00", actor: "amit patel", tenant: "BeatMakers Hub", actionType: "Active", targetEntity: "New Product: TR-808 Clone", details: "View JSON", ipAddress: "172.16.0.55" },
-  { id: 15, timestamp: "Oct 21, 23:59:59", actor: "Automated Job", tenant: "System(Global)", actionType: "Active", targetEntity: "Nightly DB Backup", details: "View JSON", ipAddress: "10.0.0.1" },
-];
+// export const AUDIT_LOG_DATA: AuditLogEntryType[] = [
+//   { id: 1, timestamp: "Oct 24, 14:45:12", actor: "akash jain", tenant: "System(Global)", actionType: "Active", targetEntity: "Vendor #882", details: "View JSON", ipAddress: "192.168.1.12" },
+//   { id: 2, timestamp: "Oct 24, 14:38:05", actor: "sarah connor", tenant: "TechWorld Inc.", actionType: "Pending", targetEntity: "Payment Gateway", details: "View JSON", ipAddress: "10.0.0.45" },
+//   { id: 3, timestamp: "Oct 24, 14:32:01", actor: "Super Admin", tenant: "System(Global)", actionType: "Active", targetEntity: "User: john.smith", details: "View JSON", ipAddress: "192.168.1.1" },
+//   { id: 4, timestamp: "Oct 24, 13:15:00", actor: "System Bot", tenant: "System(Global)", actionType: "Inactive", targetEntity: "API Key: pk_live_...", details: "View JSON", ipAddress: "127.0.0.1" },
+//   { id: 5, timestamp: "Oct 24, 11:20:44", actor: "akash jain", tenant: "ShoesWorld Inc.", actionType: "Active", targetEntity: "Domain: shoes.com", details: "View JSON", ipAddress: "192.168.1.12" },
+//   { id: 6, timestamp: "Oct 24, 09:45:22", actor: "Super Admin", tenant: "System(Global)", actionType: "Suspended", targetEntity: "Vendor #901", details: "View JSON", ipAddress: "192.168.1.1" },
+//   { id: 7, timestamp: "Oct 23, 18:30:10", actor: "david rose", tenant: "FashionHub Inc.", actionType: "Active", targetEntity: "User: david.r", details: "View JSON", ipAddress: "172.16.0.23" },
+//   { id: 8, timestamp: "Oct 23, 16:12:00", actor: "Super Admin", tenant: "System(Global)", actionType: "Active", targetEntity: "Vendor #882", details: "View JSON", ipAddress: "192.168.1.1" },
+//   { id: 9, timestamp: "Oct 23, 14:05:33", actor: "john smith", tenant: "System(Global)", actionType: "Inactive", targetEntity: "Session #4451", details: "View JSON", ipAddress: "192.168.1.55" },
+//   { id: 10, timestamp: "Oct 23, 09:00:01", actor: "Automated Job", tenant: "System(Global)", actionType: "Active", targetEntity: "Daily Backup", details: "View JSON", ipAddress: "10.0.0.1" },
+//   { id: 11, timestamp: "Oct 22, 20:15:30", actor: "priya sharma", tenant: "VibeStation Music", actionType: "Active", targetEntity: "Product Catalog Update", details: "View JSON", ipAddress: "192.168.2.10" },
+//   { id: 12, timestamp: "Oct 22, 17:30:00", actor: "Super Admin", tenant: "System(Global)", actionType: "Pending", targetEntity: "Vendor #915", details: "View JSON", ipAddress: "192.168.1.1" },
+//   { id: 13, timestamp: "Oct 22, 15:45:22", actor: "System Bot", tenant: "System(Global)", actionType: "Active", targetEntity: "SSL Certificate Renewal", details: "View JSON", ipAddress: "10.0.0.1" },
+//   { id: 14, timestamp: "Oct 22, 10:00:00", actor: "amit patel", tenant: "BeatMakers Hub", actionType: "Active", targetEntity: "New Product: TR-808 Clone", details: "View JSON", ipAddress: "172.16.0.55" },
+//   { id: 15, timestamp: "Oct 21, 23:59:59", actor: "Automated Job", tenant: "System(Global)", actionType: "Active", targetEntity: "Nightly DB Backup", details: "View JSON", ipAddress: "10.0.0.1" },
+// ];
 
 // ============================================================
 // ADMIN — SUPPORT TICKETS MOCK DATA
@@ -205,7 +205,7 @@ export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
       owner_name: "marcus vance",
       owner_email: "vance.logistics@provider.net",
       submission_date: "january 22, 2026",
-      status: "verified"
+      status: VendorApplicationStatusEnum.ACCEPTED
     },
     submitted_documents: [
       { file_name: "fleet_insurance_2026.pdf", size: "4.2 mb", uploaded_at: "10 minutes ago" },
@@ -223,7 +223,7 @@ export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
       owner_name: "elena rodriguez",
       owner_email: "elena@urbangreen.co",
       submission_date: "january 25, 2026",
-      status: "pending"
+      status: VendorApplicationStatusEnum.PENDING
     },
     submitted_documents: [
       { file_name: "health_dept_cert.pdf", size: "2.8 mb", uploaded_at: "1 day ago" },
@@ -241,7 +241,7 @@ export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
       owner_name: "hiroshi tanaka",
       owner_email: "h.tanaka@quantumlabs.io",
       submission_date: "january 27, 2026",
-      status: "verified"
+      status: VendorApplicationStatusEnum.REJECTED
     },
     submitted_documents: [
       { file_name: "ip_declaration.pdf", size: "0.5 mb", uploaded_at: "45 minutes ago" },

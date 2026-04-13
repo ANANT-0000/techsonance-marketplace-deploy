@@ -130,11 +130,11 @@ export default function OrderStatusPage() {
                                 <div className="space-y-3 mb-6">
                                     <div className="flex justify-between text-gray-700">
                                         <span>Subtotal</span>
-                                        <span>₹{formatCurrency(orderSuccess?.subtotal)}</span>
+                                        {/* <span>₹{formatCurrency( orderSuccess?.subtotal)}</span> */}
                                     </div>
                                     <div className="flex justify-between text-gray-700">
                                         <span>Discount</span>
-                                        <span className="text-green-600">- ₹{formatCurrency(orderSuccess?.discount)}</span>
+                                        {/* <span className="text-green-600">- ₹{formatCurrency(orderSuccess?.discount)}</span> */}
                                     </div>
                                     <div className="flex justify-between text-gray-700">
                                         <span>Delivery</span>
@@ -144,7 +144,7 @@ export default function OrderStatusPage() {
                                 <div className="border-t pt-4 mb-6">
                                     <div className="flex justify-between items-center text-xl font-bold">
                                         <span>Total</span>
-                                        <span>₹{formatCurrency(orderSuccess?.total)}</span>
+                                        {/* <span>₹{formatCurrency(orderSuccess?.total)}</span> */}
                                     </div>
                                 </div>
                                 <Link href="/" className="block w-full bg-black text-white text-center font-semibold py-3 rounded-lg hover:bg-gray-800 transition-colors">
@@ -185,7 +185,7 @@ export default function OrderStatusPage() {
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-gray-700">Attempted Amount</span>
-                            <span className="font-semibold">Rs. {formatCurrency(orderFailed?.attemptedAmount)}</span>
+                            {/* <span className="font-semibold">Rs. {formatCurrency(orderFailed?.attemptedAmount)}</span> */}
                         </div>
                     </div>
                 </div>

@@ -20,7 +20,7 @@ export default function OrdersPage() {
   const router = useRouter();
   const isMobile = useMediaQuery({ maxWidth: 640 });
   const [orderStatus, setOrderStatus] = useState<ordersStatusType>('Pending');
-  const orders: UserOrder[] = user?.orders || [];
+  const orders: UserOrder[] = [];
 
   const ordersStatusMap = ["Pending", "Delivered", "Cancelled"];
 
@@ -57,7 +57,7 @@ export default function OrdersPage() {
             );
           })}
         </div>
-        <OrdersList orders={orders} status={orderStatus} isMobile={isMobile} />
+        {/* <OrdersList orders={orders} status={orderStatus} isMobile={isMobile} /> */}
       </section>
     </>
   )

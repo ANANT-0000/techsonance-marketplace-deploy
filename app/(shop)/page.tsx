@@ -1,5 +1,5 @@
 import { Carousel } from "@/components/common/Carousel";
-import { BEST_SELLING_PRODUCTS, CATEGORY_LIST, FEEDBACK_LIST, PRODUCT_LIST, HERO_BTN_TEXT, HOME_SECONDARY_IMG, HOME_HERO_TITLE, HOME_HERO_DESC } from "@/constants/customer";
+import { BEST_SELLING_PRODUCTS, CATEGORY_LIST, FEEDBACK_LIST, HERO_BTN_TEXT, HOME_SECONDARY_IMG, HOME_HERO_TITLE, HOME_HERO_DESC } from "@/constants/customer";
 import { CategoryList } from "@/components/customer/CategoryList";
 import { BestSelling } from "@/components/customer/BestSelling";
 import { ProductList } from "@/components/customer/ProductList";
@@ -40,7 +40,7 @@ export default function Home() {
                 <BestSelling product={BEST_SELLING_PRODUCTS} styles="bg-linear-to-r from-brand-primary to-brand-secondary" />
                 <section className="xl:pt-5 pb-2 xl:px-32 lg:px-8 md:px-4 sm:px-2 py-1">
                     <h2 className="text-2xl text-center font-bold mt-8 mb-4">Popular products</h2>
-                    <ProductList products={PRODUCT_LIST} />
+                    {/* <ProductList products={PRODUCT_LIST} /> */}
                 </section>
                 <CustomerFeedback FEEDBACK_LIST={FEEDBACK_LIST} />
             </main>

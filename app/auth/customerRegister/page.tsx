@@ -20,7 +20,7 @@ export default function CustomerRegisterPage() {
         handleSubmit,
         watch,
         formState: { errors, isValid, isDirty },
-    } = useForm<CustomerRegisterSchemaType>({ // Removed Partial
+    } = useForm({
         resolver: zodResolver(customerRegisterSchema),
         mode: "onChange",
         defaultValues: {
@@ -30,7 +30,7 @@ export default function CustomerRegisterPage() {
             password: '',
             confirm_password: '',
             phone_number: '',
-            terms_accepted: true, // IMPORTANT: Match this with your schema
+            terms_accepted: true,
         }
     });
 
@@ -52,7 +52,7 @@ export default function CustomerRegisterPage() {
             if (response?.status === 201) {
                 router.push('/auth/customerLogin');
             } else {
-                setServerError(response?.error || "Registration failed");
+                setServerError(response?.message || "Registration failed");
             }
         } catch (err: any) {
             setServerError(err.message || "Something went wrong");

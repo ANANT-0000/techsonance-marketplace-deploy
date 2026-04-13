@@ -76,7 +76,7 @@ export const adminLogin = async (data: { admin_id: string, password: string }) =
             console.log(errorMessage);
             return { status: false, message: errorMessage };
         }
-        const payload: { user: UserProfile, token: string, role: UserRole } = {
+        const payload: { user: UserType, token: string, role: UserRole } = {
             user: result.data,
             token: result.data.token,
             role: result.data.user_role as UserRole
@@ -109,7 +109,7 @@ export const CustomerLogin = async (data: { email: string, password: string }) =
         if (response.status !== 200) {
             const errorMessage = result.message || "Login failed";
             console.log(errorMessage);
-            return { status: false, message: errorMessage };
+            return { status: false, message: errorMessage, data: result };
         }
         const payload: { user: UserType, role: UserRole } = {
             user: result.data,
@@ -120,7 +120,7 @@ export const CustomerLogin = async (data: { email: string, password: string }) =
     } catch (err: any) {
         const errorMessage = err.response?.data?.message || err.message || "Login failed";
         console.log(errorMessage, err);
-        return { status: false, message: errorMessage };
+        return { status: false, message: errorMessage, data: err };
     }
 }
 export const CustomerRegister = async (data: CustomerRegisterSchemaType, companyId: string) => {
@@ -150,6 +150,6 @@ export const CustomerRegister = async (data: CustomerRegisterSchemaType, company
 
     } catch (error: unknown) {
         console.log('Registration failed. Please try again.', error);
-        return { status: false, message: "Registration failed. Please try again.", error };
+        return { status: false, message: "Registration failed. Please try again. error: " + (error as Error).message, data: [] };
     }
 }

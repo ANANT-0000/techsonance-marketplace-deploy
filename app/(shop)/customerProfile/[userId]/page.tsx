@@ -40,7 +40,8 @@ export default function UserProfilePage() {
                         className="relative"
                     >
                         <Image
-                            src={user?.profileImgUrl || "https://i.pinimg.com/originals/74/a3/b6/74a3b6a8856b004dfff824ae9668fe9b.jpg"}
+                            src={'profile_picture_url' in user && user.profile_picture_url
+                                ? user.profile_picture_url : "https://i.pinimg.com/originals/74/a3/b6/74a3b6a8856b004dfff824ae9668fe9b.jpg"}
                             alt={user?.first_name || "User"}
                             width={128}
                             height={128}
@@ -56,11 +57,11 @@ export default function UserProfilePage() {
                                 <Mail size={14} /> {user.email}
                             </span>
                             <span className="flex items-center gap-2 lg:px-3 py-1 lg:bg-gray-50 rounded-full lg:border border-gray-100">
-                                <Phone size={14} /> {user.phone}
+                                <Phone size={14} /> {user.phone_number || "No phone number"}
                             </span>
                         </div>
                         <p className="text-gray-400 text-xs lg:mt-2 text-left font-medium">
-                            Member since: {new Date(user.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            Member since: {new Date('created_at' in user && user.created_at ? user.created_at : 'NAN').toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
                         </p>
                     </div>
                 </div>
@@ -77,7 +78,7 @@ export default function UserProfilePage() {
 
             <div className="mt-8 lg:flex flex-col md:flex-row gap-6 hidden  ">
                 {[
-                    { label: "TOTAL ORDERS", value: user?.orders?.length ?? 3, icon: ShoppingBag, color: "bg-brand-primary", text: "text-brand-primary" },
+                    { label: "TOTAL ORDERS", value:3, icon: ShoppingBag, color: "bg-brand-primary", text: "text-brand-primary" },
                     { label: "ACTIVE ORDERS", value: activeOrders, icon: Timer, color: "bg-yellow", text: "text-yellow-500" }
                 ].map((stat, idx) => (
                     <motion.div
@@ -113,15 +114,15 @@ export default function UserProfilePage() {
 
                         <div className="mt-4 pt-4 border-t border-gray-100">
                             <p className="text-xs font-bold text-gray-400 uppercase mb-2">Default Address</p>
-                            {user?.addresses?.filter(a => a.is_default).length > 0 ? (
+                            {/* { 'addresses' in user && user.addresses?.filter(a => a.is_default).length > 0 ? (
                                 user?.addresses?.filter(a => a.is_default).map(address => (
                                     <p key={address.address_id} className="text-sm text-gray-600 line-clamp-1">
                                         {address.address_line1}, {address.city}...
                                     </p>
                                 ))
-                            ) : (
+                            ) : ( */}
                                 <p className="text-sm text-gray-400 italic">No default address set</p>
-                            )}
+                            {/* )} */}
                         </div>
 
                     </ManagementCard>

@@ -1,7 +1,6 @@
 'use client';
 import type { RootState } from "@/lib/store";
 import { ChevronLeftCircle, X } from "lucide-react";
-import { PRODUCT_LIST } from "@/constants/customer";
 import { AddToCart } from "@/components/customer/AddToCart";
 import { removeFromWishlist } from "@/lib/features/Wishlist";
 import { useParams, useRouter } from "next/navigation";
@@ -47,7 +46,7 @@ export default function WishlistPage() {
                 console.error("User ID is missing");
                 return;
             }
-            fetchCustomerWishlist(userId, companyDomain).then((response) => {
+            fetchCustomerWishlist(userId[0], companyDomain).then((response) => {
                 console.log(response)
                 setWishlistItems(response.data[0].items
                 );
@@ -97,7 +96,7 @@ export default function WishlistPage() {
                                         </div>
                                     </span>
                                     <div className="flex justify-end items-center">
-                                        <AddToCart productId={item.id} styles={`lg:w-24 w-16 ${isMobileOrTablet ? 'small' : ''}`} />
+                                        <AddToCart productVariantId={item.id} styles={`lg:w-24 w-16 ${isMobileOrTablet ? 'small' : ''}`} />
                                     </div>
                                 </li>
                             ))}

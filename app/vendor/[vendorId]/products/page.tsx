@@ -10,7 +10,7 @@ import { DynamicIcon } from "lucide-react/dynamic";
 export const PRODUCT_TABLE_HEAD = ['', "PRODUCT NAME", "VARIANT", "SKU", "STOCK", "PRICE", "STATUS", "ACTION"];
 export default async function Products({ params }: { params: Promise<{ vendorId: string }> }) {
     const { vendorId } = await params;
-    const categoryOptions = await fetchVendorsProductsCategory(vendorId).then((res) => {
+    const categoryOptions: { value: string; label: string }[] = await fetchVendorsProductsCategory(vendorId).then((res) => {
         const categories = res?.data || [];
         return categories.map((cat: any) => ({ value: cat.id, label: cat.name }));
     }).catch((error) => {
@@ -23,7 +23,6 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
     });
     console.log('vendor product list ', getProducts);
     const productList: ProductType[] = getProducts || [];
-    // console.log("productList[2].variants", productList[2]?.variants?.length);
     let count = 1
     const pageSize = 5;
     const totalPages = Math.ceil(productList.length / pageSize);
@@ -34,7 +33,6 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
     console.log(productList[pageSize - 1]?.id);
     console.log(currentData)
     const handleDelete = (productId: string) => {
-        // Implement the logic to delete the product with the given productId
         console.log(`Delete product with ID: ${productId}`);
     }
     return (
@@ -98,10 +96,10 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                                         {item.name.trimStart()}
                                     </TableCell>
                                     <TableCell >
-                                        {item.variants?.length > 0 ? (
+                                        {item?.variants && item?.variants?.length > 0 ? (
                                             <div className="flex flex-col items-center border p-2 gap-2   border-emerald-600 border-b-3  hover:border-b-1 hover:border-emerald-800 rounded-lg">
                                                 <Link href={`/vendor/${vendorId}/products/${item.id}/variants`} className="flex gap-2 text-emerald-600 hover:text-emerald-800 items-center justify-center" title="View Variants">
-                                                    {item.variants?.length} Variants <DynamicIcon name="tag" size={18} fallback={() => <p></p>}/>
+                                                    {item.variants?.length} Variants <DynamicIcon name="tag" size={18} fallback={() => <p></p>} />
                                                 </Link>
                                             </div>
                                         ) : (
@@ -116,8 +114,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
 
                                     </TableCell>
                                     <TableCell className={`p-4 text-start `}>
-                                        {/* {item.variants.sku ? item.variants.sku : 'No'} */}
-                                        {item.variants[0]?.sku || 'No SKU'}
+                                        {item.variants && item?.variants[0]?.sku || 'No SKU'}
                                     </TableCell>
 
                                     <TableCell className={`p-4 text-start  `}>

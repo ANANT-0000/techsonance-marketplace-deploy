@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { motion } from "framer-motion"; // Note: changed motion/react to framer-motion as it's the standard import
 import { Star, MessageSquareQuote } from "lucide-react";
-import { PRODUCT_LIST_TYPE } from '@/utils/Types';
+import { ProductType } from '@/utils/Types';
 
 const StarRating = ({ rating, size = 12 }: { rating: number; size?: number }) => (
     <div className="flex items-center gap-0.5">
@@ -16,8 +16,8 @@ const StarRating = ({ rating, size = 12 }: { rating: number; size?: number }) =>
     </div>
 );
 
-export const ProductReview = ({ product }: { product: PRODUCT_LIST_TYPE }) => {
-    const reviews = product?.reviews || [];
+export const ProductReview = ({ product }: { product: ProductType }) => {
+    const reviews: { id?: string; userName: string; rating: number; comment: string; date: string }[] = product?.reviews || [];
 
 
     const averageRating = reviews.length > 0

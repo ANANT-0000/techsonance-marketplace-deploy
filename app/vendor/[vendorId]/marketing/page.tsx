@@ -5,8 +5,9 @@ import { Pagination } from "@/components/common/Pagination";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, X, AlertCircle } from "lucide-react";
-import {  REVIEW_DATA } from "@/constants/vendor";
+import { REVIEW_DATA } from "@/constants/vendor";
 import { couponSchema, CouponFormData } from "@/utils/validation";
+import { CouponDiscountTypeEum, CouponStatusEnum } from "@/utils/Types";
 
 export default function MarketingPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,7 +22,7 @@ export default function MarketingPage() {
     } = useForm<CouponFormData>({
         resolver: zodResolver(couponSchema),
         defaultValues: {
-            type: "percentage",
+            type: CouponDiscountTypeEum.PERCENTAGE,
             code: "",
             value: 0,
             rules: [{ rule_type: "Min Purchase", rule_value: "" }],
@@ -78,8 +79,8 @@ export default function MarketingPage() {
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-sm font-semibold text-gray-700">Type</label>
                                     <select {...register("type")} className="border border-gray-300 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-100">
-                                        <option value="percentage">Percentage (%)</option>
-                                        <option value="flat">Flat Amount (₹)</option>
+                                        <option value={CouponStatusEnum.ACTIVE}>Active</option>
+                                        <option value={CouponStatusEnum.INACTIVE}>Inactive</option>
                                     </select>
                                 </div>
                                 <div className="flex flex-col gap-1.5">

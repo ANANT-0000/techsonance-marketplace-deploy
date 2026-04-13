@@ -9,11 +9,13 @@ export default function ReduxProviders({ children }: { children: React.ReactNode
     const storeRef = useRef<AppStore | null>(null);
     if (!storeRef.current) {
         storeRef.current = store();
+        storeRef.current?.dispatch(loadCart());
+        storeRef.current?.dispatch(loadWishlist());
     }
-    useEffect(() => {
-        loadCart();
-        loadWishlist();
-    }, [])
+    // useEffect(() => {
+    //     storeRef.current?.dispatch(loadCart());
+    //     storeRef.current?.dispatch(loadWishlist());
+    // }, [])
     return (
         <>
             <Provider store={storeRef.current}>
