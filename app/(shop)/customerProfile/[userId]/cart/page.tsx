@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { formatCurrency } from "@/lib/utils";
 import { companyDomain } from "@/config";
 import { fetchGetCartList } from "@/utils/customerApiClient";
-import { VariantsType } from "@/utils/Types";
+import { BuyBtnMode, VariantsType } from "@/utils/Types";
 import { setItemList } from "@/lib/features/Cart";
 
 
@@ -155,7 +155,7 @@ export default function CartList() {
                             </AnimatePresence>
                         </div>
 
-                      
+
                         <motion.div
                             layout
                             className="lg:col-span-1 w-full sticky lg:top-8 top-2 border border-gray-200 lg:py-6 py-2 lg:px-6 px-2 rounded-2xl bg-gray-50/50 shadow-sm"
@@ -198,7 +198,7 @@ export default function CartList() {
                                 </div>
                             </div>
 
-                            <BuyBtn styles="lg:mt-8 mt-4 w-full lg:py-4 text-lg rounded-xl shadow-lg text-primary bg-primary-foreground"  />
+                            <BuyBtn mode={BuyBtnMode.CART} id={cartList[0]?.cart_id} styles="lg:mt-8 mt-4 w-full lg:py-4 text-lg rounded-xl shadow-lg text-primary bg-primary-foreground" />
                         </motion.div>
 
                     </section>

@@ -12,7 +12,7 @@ import { motion, MotionConfig } from "motion/react";
 import type { RootState } from "@/lib/store";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { ProductType } from "@/utils/Types";
+import { BuyBtnMode, ProductType } from "@/utils/Types";
 import { formatCurrency } from "@/lib/utils";
 
 export function ShoppingList({
@@ -99,7 +99,7 @@ export function ShoppingList({
                                                     !isMobile &&
                                                     <div className={`flex gap-2 mt-2   justify-between items-center`}>
                                                         <AddToCart productVariantId={product?.variants && product.variants.length > 0 ? product.variants[0].id : ''} styles="w-full " />
-                                                        <BuyBtn productId={product?.variants && product.variants.length > 0 ? product.variants[0].id : ''} styles=" scale-[.9]" />
+                                                        <BuyBtn id={product?.variants && product.variants.length > 0 ? product.variants[0].id : ''} mode={BuyBtnMode.QUICK_BUY} styles=" scale-[.9]" />
 
                                                     </div>
                                                 }

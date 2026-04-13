@@ -9,7 +9,7 @@ import { BuyBtn } from '@/components/customer/BuyBtn';
 import { ProductList } from '@/components/customer/ProductList';
 import { ProductReview } from '@/components/customer/ProductReview';
 import { ProductSpecifications } from '@/components/customer/ProductSpec';
-import { ProductImageType, ProductType, VariantsType } from '@/utils/Types';
+import { BuyBtnMode, ProductImageType, ProductType, VariantsType } from '@/utils/Types';
 import { formatCurrency } from '@/lib/utils';
 import { fetchProduct } from '@/utils/commonAPiClient';
 
@@ -116,7 +116,7 @@ export default function ProductPage() {
                     </div>
                     <motion.div variants={fadeInUp} className='flex gap-4 items-center'>
                         <AddToCart productVariantId={activeVariant?.id || ''} styles="text-xl w-32 lg:w-40" />
-                        <BuyBtn productId={product?.id} styles="scale-[0.95]" />
+                        <BuyBtn id={product?.id} mode={BuyBtnMode.QUICK_BUY} styles="scale-[0.95]" />
                     </motion.div>
 
 

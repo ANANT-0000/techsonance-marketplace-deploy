@@ -7,7 +7,7 @@ import { AddToCart } from "./AddToCart";
 import { BuyBtn } from "./BuyBtn";
 import { WishListBtn } from "./WishListBtn";
 import Link from "next/link";
-import { ProductType } from "@/utils/Types";
+import { BuyBtnMode, ProductType } from "@/utils/Types";
 
 export function ProductList({ products = [], styles }: { products?: ProductType[], styles?: string }) {
     const isMobile = useMediaQuery({ maxWidth: 768 });
@@ -137,7 +137,7 @@ function ProductCard({ product, isMobile }: { product: ProductType, isMobile: bo
                     !isMobile &&
                     <div className={`flex gap-2 mt-2   justify-between items-center`}>
                         <AddToCart productVariantId={product.id} styles="w-full " />
-                        <BuyBtn productId={product.id} styles=" scale-[.9]" />
+                        <BuyBtn id={product.id} mode={BuyBtnMode.QUICK_BUY} styles=" scale-[.9]" />
 
                     </div>
                 }

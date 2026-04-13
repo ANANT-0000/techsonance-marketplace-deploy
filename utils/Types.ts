@@ -45,6 +45,11 @@ export enum AddressForEnum {
   WORK = 'work',
   OTHER = 'other'
 }
+// used in multiple places
+export enum BuyBtnMode {
+  CART = 'cart',
+  QUICK_BUY = 'quick-buy',
+}
 export interface VendorUserType {
   company_id: string;
   vendor_id: string | null;
@@ -80,17 +85,25 @@ export interface UserType {
   role_id: string | null;
 }
 // Supporting Interfaces based on your schema
-export interface Address {
-  address_id: string;
-  name?: string;
-  address_for: UserAddressTypeEnum;
+// used in multiple places
+export interface AddressType {
   address_line1: string;
+  address_line2: string;
+  address_type: string;
   city: string;
-  state: string;
+  company_id: string | null;
   country: string;
-  phone: string;
-  postal_code: string;
+  created_at: string;
+  id: string;
   is_default: boolean;
+  landmark: string;
+  name: string;
+  number: string;
+  postal_code: string;
+  state: string;
+  street: string;
+  updated_at: string;
+  user_id: string;
 }
 
 export interface Cart {
@@ -468,15 +481,7 @@ export type FeatureType = { title: string; description: string };
 //   taxProfile: string;
 // };
 
-export interface SelectedPaymentMethodProps {
-  method: string;
-  selectedMethod: string;
-  onSelect: (method: string) => void;
-  onInputChange: (val: string) => void;
-  isValid: boolean;
-  value: string; // The UPI ID string
-  description?: string; // Optional description
-}
+
 export interface CustomerTicketType {
   id: number;
   ticket_number: string;

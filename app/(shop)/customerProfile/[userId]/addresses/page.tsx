@@ -10,26 +10,8 @@ import { AddressModal } from "@/components/customer/AddressModel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { fetchDeleteUserAddress, fetchGetUserAddresses, fetchSetDefaultAddress } from "@/utils/customerApiClient";
-import { AddressOperationEnum } from "@/utils/Types";
-export interface AddressType {
-    address_line1: string;
-    address_line2: string;
-    address_type: string;
-    city: string;
-    company_id: string | null;
-    country: string;
-    created_at: string;
-    id: string;
-    is_default: boolean;
-    landmark: string;
-    name: string;
-    number: string;
-    postal_code: string;
-    state: string;
-    street: string;
-    updated_at: string;
-    user_id: string;
-}
+import { AddressOperationEnum, AddressType } from "@/utils/Types";
+
 export default function Addresses() {
     const user = useAppSelector((state: RootState) => state.auth.user);
     const dispatch = useAppDispatch();

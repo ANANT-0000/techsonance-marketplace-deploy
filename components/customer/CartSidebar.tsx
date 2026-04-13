@@ -15,6 +15,7 @@ import { companyDomain } from "@/config";
 import { fetchGetCartList } from "@/utils/customerApiClient";
 import { setItemList } from "@/lib/features/Cart";
 import { CartItemListResponse } from "@/app/(shop)/customerProfile/[userId]/cart/page";
+import { BuyBtnMode } from "@/utils/Types";
 
 
 
@@ -142,6 +143,7 @@ export function CartSidebar() {
 
                         <div className="flex flex-col items-end gap-1">
                           <AddToCart productVariantId={item.product_variant_id} styles="small w-24" />
+                          <BuyBtn mode={BuyBtnMode.CART} id={item.product_variant_id} styles="small w-24" />
                         </div>
                       </motion.li>
                     ))}
@@ -159,7 +161,7 @@ export function CartSidebar() {
               >
                 View Full Cart
               </Link>
-              <BuyBtn styles="w-full py-4 rounded-xl shadow-lg" />
+              <BuyBtn mode={BuyBtnMode.CART} id={cartId} styles="w-full py-4 rounded-xl shadow-lg" />
             </div>
           </motion.aside>
         </>

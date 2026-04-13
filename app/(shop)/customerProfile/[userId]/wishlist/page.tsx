@@ -37,7 +37,7 @@ export default function WishlistPage() {
     const wishItems = useAppSelector((state: RootState) => state.wishlist);
     const user = useAppSelector((state: RootState) => state.auth.user);
     const dispatch = useAppDispatch();
-    const { userId } = useParams();
+    const { userId } = useParams<{ userId: string }>();
     console.log("userId", userId)
     const [wishlistItems, setWishlistItems] = useState<WishlistItemType[]>([]);
     useEffect(() => {
@@ -46,7 +46,7 @@ export default function WishlistPage() {
                 console.error("User ID is missing");
                 return;
             }
-            fetchCustomerWishlist(userId[0], companyDomain).then((response) => {
+            fetchCustomerWishlist(userId, companyDomain).then((response) => {
                 console.log(response)
                 setWishlistItems(response.data[0].items
                 );
