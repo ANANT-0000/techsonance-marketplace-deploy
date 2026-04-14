@@ -30,10 +30,21 @@ export const fetchProductVariantDetails = async (id: string) => {
                 // Authorization: `Bearer ${await authToken()}`,
             },
         });
-        return await response.json();
+        const data = await response.json();
+        if (response.status !== 200) {
+            console.error('Failed to fetch product variant details:', data);
+        }
+        return {
+            data: data,
+            success: response.status === 200
+        };
     } catch (error) {
         console.error('Error fetching product variants:', error);
-        return [];
+        return {
+            data: undefined,
+            success: false,
+            message: "Failed to fetch product variant details."
+        };
     }
 };
 export const fetchProductVendorProducts = async () => {

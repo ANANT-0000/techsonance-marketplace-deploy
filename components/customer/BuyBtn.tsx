@@ -7,6 +7,7 @@ import { useAppSelector } from '@/hooks/reduxHooks';
 import { useRouter } from 'next/navigation';
 import { checkAddressExistence } from '@/utils/customerApiClient';
 import { BuyBtnMode } from '@/utils/Types';
+import { createCheckoutSession } from '@/hooks/UseCheckoutSession';
 
 export function BuyBtn({ id, styles, mode }: { id?: string, styles?: string, mode?: BuyBtnMode }) {
   const { user } = useAppSelector((state: RootState) => state.auth);
@@ -27,7 +28,9 @@ export function BuyBtn({ id, styles, mode }: { id?: string, styles?: string, mod
     if (!checkAddress.hasAddresses || checkAddress.count === 0) {
       console.log('user does not have address');
       router.push(`/customerProfile/${userId}/addresses`);
-    } else if (id && mode === BuyBtnMode.CART) {
+    }
+    createCheckoutSession();
+    if (id && mode === BuyBtnMode.CART) {
       router.push(`/customerProfile/${userId}/checkout?type=cart&id=${id}`); // Example: /customerProfile/123/checkout?type=cart&id=789
     } else if (id && mode === BuyBtnMode.QUICK_BUY) {
       router.push(`/customerProfile/${userId}/checkout?type=product&id=${id}`); // Example: /customerProfile/123/checkout?type=product&id=456

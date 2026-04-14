@@ -128,7 +128,7 @@ export interface UserOrder {
   order_id: number;
   order_status: OrderStatusEnum;
   delivered_at?: string;
-  shippingTo: Address | string;
+  shippingTo: AddressType | string;
   products?: { product_id: string; quantity: number }[];
   total_amount: number;
   address_id: number;

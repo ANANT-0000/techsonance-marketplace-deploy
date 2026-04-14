@@ -3,11 +3,10 @@ import { FormInput } from "../common/FormInput";
 import { useForm } from "react-hook-form";
 import { motion } from "motion/react";
 import { ADDRESS_FIELDS } from "@/constants/dynamicFields";
-import { AddressForEnum, AddressOperationEnum, UserType } from "@/utils/Types";
-import { fetchCreateUserAddress,  fetchUpdateUserAddress } from "@/utils/customerApiClient";
+import { AddressForEnum, AddressOperationEnum, AddressType, UserType } from "@/utils/Types";
+import { fetchCreateUserAddress, fetchUpdateUserAddress } from "@/utils/customerApiClient";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { AddressType } from "@/app/(shop)/customerProfile/[userId]/addresses/page";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AddressSchema } from "@/utils/validation";
 
@@ -71,7 +70,7 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose 
         if (operation === AddressOperationEnum.EDIT && addressId) {
             reset({
                 name: existingAddress?.name || "",
-                address_for: existingAddress?.address_type as AddressForEnum|| AddressForEnum.HOME,
+                address_for: existingAddress?.address_type as AddressForEnum || AddressForEnum.HOME,
                 is_default: existingAddress?.is_default || false,
                 phone: existingAddress?.number || "",
                 address_line_1: existingAddress?.address_line1 || "",
@@ -95,7 +94,7 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose 
 
 
     const onSubmit = async (data: any) => {
-        if (operation === AddressOperationEnum.EDIT  && addressId && user.id) {
+        if (operation === AddressOperationEnum.EDIT && addressId && user.id) {
 
             const result = await fetchUpdateUserAddress(user.id, addressId, data);
             if (!result?.success) {
@@ -161,7 +160,7 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose 
                                                 id={field.id}
                                                 register={register}
                                                 required={field.required}
-                                                options={field.options }
+                                                options={field.options}
                                                 type={field.type}
                                                 placeholder={field.placeholder}
                                             />

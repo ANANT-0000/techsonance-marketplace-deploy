@@ -10,8 +10,8 @@ import { fetchGetCartList } from "@/utils/customerApiClient";
 import { MapPin, CreditCard, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { AddressSelector } from "@/components/customer/AddressSelector";
-import { fetchProductVariants } from "@/utils/vendorApiClient";
 import { fetchProductVariantDetails } from "@/utils/commonAPiClient";
+import { useCheckoutSession } from "@/hooks/UseCheckoutSession";
 
 
 function CheckoutContent() {
@@ -19,7 +19,7 @@ function CheckoutContent() {
   const params = useParams<{ userId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-
+  const { clearSession } = useCheckoutSession(`/customerProfile/${params.userId}/cart`);
   // --- Parse search params ---
   // URLs:
   //   /checkout?type=cart&id=abc123
@@ -67,10 +67,10 @@ function CheckoutContent() {
       try {
         if (isQuickBuy) {
           // Fetch single product variant
-          const res = await fetchProductVariantDetails(id);
+          const res: { data: any | undefined; success: boolean; message?: string } = await fetchProductVariantDetails(id);
           const variant = res?.data;
 
-          if (!variant) throw new Error("Product not found");
+          if (!res?.success) throw new Error(res?.message ?? "Product unavailable");
 
           const price = Number(variant.price);
           setOrderData({
@@ -206,13 +206,15 @@ function CheckoutContent() {
       });
       const verifyData = await verifyResponse.json();
 
-      // Step E: Redirect based on outcome
+      // Step E: Redirect based on outcome and clear session 
+      clearSession();
+
       if (userClickedSuccess && verifyData.success) {
-        router.push(`/customerProfile/${params.userId}/orders?success=true`);
+        router.push(`/customerProfile/${params.userId}/orders/${initData.data.dbOrderId}`);
       } else {
         setCheckoutError("Payment failed. Your order has been cancelled.");
+        router.push(`/customerProfile/${params.userId}/orders`);
       }
-
     } catch (error) {
       console.error("Payment error", error);
       setCheckoutError("An unexpected error occurred. Please try again.");
