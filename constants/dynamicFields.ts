@@ -11,6 +11,7 @@ export const ORGANIZATION_DETAIL_FIELDS = [
             { id: "phone_number", type: "tel", placeholder: "123-456-7890", styles: "rounded-l-none" },
         ]
     },
+    
     { id: "category", label: "Business Category", type: "select", options: categoryOptions },
     { id: "company_structure", label: "Business Structure", type: "select", options: BusinessStructure },
 ];

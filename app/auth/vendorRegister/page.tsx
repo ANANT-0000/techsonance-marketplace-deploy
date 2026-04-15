@@ -82,8 +82,8 @@ export default function VendorRegisterPage() {
             }
         });
         formData.append("vendor", JSON.stringify(data));
-        console.log(formData.getAll("documents"));
-        console.log(formData.get("vendor"));
+        // console.log(formData.getAll("documents"));
+        // console.log(formData.get("vendor"));
         try {
             const result = await vendorRegister(formData);
             if (result?.status) {
@@ -139,7 +139,7 @@ export default function VendorRegisterPage() {
                                                                     register(subField.id as keyof VendorRegisterSchemaType).onChange(e);
                                                                 }}
                                                             >
-                                                                <option value="">Code</option>
+                                                                <option value="">code</option>
                                                                 {subField.options?.map((o) => (
                                                                     <option key={o.value} value={o.value}>{o.label}</option>
                                                                 ))}
@@ -163,12 +163,25 @@ export default function VendorRegisterPage() {
                                             </div>
                                         ) : (
                                             <>
-                                                <input
-                                                    type={field.type ?? "text"}
-                                                    className="input-class"
-                                                    placeholder={field.placeholder}
-                                                    {...register(field.id as keyof VendorRegisterSchemaType)}
-                                                />
+                                                {field.type === "select" ? (
+                                                    <select
+                                                        className={`input-class w-full ${""}`}
+                                                        {...register(field.id as keyof VendorRegisterSchemaType)}
+                                                        onChange={(e) => {
+                                                            setCountryCode(e.target.value);
+                                                            register(field.id as keyof VendorRegisterSchemaType).onChange(e);
+                                                        }}
+                                                    >
+                                                        <option value="">Select {field.label}</option>
+                                                        {field.options?.map((o) => (
+                                                            <option key={o.value} value={o.value}>{o.label}</option>
+                                                        ))}
+                                                    </select>) : (<input
+                                                        type={field.type ?? "text"}
+                                                        className="input-class"
+                                                        placeholder={field.placeholder}
+                                                        {...register(field.id as keyof VendorRegisterSchemaType)}
+                                                    />)}
                                                 {errors[field.id as keyof VendorRegisterSchemaType] && (
                                                     <p className="input-error">
                                                         {errors[field.id as keyof VendorRegisterSchemaType]?.message}

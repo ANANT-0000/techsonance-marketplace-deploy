@@ -12,6 +12,8 @@ import { ProductSpecifications } from '@/components/customer/ProductSpec';
 import { BuyBtnMode, ProductImageType, ProductType, VariantsType } from '@/utils/Types';
 import { formatCurrency } from '@/lib/utils';
 import { fetchProduct } from '@/utils/commonAPiClient';
+import { get } from 'http';
+import { getCompanyDomain } from '@/lib/get-domain';
 
 const brandOffer = [
     { id: '1', title: '1 year warranty', icon: 'shopping-bag' },
@@ -24,6 +26,13 @@ const brandOffer = [
 export default function ProductPage() {
     const params = useParams();
     const id = params?.id as string;
+    const companyDomain = async () => {
+        return await getCompanyDomain().then(domain => {
+            console.log("company domain in product page", domain);
+            return domain;
+        })
+    }
+    console.log("company domain call in product", companyDomain())
     const [activeImage, setActiveImage] = useState<string | undefined>();
     const [productImages, setProductImages] = useState<ProductImageType[]>([]);
     const [activeVariant, setActiveVariant] = useState<VariantsType | undefined>();

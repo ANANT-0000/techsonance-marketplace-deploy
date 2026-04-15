@@ -1,7 +1,10 @@
 ﻿import { companyDomain } from "@/config";
 import { BASE_API_URL } from "@/constants";
+import { getCompanyDomain } from "@/lib/get-domain";
 
 export const fetchProduct = async (productId: string) => {
+    const companyDomain = await getCompanyDomain();
+    console.log('comapny dmain  in prohdct by id', companyDomain)
     try {
         const response = await fetch(`${BASE_API_URL}products/${productId}`, {
             method: 'GET',
@@ -48,6 +51,8 @@ export const fetchProductVariantDetails = async (id: string) => {
     }
 };
 export const fetchProductVendorProducts = async () => {
+    const companyDomainTest = await getCompanyDomain();
+    console.log("(companyDomainTest", companyDomainTest)
     try {
         const response = await fetch(`${BASE_API_URL}products/all`, {
             method: 'GET',
