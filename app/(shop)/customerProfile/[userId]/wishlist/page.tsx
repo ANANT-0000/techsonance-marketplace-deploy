@@ -48,8 +48,7 @@ export default function WishlistPage() {
             }
             fetchCustomerWishlist(userId, companyDomain).then((response) => {
                 console.log(response)
-                setWishlistItems(response.data[0].items
-                );
+                setWishlistItems(response?.data[0].items || []);
             }).catch((error) => {
                 console.error("Error fetching wishlist products:", error);
             });

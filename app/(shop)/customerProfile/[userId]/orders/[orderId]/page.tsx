@@ -1,104 +1,300 @@
-﻿'use client';
-import { useEffect, useState } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { Check, X, Copy, AlertCircle, ChevronLeftCircle } from 'lucide-react';
-import Link from 'next/link';
-import { BASE_API_URL } from '@/constants';
-import { companyDomain } from '@/config';
-import { formatCurrency } from '@/lib/utils';
+﻿"use client";
 
-export default function OrderDetailPage() {
-    const { userId, orderId } = useParams<{ userId: string; orderId: string }>();
-    const router = useRouter();
-    const [order, setOrder] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const [copied, setCopied] = useState(false);
+import { motion } from "motion/react";
+import Link from "next/link";
+import { formatCurrency } from "@/lib/utils"; // Assuming you have this
+import {
+    ArrowLeft,
+    Download,
+    FileText,
+    HeadphonesIcon,
+    Package,
+    Star,
+    Truck,
+    CheckCircle2
+} from "lucide-react"; // npm install lucide-react (Standard icon library)
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { fetchOrderDetails } from "@/utils/customerApiClient";
+import { ShippingAddress } from "@/utils/Types";
+interface OrderImage {
+    image_url: string;
+}
 
-    useEffect(() => {
-        setLoading(false);
-    }, [orderId]);
+interface ProductVariant {
+    id: string;
+    variant_name: string;
+    price: string;
+    images: OrderImage[];
+}
 
-    const copyOrderId = () => {
-        navigator.clipboard.writeText(orderId);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+interface OrderItem {
+    quantity: number;
+    price: string;
+    productVariant: ProductVariant;
+}
+
+interface Address {
+    name: string;
+    address_line1: string;
+    address_line2: string;
+    city: string;
+    state: string;
+    postal_code: string;
+    country: string;
+}
+
+interface Payment {
+    id: string;
+    payment_method: string;
+    payment_status: string;
+    transaction_ref: string;
+    amount: string;
+    created_at: string;
+    updated_at: string;
+    order_id: string;
+    company_id: string;
+}
+
+interface OrderDetailType {
+    id: string;
+    user_id: string;
+    total_amount: string;
+    order_status: string;
+    created_at: string;
+    items: OrderItem[];
+    address: Address;
+    payment: Payment;
+    shipping: {
+        tracking_url: string;
+    } | null;
+}
+
+export default function OrderDetailsPage() {
+    // Mock Data based on your JSON structure
+    const { orderId } = useParams<{ orderId: string }>();
+    const [order, setOrder] = useState<OrderDetailType | null>(null);
+    // Helper for Status UI
+    const getStatusSteps = (currentStatus: string) => {
+        const steps = ['pending', 'shipped', 'delivered'];
+        const currentIndex = steps.indexOf(currentStatus);
+        return steps.map((step, index) => ({
+            name: step.replace(/_/g, ' ').toUpperCase(),
+            completed: index <= currentIndex,
+            active: index === currentIndex
+        }));
     };
-
-    const orderStatuses = [
-        { label: 'Order Placed', active: true },
-        { label: 'Processing', active: true },
-        { label: 'Shipped', active: false },
-        { label: 'Delivered', active: false },
-    ];
-
+    useEffect(() => {
+        if (!orderId) return;
+        const getOrderDetails = async () => {
+            await fetchOrderDetails(orderId)
+                .then((data) => {
+                    console.log("Order Details:", data);
+                    setOrder(data.data);
+                })
+                .catch((error) => {
+                    console.error("Error fetching order details:", error);
+                });
+        }
+        getOrderDetails();
+    }, [orderId]);
     return (
-        <div className="pb-20">
-            <ChevronLeftCircle
-                className="my-4 block lg:hidden cursor-pointer"
-                size={36}
-                onClick={() => router.back()}
-            />
+        <div className="min-h-screen bg-gray-50 pb-12 font-sans">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-            <div className="max-w-3xl mx-auto px-4 py-8">
-                {/* Success header */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
-                        <Check className="w-10 h-10 text-green-700" strokeWidth={3} />
-                    </div>
-                    <h1 className="text-3xl font-bold mb-2">Order Confirmed!</h1>
-                    <p className="text-gray-600">
-                        Thank you for your purchase. We&apos;ve emailed you the receipt.
-                    </p>
-                </div>
-
-                {/* Order ID */}
-                <div className="flex items-center justify-center gap-2 mb-8">
-                    <div className="border border-gray-300 rounded-lg px-4 py-2 flex items-center gap-2">
-                        <span className="text-gray-600 text-sm">Order ID:</span>
-                        <span className="font-semibold text-sm font-mono">{orderId}</span>
-                        <button onClick={copyOrderId} className="ml-2 text-blue-600 hover:text-blue-700">
-                            <Copy className="w-4 h-4" />
-                        </button>
-                        {copied && <span className="text-xs text-green-600">Copied!</span>}
+                {/* --- HEADER --- */}
+                <div className="flex items-center gap-4 mb-6">
+                    <button
+                        onClick={() => window.history.back()}
+                        className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                    >
+                        <ArrowLeft size={24} className="text-gray-700" />
+                    </button>
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Order Details</h1>
+                        <p className="text-sm text-gray-500 mt-1">Order #{order?.id?.split('-')[0]?.toUpperCase()} • {order?.created_at ? new Date(order.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
                     </div>
                 </div>
 
-                {/* Status tracker */}
-                <div className="border-2 border-gray-200 rounded-xl p-6 mb-6">
-                    <h2 className="text-lg font-bold mb-6">Order Status</h2>
-                    <div className="relative flex justify-between">
-                        <div className="absolute top-2 left-0 right-0 h-0.5 bg-gray-200">
-                            <div className="h-full bg-green-500 w-[33%] transition-all duration-700" />
-                        </div>
-                        {orderStatuses.map((s, i) => (
-                            <div key={i} className="flex flex-col items-center relative z-10">
-                                <div className={`w-4 h-4 rounded-full mb-2 border-2 ${s.active
-                                    ? 'bg-green-500 border-green-500'
-                                    : 'bg-white border-gray-300'
-                                    }`} />
-                                <span className={`text-xs font-medium text-center ${s.active ? 'text-gray-900' : 'text-gray-400'
-                                    }`}>
-                                    {s.label}
-                                </span>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+
+                    {/* --- LEFT COLUMN: Tracking & Items (Spans 2 columns on desktop) --- */}
+                    <div className="lg:col-span-2 space-y-6">
+
+                        {/* Status Tracker */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200"
+                        >
+                            <h2 className="text-lg font-bold text-gray-900 mb-6">Delivery Status</h2>
+                            <div className="relative flex justify-between items-center w-full">
+                                {/* Connecting Line */}
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 z-0 rounded-full"></div>
+                                <div
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-green-500 z-0 rounded-full transition-all duration-500"
+                                    style={{ width: order?.order_status === 'delivered' ? '100%' : '50%' }} // Adjust dynamically in real app
+                                ></div>
+
+                                {/* Status Points */}
+                                {order?.order_status && getStatusSteps(order?.order_status).map((step, idx) => (
+                                    <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
+                                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border-2 bg-white transition-colors
+                                            ${step.completed ? 'border-green-500 text-green-500' : 'border-gray-300 text-gray-400'}`}>
+                                            {idx === 0 && <Package size={18} />}
+                                            {idx === 1 && <Truck size={18} />}
+                                            {idx === 2 && <CheckCircle2 size={18} />}
+                                        </div>
+                                        <span className={`text-[10px] sm:text-xs font-semibold ${step.completed ? 'text-gray-800' : 'text-gray-400'} text-center max-w-[60px] sm:max-w-none leading-tight`}>
+                                            {step.name}
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                </div>
+                        </motion.div>
 
-                {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <Link
-                        href={`/customerProfile/${userId}/orders`}
-                        className="flex-1 text-center border-2 border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                        View All Orders
-                    </Link>
-                    <Link
-                        href="/shopping"
-                        className="flex-1 text-center bg-black text-white font-semibold py-3 rounded-lg hover:bg-gray-800 transition-colors"
-                    >
-                        Continue Shopping
-                    </Link>
+                        {/* Order Items */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200"
+                        >
+                            <h2 className="text-lg font-bold text-gray-900 mb-4">Items in this Order</h2>
+                            <div className="space-y-4">
+                                {order?.items.map((item, index) => (
+                                    <div key={index} className="flex flex-col sm:flex-row gap-4 py-4 border-b border-gray-100 last:border-0 last:pb-0">
+
+                                        {/* Image */}
+                                        <div className="w-full sm:w-32 bg-[#f7f7f7] rounded-xl flex-shrink-0 flex items-center justify-center p-3">
+                                            <img
+                                                src={item.productVariant.images[0]?.image_url}
+                                                alt={item.productVariant.variant_name}
+                                                className="w-full h-24 object-contain mix-blend-multiply"
+                                            />
+                                        </div>
+
+                                        {/* Details */}
+                                        <div className="flex-grow flex flex-col justify-between">
+                                            <div>
+                                                <Link href={`/shop/product/${item.productVariant.id}`} className="font-bold text-gray-900 text-sm sm:text-base hover:text-blue-600 line-clamp-2 transition-colors">
+                                                    {item.productVariant.variant_name}
+                                                </Link>
+                                                <p className="text-gray-500 text-sm mt-1">Qty: {item.quantity}</p>
+                                                <p className="text-gray-900 font-semibold mt-1">₹{formatCurrency(Number(item.price))}</p>
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            {order?.order_status === 'delivered' && (
+                                                <div className="flex gap-3 mt-4 sm:mt-0 pt-2">
+                                                    <button className="text-sm px-4 py-2 bg-blue-50 text-blue-600 font-medium rounded-full hover:bg-blue-100 transition-colors">
+                                                        Buy it again
+                                                    </button>
+                                                    <button className="text-sm px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-full hover:bg-gray-50 transition-colors">
+                                                        Write a Review
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                        {/* Delivery Experience Rating */}
+                        {order?.order_status === 'delivered' && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                                className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 flex flex-col sm:flex-row items-center justify-between gap-4"
+                            >
+                                <div>
+                                    <h3 className="font-bold text-gray-900">How was your delivery?</h3>
+                                    <p className="text-sm text-gray-600 mt-1">Your feedback helps us improve our logistics.</p>
+                                </div>
+                                <div className="flex gap-1">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button key={star} className="p-1 hover:scale-110 transition-transform">
+                                            <Star size={28} className="text-gray-300 hover:text-yellow-400 hover:fill-yellow-400" />
+                                        </button>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </div>
+
+                    {/* --- RIGHT COLUMN: Summary, Address, Actions --- */}
+                    <div className="space-y-6">
+
+                        {/* Order Summary */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200"
+                        >
+                            <h2 className="text-lg font-bold text-gray-900 mb-4">Order Summary</h2>
+                            <div className="space-y-3 text-sm text-gray-600 border-b border-gray-100 pb-4 mb-4">
+                                <div className="flex justify-between">
+                                    <span>Subtotal</span>
+                                    <span className="font-medium text-gray-900">₹{formatCurrency(Number(order?.total_amount))}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Shipping</span>
+                                    <span className="font-medium text-green-600">Free</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Tax</span>
+                                    <span className="font-medium text-gray-900">₹0.00</span>
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-end mb-6">
+                                <span className="font-bold text-gray-900 text-base">Total</span>
+                                <span className="font-bold text-xl text-gray-900">₹{formatCurrency(Number(order?.total_amount))}</span>
+                            </div>
+
+                            {/* Payment Info */}
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-4">
+                                <p className="text-xs text-gray-500 mb-1">Payment Method</p>
+                                <p className="text-sm font-semibold text-gray-800">{order?.payment?.payment_method}</p>
+                                <p className="text-xs text-gray-500 mt-1">Ref: {order?.payment?.transaction_ref}</p>
+                            </div>
+
+                            {/* Download Buttons */}
+                            <div className="flex flex-col gap-2">
+                                <button className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
+                                    <Download size={16} /> Download Invoice
+                                </button>
+                                <button className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+                                    <FileText size={16} /> Request Warranty Slip
+                                </button>
+                            </div>
+                        </motion.div>
+
+                        {/* Shipping Address */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200"
+                        >
+                            <h2 className="text-lg font-bold text-gray-900 mb-3">Shipping Address</h2>
+                            <div className="text-sm text-gray-600 leading-relaxed">
+                                <p className="font-bold text-gray-900 mb-1">{order?.address?.name}</p>
+                                <p>{order?.address?.address_line1}</p>
+                                {order?.address?.address_line2 && <p>{order?.address?.address_line2}</p>}
+                                <p>{order?.address?.city}, {order?.address?.state} {order?.address?.postal_code}</p>
+                                <p>{order?.address?.country}</p>
+                            </div>
+                        </motion.div>
+
+                        {/* Support / Help */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col gap-3"
+                        >
+                            <h2 className="text-sm font-bold text-gray-900">Need help with this order?</h2>
+                            <button className="flex items-center gap-3 text-sm text-blue-600 font-medium hover:underline w-fit">
+                                <HeadphonesIcon size={18} /> Contact Customer Support
+                            </button>
+                            <button className="flex items-center gap-3 text-sm text-blue-600 font-medium hover:underline w-fit">
+                                <ArrowLeft size={18} /> Return or Replace Items
+                            </button>
+                        </motion.div>
+
+                    </div>
                 </div>
             </div>
         </div>

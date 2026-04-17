@@ -58,6 +58,88 @@ export const VENDOR_NAV_LINKS: NavLinkType[] = [
   { "Customer Care": "customerCare", icon: 'headset' },
   { Settings: "settings", icon: 'settings' },
 ];
+// Define reusable types
+interface SidebarLink {
+  title: string;
+  path: string | null;
+  icon: string; // Lucide icon name
+}
+
+interface SidebarSection {
+  section: string;
+  list: SidebarLink[];
+}
+
+interface InnerSidebar {
+  menu: string; // e.g. "Sales", "Catalog"
+  sections: SidebarSection[];
+}
+// 1. Sidebar config with dynamic icon names
+interface SidebarLink {
+  title: string;
+  path: string | null;
+  icon: string; // kebab-case Lucide icon name
+}
+
+interface SidebarSection {
+  section: string;
+  list: SidebarLink[];
+}
+
+interface InnerSidebar {
+  menu: string;
+  sections: SidebarSection[];
+}
+
+// Factory function to generate links with vendorId
+export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: string): InnerSidebar[] => [
+  {
+    menu: "Sales",
+    sections: [
+      {
+        section: "Sellings",
+        list: [
+          { title: "Orders", path: `/vendor/${vendorId}/orders`, icon: "shopping-cart" },
+          { title: "Back Orders", path: `/vendor/${vendorId}/back-orders`, icon: "rotate-ccw" },
+          { title: "Failed Orders", path: `/vendor/${vendorId}/failed-orders`, icon: "x-circle" },
+          { title: "Archived", path: `/vendor/${vendorId}/archived-orders`, icon: "archive" },
+        ],
+      },
+      {
+        section: "Request",
+        list: [{ title: "Quotes", path: `/vendor/${vendorId}/quotes`, icon: "file-text" }],
+      },
+    ],
+  },
+  {
+    menu: "Catalog",
+    sections: [
+      {
+        section: "Master Catalog",
+        list: [
+          { title: "Product List", path: `/vendor/${vendorId}/products`, icon: "list" },
+          { title: "Stock Update", path: `/vendor/${vendorId}/products/stock-update`, icon: "refresh-cw" },
+          { title: "Variant Stock Update", path: `/vendor/${vendorId}/products/variant-stock-update`, icon: "layers" },
+          { title: "Category Management", path: `/vendor/${vendorId}/products/categories`, icon: "layers" },
+        ],
+      },
+      {
+        section: 'Configuration',
+        list: [
+          { title: "Product Variants", path: `/vendor/${vendorId}/products/variants`, icon: "list-check" },
+        ]
+      },
+      {
+        section: "Data",
+        list: [
+          { title: "Bulk Product Imports", path: `/vendor/${vendorId}/products/import-products`, icon: "upload" },
+          { title: "Export Data", path: `/vendor/${vendorId}/products/export-products`, icon: "download" },
+          { title: "Product Localization", path: `/vendor/${vendorId}/products/product-localization`, icon: "globe" },
+        ],
+      },
+    ],
+  },
+].filter(section => section.menu.toLowerCase() === selectedMenu.toLowerCase());
 
 // ============================================================
 // VENDOR SETTINGS LINKS

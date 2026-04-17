@@ -67,10 +67,10 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
 
 
             dispatch(addToCart({
-                cartId: cartResponse.cart_id,
-                cartItemId: cartResponse.cart_item_id,
-                productVariantId: cartResponse.product_variant_id,
-                quantity: cartResponse.quantity,
+                cartId: cartResponse?.cart_id,
+                cartItemId: cartResponse?.cart_item_id,
+                productVariantId: cartResponse?.product_variant_id,
+                quantity: cartResponse?.quantity,
             }));
 
             if (!path.includes("cart") && !path.includes("wishlist")) {
@@ -120,7 +120,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        disabled={loading}
+                        disabled={loading ?? false}
                         className="flex h-full w-full items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50"
                     >
                         <ShoppingCart size={isSmall ? 18 : 22} />

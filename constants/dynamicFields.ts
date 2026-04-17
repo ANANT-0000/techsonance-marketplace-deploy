@@ -11,7 +11,7 @@ export const ORGANIZATION_DETAIL_FIELDS = [
             { id: "phone_number", type: "tel", placeholder: "123-456-7890", styles: "rounded-l-none" },
         ]
     },
-    
+
     { id: "category", label: "Business Category", type: "select", options: categoryOptions },
     { id: "company_structure", label: "Business Structure", type: "select", options: BusinessStructure },
 ];
@@ -80,6 +80,29 @@ export const ADDRESS_FIELDS: {
     { id: "country", label: "Country", type: "text", placeholder: "Enter country", required: true },
     { id: "landmark", label: "Landmark", type: "text", placeholder: "Enter nearby landmark", required: true },
     { id: "is_default", label: "Set as default address", type: "checkbox" }
+
+] as const;
+export const WAREHOUSE_ADDRESS_FIELDS: {
+    id: string;
+    label: string;
+    type: string;
+    placeholder?: string;
+    required?: boolean;
+    options?: string[];
+}[] = [
+    { id: "address_for", label: "Warehouse Type", type: "select", options: ["warehouse", "hub", "other"], placeholder: "Select warehouse type", required: true },
+    { id: 'name', label: 'Warehouse Name', type: 'text', placeholder: "Enter warehouse name", required: true },
+    { id: "phone", label: "Contact Number", type: "text", placeholder: "Enter contact number for this warehouse", required: true },
+    { id: "address_line_1", label: "Address Line 1", type: "text", placeholder: "Enter street address", required: true },
+    { id: "address_line_2", label: "Address Line 2", type: "text", placeholder: "Enter apartment, suite, etc.", required: false },
+
+    { id: "street", label: "Street", type: "text", placeholder: "Enter street name", required: true },
+    { id: "city", label: "City", type: "text", placeholder: "Enter city", required: true },
+    { id: "state", label: "State", type: "text", placeholder: "Enter state", required: true },
+    { id: "postal_code", label: "Postal Code", type: "text", placeholder: "Enter postal code", required: true },
+    { id: "country", label: "Country", type: "text", placeholder: "Enter country", required: true },
+    { id: "landmark", label: "Landmark", type: "text", placeholder: "Enter nearby landmark", required: true },
+    { id: "is_default", label: "Set as default warehouse", type: "checkbox" }
 
 ] as const;
 export const PAYMENT_METHODS_FIELDS = [

@@ -69,10 +69,10 @@ export default function ProductPage() {
                 <div className='flex flex-col-reverse lg:flex-row gap-4 w-full lg:w-1/2'>
                     <div className='flex lg:flex-col gap-4 overflow-x-auto lg:overflow-visible hide-scrollbar'>
                         {productImages.map((img, idx) => (
-                            <>
-                                <motion.img key={idx} src={img.image_url} onClick={() => setActiveImage(img.image_url)} whileHover={{ scale: 1.05, borderColor: "#3b82f6" }} whileTap={{ scale: 0.95 }} alt={`Thumbnail ${idx + 1}`} className={`aspect-square w-20 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all ${activeImage === img.image_url ? ' border-blue-500 ring-2 ring-blue-300' : 'border-transparent'}`} />
 
-                            </>
+                            <motion.img key={idx} src={img.image_url} onClick={() => setActiveImage(img.image_url)} whileHover={{ scale: 1.05, borderColor: "#3b82f6" }} whileTap={{ scale: 0.95 }} alt={`Thumbnail ${idx + 1}`} className={`aspect-square w-20 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all ${activeImage === img.image_url ? ' border-blue-500 ring-2 ring-blue-300' : 'border-transparent'}`} />
+
+
                         ))}
                     </div>
                     <div className='relative w-full aspect-square bg-gray-50 rounded-3xl overflow-hidden'>

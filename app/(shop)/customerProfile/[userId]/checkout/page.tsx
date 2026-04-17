@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import { useState, useEffect, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/hooks/reduxHooks";
@@ -12,7 +13,14 @@ import Link from "next/link";
 import { AddressSelector } from "@/components/customer/AddressSelector";
 import { fetchProductVariantDetails } from "@/utils/commonAPiClient";
 import { useCheckoutSession } from "@/hooks/UseCheckoutSession";
-
+interface VariantDetails {
+  id: string;
+  variant_name: string;
+  sku: string;
+  price: string;
+  status: string;
+  stock_quantity: number;
+}
 
 function CheckoutContent() {
   const { user } = useAppSelector((state) => state.auth);
@@ -25,16 +33,18 @@ function CheckoutContent() {
   //   /checkout?type=cart&id=abc123
   //   /checkout?type=product&id=xyz789
   const checkoutType = searchParams.get('type') as 'cart' | 'product' | null;
+  console.log('checkoutType:', checkoutType);
   const id = searchParams.get('id');
+  console.log('id:', id);
   // const isCartCheckout = checkoutType === 'cart';
   const isQuickBuy = checkoutType === 'product';
-
+  console.log("isQuickBuy", isQuickBuy)
   // --- UI & Payment State ---
   const [selectedPaymentMethodState, setSelectedPaymentMethodState] = useState<string>('UPI');
   const [couponCode, setCouponCode] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-
+  const [logger, setLogger] = useState<string[]>([]);
   // --- Address State ---
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
@@ -51,38 +61,50 @@ function CheckoutContent() {
   const [isLoadingOrder, setIsLoadingOrder] = useState(true);
 
   // --- Guard: redirect if params are invalid ---
+
+  // --- Fetch order data based on type ---
+  console.log('effect fetching')
   useEffect(() => {
+    setLogger(prev => [...prev, `useEffect triggered with checkoutType=${checkoutType} and id=${id}`]);
+    if (checkoutType === null || id === null) return;
     if (!checkoutType || !id) {
       router.replace(`/customerProfile/${params.userId}/cart`);
     }
-  }, [checkoutType, id]);
-
-  // --- Fetch order data based on type ---
-  useEffect(() => {
-    if (!id || !checkoutType) return;
 
     const loadCheckoutData = async () => {
+      setLogger(prev => [...prev, `Loading checkout data for type=${checkoutType} and id=${id}`]);
       setIsLoadingOrder(true);
       setCheckoutError(null);
       try {
+        console.log('fetching product variant isQuickBuy', isQuickBuy)
         if (isQuickBuy) {
+          setLogger(prev => [...prev, `Fetching product variant details for ID: ${id}`]);
           // Fetch single product variant
-          const res: { data: any | undefined; success: boolean; message?: string } = await fetchProductVariantDetails(id);
-          const variant = res?.data;
+          const res: { data: VariantDetails | undefined; success: boolean; message?: string } = await fetchProductVariantDetails(id);
+          if (!res.data) {
+            throw new Error("No response from server");
+          }
+          const variantData: VariantDetails = res?.data;
+          const price = parseFloat(variantData?.price) || 0;
 
-          if (!res?.success) throw new Error(res?.message ?? "Product unavailable");
+          console.log("Actual Price:", price);
 
-          const price = Number(variant.price);
+          setLogger(prev => [
+            ...prev,
+            `Fetched product variant details: ${JSON.stringify(variantData)}`,
+            `Calculated price for quick buy: ${price}`
+          ]);
           setOrderData({
-            title: `${variant.variant_name} (x1)`,
+            title: `${variantData.variant_name} (x1)`,
             subtotal: price,
             discount: 0,
             delivery: 50,
             total: price + 50,
           });
-
+          // setLogger(prev => [...prev, `Set order data for quick buy: ${JSON.stringify({ title: `${variantData.variant_name} (x1)`, subtotal: price, discount: 0, delivery: 50, total: price + 50 })}`]);
         } else {
           // Fetch cart items
+          setLogger(prev => [...prev, `Fetching cart items for user: ${params.userId}`]);
           const res = await fetchGetCartList(params.userId, companyDomain);
           const cartItems = res?.data ?? [];
 
@@ -106,15 +128,21 @@ function CheckoutContent() {
         }
       } catch (error: any) {
         console.error("Failed to load checkout data", error);
+        setLogger(prev => [...prev, `Failed to load checkout data: ${error.message}`]);
+        console.error("FULL ERROR:", error);
+        console.error("ERROR MESSAGE:", error?.message);
+        console.error("ERROR STACK:", error?.stack);
         setCheckoutError(error.message ?? "Failed to load order details.");
       } finally {
+        setLogger(prev => [...prev, `Finished loading checkout data for type=${checkoutType} and id=${id}`]);
+        console.log('Finished loading checkout data', { logger });
         setIsLoadingOrder(false);
       }
     };
 
     loadCheckoutData();
-  }, [id, checkoutType, params.userId]);
-
+  }, [id, checkoutType, isQuickBuy, params.userId]);
+  console.log("orderData", orderData)
   // --- Coupon ---
   const handleCouponApply = async () => {
     if (!couponCode.trim()) return;
@@ -160,7 +188,7 @@ function CheckoutContent() {
         addressId: selectedAddressId,
         ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
       };
-
+      setLogger(prev => [...prev, `Initiating checkout with payload: ${JSON.stringify(initPayload)}`]);
       // Step B: Create a PENDING order on the backend
       const initResponse = await fetch(
         `${BASE_API_URL}checkout/${params.userId}/initiate`,
@@ -173,8 +201,9 @@ function CheckoutContent() {
           body: JSON.stringify(initPayload),
         }
       );
-      const initData = await initResponse.json();
 
+      const initData = await initResponse.json();
+      setLogger(prev => [...prev, `Received response from initiate endpoint: ${JSON.stringify(initData)}`]);
       if (!initData?.success) {
         setCheckoutError(initData?.message ?? "Failed to initiate order.");
         return;
@@ -190,6 +219,7 @@ function CheckoutContent() {
       const userClickedSuccess = window.confirm(
         `SIMULATION: Pay ₹${formatCurrency(orderData.total)}\n\nOK = Success | Cancel = Failure`
       );
+      setLogger(prev => [...prev, `User clicked success: ${userClickedSuccess}`]);
       const verifyResponse = await fetch(`${BASE_API_URL}checkout/verify`, {
         method: 'POST',
         headers: {
@@ -197,7 +227,7 @@ function CheckoutContent() {
           'company-domain': companyDomain,
         },
         body: JSON.stringify({
-          dbOrderId: initData.data.dbOrderId,
+          orderId: initData.data.orderId,
           isSuccess: userClickedSuccess,
           ...(isQuickBuy
             ? { productVariantId: id }
@@ -205,12 +235,16 @@ function CheckoutContent() {
         }),
       });
       const verifyData = await verifyResponse.json();
-
+      setLogger(prev => [...prev, `Received response from verify endpoint: ${JSON.stringify(verifyData)}`]);
+      if (!verifyData?.success) {
+        setCheckoutError(verifyData?.message ?? "Payment verification failed.");
+        return;
+      }
       // Step E: Redirect based on outcome and clear session 
       clearSession();
 
       if (userClickedSuccess && verifyData.success) {
-        router.push(`/customerProfile/${params.userId}/orders/${initData.data.dbOrderId}`);
+        router.push(`/customerProfile/${params.userId}/orders/${initData.data.orderId}`);
       } else {
         setCheckoutError("Payment failed. Your order has been cancelled.");
         router.push(`/customerProfile/${params.userId}/orders`);
@@ -222,7 +256,9 @@ function CheckoutContent() {
       setIsProcessing(false);
     }
   };
-
+  console.log('CheckoutContent rendered'); // add this
+  console.log('searchParams type:', searchParams.get('type')); // add this
+  console.log('searchParams id:', searchParams.get('id')); // add this
   // --- Loading State ---
   if (isLoadingOrder) {
     return (
@@ -248,7 +284,18 @@ function CheckoutContent() {
   }
 
   return (
-    <section className="max-w-6xl mx-auto lg:px-4 py-8 min-h-[60vh]">
+    <section className="max-w-6xl mx-auto lg:px-4 py-8 min-h-[60vh]">{
+      logger.length > 0 && (
+        <div className="mb-6 p-4 bg-gray-100 rounded-lg">
+          <h3 className="font-semibold mb-2">Debug Log:</h3>
+          <ul className="text-xs text-gray-700">
+            {logger.map((log, index) => (
+              <li key={index}>- {log}</li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
       <h1 className="text-2xl font-bold text-center mb-8">Secure Checkout</h1>
 
       {/* Checkout type badge */}

@@ -349,7 +349,7 @@ export const billingSchema = z.object({
 
 export type BillingFormData = z.infer<typeof billingSchema>;
 
-const ADDRESS_TYPE_ENUM = ['home', 'work', 'other'] as const;
+const ADDRESS_TYPE_ENUM = ['home', 'work', 'warehouse', 'hub', 'other'] as const;
 export const AddressSchema = z.object({
   // id: z.uuid({ message: "Invalid unique identifier" }),
   name: z.string()
@@ -382,7 +382,8 @@ export type AddressType = z.infer<typeof AddressSchema>;
 
 export enum LocationForEnum {
   WAREHOUSE = "warehouse",
-  HUB = "hub"
+  HUB = "hub",
+  OTHER = "other"
 }
 export const locationSchema = z.object({
   default: z.string().transform(val => val === 'true'), // Converts string "true" to boolean true

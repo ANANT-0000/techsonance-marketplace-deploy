@@ -274,3 +274,170 @@ export const fetchVariant = async (variantId: string, vendorId: string, productI
         console.error('Error fetching variant data:', error);
     }
 }
+export const fetchVendorOrderList = async () => {
+    try {
+        const response = await fetch(`${BASE_API_URL}orders`, {
+            method: 'GET',
+            headers: {
+                'company-domain': companyDomain,
+                // Authorization: `Bearer ${await authToken()}`,
+            },
+        });
+        if (response.status !== 200) {
+            console.error('Failed to fetch orders');
+
+            return [];
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        return [];
+    }
+}
+export const fetchVendorOrderDetails = async (orderId: string) => {
+    try {
+        const response = await fetch(`${BASE_API_URL}orders/${orderId}`, {
+            method: 'GET',
+            headers: {
+                'company-domain': companyDomain,
+                // Authorization: `Bearer ${await authToken()}`,
+            },
+        });
+        if (response.status !== 200) {
+            console.error('Failed to fetch order details');
+            return {};
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching order details:', error);
+        return {};
+    }
+}
+export const fetchUpdateOrderStatus = async (orderId: string, status: string) => {
+    try {
+        const response = await fetch(`${BASE_API_URL}orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: {
+                'company-domain': companyDomain,
+                // Authorization: `Bearer ${await authToken()}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+        });
+        if (response.status !== 200) {
+            console.error('Failed to update order status');
+        }
+        return await response.json();
+
+    } catch (error) {
+        console.log("failed to update order status", error)
+    }
+}
+export const fetchAddTrackingUrl = async (orderId: string, trackingUrl: string) => {
+    console.log(orderId, trackingUrl)
+    try {
+        const response = await fetch(`${BASE_API_URL}shipping`, {
+            method: 'POST',
+            headers: {
+                'company-domain': companyDomain,
+                // Authorization: `Bearer ${await authToken()}`,    
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ orderId: orderId, trackingUrl: trackingUrl })
+        }); console.log(response)
+        if (response.status !== 201) {
+            console.error('Failed to add tracking URL', response);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error adding tracking URL:', error);
+    }
+
+}
+export const fetchUpdateTrackingUrl = async (orderId: string, trackingUrl: string) => {
+    console.log(orderId, trackingUrl)
+    try {
+        const response = await fetch(`${BASE_API_URL}shipping/${orderId}`, {
+            method: 'PATCH',
+            headers: {
+                'company-domain': companyDomain,
+                // Authorization: `Bearer ${await authToken()}`,    
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ trackingUrl: trackingUrl })
+        }); console.log(response)
+        if (response.status !== 201) {
+            console.error('Failed to update tracking URL', response);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating tracking URL:', error);
+    }
+
+}
+export const fetchCreateWarehouseLocation = async (warehouseAddress: any) => {
+    console.log(warehouseAddress)
+    try {
+        const response = await fetch(`${BASE_API_URL}warehouse`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                // Authorization: `Bearer ${await authToken()}`,
+            },
+            body: JSON.stringify(warehouseAddress)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating warehouse location:', error);
+        return { message: 'Error creating warehouse location', success: false };
+    }
+}
+export const fetchUpdateWarehouseLocation = async (locationId: string, warehouseData: any) => {
+    try {
+        const response = await fetch(`${BASE_API_URL}warehouse/${locationId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                // Authorization: `Bearer ${await authToken()}`,
+            },
+            body: JSON.stringify(warehouseData)
+        });
+
+        return await response.json();
+    }
+    catch (error) {
+        console.error('Error updating warehouse location:', error);
+        return { message: 'Error updating warehouse location', success: false };
+    }
+}
+export const fetchVendorWarehouseLocations = async () => {
+    try {
+        const response = await fetch(`${BASE_API_URL}warehouse`, {
+            method: 'GET',
+            headers: {
+                'company-domain': companyDomain,
+            }
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching warehouse locations:', error);
+        return { data:{}, message: 'Error fetching warehouse locations' };
+    }
+}
+
+export const fetchDeleteWarehouseLocation = async (locationId: string) => {
+    try {
+        const response = await fetch(`${BASE_API_URL}warehouse/${locationId}`, {
+            method: 'DELETE',
+            headers: {
+                'company-domain': companyDomain,
+            }
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error deleting warehouse location:', error);
+        return { message: 'Error deleting warehouse location', success: false };
+    }
+}

@@ -20,10 +20,10 @@ export default function CategoryManager({ categories, vendorId }: any) {
 
     };
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
 
             {/* LEFT: Stats & Add Form */}
-            <div className="md:col-span-1 space-y-6">
+            <div className="md:col-span-1 space-y-6 ">
                 <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
                     <p className="text-blue-600 text-sm font-medium">Total Categories</p>
                     <p className="text-3xl font-bold text-blue-900">{categories.length}</p>

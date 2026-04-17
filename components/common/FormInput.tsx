@@ -23,10 +23,10 @@
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
                 defaultValue=""
             >
-                <option value="">Select {placeholder}</option>
+                <option value={placeholder} disabled>Select {placeholder}</option>
                 {type === "select" && options && options.map((option: string) => (
                     <option key={option} value={option}>
-                        {option}
+                        {option.charAt(0).toUpperCase() + option.slice(1)}
                     </option>
                 ))}
             </select>

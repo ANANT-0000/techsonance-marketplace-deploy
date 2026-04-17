@@ -26,8 +26,9 @@ export function ProfileSidebar() {
     const currentUserId = user?.id ?? '';
 
     const [isMobile, setIsMobile] = useState(false);
-
+    const [hasMounted, setHasMounted] = useState(false); // add this
     useEffect(() => {
+        setHasMounted(true);
         const mql = window.matchMedia('(max-width: 1023px)'); // below lg breakpoint
         setIsMobile(mql.matches);
         const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
@@ -50,7 +51,7 @@ export function ProfileSidebar() {
 
     const profileOverviewPath = `/customerProfile/${currentUserId}`;
     const isOnOverviewPage = currentPath === profileOverviewPath;
-
+    if (!hasMounted) return null;
     // ── MOBILE / TABLET (below lg) ────────────────────────────────────
     if (isMobile) {
         // On overview page → show quick-access grid BELOW the profile card

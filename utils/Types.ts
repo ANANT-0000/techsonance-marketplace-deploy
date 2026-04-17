@@ -16,13 +16,16 @@ export enum UserAddressTypeEnum {
   WORK = 'work',
   OTHER = 'other'
 }
-export enum OrderStatusEnum {
-  PENDING = 'pending',
-  SHIPPING = 'shipping',
-  SHIPPED = 'shipped',
-  DELIVERED = 'delivered',
-  CANCELLED = 'cancelled'
-}
+export const OrderStatusEnum = {
+  DELIVERED: 'delivered',
+  SHIPPING: 'shipping',
+  PENDING: 'pending',
+  SHIPPED: 'shipped',
+  CANCELLED: 'cancelled'
+} as const;
+
+export type OrderStatusEnum = typeof OrderStatusEnum[keyof typeof OrderStatusEnum]
+
 export enum PermissionEnum {
   READ = 'read',
   CREATE = 'create',

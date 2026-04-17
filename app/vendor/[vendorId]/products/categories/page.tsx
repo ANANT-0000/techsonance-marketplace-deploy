@@ -9,12 +9,12 @@ export default async function CategoryPage({ params }: { params: Promise<{ vendo
     const categories = getCategory?.data || [];
 
     return (
-        <div className="max-w-5xl mx-auto p-6">
+        <div className=" p-6">
             <header className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-800">Category Management</h1>
                 <p className="text-gray-500">Organize your products by creating descriptive categories.</p>
             </header>
-     
+
             <CategoryManager
                 categories={categories}
                 vendorId={vendorId}

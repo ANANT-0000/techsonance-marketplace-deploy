@@ -25,29 +25,27 @@ export const fetchProductVariantDetails = async (id: string) => {
     try {
         const response = await fetch(`${BASE_API_URL}product-variant/details/${id}`, {
             method: 'GET',
-            cache: "force-cache",
-            next: { revalidate: 3600 },
+            cache: 'no-cache',
             headers: {
                 'Content-Type': 'application/json',
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${await authToken()}`,
             },
         });
-        const data = await response.json();
+
+        const result = await response.json(); // Renamed 'data' to 'result' for clarity
+        
         if (response.status !== 200) {
-            console.error('Failed to fetch product variant details:', data);
+            console.error('Failed to fetch product variant details:', result);
         }
+
         return {
-            data: data,
-            success: response.status === 200
+            data: result.data,
+            success: response.status === 200,
+            message: result?.message || (response.status === 200 ? "Success" : "Failed")
         };
     } catch (error) {
         console.error('Error fetching product variants:', error);
-        return {
-            data: undefined,
-            success: false,
-            message: "Failed to fetch product variant details."
-        };
+        return { data: undefined, success: false, message: "Error occurred" };
     }
 };
 export const fetchProductVendorProducts = async () => {

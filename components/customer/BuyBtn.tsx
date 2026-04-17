@@ -27,7 +27,7 @@ export function BuyBtn({ id, styles, mode }: { id?: string, styles?: string, mod
 
     if (!checkAddress.hasAddresses || checkAddress.count === 0) {
       console.log('user does not have address');
-      router.push(`/customerProfile/${userId}/addresses`);
+      return router.push(`/customerProfile/${userId}/addresses`);
     }
     createCheckoutSession();
     if (id && mode === BuyBtnMode.CART) {
