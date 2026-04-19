@@ -621,6 +621,7 @@ export type VariantFormValuesType = {
   variantMediaMain: FileOrImage[];
   variantMediaGallery: FileOrImage[];
   status: string;
+  productId: string;
 };
 
 export type AttributesType = {

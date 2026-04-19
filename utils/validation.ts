@@ -98,7 +98,7 @@ export const productSchema = z.object({
   attributes: z.array(
     z.object({
       name: z.string().min(1, { message: "Attribute name required" }).max(355, { message: "Attribute name is too long" }),
-      values: z.string().min(1, { message: "Attribute value required" }).max(355, { message: "Attribute value is too long" }),
+      value: z.string().min(1, { message: "Attribute value required" }).max(355, { message: "Attribute value is too long" }),
     })
   ),
   basePrice: z.string()
@@ -137,6 +137,7 @@ export type ProductFormOutput = z.output<typeof productSchema>;
 export type ProductFormValuesType = z.infer<typeof productSchema>;
 
 export const productVariantSchema = z.object({
+  productId: z.string().optional(),
   variantId: z.string().optional(),
   variantName: z
     .string()

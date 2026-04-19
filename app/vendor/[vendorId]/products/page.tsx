@@ -38,7 +38,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
     return (
 
         <>
-            <main>
+            <main className="w-full">
                 <div className="flex gap-6 my-6 justify-end">
                     <Link className="rounded-xl bg-black text-white px-4 py-2" href="products/productForm">+ Add New Product</Link>
                     <button className="rounded-xl bg-blue-500 text-white px-4 py-2"> Export CSV</button>
@@ -98,8 +98,8 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                                     <TableCell >
                                         {item?.variants && item?.variants?.length > 0 ? (
                                             <div className="flex flex-col items-center border p-2 gap-2   border-emerald-600 border-b-3  hover:border-b-1 hover:border-emerald-800 rounded-lg">
-                                                <Link href={`/vendor/${vendorId}/products/${item.id}/variants`} className="flex gap-2 text-emerald-600 hover:text-emerald-800 items-center justify-center" title="View Variants">
-                                                    {item.variants?.length} Variants <DynamicIcon name="tag" size={18}  />
+                                                <Link href={`/vendor/${vendorId}/products/${item.id}/productVariants`} className="flex gap-2 text-emerald-600 hover:text-emerald-800 items-center justify-center" title="View Variants">
+                                                    {item.variants?.length} Variants <DynamicIcon name="tag" size={18} />
                                                 </Link>
                                             </div>
                                         ) : (
@@ -132,7 +132,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                                         }
                                     </TableCell>
                                     <TableCell className={`p-4 text-start flex gap-4  items-center  justify-around  `}>
-                                        <Link href={`/vendor/${vendorId}/products/productUpdateForm/${item.id}`} className="flex gap-2 border border-blue-600
+                                        <Link href={`/vendor/${vendorId}/products/productUpdateForm/${item?.variants && item?.variants[0]?.id ? item?.variants[0]?.id : item?.id}`} className="flex gap-2 border border-blue-600
                                         border-b-3 hover:border-b hover:border-blue-800 text-blue-600 hover:text-blue-800 py-2 px-3 rounded-lg" title="Edit Product">
                                             Edit<Edit />
                                         </Link>

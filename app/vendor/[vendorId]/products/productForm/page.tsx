@@ -13,7 +13,7 @@ export default async function ProductFormPage({ params }: { params: Promise<{ ve
     });
 
     return (
-        <main className="min-h-screen  py-8 ">
+        <main className="min-h-screen  py-8 w-full ">
             <div className=" mx-auto">
                 <ProductForm categoryOptions={categoryOptions} vendorId={vendorId} />
             </div>

@@ -131,10 +131,11 @@ export const fetchVendorOneProducts = async (id: string) => {
     try {
         const response = await fetch(`${BASE_API_URL}products/${id}`, {
             method: 'GET',
-            cache: 'force-cache',
-            next: { revalidate: 3600 },
+            cache: 'no-cache',
+            // next: { revalidate: 3600 },
             headers: {
                 // Authorization: `Bearer ${await authToken()}`,
+                'company-domain': companyDomain,
             },
         });
         if (response.status !== 200) {
@@ -201,20 +202,27 @@ export const createProductVariant = async (variantData: FormData, vendorId: stri
         console.error("Error creating product variant:", error);
     }
 }
-export const updateProductVariant = async (variantData: FormData, vendorId: string, productId: string, variantId: string) => {
+export const updateProductVariant = async (
+    formData: FormData,
+    vendorId: string,
+    productId: string,
+    variantId: string
+) => {
     try {
         const response = await fetch(`${BASE_API_URL}product-variant/${variantId}`, {
             method: "PATCH",
-            body: variantData,
+            body: formData,
         });
-        if (!response.ok) throw new Error("Failed to create variant");
+
+        if (!response.ok) throw new Error(`Failed to update variant: ${response.statusText}`);
+
         const res = await response.json();
         revalidatePath(`/vendor/${vendorId}/products/${productId}/variants`);
-        return res;
+        return { status: 200, data: res };
     } catch (error) {
-        console.error("Error creating product variant:", error);
+        console.error("Error updating product variant:", error);
     }
-}
+};
 export const fetchProductVariants = async (productId: string) => {
     try {
         const response = await fetch(`${BASE_API_URL}product-variant/${productId}`, {
@@ -255,11 +263,12 @@ export const deleteProductVariant = async (productId: string, variantId: string,
         console.error('Error deleting product variant:', error);
     }
 }
-export const fetchVariant = async (variantId: string, vendorId: string, productId: string) => {
+export const fetchVariant = async (variantId: string,) => {
     try {
         const response = await fetch(`${BASE_API_URL}product-variant/variant/${variantId}`, {
             method: 'GET',
             headers: {
+                'company-domain': companyDomain,
                 // Authorization: `Bearer ${await authToken()}`,
             },
 
@@ -423,7 +432,7 @@ export const fetchVendorWarehouseLocations = async () => {
         return await response.json();
     } catch (error) {
         console.error('Error fetching warehouse locations:', error);
-        return { data:{}, message: 'Error fetching warehouse locations' };
+        return { data: {}, message: 'Error fetching warehouse locations' };
     }
 }
 
