@@ -37,25 +37,28 @@ interface LowStockAlert {
 
 
 async function fetchInventory(domain: string): Promise<InventoryItem[]> {
-    const res = await fetch(`${BASE_API_URL}/inventory`, {
+    const res = await fetch(`${BASE_API_URL}inventory`, {
         headers: { "company-domain": domain },
         cache: "no-cache",
     });
     const json = await res.json();
+    console.log("inv json", json)
     return json.data ?? [];
 }
 
 async function fetchAlerts(domain: string): Promise<LowStockAlert[]> {
-    const res = await fetch(`${BASE_API_URL}/inventory/alerts/low-stock`, {
+    const res = await fetch(`${BASE_API_URL}inventory/alerts/low-stock`, {
         headers: { "company-domain": domain },
         cache: "no-cache",
     });
     const json = await res.json();
+    console.log("alet json", json)
+
     return json.data ?? [];
 }
 
 async function updateStock(inventoryId: string, quantity: number, domain: string) {
-    const res = await fetch(`${BASE_API_URL}/inventory/${inventoryId}`, {
+    const res = await fetch(`${BASE_API_URL}inventory/${inventoryId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", "company-domain": domain },
         body: JSON.stringify({ quantity }),
@@ -85,7 +88,7 @@ export default function InventoryPage() {
         setLoading(false);
     };
 
-    useEffect(() => { reload(); }, []);
+    useEffect(() => { console.log('fetching inventory and alerts'); reload(); }, []);
 
     // ── Filtering ──
     const filtered = inventory.filter((item) => {

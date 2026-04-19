@@ -164,15 +164,6 @@ export const role: Record<UserRole, RoleDefinition> = {
   }
 }
 
-export interface Product {
-  id: string; // Used for React keys and API calls
-  productName: string;
-  sku: string;
-  stock: number;
-  price: number;
-  status: 'Active' | 'Inactive';
-  imageUrl: string;
-}
 export interface OrderItem {
   id: string;
   name: string;

@@ -1,15 +1,18 @@
 ﻿'use client';
+import { companyDomain } from "@/config";
 import { BASE_API_URL, ORGANIZATION_TAXATION_OPTIONS, PRODUCT_FORM_FIELDS, PRODUCT_FORM_PRICING_FIELDS } from "@/constants";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { usePreviewUrls } from "@/lib/clientUtils";
+import { generateSKU } from "@/utils/generateSku";
 import { FileOrImage, ProductImageType, ProductStatusEnum, VendorUserType } from "@/utils/Types";
 import { ProductFormInput, ProductFormOutput, ProductFormValuesType, productSchema } from "@/utils/validation";
-import { createProduct } from "@/utils/vendorApiClient";
+import { createInventoryRecord, createProduct, fetchVendorWarehouse, fetchVendorWarehouseLocations, updateProduct } from "@/utils/vendorApiClient";
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod.js";
+import { get } from "http";
 import { ArrowLeft } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { useRouter } from "next/navigation";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, use } from "react";
 import { FieldErrors, useFieldArray, useForm } from "react-hook-form";
 
 
@@ -36,11 +39,13 @@ const PRODUCT_UPDATE_FORM_PAGE_LABELS = {
 
 export function ProductForm({
     categoryOptions,
+    warehouseOptions,
     vendorId,
     existingData,
     productId,
 }: {
     categoryOptions: { value: string; label: string }[];
+    warehouseOptions: { value: string; label: string }[];
     vendorId: string;
     existingData?: Partial<ProductFormInput | ProductFormOutput>;
     productId?: string;
@@ -50,6 +55,7 @@ export function ProductForm({
     const {
         control,
         reset,
+        watch,
         register,
         handleSubmit,
         setValue,
@@ -70,10 +76,27 @@ export function ProductForm({
             featureMedia: [],
             category: "",
             status: ProductStatusEnum.INACTIVE,
-            taxProfile: "",
+            warehouseId: "",
         },
     });
+    const productName = watch('productName');
+    const attributes = watch('attributes'); // Example: { Color: 'Black', Capacity: '256GB' }
+    const currentSku = watch('sku');
+    const categoryName = watch('category');
+    // Auto-generate SKU when variant details change, ONLY if the user hasn't manually typed a custom SKU
+    const [isAutoGenerating, setIsAutoGenerating] = useState(true);
 
+    useEffect(() => {
+        if (isAutoGenerating && productName) {
+            const newSku = generateSKU({
+                productName: productName, // Passed from parent Product
+                categoryName: categoryName,
+                attributes: attributes,
+            });
+
+            setValue('sku', newSku, { shouldValidate: true });
+        }
+    }, [isAutoGenerating, attributes, productName, categoryName, setValue]);
     const formPageLabels = isUpdate ? PRODUCT_UPDATE_FORM_PAGE_LABELS : PRODUCT_FORM_PAGE_LABELS;
     const { fields: featureFields, append: appendFeature, remove: removeFeature } = useFieldArray({ control, name: "features" });
     const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } = useFieldArray({ control, name: "attributes" });
@@ -95,10 +118,10 @@ export function ProductForm({
         featureMedia: { files: featureFiles, setFiles: setFeatureFiles },
     } as const;
 
+
     // Populate form when editing an existing product
     useEffect(() => {
         if (!isUpdate || !existingData) return;
-
         reset({
             productName: existingData.productName || "",
             description: existingData.description || "",
@@ -116,7 +139,7 @@ export function ProductForm({
             featureMedia: [],
             category: existingData.category || "",
             status: (existingData.status as ProductStatusEnum) || ProductStatusEnum.INACTIVE,
-            taxProfile: existingData.taxProfile || "",
+            warehouseId: existingData.warehouseId || "",
         });
 
         const initialProductFiles = (existingData.productMedia as FileOrImage[]) || [];
@@ -186,7 +209,6 @@ export function ProductForm({
             attributes: data.attributes,
             category_id: data.category,
             status: data.status.toLowerCase(),
-            tax_profile: data.taxProfile,
             base_price: String(data.basePrice),
             discount_percent: String(data.discountPercent),
             stock_quantity: Number(data.stocks),
@@ -211,22 +233,25 @@ export function ProductForm({
         }
 
         try {
-            let response: Response;
+            let response: { ok: boolean; status: number; statusText: string; data?: any };
 
             if (isUpdate) {
-                response = await fetch(`${BASE_API_URL}products/${productId}`, {
-                    method: "PATCH",
-                    body: formData,
-                });
+                response = await updateProduct(formData, vendorId, productId!);
             } else {
                 response = await createProduct(formData, vendorId);
+                if (!response.ok) {
+                    console.error("Submission failed:", response.status, response.statusText);
+                    return;
+                }
+                if (data.warehouseId && response?.data?.id) {
+                    await createInventoryRecord(
+                        response?.data.id,          // the new variant id returned from server
+                        data.warehouseId,  // use the selected warehouse
+                        Number(data.stocks),
+                        companyDomain,
+                    );
+                }
             }
-
-            if (!response.ok) {
-                console.error("Submission failed:", response.status, response.statusText);
-                return;
-            }
-
             router.push(`/vendor/${vendorId}/products`);
         } catch (error) {
             console.error("Error occurred while submitting product:", error);
@@ -496,7 +521,6 @@ export function ProductForm({
                         <div>
                             <label className="form_label">Category <span className="text-red-400">*</span></label>
                             <div className="relative">
-                                {/* ✅ No defaultValue — register() owns the value; reset() sets the initial */}
                                 <select {...register("category")} className="form_input appearance-none pr-9">
                                     <option value="" disabled>Select Category</option>
                                     {categoryOptions.map((c, idx) => (
@@ -513,22 +537,21 @@ export function ProductForm({
                             )}
                         </div>
 
-                        {/* Tax Profile */}
                         <div>
-                            <label className="form_label">Tax Profile <span className="text-red-400">*</span></label>
+                            <label className="form_label">Warehouse <span className="text-red-400">*</span></label>
                             <div className="relative">
-                                <select {...register("taxProfile")} className="form_input appearance-none pr-9">
-                                    <option value="" disabled>Select Tax Profile</option>
-                                    {ORGANIZATION_TAXATION_OPTIONS.map(({ value, label }, idx) => (
-                                        <option value={value} key={idx}>{label}</option>
+                                <select {...register("warehouseId")} className="form_input appearance-none pr-9">
+                                    <option value='' disabled>Select Warehouse</option>
+                                    {warehouseOptions.map((v) => (
+                                        <option value={v.value} key={v.value}>{v.label}</option>
                                     ))}
                                 </select>
                                 <DynamicIcon fallback={() => <p></p>} name="chevron-down" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                             </div>
-                            {errors.taxProfile && (
+                            {errors.warehouseId && (
                                 <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
                                     <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={12} />
-                                    {errors.taxProfile.message}
+                                    {errors.warehouseId.message}
                                 </p>
                             )}
                         </div>

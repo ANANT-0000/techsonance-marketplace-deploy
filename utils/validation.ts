@@ -127,7 +127,7 @@ export const productSchema = z.object({
   status: z.enum(ProductStatusEnum, {
     error: () => ({ message: "Please select a status" }),
   }),
-  taxProfile: z.string().min(1, { message: "Tax profile is required" }),
+  warehouseId: z.string().min(1, { message: "Warehouse is required" }),
   productMedia: z.array(z.any()).min(0, { message: "At least one product image is required" }).max(1, { message: "You can upload up to 1 image" }),
   featureMedia: z.array(z.any()).min(0, { message: "At least one feature image is required" }).max(10, { message: "You can upload up to 10 images" }),
 });
