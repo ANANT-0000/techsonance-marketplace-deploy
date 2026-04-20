@@ -53,7 +53,7 @@ interface ProductVariant {
     product: Product;
 }
 
-export default async function ProductFormPage({ params }: { params: Promise<{ vendorId: string, id: string }> }) {
+export default async function ProductUpdateFormPage({ params }: { params: Promise<{ vendorId: string, id: string }> }) {
 
     const { vendorId, id } = await params;
     const getExitingProduct: ProductVariant | null = id ? await fetchVendorOneProducts(id).then((res) => {
@@ -78,8 +78,9 @@ export default async function ProductFormPage({ params }: { params: Promise<{ ve
         featureMedia: getExitingProduct?.product.images && getExitingProduct?.product.images?.filter((img) => img?.imgType === "gallery") || [],
         category: getExitingProduct?.product.category_id || '',
         status: getExitingProduct?.status as ProductStatusEnum || '',
-        taxProfile: '',
-        variantId: getExitingProduct?.id
+        variantId: getExitingProduct?.id || '',
+        warehouseId: getExitingProduct?.warehouse_id || ''
+
     }
     const categoryOptions = await fetchVendorsProductsCategory(vendorId).then((res) => {
         return res.data.map((c: any) => ({ value: c.id, label: c.name }));

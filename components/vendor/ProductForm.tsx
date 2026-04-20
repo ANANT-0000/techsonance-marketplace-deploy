@@ -45,7 +45,7 @@ export function ProductForm({
     productId,
 }: {
     categoryOptions: { value: string; label: string }[];
-    warehouseOptions: { value: string; label: string }[];
+    warehouseOptions?: { value: string; label: string }[];
     vendorId: string;
     existingData?: Partial<ProductFormInput | ProductFormOutput>;
     productId?: string;
@@ -213,6 +213,7 @@ export function ProductForm({
             discount_percent: String(data.discountPercent),
             stock_quantity: Number(data.stocks),
             sku: data.sku,
+            warehouse_id: data.warehouseId,
         };
 
         const payload = isUpdate
@@ -242,14 +243,6 @@ export function ProductForm({
                 if (!response.ok) {
                     console.error("Submission failed:", response.status, response.statusText);
                     return;
-                }
-                if (data.warehouseId && response?.data?.id) {
-                    await createInventoryRecord(
-                        response?.data.id,          // the new variant id returned from server
-                        data.warehouseId,  // use the selected warehouse
-                        Number(data.stocks),
-                        companyDomain,
-                    );
                 }
             }
             router.push(`/vendor/${vendorId}/products`);

@@ -22,12 +22,14 @@ const FILE_UPLOAD_FIELD_LABELS = [
 export const ProductVariantForm = ({
     vendorId,
     productId,
+    warehouseOptions,
     productDetails,
     existVariant,
     variantId,
 }: {
     vendorId: string;
     productId?: string;
+    warehouseOptions?: { value: string; label: string }[];
     productDetails?: {
         id: string,
         name: string,
@@ -59,6 +61,7 @@ export const ProductVariantForm = ({
             sku: "",
             variantMediaMain: [],
             variantMediaGallery: [],
+            warehouseId: '',
             status: ProductStatusEnum.INACTIVE,
         },
     });
@@ -170,6 +173,7 @@ export const ProductVariantForm = ({
             discount_percent: data.discountPercent ?? 0,
             stock_quantity: String(data.stocks) ?? 0,
             sku: data.sku,
+            warehouse_id: data.warehouseId,
         };
 
         const formData = new FormData();
@@ -325,6 +329,20 @@ export const ProductVariantForm = ({
                                     </div>
                                 ))
                             }
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                                    Warehouse
+                                </label>
+                                <select
+                                    className="form_input w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                                    {...register("warehouseId" as keyof ProductVariantFormValuesType, { required: "Please select a warehouse" })}
+                                >
+                                    <option value="">Select warehouse</option>
+                                    {warehouseOptions?.map((option) => (
+                                        <option key={option.value} value={option.value}>{option.label}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
