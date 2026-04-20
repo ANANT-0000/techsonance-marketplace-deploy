@@ -1,5 +1,5 @@
 ﻿import { ProductVariantForm } from "@/components/vendor/ProductVariantForm";
-import { fetchVariant } from "@/utils/vendorApiClient";
+import { fetchVariant, fetchVendorWarehouse } from "@/utils/vendorApiClient";
 import { id, is } from "date-fns/locale";
 interface Attribute {
     name: string;
@@ -69,7 +69,12 @@ export default async function ProductVariantFormPage({
             console.error("Error fetching variant data:", error);
             return null;
         });
-
+    const warehouseOptions = await fetchVendorWarehouse().then((res) => {
+        return res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name }));
+    }).catch((error) => {
+        console.error("Error fetching warehouse options:", error);
+        return [];
+    });
     const existingProductVariant = existVariant
         ? {
             id: existVariant.id,
@@ -123,6 +128,7 @@ export default async function ProductVariantFormPage({
                     productId={existVariant?.product_id}
                     existVariant={existingProductVariant}
                     variantId={variantId}
+                    warehouseOptions={warehouseOptions}
                 />
             </div>
         </main>

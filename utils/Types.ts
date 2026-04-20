@@ -279,7 +279,10 @@ export type ProductFeatureType = {
   title: string;
   description: string | boolean | number;
 };
-
+export type InventoryType = {
+  stock_quantity: number;
+  warehouse_id: string;
+}
 export type ProductType = {
   id: string;
   name: string;
@@ -293,7 +296,7 @@ export type ProductType = {
   company_id: string;
   vendor_id: string;
   features: ProductFeatureType[];
-  images: ProductImageType[];
+
   variants?: VariantsType[];
   reviews?: ReviewType[];
   created_at: string;
@@ -617,7 +620,7 @@ export type VariantFormValuesType = {
 
 export type AttributesType = {
   name: string,
-  values: string
+  value: string
 }
 //used
 export type VariantsType = {
@@ -629,6 +632,8 @@ export type VariantsType = {
   price: string;
   stock_quantity: number;
   images: ProductImageType[];
+  inventory: InventoryType;
+  reviews?: ReviewType[];
 }
 //used
 export type ProductResponseType = {

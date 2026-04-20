@@ -3,16 +3,22 @@ import { BASE_API_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
 
 export const fetchProduct = async (productId: string) => {
-    const companyDomain = await getCompanyDomain();
-    console.log('comapny dmain  in prohdct by id', companyDomain)
+    // const companyDomain = await getCompanyDomain();
+    console.log('company domain  in product by id', companyDomain)
     try {
         const response = await fetch(`${BASE_API_URL}products/${productId}`, {
             method: 'GET',
-            cache: "force-cache",
-            next: { revalidate: 3600 },
+            // cache: "force-cache",
+            // next: { revalidate: 3600 },
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+            },
+            // Authorization: `Bearer ${await authToken()}`,
         });
+        console.log(response)
         if (response.status !== 200) {
-            console.error('Failed to fetch product');
+            console.log('Failed to fetch product', response);
         }
         console.log("Product Response:", response);
         return await response.json();
@@ -33,7 +39,7 @@ export const fetchProductVariantDetails = async (id: string) => {
         });
 
         const result = await response.json(); // Renamed 'data' to 'result' for clarity
-        
+
         if (response.status !== 200) {
             console.error('Failed to fetch product variant details:', result);
         }

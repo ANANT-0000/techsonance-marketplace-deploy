@@ -6,15 +6,12 @@ import { DynamicIcon, IconName } from 'lucide-react/dynamic';
 import { WishListBtn } from '@/components/customer/WishListBtn';
 import { AddToCart } from '@/components/customer/AddToCart';
 import { BuyBtn } from '@/components/customer/BuyBtn';
-import { ProductList } from '@/components/customer/ProductList';
 import { ProductReview } from '@/components/customer/ProductReview';
 import { ProductSpecifications } from '@/components/customer/ProductSpec';
 import { BuyBtnMode, ProductImageType, ProductType, VariantsType } from '@/utils/Types';
 import { formatCurrency } from '@/lib/utils';
 import { fetchProduct } from '@/utils/commonAPiClient';
-import { get } from 'http';
-import { getCompanyDomain } from '@/lib/get-domain';
-
+import { Star } from 'lucide-react';
 const brandOffer = [
     { id: '1', title: '1 year warranty', icon: 'shopping-bag' },
     { id: '2', title: 'Free delivery', icon: 'truck' },
@@ -26,18 +23,15 @@ const brandOffer = [
 export default function ProductPage() {
     const params = useParams();
     const id = params?.id as string;
-    const companyDomain = async () => {
-        return await getCompanyDomain().then(domain => {
-            console.log("company domain in product page", domain);
-            return domain;
-        })
-    }
-    console.log("company domain call in product", companyDomain())
+    const [isMounted, setIsMounted] = useState(false);
     const [activeImage, setActiveImage] = useState<string | undefined>();
     const [productImages, setProductImages] = useState<ProductImageType[]>([]);
     const [activeVariant, setActiveVariant] = useState<VariantsType | undefined>();
     const [product, setProduct] = useState<ProductType | undefined>(undefined);
     console.log("product id", id)
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
     useEffect(() => {
         const getProduct = async () => {
             const response = await fetchProduct(id);
@@ -52,7 +46,7 @@ export default function ProductPage() {
         }
         getProduct();
 
-    }, [params.id])
+    }, [])
     console.log("product response", product)
     console.log("activeVariant", activeVariant)
     console.log("activeImage", activeImage)
@@ -63,34 +57,67 @@ export default function ProductPage() {
         setProductImages(variant.images);
         setActiveImage(variant.images[0]?.image_url);
     }
+    const reviewsList = activeVariant?.reviews || [];
+    const totalReviews = reviewsList.length;
+
+    // Calculate average: Sum all ratings, divide by total, and round to nearest whole star
+    const averageRating = totalReviews > 0
+        ? Math.round(reviewsList.reduce((sum, review) => sum + review.rating, 0) / totalReviews)
+        : 0;
     return (
         <main className='xl:pt-10 pb-8 xl:px-32 lg:px-8 md:px-4 px-2 py-1 overflow-x-hidden'>
             <section className="flex flex-col lg:flex-row justify-evenly gap-12">
                 <div className='flex flex-col-reverse lg:flex-row gap-4 w-full lg:w-1/2'>
-                    <div className='flex lg:flex-col gap-4 overflow-x-auto lg:overflow-visible hide-scrollbar'>
+                    {/* THUMBNAIL CONTAINER */}
+                    <div className='flex lg:flex-col gap-4 overflow-x-auto lg:overflow-y-auto lg:h-0 lg:min-h-full lg:w-24 shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth p-1'>
                         {productImages.map((img, idx) => (
-
-                            <motion.img key={idx} src={img.image_url} onClick={() => setActiveImage(img.image_url)} whileHover={{ scale: 1.05, borderColor: "#3b82f6" }} whileTap={{ scale: 0.95 }} alt={`Thumbnail ${idx + 1}`} className={`aspect-square w-20 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all ${activeImage === img.image_url ? ' border-blue-500 ring-2 ring-blue-300' : 'border-transparent'}`} />
-
-
+                            <motion.img
+                                key={idx}
+                                src={img.image_url}
+                                onClick={() => setActiveImage(img.image_url)}
+                                whileHover={{ scale: 1.05, borderColor: "#3b82f6" }}
+                                whileTap={{ scale: 0.95 }}
+                                alt={`Thumbnail ${idx + 1}`}
+                                className={`shrink-0 aspect-square w-20 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all ${activeImage === img.image_url ? ' border-blue-500 ring-2 ring-blue-300' : 'border-transparent'}`}
+                            />
                         ))}
                     </div>
-                    <div className='relative w-full aspect-square bg-gray-50 rounded-3xl overflow-hidden'>
+
+                    {/* MAIN IMAGE CONTAINER */}
+                    <div className='relative flex-1 aspect-square bg-gray-50 rounded-3xl overflow-hidden'>
                         <WishListBtn productVariantId={activeVariant?.id} styles="absolute lg:top-0 lg:right-4 right-8 z-20" iconSize={32} />
                         <AnimatePresence mode="wait">
-                            <motion.img key={activeImage} initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} src={activeImage || product?.images.filter((img): img is ProductImageType => img.imgType === 'main')?.[0]?.image_url} alt={product?.name} className='w-full  object-cover' />
+                            <motion.img
+                                key={activeImage}
+                                initial={{ opacity: 0, scale: 1.05 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                src={activeImage}
+                                alt={product?.name}
+                                className='w-full h-full object-cover'
+                            />
                         </AnimatePresence>
                     </div>
                 </div>
                 <motion.div variants={containerStagger} initial="hidden" animate="visible" className='flex flex-col gap-6 w-full lg:w-1/2'>
-                    {/* <motion.div variants={fadeInUp} className="flex items-center gap-2">
+                    <motion.div variants={fadeInUp} className="flex items-center gap-2">
                         <span className='flex bg-yellow-50 px-2 py-1 rounded-md border border-yellow-100'>
-                            {Array.from({ length: 5 }, (_, i) => (<Star key={i} size={16} fill={i < (product.rating || 0) ? "#eab308" : "none"} className={i < (product. || 0) ? 'text-yellow-500' : 'text-gray-300'} />))}
+                            {Array.from({ length: 5 }, (_, i) => (
+                                <Star
+                                    key={i}
+                                    size={16}
+                                    fill={i < averageRating ? "#eab308" : "none"}
+                                    className={i < averageRating ? 'text-yellow-500' : 'text-gray-300'}
+                                />
+                            ))}
                         </span>
-                        <span className="text-sm text-gray-500 font-medium">(124 Reviews)</span>
-                    </motion.div> */}
+                        <span className="text-sm text-gray-500 font-medium">
+                            ({totalReviews} {totalReviews === 1 ? 'Review' : 'Reviews'})
+                        </span>
+                    </motion.div>
                     <motion.div variants={fadeInUp}>
-                        <h1 className='text-sm lg:text-2xl font-bold text-gray-900 mb-2'>{activeVariant?.variant_name}</h1>
+                        <h1 className='text-sm lg:text-2xl font-bold text-gray-900 mb-2 capitalize'>{activeVariant?.variant_name}</h1>
                         <p className='text-lg text-gray-500 font-medium leading-relaxed  truncate '>{product?.description}</p>
                     </motion.div>
                     <motion.div variants={fadeInUp} className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
@@ -104,8 +131,8 @@ export default function ProductPage() {
 
 
                         <motion.p variants={fadeInUp} className='text-sm text-gray-500 font-medium'>
-                            Color: <span className='font-semibold text-gray-700'>
-                                {activeVariant?.attributes.find(attr => attr.name === 'color')?.values || 'N/A'}
+                            {activeVariant?.attributes[0]?.name && activeVariant?.attributes[0]?.name.charAt(0).toUpperCase() + activeVariant?.attributes[0]?.name.slice(1)}: <span className='font-semibold text-gray-700'>
+                                {activeVariant?.attributes[0]?.value && activeVariant?.attributes[0]?.value.charAt(0).toUpperCase() + activeVariant?.attributes[0]?.value.slice(1)}
                             </span>
                         </motion.p>
                         <motion.div variants={fadeInUp} className='flex  gap-4 items-center h-28'>
@@ -120,8 +147,14 @@ export default function ProductPage() {
                         </motion.div>
                     </div>
                     <motion.div variants={fadeInUp} className='flex gap-4 items-center'>
-                        <AddToCart productVariantId={activeVariant?.id || ''} styles="text-xl w-32 lg:w-40" />
-                        <BuyBtn id={activeVariant?.id} mode={BuyBtnMode.QUICK_BUY} styles="scale-[0.95]" />
+                        <motion.div variants={fadeInUp} className='flex gap-4 items-center'>
+                            {isMounted && activeVariant && (
+                                <>
+                                    <AddToCart productVariantId={activeVariant.id} styles="text-xl w-32 lg:w-40" />
+                                    <BuyBtn id={activeVariant.id} mode={BuyBtnMode.QUICK_BUY} styles="scale-[0.95]" />
+                                </>
+                            )}
+                        </motion.div>
                     </motion.div>
 
 

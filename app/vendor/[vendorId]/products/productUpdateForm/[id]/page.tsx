@@ -1,6 +1,6 @@
-﻿import { fetchVendorOneProducts, fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
+﻿import { fetchVendorOneProducts, fetchVendorsProductsCategory, fetchVendorWarehouse } from "@/utils/vendorApiClient";
 import { ProductForm } from "@/components/vendor/ProductForm";
-import { ProductResponseType, ProductStatusEnum } from "@/utils/Types";
+import { InventoryType, ProductResponseType, ProductStatusEnum } from "@/utils/Types";
 import { ProductFormInput, ProductFormOutput, ProductFormValuesType } from "@/utils/validation";
 interface Attribute {
     name: string;
@@ -51,6 +51,7 @@ interface ProductVariant {
     updated_at: string; // ISO date string
     product_id: string;
     product: Product;
+    inventory: InventoryType;
 }
 
 export default async function ProductUpdateFormPage({ params }: { params: Promise<{ vendorId: string, id: string }> }) {
@@ -64,7 +65,12 @@ export default async function ProductUpdateFormPage({ params }: { params: Promis
         return null;
     }) : null;
     // console.log(getExitingProduct)
-
+    const warehouseOptions = await fetchVendorWarehouse().then((res) => {
+        return res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name }));
+    }).catch((error) => {
+        console.error("Error fetching warehouse options:", error);
+        return [];
+    });
     const exitingData: Partial<ProductFormInput | ProductFormOutput> = {
         productName: getExitingProduct?.product.name || '',
         description: getExitingProduct?.product.description || '',
@@ -93,7 +99,7 @@ export default async function ProductUpdateFormPage({ params }: { params: Promis
     return (
         <main className="min-h-screen  py-8 w-full">
             <div className=" mx-auto">
-                <ProductForm categoryOptions={categoryOptions} vendorId={vendorId} existingData={exitingData} productId={id} />
+                <ProductForm categoryOptions={categoryOptions} warehouseOptions={warehouseOptions} vendorId={vendorId} existingData={exitingData} productId={id} />
             </div>
         </main>
     );

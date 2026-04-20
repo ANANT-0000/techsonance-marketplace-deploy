@@ -103,6 +103,7 @@ export const ProductVariantForm = ({
             sku: existVariant.sku,
             variantMediaMain: existVariant.variantMediaMain ?? [],
             variantMediaGallery: existVariant.variantMediaGallery ?? [],
+            warehouseId: existVariant.warehouseId || '',
             status: (existVariant.status as ProductStatusEnum) ?? ProductStatusEnum.INACTIVE,
         });
 

@@ -240,10 +240,11 @@ export function ProductForm({
                 response = await updateProduct(formData, vendorId, productId!);
             } else {
                 response = await createProduct(formData, vendorId);
-                if (!response.ok) {
-                    console.error("Submission failed:", response.status, response.statusText);
-                    return;
-                }
+                console.log("response", response);
+            }
+            if (response.status !== 201 && response.status !== 200) {
+                console.error("Submission failed:", response?.status, response?.statusText);
+                return;
             }
             router.push(`/vendor/${vendorId}/products`);
         } catch (error) {
@@ -535,7 +536,7 @@ export function ProductForm({
                             <div className="relative">
                                 <select {...register("warehouseId")} className="form_input appearance-none pr-9">
                                     <option value='' disabled>Select Warehouse</option>
-                                    {warehouseOptions.map((v) => (
+                                    {warehouseOptions && warehouseOptions.map((v) => (
                                         <option value={v.value} key={v.value}>{v.label}</option>
                                     ))}
                                 </select>

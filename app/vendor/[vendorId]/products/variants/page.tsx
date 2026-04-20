@@ -6,22 +6,28 @@ import { AlertTriangle, Package, RefreshCw, XCircle, CheckCircle, Edit2, X } fro
 import { motion, AnimatePresence } from "motion/react";
 import { BASE_API_URL } from "@/constants";
 import { companyDomain } from "@/config";
+import { AddressType } from "@/utils/Types";
+
+interface InventoryLocation {
+
+    inventory_id: string;
+    warehouse_id: string;
+    warehouse_name: string | null;
+    stock: number;
+    address: AddressType | null;
+}
+
 
 interface InventoryItem {
-    id: string;
-    stock_quantity: number;
     isLowStock: boolean;
     isOutOfStock: boolean;
-    variant: {
-        id: string;
-        variant_name: string;
-        sku: string;
-        price: string;
-        stock_quantity: number;
-        status: string;
-        images: { image_url: string; is_primary: boolean }[];
-    };
-    warehouse: { id: string; warehouse_name: string };
+    locations: InventoryLocation[];
+    price: string; // consider number if parsed
+    sku: string;
+    total_stock: number;
+    variant_id: string;
+    variant_name: string;
+    variant_image: string;
 }
 interface LowStockAlert {
     inventoryId: string;
@@ -89,12 +95,12 @@ export default function InventoryPage() {
     };
 
     useEffect(() => { console.log('fetching inventory and alerts'); reload(); }, []);
-
+    console.log("inventory", inventory)
     // ── Filtering ──
     const filtered = inventory.filter((item) => {
         const matchSearch =
-            item.variant.variant_name.toLowerCase().includes(search.toLowerCase()) ||
-            item.variant.sku.toLowerCase().includes(search.toLowerCase());
+            item.variant_name.toLowerCase().includes(search.toLowerCase()) ||
+            item.sku.toLowerCase().includes(search.toLowerCase());
         const matchStatus =
             statusFilter === "all" ||
             (statusFilter === "out" && item.isOutOfStock) ||
@@ -104,7 +110,7 @@ export default function InventoryPage() {
 
     const totalPages = Math.ceil(filtered.length / pageSize);
     const currentData = filtered.slice((count - 1) * pageSize, count * pageSize);
-
+    console.log("currentData", currentData)
     // ── Stock update ──
     const handleSave = async (inventoryId: string) => {
         setSaving(true);
@@ -265,17 +271,17 @@ export default function InventoryPage() {
                             ) : (
                                 currentData.map((item, idx) => (
                                     <tr
-                                        key={item.id}
+                                        key={item.variant_id}
                                         className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${item.isOutOfStock ? "bg-red-50/30" : item.isLowStock ? "bg-yellow-50/30" : ""
                                             }`}
                                     >
                                         {/* Product */}
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
-                                                {item.variant.images[0] ? (
+                                                {item.variant_image ? (
                                                     <img
-                                                        src={item.variant.images[0].image_url}
-                                                        alt={item.variant.variant_name}
+                                                        src={item.variant_image}
+                                                        alt={item.variant_name}
                                                         className="w-10 h-10 object-cover rounded-lg border border-gray-200"
                                                     />
                                                 ) : (
@@ -284,20 +290,20 @@ export default function InventoryPage() {
                                                     </div>
                                                 )}
                                                 <span className="font-medium text-gray-800 max-w-[200px] truncate">
-                                                    {item.variant.variant_name}
+                                                    {item.variant_name}
                                                 </span>
                                             </div>
                                         </td>
 
                                         {/* SKU */}
-                                        <td className="p-4 font-mono text-gray-500 text-xs">{item.variant.sku}</td>
+                                        <td className="p-4 font-mono text-gray-500 text-xs">{item.sku}</td>
 
                                         {/* Warehouse */}
-                                        <td className="p-4 text-gray-600">{item.warehouse?.warehouse_name ?? "—"}</td>
+                                        <td className="p-4 text-gray-600">{item.locations ? item.locations[0]?.warehouse_name ?? "—" : "—"}</td>
 
                                         {/* Stock */}
                                         <td className="p-4">
-                                            {editId === item.id ? (
+                                            {editId === item.variant_id ? (
                                                 <div className="flex items-center gap-2">
                                                     <input
                                                         type="number"
@@ -307,7 +313,7 @@ export default function InventoryPage() {
                                                         className="w-20 border-2 border-blue-400 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-200"
                                                     />
                                                     <button
-                                                        onClick={() => handleSave(item.id)}
+                                                        onClick={() => handleSave(item.variant_id)}
                                                         disabled={saving}
                                                         className="p-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50"
                                                     >
@@ -329,7 +335,7 @@ export default function InventoryPage() {
                                                             : "text-gray-800"
                                                         }`}
                                                 >
-                                                    {item.stock_quantity}
+                                                    {item.total_stock}
                                                 </span>
                                             )}
                                         </td>
@@ -353,14 +359,14 @@ export default function InventoryPage() {
 
                                         {/* Price */}
                                         <td className="p-4 font-semibold text-gray-700">
-                                            ₹{Number(item.variant.price).toLocaleString()}
+                                            ₹{Number(item.price).toLocaleString()}
                                         </td>
 
                                         {/* Adjust */}
                                         <td className="p-4 text-center">
-                                            {editId !== item.id && (
+                                            {editId !== item.variant_id && (
                                                 <button
-                                                    onClick={() => { setEditId(item.id); setEditQty(item.stock_quantity); }}
+                                                    onClick={() => { setEditId(item.variant_id); setEditQty(item.total_stock); }}
                                                     className="inline-flex items-center gap-1 px-3 py-1.5 border-2 border-blue-300 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-50 transition-colors"
                                                 >
                                                     <Edit2 size={12} /> Restock

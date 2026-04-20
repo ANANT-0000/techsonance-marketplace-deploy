@@ -67,7 +67,7 @@ export function ShoppingList({
                                                 <Link href={`/shopping/${product.id}`} className="block overflow-hidden rounded-lg">
                                                     <img loading="lazy"
                                                         className="w-full object-contain lg:aspect-9/14 aspect-9/12 rounded-lg mb-4 transform hover:scale-105 transition-transform duration-300"
-                                                        src={product.images[0].image_url ? product.images[0].image_url : "https://placehold.net/10.png"}
+                                                        src={product.variants && product.variants.length > 0 ? product.variants[0].images[0].image_url : "https://placehold.net/10.png"}
                                                         alt={product.name.trim()}
                                                     />
                                                 </Link>

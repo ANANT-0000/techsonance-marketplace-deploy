@@ -118,8 +118,8 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                                     </TableCell>
 
                                     <TableCell className={`p-4 text-start  `}>
-                                        <p className={`${item.
-                                            stock_quantity >= 20 ? 'text-green-500  py-1 px-3 rounded-lg ' : 'text-red-500   py-1 px-3 rounded-lg  '}`}>{item.
+                                        <p className={`${item.variants && item?.variants[0]?.inventory?.
+                                            stock_quantity >= 20 ? 'text-green-500  py-1 px-3 rounded-lg ' : 'text-red-500   py-1 px-3 rounded-lg  '}`}>{item.variants && item?.variants[0]?.inventory?.
                                                 stock_quantity}</p>
                                     </TableCell>
                                     <TableCell className={`p-4 text-start  `}>₹ {item.base_price}</TableCell>

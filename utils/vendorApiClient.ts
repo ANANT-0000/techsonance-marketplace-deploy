@@ -98,12 +98,13 @@ export const createProduct = async (productData: FormData, vendorId: string) => 
         });
         if (!response.ok) {
             console.error('Failed to create product');
+            return { status: response.status, statusText: response.statusText };
         }
         revalidatePath(`/vendor/${vendorId}/products`);
         return await response.json();
     } catch (error) {
         console.error('Error creating product:', error);
-        throw error;
+        return { status: 500, statusText: 'Internal Server Error' };
     }
 }
 export const updateProduct = async (formData: FormData, vendorId: string, productId: string) => {
@@ -114,12 +115,13 @@ export const updateProduct = async (formData: FormData, vendorId: string, produc
         });
         if (!response.ok) {
             console.error('Failed to create product');
+            return { status: response.status, statusText: response.statusText };
         }
         revalidatePath(`/vendor/${vendorId}/products`);
         return await response.json();
     } catch (error) {
         console.error('Error creating product:', error);
-        throw error;
+        return { status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 export const fetchVendorProducts = async (vendorId: string) => {
@@ -160,7 +162,7 @@ export const fetchVendorOneProducts = async (id: string) => {
         return await response.json();
     } catch (error) {
         console.error('Error fetching products:', error);
-        throw error;
+        return { status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 export const deleteProduct = async (productId: string, vendorId: string) => {
@@ -180,7 +182,7 @@ export const deleteProduct = async (productId: string, vendorId: string) => {
         return await response.json();
     } catch (error) {
         console.error('Error deleting product:', error);
-
+        return { status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 
@@ -189,14 +191,21 @@ export const createProductVariant = async (variantData: FormData, vendorId: stri
         const response = await fetch(`${BASE_API_URL}product-variant`, {
             method: "POST",
             body: variantData,
+            headers: {
+                'company-domain': companyDomain,
+            }
         });
         if (!response.ok) throw new Error("Failed to create variant");
         const res = await response.json();
-        revalidatePath(`/vendor/${vendorId}/products/${productId}/variants`);
+        revalidatePath(`/vendor/${vendorId}/products/variants`);
+        revalidatePath(`/vendor/${vendorId}/products/${productId}/productVariants`);
+        revalidatePath(`/vendor/${vendorId}/products`);
         return res;
     } catch (error) {
         console.error("Error creating product variant:", error);
+        return { status: 500, statusText: 'Internal Server Error' + error };
     }
+
 }
 export const createInventoryRecord = async (
     productVariantId: string,
