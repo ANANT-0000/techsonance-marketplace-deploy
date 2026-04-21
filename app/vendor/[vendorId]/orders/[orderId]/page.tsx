@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils"; // Assuming you have this utility
 import { useParams, useRouter } from "next/navigation";
-import { fetchAddTrackingUrl, fetchUpdateOrderStatus, fetchVendorOrderDetails, updateOrderStatus, } from "@/utils/vendorApiClient";
+import { fetchAddTrackingUrl, fetchUpdateOrderStatus, fetchVendorOrderDetails, } from "@/utils/vendorApiClient";
 import { OrderStatusEnum } from "@/constants";
 import { DynamicIcon } from "lucide-react/dynamic";
 

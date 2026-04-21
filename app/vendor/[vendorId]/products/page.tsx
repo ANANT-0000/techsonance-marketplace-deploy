@@ -3,9 +3,9 @@ import { Delete, Edit, Plus } from "lucide-react";
 import { Pagination } from "@/components/common/Pagination";
 import { fetchVendorProducts, fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ProductType } from "@/utils/Types";
 import { DeleteBtn } from "@/components/vendor/DeleteBtn";
 import { DynamicIcon } from "lucide-react/dynamic";
+import { Product } from "@/utils/Types";
 
 export const PRODUCT_TABLE_HEAD = ['', "PRODUCT NAME", "VARIANT", "SKU", "STOCK", "PRICE", "STATUS", "ACTION"];
 export default async function Products({ params }: { params: Promise<{ vendorId: string }> }) {
@@ -22,7 +22,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
         return [];
     });
     console.log('vendor product list ', getProducts);
-    const productList: ProductType[] = getProducts || [];
+    const productList: Product[] = getProducts || [];
     let count = 1
     const pageSize = 5;
     const totalPages = Math.ceil(productList.length / pageSize);
@@ -88,7 +88,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                     </TableHeader>
                     <TableBody className="text-center w-full ">
                         {
-                            productList.map((item, index) => (
+                            productList.map((item: Product, index: number) => (
                                 <TableRow key={index} className={`hover:bg-gray-100 ${item.id === productList[pageSize - 1]?.id || item.id === productList[productList.length - 1]?.id ? 'border-b-0' : 'border-b border-gray-400'} border-b border-gray-400   `}>
                                     <TableCell className={`p-4   `}> <input type="checkbox" className="w-6 h-6" /></TableCell>
                                     <TableCell className={` max-w-6 min-w-4 pr-4  `}> <img className=" min-h-8 min-w-8   rounded-2xl" src={item.images[0].image_url} alt="product image" /> </TableCell>

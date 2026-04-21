@@ -1,14 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, Variants } from 'motion/react';
 import { DynamicIcon, IconName } from 'lucide-react/dynamic';
 import { WishListBtn } from '@/components/customer/WishListBtn';
 import { AddToCart } from '@/components/customer/AddToCart';
 import { BuyBtn } from '@/components/customer/BuyBtn';
 import { ProductReview } from '@/components/customer/ProductReview';
 import { ProductSpecifications } from '@/components/customer/ProductSpec';
-import { BuyBtnMode, ProductImageType, ProductType, VariantsType } from '@/utils/Types';
+import { BuyBtnMode, Product, ProductImage, Variant, VariantsType } from '@/utils/Types';
 import { formatCurrency } from '@/lib/utils';
 import { fetchProduct } from '@/utils/commonAPiClient';
 import { Star } from 'lucide-react';
@@ -25,9 +25,9 @@ export default function ProductPage() {
     const id = params?.id as string;
     const [isMounted, setIsMounted] = useState(false);
     const [activeImage, setActiveImage] = useState<string | undefined>();
-    const [productImages, setProductImages] = useState<ProductImageType[]>([]);
-    const [activeVariant, setActiveVariant] = useState<VariantsType | undefined>();
-    const [product, setProduct] = useState<ProductType | undefined>(undefined);
+    const [productImages, setProductImages] = useState<ProductImage[]>([]);
+    const [activeVariant, setActiveVariant] = useState<Variant | undefined>();
+    const [product, setProduct] = useState<Product | undefined>(undefined);
     console.log("product id", id)
     useEffect(() => {
         setIsMounted(true);
@@ -36,7 +36,7 @@ export default function ProductPage() {
         const getProduct = async () => {
             const response = await fetchProduct(id);
             console.log("product response", response.data);
-            const productData = response.data as ProductType;
+            const productData = response.data as Product;
             setProduct(productData);
             if (productData?.variants && productData.variants.length > 0) {
                 setActiveVariant(productData.variants[0]);
@@ -52,7 +52,7 @@ export default function ProductPage() {
     console.log("activeImage", activeImage)
     const containerStagger = { visible: { transition: { staggerChildren: 0.1 } } };
     const fadeInUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 50 } } };
-    const handleActiveVariantChange = (variant: VariantsType) => {
+    const handleActiveVariantChange = (variant: Variant) => {
         setActiveVariant(variant);
         setProductImages(variant.images);
         setActiveImage(variant.images[0]?.image_url);
@@ -184,7 +184,7 @@ export default function ProductPage() {
             <section className='mt-20'>
                 <h2 className='text-2xl font-bold text-gray-900 mb-8'>Customer Reviews</h2>
                 {
-                    product?.reviews &&
+                    product?.variants[0]?.reviews &&
                     <ProductReview product={product} />
                 }
             </section>

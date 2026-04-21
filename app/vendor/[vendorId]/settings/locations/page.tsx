@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { set, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { locationSchema, LocationFormData, LocationForEnum, AddressSchema } from '@/utils/validation'; // Adjust import path as needed
+import { locationSchema, LocationFormData, LocationForEnum, AddressSchema, AddressType } from '@/utils/validation'; // Adjust import path as needed
 import { FormInput } from '@/components/common/FormInput';
 import { ADDRESS_FIELDS, WAREHOUSE_ADDRESS_FIELDS } from '@/constants/dynamicFields';
 import { fetchCreateWarehouseLocation, fetchDeleteWarehouseLocation, fetchUpdateWarehouseLocation, fetchVendorWarehouseLocations } from '@/utils/vendorApiClient';
@@ -81,7 +81,7 @@ export default function LocationsPage() {
         setClosedLocationForm(true);
     };
 
-    const onSubmit = async (data: LocationFormData, isEditing: boolean) => {
+    const onSubmit = async (data: AddressType, isEditing: boolean) => {
         if (isEditing && selectedLocation) {
             const response = await fetchUpdateWarehouseLocation(selectedLocation.id, data).then((res) => {
                 console.log(res)

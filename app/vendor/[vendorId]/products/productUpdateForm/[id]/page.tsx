@@ -52,6 +52,7 @@ interface ProductVariant {
     product_id: string;
     product: Product;
     inventory: InventoryType;
+    warehouse_id: string;
 }
 
 export default async function ProductUpdateFormPage({ params }: { params: Promise<{ vendorId: string, id: string }> }) {

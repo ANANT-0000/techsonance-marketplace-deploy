@@ -250,58 +250,71 @@ export interface FeedbackType {
   rating: number;
 }
 
-export interface ReviewType {
-  id: string;
-  userName: string;
-  rating: number;
-  date: string;
-  comment: string;
-}
+
 
 export enum ProductStatusEnum {
   ACTIVE = 'active',
   INACTIVE = 'inactive'
 }
 
-export type ProductImageType = {
+
+export interface Feature {
+  title: string;
+  description: string;
+}
+
+export interface ProductImage {
   id: string;
   image_url: string;
-  alt_text?: string;
+  alt_text: string;
   imgType: "main" | "gallery";
   is_primary: boolean;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
   product_id: string;
   variant_id: string;
-};
+}
 
-export type ProductFeatureType = {
-  title: string;
-  description: string | boolean | number;
-};
-export type InventoryType = {
+export interface Inventory {
   stock_quantity: number;
   warehouse_id: string;
 }
-export type ProductType = {
+export interface Review {
+  id: string;
+  rating: number;
+  review: string;
+  created_at: string;
+  updated_at: string;
+  product_variant_id: string;
+  user_id: string;
+}
+export interface Variant {
+  id: string;
+  variant_name: string;
+  price: string;
+  sku: string;
+  status: ProductStatusEnum;
+  images: ProductImage[];
+  attributes: AttributesType[];
+  inventory: Inventory;
+  reviews?: Review[];
+}
+// used in vendor product list and product details page
+export interface Product {
   id: string;
   name: string;
   description: string;
+  features: Feature[];
   base_price: string;
   discount_percent: string;
-  stock_quantity: number;
-  has_variants: boolean;
   status: ProductStatusEnum;
-  category_id: string;
-  company_id: string;
-  vendor_id: string;
-  features: ProductFeatureType[];
-
-  variants?: VariantsType[];
-  reviews?: ReviewType[];
   created_at: string;
   updated_at: string;
-};
+  company_id: string;
+  vendor_id: string;
+  category_id: string;
+  variants: Variant[];
+}
 //Deleted the old PRODUCT_LIST_TYPE and replaced it with ProductType which is more comprehensive and closely aligned with the expected product data structure in a marketplace application.
 // export interface PRODUCT_LIST_TYPE {
 //   id: string;
