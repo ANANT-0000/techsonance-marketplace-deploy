@@ -6,23 +6,21 @@ import { AlertTriangle, Package, RefreshCw, XCircle, CheckCircle, Edit2, X } fro
 import { motion, AnimatePresence } from "motion/react";
 import { BASE_API_URL } from "@/constants";
 import { companyDomain } from "@/config";
-import { AddressType } from "@/utils/Types";
+import { Address } from "@/utils/Types";
+import { getCompanyDomain } from "@/lib/get-domain";
 
 interface InventoryLocation {
-
     inventory_id: string;
     warehouse_id: string;
     warehouse_name: string | null;
     stock: number;
-    address: AddressType | null;
+    address: Address | null;
 }
-
-
 interface InventoryItem {
     isLowStock: boolean;
     isOutOfStock: boolean;
     locations: InventoryLocation[];
-    price: string; // consider number if parsed
+    price: string;
     sku: string;
     total_stock: number;
     variant_id: string;
@@ -63,7 +61,9 @@ async function fetchAlerts(domain: string): Promise<LowStockAlert[]> {
     return json.data ?? [];
 }
 
-async function updateStock(inventoryId: string, quantity: number, domain: string) {
+async function updateStock(inventoryId: string, quantity: number,) {
+    const domain = await getCompanyDomain();
+
     const res = await fetch(`${BASE_API_URL}inventory/${inventoryId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", "company-domain": domain },
@@ -74,7 +74,6 @@ async function updateStock(inventoryId: string, quantity: number, domain: string
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function InventoryPage() {
-    const domain = companyDomain
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [alerts, setAlerts] = useState<LowStockAlert[]>([]);
     const [search, setSearch] = useState("");
@@ -87,6 +86,7 @@ export default function InventoryPage() {
     const pageSize = 8;
 
     const reload = async () => {
+        const domain = await getCompanyDomain();
         setLoading(true);
         const [inv, alrt] = await Promise.all([fetchInventory(domain), fetchAlerts(domain)]);
         setInventory(inv);
@@ -114,7 +114,7 @@ export default function InventoryPage() {
     // ── Stock update ──
     const handleSave = async (inventoryId: string) => {
         setSaving(true);
-        await updateStock(inventoryId, editQty, domain);
+        await updateStock(inventoryId, editQty);
         setSaving(false);
         setEditId(null);
         await reload();

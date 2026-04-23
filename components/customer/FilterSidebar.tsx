@@ -1,5 +1,5 @@
 'use client';
-import { ProductType } from '@/utils/Types';
+import { Product } from '@/utils/Types';
 import { SlidersHorizontal, ChevronUp, ChevronRight, X, ChevronDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
 const SidebarContent = ({ setIsOpen, maxPrice, setMaxPrice, minPrice, setMinPrice, isPriceOpen, setIsPriceOpen, categoryFilter, setSelectedCategories, selectedCategories }: {
@@ -96,7 +96,7 @@ const SidebarContent = ({ setIsOpen, maxPrice, setMaxPrice, minPrice, setMinPric
   </div>
 );
 export function FilterSidebar({ PRODUCT_LIST }: {
-  PRODUCT_LIST: ProductType[],
+  PRODUCT_LIST: Product[],
 
 }) {
   const [isPriceOpen, setIsPriceOpen] = useState(true);

@@ -3,10 +3,6 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Check, X, Copy, AlertCircle, ChevronLeftCircle } from 'lucide-react';
 import Link from 'next/link';
-import { BASE_API_URL } from '@/constants';
-import { companyDomain } from '@/config';
-import { formatCurrency } from '@/lib/utils';
-
 export default function OrderDetailPage() {
     const { userId, orderId } = useParams<{ userId: string; orderId: string }>();
     const router = useRouter();

@@ -12,7 +12,7 @@ export default function CategoryManager({ categories, vendorId }: any) {
             const description = formData.get('description') as string;
             const categoryData = { name, description };
             
-            await createVendorProductCategory(vendorId, categoryData, company_id);
+            await createVendorProductCategory(vendorId, categoryData);
 
         } catch (error) {
             console.error('Error creating category:', error);

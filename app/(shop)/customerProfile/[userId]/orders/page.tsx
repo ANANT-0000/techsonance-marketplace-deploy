@@ -20,7 +20,7 @@ export default function OrdersPage() {
   const ordersStatusMap = [OrderStatusEnum.DELIVERED, OrderStatusEnum.PENDING, OrderStatusEnum.CANCELLED];
   const statusLabels: Record<string, string> = {
     [OrderStatusEnum.PENDING]: "Not Shipped yet",
-    [OrderStatusEnum.DELIVERED]: "Delivered",
+    [OrderStatusEnum.DELIVERED ]: "Delivered",
     [OrderStatusEnum.CANCELLED]: "Cancelled",
   };
   return (

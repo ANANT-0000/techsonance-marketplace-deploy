@@ -24,3 +24,13 @@ export function formatNumber(value: number, locale = 'en-IN'): string {
 }
 
 
+export const formatStructure = (s: string) =>
+  s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+export const formatDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString();
+
+export const isImageUrl = (url: string) =>
+  /\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(url);
+
+export const isPdfUrl = (url: string) =>
+  /\.pdf(\?.*)?$/i.test(url);

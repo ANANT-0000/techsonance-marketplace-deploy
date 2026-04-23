@@ -1,5 +1,5 @@
 ﻿"use client";
-import { ProductImageType } from "@/utils/Types";
+import { ProductImage  } from "@/utils/Types";
 import { ImageOff } from "lucide-react";
 import Image from "next/image";
 import { useState, useMemo } from "react";
@@ -7,7 +7,7 @@ import { useState, useMemo } from "react";
 export const VariantImgGrid = ({
   variantImages
 }: {
-  variantImages: ProductImageType[]
+  variantImages: ProductImage[]
 }) => {
   // Use the first image ID as default, or null if empty
   const [selectedId, setSelectedId] = useState<string | null>(variantImages[0]?.id || null);

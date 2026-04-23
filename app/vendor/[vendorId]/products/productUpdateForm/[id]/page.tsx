@@ -1,6 +1,6 @@
 ﻿import { fetchVendorOneProducts, fetchVendorsProductsCategory, fetchVendorWarehouse } from "@/utils/vendorApiClient";
 import { ProductForm } from "@/components/vendor/ProductForm";
-import { InventoryType, ProductResponseType, ProductStatusEnum } from "@/utils/Types";
+import { Inventory, ProductResponseType, ProductStatusEnum } from "@/utils/Types";
 import { ProductFormInput, ProductFormOutput, ProductFormValuesType } from "@/utils/validation";
 interface Attribute {
     name: string;
@@ -51,7 +51,7 @@ interface ProductVariant {
     updated_at: string; // ISO date string
     product_id: string;
     product: Product;
-    inventory: InventoryType;
+    inventory: Inventory;
     warehouse_id: string;
 }
 

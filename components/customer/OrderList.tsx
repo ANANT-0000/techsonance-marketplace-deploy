@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { Suspense, useEffect, useState } from "react";
-import { AddressType, OrderStatusEnum, UserOrder } from "@/utils/Types";
+import { Address, OrderStatusEnum, UserOrder } from "@/utils/Types";
 import { OrderCard } from "./OrderCard";
 import { fetchUserOrderHistory } from "@/utils/customerApiClient";
 import { useMediaQuery } from "react-responsive";
@@ -43,7 +43,7 @@ export interface OrderType {
     created_at: string;
     total_amount: string;
     items: OrderItemType[];
-    address: AddressType;
+    address: Address;
     payment: PaymentType;
     shipping: unknown | null;
 }
@@ -68,6 +68,7 @@ export function OrdersList({
                 const response = await fetchUserOrderHistory(customerId);
                 if (isMounted) {
                     setOrders(response?.data || []);
+                    console.log(response?.data);
                 }
             } catch (error) {
                 console.error("Failed to fetch orders:", error);
@@ -83,7 +84,8 @@ export function OrdersList({
             isMounted = false;
         };
     }, [customerId]);
-    const filteredOrders = !isMobile ? orders.filter(order => order.order_status === status) : orders;
+    console.log('order', orders)
+    const filteredOrders = !isMobile ? orders.filter(order => order.order_status !== status) : orders;
 
     return (
 

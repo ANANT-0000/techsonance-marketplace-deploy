@@ -8,8 +8,8 @@ import { useMediaQuery } from "react-responsive";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useEffect, useState } from "react";
 import { fetchCustomerWishlist, fetchDeleteWishList } from "@/utils/customerApiClient";
-import { companyDomain } from "@/config";
 import Link from "next/link";
+import { getCompanyDomain } from "@/lib/get-domain";
 interface WishlistItemType {
     created_at: string;
     id: string;
@@ -41,12 +41,12 @@ export default function WishlistPage() {
     console.log("userId", userId)
     const [wishlistItems, setWishlistItems] = useState<WishlistItemType[]>([]);
     useEffect(() => {
-        const getWishlistProducts = () => {
+        const getWishlistProducts = async () => {
             if (!userId && typeof userId !== 'string') {
                 console.error("User ID is missing");
                 return;
             }
-            fetchCustomerWishlist(userId, companyDomain).then((response) => {
+            fetchCustomerWishlist(userId).then((response) => {
                 console.log(response)
                 setWishlistItems(response?.data[0].items || []);
             }).catch((error) => {
@@ -66,7 +66,7 @@ export default function WishlistPage() {
             return;
         }
         dispatch(removeFromWishlist(productVariantId));
-        await fetchDeleteWishList(productVariantId, user.id, companyDomain);
+        await fetchDeleteWishList(productVariantId, user.id);
         console.log(`Removing product ${productVariantId} from wishlist`);
     }
     return (

@@ -1,5 +1,5 @@
 import type { Link } from "@/components/common/InnerSideBar";
-import { CouponType, CustomerTicketType, GstInvoiceType, InventoryItemType, InventoryProductType, NavLinkType, OrderDetailType, UserReviewType, VendorOrderType, VendorProductType, WarehouseType } from "@/utils/Types";
+import { Coupon, CustomerTicket, GstInvoice, InventoryItem, InventoryProduct, NavLinkType, OrderDetail, UserReview, VendorOrder, VendorProduct, Warehouse } from "@/utils/Types";
 
 //used
 export const VendorDocumentTypes: { label: string; value: string }[] = [
@@ -230,7 +230,7 @@ export const VENDOR_DASHBOARD_STATS = {
 
 
 
-export const VENDOR_PRODUCTS: VendorProductType[] = [
+export const VENDOR_PRODUCTS: VendorProduct[] = [
   { id: "VP-001", name: "Sony WH-1000XM5 Noise Canceling", category: "Headphones", price: 29990, stock: 45, status: "Active", imageUrl: "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=300&q=80", sales: 128 },
   { id: "VP-002", name: "Blue Yeti USB Microphone", category: "Microphones", price: 10999, stock: 8, status: "Active", imageUrl: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=300&q=80", sales: 87 },
   { id: "VP-003", name: "Marshall Emberton Portable Speaker", category: "Speakers", price: 14999, stock: 32, status: "Active", imageUrl: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=300&q=80", sales: 65 },
@@ -341,7 +341,7 @@ export const VENDOR_MARKETING_DATA = {
 // ============================================================
 
 
-export const GST_INVOICES: GstInvoiceType[] = [
+export const GST_INVOICES: GstInvoice[] = [
   { id: 1, date: "2026-01-16", invoice_no: "INV-2026-0000000001", order_ref: "#ORD-00000009921", taxable_value: 2117.80, total_tax: 381.20, currency: "INR", download_available: true },
   { id: 2, date: "2026-01-15", invoice_no: "INV-2026-0000000004", order_ref: "#ORD-00000005921", taxable_value: 758.93, total_tax: 91.07, currency: "INR", download_available: true },
   { id: 3, date: "2026-01-14", invoice_no: "INV-2026-0000000003", order_ref: "#ORD-00000044921", taxable_value: 1540.00, total_tax: 277.20, currency: "INR", download_available: true },
@@ -382,7 +382,7 @@ export const COUPON_COLORS = {
 // ============================================================
 
 
-export const REVIEW_DATA: UserReviewType[] = [
+export const REVIEW_DATA: UserReview[] = [
   { id: 1, user_name: "Rahul K.", purchased_item: "Cotton T-Shirt", rating: 5, review_text: "Great quality fabric! Fits perfectly and delivery was super fast. Will definitely order again.", time_posted: "2 hours ago", actions: { can_reply: true, can_report: true } },
   { id: 2, user_name: "Sneha M.", purchased_item: "Floral Summer Dress", rating: 4, review_text: "The print is beautiful and exactly as shown. The fit is slightly loose around the waist but comfortable.", time_posted: "5 hours ago", actions: { can_reply: true, can_report: true } },
   { id: 3, user_name: "Amit P.", purchased_item: "Slim Fit Jeans", rating: 3, review_text: "Quality is decent for the price, but the color faded slightly after the first wash.", time_posted: "1 day ago", actions: { can_reply: true, can_report: true } },
@@ -400,7 +400,7 @@ export const REVIEW_DATA: UserReviewType[] = [
 // ============================================================
 
 
-export const CUSTOMER_TICKET_DATA: CustomerTicketType[] = [
+export const CUSTOMER_TICKET_DATA: CustomerTicket[] = [
   { id: 1, ticket_number: "#9021", customer_name: "Sneha Kapoor", related_order: "#ORD-00009921", subject: "Received wrong size", description: "I ordered a Medium Cotton T-Shirt, but I received a Small. Please arrange for an exchange.", status: "In Progress", priority: "High", created: " 2 hours ago" },
   { id: 2, ticket_number: "#8955", customer_name: "Rahul Verma", related_order: "#ORD-00005921", subject: "Package marked delivered but not received", description: "The tracking says delivered yesterday, but I haven't received anything at my doorstep.", status: "Resolved", priority: "High", created: " 1 day ago" },
   { id: 3, ticket_number: "#8810", customer_name: "Amit Patel", related_order: "#ORD-00004492", subject: "Question about fabric care", description: "Can I machine wash the silk saree I bought, or is it dry clean only?", status: "Resolved", priority: "Low", created: " 3 days ago" },

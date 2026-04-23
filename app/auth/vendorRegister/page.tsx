@@ -9,10 +9,10 @@ import { VendorRegisterFormData, } from "@/utils/Types";
 import { RegistrationSuccessModal } from "@/components/common/RegistrationSuccessModal";
 import FinancialCompliance from "@/components/vendor/FinancialCompliance";
 import { DocUploadInput, DocUploadInputRef } from "@/components/vendor/DocUploadInput";
-import { VendorDocumentTypes } from "@/constants";
+import { CATEGORY_LIST, VendorDocumentTypes } from "@/constants";
 import { BUSINESS_ADMIN_ACCOUNT_FIELDS, ORGANIZATION_DETAIL_FIELDS, RegistrationStages } from "@/constants/dynamicFields";
 import { Button } from "@/components/common/Button";
-import { vendorRegisterSchema, VendorRegisterSchemaType } from "@/utils/validation";
+import { vendorRegisterSchema, VendorRegisterSchema } from "@/utils/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 // Fields that belong to each step — used for per-step validation
@@ -30,10 +30,8 @@ export default function VendorRegisterPage() {
     const [countryCode, setCountryCode] = useState("");
     const [formStep, setFormStep] = useState(0);
     const totalSteps = Object.keys(RegistrationStages).length;
-    const [fileMap, setFileMap] = useState<{ file: File | null; type: string }[]>([]);
-
-
-
+    const [financialFileMap, setFinancialFileMap] = useState<{ file: File | null; type: string; index: number }[]>([]);
+    const [legalFileMap, setLegalFileMap] = useState<{ file: File | null; type: string; index: number }[]>([]);
     const {
         register,
         handleSubmit,
@@ -71,19 +69,18 @@ export default function VendorRegisterPage() {
     };
 
     const prevStep = () => setFormStep((prev) => Math.max(prev - 1, 0));
-
-    const onSubmit = async (data: VendorRegisterSchemaType) => {
+    const onSubmit = async (data: VendorRegisterSchema) => {
         setGlobalError(null);
         const formData = new FormData();
-        fileMap.forEach(({ file, type }) => {
+        [...financialFileMap, ...legalFileMap].forEach(({ file, type }) => {
             if (file) {
                 const renamedFile = new File([file], `${type}__${file.name}`, { type: file.type });
                 formData.append("documents", renamedFile);
             }
         });
         formData.append("vendor", JSON.stringify(data));
-        // console.log(formData.getAll("documents"));
-        // console.log(formData.get("vendor"));
+        console.log(formData.getAll("documents"));
+        console.log(formData.get("vendor"));
         try {
             const result = await vendorRegister(formData);
             if (result?.status) {
@@ -133,10 +130,10 @@ export default function VendorRegisterPage() {
                                                         {subField.type === "select" ? (
                                                             <select
                                                                 className={`input-class w-full ${subField.styles ?? ""}`}
-                                                                {...register(subField.id as keyof VendorRegisterSchemaType)}
+                                                                {...register(subField.id as keyof VendorRegisterSchema)}
                                                                 onChange={(e) => {
                                                                     setCountryCode(e.target.value);
-                                                                    register(subField.id as keyof VendorRegisterSchemaType).onChange(e);
+                                                                    register(subField.id as keyof VendorRegisterSchema).onChange(e);
                                                                 }}
                                                             >
                                                                 <option value="">code</option>
@@ -149,13 +146,13 @@ export default function VendorRegisterPage() {
                                                                 type={subField.type ?? "text"}
                                                                 className={`input-class w-full ${subField.styles ?? ""}`}
                                                                 placeholder={subField.placeholder}
-                                                                {...register(subField.id as keyof VendorRegisterSchemaType)}
+                                                                {...register(subField.id as keyof VendorRegisterSchema)}
                                                             />
                                                         )}
 
-                                                        {errors[subField.id as keyof VendorRegisterSchemaType] && (
+                                                        {errors[subField.id as keyof VendorRegisterSchema] && (
                                                             <p className="input-error text-xs">
-                                                                {errors[subField.id as keyof VendorRegisterSchemaType]?.message}
+                                                                {errors[subField.id as keyof VendorRegisterSchema]?.message}
                                                             </p>
                                                         )}
                                                     </div>
@@ -166,10 +163,10 @@ export default function VendorRegisterPage() {
                                                 {field.type === "select" ? (
                                                     <select
                                                         className={`input-class w-full ${""}`}
-                                                        {...register(field.id as keyof VendorRegisterSchemaType)}
+                                                        {...register(field.id as keyof VendorRegisterSchema)}
                                                         onChange={(e) => {
                                                             setCountryCode(e.target.value);
-                                                            register(field.id as keyof VendorRegisterSchemaType).onChange(e);
+                                                            register(field.id as keyof VendorRegisterSchema).onChange(e);
                                                         }}
                                                     >
                                                         <option value="">Select {field.label}</option>
@@ -180,11 +177,11 @@ export default function VendorRegisterPage() {
                                                         type={field.type ?? "text"}
                                                         className="input-class"
                                                         placeholder={field.placeholder}
-                                                        {...register(field.id as keyof VendorRegisterSchemaType)}
+                                                        {...register(field.id as keyof VendorRegisterSchema)}
                                                     />)}
-                                                {errors[field.id as keyof VendorRegisterSchemaType] && (
+                                                {errors[field.id as keyof VendorRegisterSchema] && (
                                                     <p className="input-error">
-                                                        {errors[field.id as keyof VendorRegisterSchemaType]?.message}
+                                                        {errors[field.id as keyof VendorRegisterSchema]?.message}
                                                     </p>
                                                 )}
                                             </>
@@ -243,8 +240,8 @@ export default function VendorRegisterPage() {
                             <FinancialCompliance country_code={countryCode} />
 
                             <DocUploadInput
-                                setFileMap={setFileMap}
-                                fileMap={fileMap}
+                                setFileMap={setFinancialFileMap}
+                                fileMap={financialFileMap}
                                 typeList={COUNTRIES.find((c) => c.country_code === countryCode)?.fields || []}
                                 title="Financial Documents"
                             />
@@ -259,8 +256,8 @@ export default function VendorRegisterPage() {
                             <h2 className="text-lg font-bold text-gray-800 mb-4">Legal & Financial Document Upload</h2>
                             <p className="text-sm text-gray-500 mb-6">Please ensure all documents are clear and legible.</p>
                             <DocUploadInput
-                                setFileMap={setFileMap}
-                                fileMap={fileMap}
+                                setFileMap={setLegalFileMap}
+                                fileMap={legalFileMap}
                                 typeList={VendorDocumentTypes}
                                 title="Legal Business / Store Documents"
                             />
@@ -289,7 +286,7 @@ export default function VendorRegisterPage() {
                                             type={field.type}
                                             placeholder={field.placeholder}
                                             className="input-class"
-                                            {...register(field.id as keyof VendorRegisterSchemaType, {
+                                            {...register(field.id as keyof VendorRegisterSchema, {
                                                 required: `${field.label} is required`,
                                                 // Extra rule: confirm_password must match password
                                                 ...(field.id === "confirm_password" && {
@@ -298,62 +295,48 @@ export default function VendorRegisterPage() {
                                                 }),
                                             })}
                                         />
-                                        {errors[field.id as keyof VendorRegisterSchemaType] && (
+                                        {errors[field.id as keyof VendorRegisterSchema] && (
                                             <p className="input-error">
-                                                {errors[field.id as keyof VendorRegisterSchemaType]?.message}
+                                                {errors[field.id as keyof VendorRegisterSchema]?.message}
                                             </p>
                                         )}
                                     </div>
                                 ))}
                             </div>
-                            <div className="w-full flex justify-end gap-4 mt-6">
-                                <Button label="Previous" onClick={prevStep} className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all" />
-                                <Button label="Next" onClick={nextStep} />
-                            </div>
+                            <section className="rounded-2xl w-full mb-2 mt-6">
+                                {globalError && (
+                                    <p className="text-red-600 text-center text-sm font-medium mb-4">{globalError}</p>
+                                )}
+                                <div className="w-full flex justify-between gap-4">
+
+                                    <Button
+                                        label="Previous"
+                                        onClick={prevStep}
+                                        className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => { reset(); setFormStep(0); }}
+                                        className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="py-2 px-6 rounded-xl bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all"
+                                    >
+                                        {isSubmitting ? "Creating..." : "Create Business Account"}
+                                    </button>
+                                </div>
+                                <p className="text-center text-sm text-gray-600 mt-4">
+                                    Already have an account?{" "}
+                                    <Link className="text-blue-500 underline" href="/auth/vendorLogin">Log in</Link>
+                                </p>
+                            </section>
                         </section>
                     )}
 
-                    {/* ── Step 4: Review & Submit ── */}
-                    {formStep === 4 && (
-                        <section className="border border-gray-100 bg-white p-6 rounded-2xl w-full shadow-md shadow-gray-100/80">
-                            <h2 className="font-bold text-xl mb-2">Review & Submit</h2>
-                            <p className="text-sm text-gray-500 mb-6">
-                                Please review your information before submitting.
-                            </p>
-                            {globalError && (
-                                <p className="text-red-600 text-center text-sm font-medium mb-4">{globalError}</p>
-                            )}
-                            <div className="w-full flex justify-end gap-4">
-                                <Button
-                                    label="Previous"
-                                    onClick={prevStep}
-                                    className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="py-2 px-6 rounded-xl bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all"
-                                >
-                                    {isSubmitting ? "Creating..." : "Create Business Account"}
-                                </button>
-                            </div>
-                        </section>
-                    )}
-
-                    <div className="flex gap-4 justify-end mb-4">
-                        <button
-                            type="button"
-                            onClick={() => { reset(); setFormStep(0); }}
-                            className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-
-                    <p className="text-center text-sm text-gray-600 mb-4">
-                        Already have an account?{" "}
-                        <Link className="text-blue-500 underline" href="/auth/vendorLogin">Log in</Link>
-                    </p>
                 </form>
             </main>
         </>

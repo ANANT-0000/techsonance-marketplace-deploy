@@ -1,5 +1,5 @@
 ﻿"use client";
-import { FileOrImage, ProductImageType } from "@/utils/Types";
+import { FileOrImage, ProductImage } from "@/utils/Types";
 import { useCallback, useRef } from "react";
 
 export function usePreviewUrls() {
@@ -7,7 +7,7 @@ export function usePreviewUrls() {
     const getPreviewUrl = useCallback((file: FileOrImage): string => {
         if (!(file instanceof File)) {
 
-            return (file as ProductImageType).image_url;
+            return (file as ProductImage).image_url;
         }
         if (urlCache.current.has(file)) {
 

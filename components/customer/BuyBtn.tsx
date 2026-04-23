@@ -1,5 +1,4 @@
 'use client';
-import Link from 'next/link'
 import type { RootState } from '@/lib/store';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
@@ -11,6 +10,7 @@ import { createCheckoutSession } from '@/hooks/UseCheckoutSession';
 
 export function BuyBtn({ id, styles, mode }: { id?: string, styles?: string, mode?: BuyBtnMode }) {
   const { user } = useAppSelector((state: RootState) => state.auth);
+  console.log(user)
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   useEffect(() => {
@@ -18,7 +18,7 @@ export function BuyBtn({ id, styles, mode }: { id?: string, styles?: string, mod
   }, []);
   const userId = user?.id ? user.id : '';
   const handleBuyClick = async () => {
-
+console.log(userId)
     if (!user || !userId) {
       return router.push('/auth/customerLogin');
     }

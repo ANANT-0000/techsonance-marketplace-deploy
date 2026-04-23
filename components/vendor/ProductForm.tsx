@@ -4,7 +4,7 @@ import { BASE_API_URL, ORGANIZATION_TAXATION_OPTIONS, PRODUCT_FORM_FIELDS, PRODU
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { usePreviewUrls } from "@/lib/clientUtils";
 import { generateSKU } from "@/utils/generateSku";
-import { FileOrImage, ProductImageType, ProductStatusEnum, VendorUserType } from "@/utils/Types";
+import { FileOrImage, ProductImage, ProductStatusEnum, VendorUser } from "@/utils/Types";
 import { ProductFormInput, ProductFormOutput, ProductFormValuesType, productSchema } from "@/utils/validation";
 import { createInventoryRecord, createProduct, fetchVendorWarehouse, fetchVendorWarehouseLocations, updateProduct } from "@/utils/vendorApiClient";
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod.js";

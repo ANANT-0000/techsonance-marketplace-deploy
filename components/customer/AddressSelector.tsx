@@ -1,9 +1,10 @@
 ﻿import { fetchGetUserAddresses } from "@/utils/customerApiClient";
-import { AddressType } from "@/utils/Types";
+import { Address } from "@/utils/Types";
 import { MapPin, Plus } from "lucide-react";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, use, useEffect, useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
+import { on } from "events";
 
 const BADGE_STYLES: Record<string, string> = {
     home: "bg-green-50 text-green-700",
@@ -20,7 +21,7 @@ export function AddressSelector({
     selectedAddressId: string;
     onSelect: Dispatch<SetStateAction<string>>;
 }) {
-    const [addresses, setAddresses] = useState<AddressType[]>([]);
+    const [addresses, setAddresses] = useState<Address[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -32,7 +33,17 @@ export function AddressSelector({
         };
         fetchAddresses();
     }, [userId]);
+    useEffect(() => {
+        console.log("Fetched addresses:", addresses);
+        addresses.find(addr => {
+            const isMatch = addr.is_default === true;
+            if (isMatch) {
+                onSelect(addr.id);
+            }
+        }
+        )
 
+    }, [addresses]);
     return (
         <div className="border border-gray-200 rounded-xl p-4 lg:p-5 space-y-3">
 
@@ -83,8 +94,8 @@ export function AddressSelector({
                                 onClick={() => onSelect(addr.id)}
                                 whileTap={{ scale: 0.99 }}
                                 className={`w-full text-left flex items-start gap-3 p-3 rounded-lg border transition-all text-sm ${isSelected
-                                        ? "border-blue-400 bg-blue-50"
-                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                    ? "border-blue-400 bg-blue-50"
+                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                                     }`}
                             >
                                 {/* Radio indicator */}

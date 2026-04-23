@@ -29,7 +29,7 @@ export const vendorRegisterSchema = z.object({
   message: "Passwords do not match",
   path: ["confirm_password"],
 });
-export type VendorRegisterSchemaType = z.infer<typeof vendorRegisterSchema>;
+export type VendorRegisterSchema = z.infer<typeof vendorRegisterSchema>;
 
 export const loginSchema = z.object({
   email: z.email({ message: "Invalid email address" }),
@@ -358,9 +358,9 @@ export const AddressSchema = z.object({
     .min(2, "Name must be at least 2 characters")
     .max(50, "Name is too long"),
   phone: z.string()
-    .regex(/^\d+$/, "Phone number must contain only digits")
+    .regex(/^[\d\s]+$/, "Phone number must contain only digits and spaces")
     .min(10, "Phone number is too short")
-    .max(15, "Phone number is too long"),
+    .max(15, "Phone number is too long").transform((val) => val.replace(/\s/g, '')),
   address_for: z.enum(ADDRESS_TYPE_ENUM),
 
   address_line_1: z.string().min(1, "Address line 1 is required"),

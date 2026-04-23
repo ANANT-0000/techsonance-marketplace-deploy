@@ -6,7 +6,7 @@ import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { companyDomain } from "@/config";
+
 import { fetchAddToCart, fetchRemoveFromCart } from "@/utils/customerApiClient";
 import { useEffect } from "react";
 
@@ -62,7 +62,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
 
         try {
             const newQuantity = quantity === 0 ? 1 : quantity + 1;
-            const response = await fetchAddToCart(productVariantId, newQuantity, user?.id, companyDomain);
+            const response = await fetchAddToCart(productVariantId, newQuantity, user?.id,);
             const cartResponse: CartItemResponse = response.data;
 
 
@@ -89,7 +89,6 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                 user?.id,
                 cartItem.cartId,
                 cartItem.cartItemId,
-                companyDomain
             );
             const cartResponse: CartItemResponse = response.data;
 

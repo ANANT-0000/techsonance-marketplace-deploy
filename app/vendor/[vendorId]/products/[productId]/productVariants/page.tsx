@@ -3,7 +3,7 @@ import { Plus, Package, Edit, ArrowLeft, Layers, Tag, ImageOff } from "lucide-re
 import { fetchProductVariants } from "@/utils/vendorApiClient";
 import { DeleteBtn } from "@/components/vendor/DeleteBtn";
 import { VariantImgGrid } from "@/components/vendor/VariantImgGrid";
-import { ProductImageType } from "@/utils/Types";
+import { ProductImage } from "@/utils/Types";
 import { formatCurrency } from "@/lib/utils";
 
 interface ProductVariant {
@@ -13,7 +13,7 @@ interface ProductVariant {
     stock_quantity: number;
     status: string;
     attributes: { name: string; value: string }[];
-    images: ProductImageType[] | null;
+    images: ProductImage[] | null;
 }
 
 export default async function VariantListingPage({

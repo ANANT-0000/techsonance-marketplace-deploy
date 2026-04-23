@@ -20,7 +20,9 @@ export default function AdminLoginPage() {
             === "admin") {
             setLoading(true);
             console.log("Already logged in as admin.");
-            router.push(`/admin/${auth.user.id}`);
+            if (auth.user.id) {
+                router.push(`/admin/${auth.user.id}`);
+            }
         }
         setLoading(false);
     }, []);

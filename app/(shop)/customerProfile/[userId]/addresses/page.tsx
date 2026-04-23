@@ -10,7 +10,7 @@ import { AddressModal } from "@/components/customer/AddressModel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { fetchDeleteUserAddress, fetchGetUserAddresses, fetchSetDefaultAddress } from "@/utils/customerApiClient";
-import { AddressOperationEnum, AddressType } from "@/utils/Types";
+import { AddressOperationEnum, Address } from "@/utils/Types";
 
 export default function Addresses() {
     const user = useAppSelector((state: RootState) => state.auth.user);
@@ -18,7 +18,7 @@ export default function Addresses() {
     const [isModalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<AddressOperationEnum>(AddressOperationEnum.ADD);
     const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
-    const [addressList, setAddressList] = useState<AddressType[]>([]);
+    const [addressList, setAddressList] = useState<Address[]>([]);
     useEffect(() => {
         const fetchAddresses = async () => {
             if (user?.id) {

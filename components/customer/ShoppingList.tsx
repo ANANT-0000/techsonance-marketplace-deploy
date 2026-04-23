@@ -12,13 +12,13 @@ import { motion, MotionConfig } from "motion/react";
 import type { RootState } from "@/lib/store";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { BuyBtnMode, ProductType } from "@/utils/Types";
+import { BuyBtnMode, Product} from "@/utils/Types";
 import { formatCurrency } from "@/lib/utils";
 
 export function ShoppingList({
     products, styles
 }: {
-    products: ProductType[];
+    products: Product[];
     styles?: string;
 }) {
     console.log(products)
@@ -41,7 +41,7 @@ export function ShoppingList({
         )
     }
     console.log("firstIndex, lastIndex", firstIndex, lastIndex);
-    const productsToShow: ProductType[] = products
+    const productsToShow: Product[] = products
     console.log("productsToShow", productsToShow);
     return (
         <>

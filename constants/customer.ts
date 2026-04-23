@@ -1,6 +1,6 @@
 export const HOME_SECONDARY_IMG = "https://m.media-amazon.com/images/I/61KcQyhY6SL._SL1200_.jpg";
 
-import { BestSellingProductType, CATEGORY_LIST_TYPE, FeedbackType, FooterSectionType, NavLinkType, OrderFailedStatusTypes, OrderSuccessStatusTypes, ProductType } from "@/utils/Types"
+import { BestSellingProductType, CategoryList, Feedback, FooterSectionType, NavLinkType, OrderFailedStatus, OrderSuccessStatus, Product } from "@/utils/Types"
 
 
 
@@ -168,50 +168,50 @@ export const AboutPageContent = {
         }]
 
 }
-export const mockSuccessStatus: OrderSuccessStatusTypes = {
-    orderId: "#345-9204268-1845104",
-    orderDate: "Jan 1",
-    estimatedDelivery: "Jan 4",
-    shippingAddress: {
-        line1: "flat no 202, bblossom the presidency,",
-        line2: "vesu, near raguver spectrum building",
-        city: "SURAT",
-        state: "GUJARAT",
-        postalCode: "395007",
-        country: "India"
-    },
-    paymentMethod: {
-        type: "UPI",
-        details: "bankofindia@1313yap"
-    },
-    items: [
-        {
-            id: "1",
-            name: "Sound Sphere Bass Pro",
-            image: "/product-image.png",
-            color: "Midnight Black",
-            quantity: 1,
-            price: 1399
-        }
-    ],
-    subtotal: 1399,
-    discount: 300,
-    delivery: 0,
-    total: 1099,
+// export const mockSuccessStatus: OrderSuccessStatus = {
+//     orderId: "#345-9204268-1845104",
+//     orderDate: "Jan 1",
+//     estimatedDelivery: "Jan 4",
+//     shippingAddress: {
+//         line1: "flat no 202, bblossom the presidency,"
+//         line2: "vesu, near raguver spectrum building",
+//         city: "SURAT",
+//         state: "GUJARAT",
+//         postalCode: "395007",
+//         country: "India"
+//     },
+//     paymentMethod: {
+//         type: "UPI",
+//         details: "bankofindia@1313yap"
+//     },
+//     items: [
+//         {
+//             id: "1",
+//             name: "Sound Sphere Bass Pro",
+//             image: "/product-image.png",
+//             color: "Midnight Black",
+//             quantity: 1,
+//             price: 1399
+//         }
+//     ],
+//     subtotal: 1399,
+//     discount: 300,
+//     delivery: 0,
+//     total: 1099,
 
-}
+// }
 
-export const mockFailedStatus: OrderFailedStatusTypes = {
-    errorCode: "PAYMENT_DECLINED",
-    transactionId: "TXN123456789",
-    attemptedAmount: 1099,
-    possibleReasons: [
-        "Insufficient funds in the account.",
-        "Incorrect card details entered.",
-        "Bank's fraud detection system flagged the transaction.",
-        "Technical issues with the payment gateway."
-    ]
-}
+// export const mockFailedStatus: OrderFailedStatusTypes = {
+//     errorCode: "PAYMENT_DECLINED",
+//     transactionId: "TXN123456789",
+//     attemptedAmount: 1099,
+//     possibleReasons: [
+//         "Insufficient funds in the account.",
+//         "Incorrect card details entered.",
+//         "Bank's fraud detection system flagged the transaction.",
+//         "Technical issues with the payment gateway."
+//     ]
+// }
 export const HOME_BRAND_FEATURES: { title: string; icon: string }[] = [
     {
         title: 'Secure Payment',
@@ -231,7 +231,7 @@ export const HOME_BRAND_FEATURES: { title: string; icon: string }[] = [
     },
 ]
 
-export const CATEGORY_LIST: CATEGORY_LIST_TYPE[] = [
+export const CATEGORY_LIST: CategoryList[] = [
     {
         title: 'Guitars',
         url: 'https://m.media-amazon.com/images/I/61KcQyhY6SL._SL1200_.jpg'
@@ -274,7 +274,7 @@ export const BEST_SELLING_PRODUCTS: BestSellingProductType = {
     satisfaction: '98%  ',
 }
 
-export const FEEDBACK_LIST: FeedbackType[] = [
+export const FEEDBACK_LIST: Feedback[] = [
     {
         customerName: 'John Doe',
         feedback: 'I had an amazing experience shopping at Sound Sphere! The website is user-friendly, and the customer service was top-notch. I found exactly what I was looking for and received my order quickly. Highly recommend!',

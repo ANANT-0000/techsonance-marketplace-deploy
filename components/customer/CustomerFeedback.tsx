@@ -1,12 +1,12 @@
 'use client';
 import { motion } from 'motion/react';
 import { Quote } from 'lucide-react';
-import { FeedbackType } from '@/utils/Types';
+import { Feedback } from '@/utils/Types';
 
 export function CustomerFeedback({
     FEEDBACK_LIST, styles
 }: {
-    FEEDBACK_LIST: FeedbackType[];
+    FEEDBACK_LIST: Feedback[];
     styles?: string;
 }) {
     // Container variants to stagger the child cards

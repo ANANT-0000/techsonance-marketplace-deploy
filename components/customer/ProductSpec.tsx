@@ -1,7 +1,7 @@
-﻿import { ProductFeatureType, ProductResponseType, VariantsType } from "@/utils/Types";
+﻿import { ProductFeature, ProductResponseType, Variant } from "@/utils/Types";
 
 
-export const ProductSpecifications = ({ product }: { product: ProductFeatureType[] }) => {
+export const ProductSpecifications = ({ product }: { product: ProductFeature[] }) => {
     console.log(product)
     
 

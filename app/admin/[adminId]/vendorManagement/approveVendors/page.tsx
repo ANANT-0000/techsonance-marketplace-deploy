@@ -2,19 +2,17 @@
 
 import { Navbar } from "@/components/admin/Navbar";
 import { useEffect, useState } from "react";
-import { Check, X, BadgeCheck, ShieldAlert } from "lucide-react";
-import { VendorApplication } from "@/utils/Types";
+import { Check, X, BadgeCheck, ShieldAlert, } from "lucide-react";
+import { VendorApplication, } from "@/utils/Types";
 import { ADMIN_BASE_URL, down_arrow, internet_icon } from "@/constants";
 import { approveVendor, fetchApplications, rejectVendor } from "@/utils/adminApiClients";
-import { set } from "date-fns";
+import { formatStructure, formatDate } from "@/lib/utils";
+import { DocumentsSection } from "@/components/admin/DocumentSection";
 
 
-const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString();
 
-const formatStructure = (s: string) =>
-    s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
+/* ── Main Page ── */
 export default function ApproveVendorsPage() {
     const [isOpen, setIsOpen] = useState<number | null>(null);
     const [vendorApplications, setVendorApplications] = useState<VendorApplication[]>([]);
@@ -23,20 +21,43 @@ export default function ApproveVendorsPage() {
         fetchApplications()
             .then((applications) => {
                 setVendorApplications(applications.data);
+                console.log(applications.data[0]);
             })
             .catch((error) => {
                 console.error('Error fetching vendor applications:', error);
             });
-
-    }, []);
-
+    }, [vendorApplications.length]);
+    const onApprove = async (vendorId: string) => {
+        try {
+            await approveVendor(vendorId);
+            setVendorApplications((prev) =>
+                prev.map((app) =>
+                    app.id === vendorId ? { ...app, company: { ...app.company, company_status: 'approved' }, vendor_status: 'approved' } : app
+                )
+            );
+        } catch (error) {
+            console.error('Error approving vendor:', error);
+        }
+    }
+    const onReject = async (vendorId: string) => {
+        try {
+            await rejectVendor(vendorId);
+            setVendorApplications((prev) =>
+                prev.map((app) =>
+                    app.id === vendorId ? { ...app, company: { ...app.company, company_status: 'rejected' }, vendor_status: 'rejected' } : app
+                )
+            );
+        } catch (error) {
+            console.error('Error rejecting vendor:', error);
+        }
+    }
     return (
         <>
             <Navbar title="Vendors Applications" />
             <div>
                 {vendorApplications.map((application, index) => {
-                    const { vendor, user, company } = application;
-                    const ownerName = `${vendor.store_owner_first_name} ${vendor.store_owner_last_name}`;
+                    const { user, company, ...vendor } = application;
+                    const ownerName = `${vendor?.store_owner_first_name} ${vendor?.store_owner_last_name}`;
 
                     return (
                         <section key={index} className="border-2 border-gray-400 my-6 rounded-xl">
@@ -148,11 +169,6 @@ export default function ApproveVendorsPage() {
                                                     : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
                                                     Vendor: {vendor.vendor_status}
                                                 </span>
-                                                {/* <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${user.user_status === 'pending'
-                                                    ? 'bg-amber-50 text-amber-600 border-amber-200'
-                                                    : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
-                                                    User: {user.user_status}
-                                                </span> */}
                                                 <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${company.company_status === 'pending'
                                                     ? 'bg-amber-50 text-amber-600 border-amber-200'
                                                     : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
@@ -162,6 +178,9 @@ export default function ApproveVendorsPage() {
                                         </div>
                                     </span>
 
+                                    {/* ── Documents Preview ── */}
+                                    <DocumentsSection documents={vendor.documents} />
+
                                     {/* ── Validation Actions ── */}
                                     <span className="flex gap-6 justify-between items-baseline">
                                         <div className="flex flex-1 flex-col gap-6 border-2 border-gray-300 rounded-xl mt-6 px-8 py-4">
@@ -170,10 +189,10 @@ export default function ApproveVendorsPage() {
                                                 By approving, a dedicated database instance will be provisioned for
                                                 <span className="ml-1 font-black">{company.company_domain}</span>
                                             </p>
-                                            <button onClick={() => approveVendor(vendor.id)} className="cursor-pointer rounded-lg font-medium text-white bg-black py-2 px-4">
+                                            <button onClick={() => onApprove(vendor.id)} className="cursor-pointer rounded-lg font-medium text-white bg-black py-2 px-4">
                                                 Verify & Approve Vendor
                                             </button>
-                                            <button onClick={() => rejectVendor(vendor.id)} className="cursor-pointer rounded-lg font-medium bg-red-50 text-red-500 py-2 px-4">
+                                            <button onClick={() => onReject(vendor.id)} className="cursor-pointer rounded-lg font-medium bg-red-50 text-red-500 py-2 px-4">
                                                 Reject
                                             </button>
                                         </div>

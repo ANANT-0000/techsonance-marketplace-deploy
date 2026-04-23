@@ -32,6 +32,7 @@ interface OrderItemType {
     // id: string;
     // product_name: string;
     quantity: number;
+    order_status: string;
     // price: string;
     // total_price: string;
 }
@@ -58,7 +59,6 @@ export default function OrdersPage() {
             await fetchVendorOrderList().then((res) => {
                 console.log("Vendor Orders List:", res);
                 setOrders(res.data);
-
             }
             ).catch((err) => {
                 console.error("Error fetching vendor orders list:", err);
@@ -76,7 +76,7 @@ export default function OrdersPage() {
     return (
         <>
             {/* <Navbar title={"Orders"} /> */}
-            <main>
+            <main className="w-full">
                 <header className="flex justify-end items-center my-6">
                     <button className="font-medium text-xl bg-blue-500 text-white rounded-xl px-6 py-2">Export CSV</button>
                 </header>
@@ -133,7 +133,7 @@ export default function OrdersPage() {
                     <tbody className="text-center">
                         {orders.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="p-8 text-gray-500">No orders found.</td>
+                                <td colSpan={10} className="p-8 text-gray-500">No orders found.</td>
                             </tr>
                         ) : (
                             orders.map((item, index) => (
@@ -154,12 +154,12 @@ export default function OrdersPage() {
                                     </td>
                                     {/* STATUS */}
                                     <td className="p-4 capitalize">
-                                        {item.order_status === "pending" ? (
+                                        {item.items[0]?.order_status === "pending" ? (
                                             <span className="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-lg text-sm">Pending</span>
-                                        ) : item.order_status === "active" || item.order_status === "delivered" ? (
-                                            <span className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-sm">{item.order_status}</span>
+                                        ) : item.items[0]?.order_status === "active" || item.items[0]?.order_status === "delivered" ? (
+                                            <span className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-sm">{item.items[0]?.order_status}</span>
                                         ) : (
-                                            <span className="bg-gray-100 text-gray-800 py-1 px-3 rounded-lg text-sm">{item.order_status}</span>
+                                            <span className="bg-gray-100 text-gray-800 py-1 px-3 rounded-lg text-sm">{item.items[0]?.order_status}</span>
                                         )}
                                     </td>
 

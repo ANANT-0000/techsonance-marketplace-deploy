@@ -11,7 +11,6 @@ import { useMediaQuery } from "react-responsive";
 import { RootState } from "@/lib/store";
 import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { companyDomain } from "@/config";
 import { fetchGetCartList } from "@/utils/customerApiClient";
 import { setItemList } from "@/lib/features/Cart";
 import { CartItemListResponse } from "@/app/(shop)/customerProfile/[userId]/cart/page";
@@ -31,7 +30,7 @@ export function CartSidebar() {
     const fetchCartList = async () => {
       if (user?.id) {
         try {
-          const response = await fetchGetCartList(user.id, companyDomain);
+          const response = await fetchGetCartList(user.id);
 
           setCartList(response.data || []);
         } catch (error) {

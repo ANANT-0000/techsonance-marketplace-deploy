@@ -91,7 +91,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                             productList.map((item: Product, index: number) => (
                                 <TableRow key={index} className={`hover:bg-gray-100 ${item.id === productList[pageSize - 1]?.id || item.id === productList[productList.length - 1]?.id ? 'border-b-0' : 'border-b border-gray-400'} border-b border-gray-400   `}>
                                     <TableCell className={`p-4   `}> <input type="checkbox" className="w-6 h-6" /></TableCell>
-                                    <TableCell className={` max-w-6 min-w-4 pr-4  `}> <img className=" min-h-8 min-w-8   rounded-2xl" src={item.images[0].image_url} alt="product image" /> </TableCell>
+                                    <TableCell className={` max-w-6 min-w-4 pr-4  `}> <img className=" min-h-8 min-w-8   rounded-2xl" src={item.variants[0].images[0].image_url} alt="product image" /> </TableCell>
                                     <TableCell className={`p-4  line-clamp-1 whitespace-normal min-w-[300px] max-w-[500px] text-start  `}>
                                         {item.name.trimStart()}
                                     </TableCell>
@@ -125,9 +125,9 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
                                     <TableCell className={`p-4 text-start  `}>₹ {item.base_price}</TableCell>
                                     <TableCell className={`p-4 text-start  `}>
                                         {
-                                            item.status
+                                            item.variants && item?.variants[0]?.status
                                                 === "active" ? <span className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-sm">Active</span> :
-                                                item.status === "inactive" ? <span className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-sm">In Active</span> :
+                                                item.variants && item?.variants[0]?.status === "inactive" ? <span className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-sm">In Active</span> :
                                                     <></>
                                         }
                                     </TableCell>

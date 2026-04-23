@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { formatCurrency } from "@/lib/utils"; // Assuming you have this
+import { formatCurrency } from "@/lib/utils";
 import {
     ArrowLeft,
     Download,
@@ -11,12 +11,15 @@ import {
     Package,
     Star,
     Truck,
-    CheckCircle2
-} from "lucide-react"; // npm install lucide-react (Standard icon library)
+    CheckCircle2,
+    XCircle,
+    RefreshCcw
+} from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchOrderDetails } from "@/utils/customerApiClient";
-import { ShippingAddress } from "@/utils/Types";
+import { OrderStatusEnum } from "@/constants";
+
 interface OrderImage {
     image_url: string;
 }
@@ -31,6 +34,7 @@ interface ProductVariant {
 interface OrderItem {
     quantity: number;
     price: string;
+    order_status: OrderStatusEnum;
     productVariant: ProductVariant;
 }
 
@@ -60,7 +64,6 @@ interface OrderDetailType {
     id: string;
     user_id: string;
     total_amount: string;
-    order_status: string;
     created_at: string;
     items: OrderItem[];
     address: Address;
@@ -71,11 +74,10 @@ interface OrderDetailType {
 }
 
 export default function OrderDetailsPage() {
-    // Mock Data based on your JSON structure
     const { orderId } = useParams<{ orderId: string }>();
     const [order, setOrder] = useState<OrderDetailType | null>(null);
-    // Helper for Status UI
-    const getStatusSteps = (currentStatus: string) => {
+
+    const getStatusSteps = (currentStatus: OrderStatusEnum) => {
         const steps = ['pending', 'shipped', 'delivered'];
         const currentIndex = steps.indexOf(currentStatus);
         return steps.map((step, index) => ({
@@ -84,6 +86,7 @@ export default function OrderDetailsPage() {
             active: index === currentIndex
         }));
     };
+
     useEffect(() => {
         if (!orderId) return;
         const getOrderDetails = async () => {
@@ -98,12 +101,26 @@ export default function OrderDetailsPage() {
         }
         getOrderDetails();
     }, [orderId]);
+
+    // Handlers for the new actions
+    const handleCancelItem = (variantId: string) => {
+        console.log("Initiating cancel for item:", variantId);
+        // Add your cancel logic/API call here
+        alert("Cancellation requested for item.");
+    };
+
+    const handleReturnReplace = (variantId: string) => {
+        console.log("Initiating return/replace for item:", variantId);
+        // Add your return logic/API call here
+        alert("Navigating to Return/Replace flow.");
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50 pb-12 font-sans">
+        <div className="min-h-screen pb-12 font-sans rounded-2xl">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                 {/* --- HEADER --- */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 mb-6 ">
                     <button
                         onClick={() => window.history.back()}
                         className="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -118,7 +135,7 @@ export default function OrderDetailsPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
 
-                    {/* --- LEFT COLUMN: Tracking & Items (Spans 2 columns on desktop) --- */}
+                    {/* --- LEFT COLUMN: Tracking & Items --- */}
                     <div className="lg:col-span-2 space-y-6">
 
                         {/* Status Tracker */}
@@ -128,15 +145,13 @@ export default function OrderDetailsPage() {
                         >
                             <h2 className="text-lg font-bold text-gray-900 mb-6">Delivery Status</h2>
                             <div className="relative flex justify-between items-center w-full">
-                                {/* Connecting Line */}
                                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 z-0 rounded-full"></div>
                                 <div
                                     className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-green-500 z-0 rounded-full transition-all duration-500"
-                                    style={{ width: order?.order_status === 'delivered' ? '100%' : '50%' }} // Adjust dynamically in real app
+                                    style={{ width: order?.items[0].order_status === 'delivered' ? '100%' : '50%' }}
                                 ></div>
 
-                                {/* Status Points */}
-                                {order?.order_status && getStatusSteps(order?.order_status).map((step, idx) => (
+                                {order?.items[0].order_status && getStatusSteps(order?.items[0].order_status).map((step, idx) => (
                                     <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
                                         <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border-2 bg-white transition-colors
                                             ${step.completed ? 'border-green-500 text-green-500' : 'border-gray-300 text-gray-400'}`}>
@@ -174,24 +189,64 @@ export default function OrderDetailsPage() {
                                         {/* Details */}
                                         <div className="flex-grow flex flex-col justify-between">
                                             <div>
-                                                <Link href={`/shop/product/${item.productVariant.id}`} className="font-bold text-gray-900 text-sm sm:text-base hover:text-blue-600 line-clamp-2 transition-colors">
+                                                <Link href={`/shopping/${item.productVariant.id}`} className="font-bold text-gray-900 text-sm sm:text-base hover:text-blue-600 line-clamp-2 transition-colors">
                                                     {item.productVariant.variant_name}
                                                 </Link>
                                                 <p className="text-gray-500 text-sm mt-1">Qty: {item.quantity}</p>
                                                 <p className="text-gray-900 font-semibold mt-1">₹{formatCurrency(Number(item.price))}</p>
                                             </div>
 
-                                            {/* Action Buttons */}
-                                            {order?.order_status === 'delivered' && (
-                                                <div className="flex gap-3 mt-4 sm:mt-0 pt-2">
-                                                    <button className="text-sm px-4 py-2 bg-blue-50 text-blue-600 font-medium rounded-full hover:bg-blue-100 transition-colors">
-                                                        Buy it again
-                                                    </button>
-                                                    <button className="text-sm px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-full hover:bg-gray-50 transition-colors">
-                                                        Write a Review
-                                                    </button>
-                                                </div>
-                                            )}
+                                            {/* Action Buttons (Contextual based on status) */}
+                                            <div className="flex flex-col sm:flex-row flex-wrap gap-3 mt-4 sm:mt-0 pt-2 items-start sm:items-center">
+
+                                                {/* Show ACTIVE Cancel if order is pending/processing (not shipped or delivered) */}
+                                                {item.order_status !== 'shipped' && item.order_status !== 'delivered' && (
+                                                    <div className="flex flex-col gap-1 sm:items-start">
+                                                        <button
+                                                            className="flex items-center w-fit gap-1.5 text-sm px-4 py-2 border border-red-200 text-red-400 font-medium rounded-full bg-red-50 cursor-pointer hover:bg-red-100 transition-colors"
+                                                        >
+                                                            <XCircle size={16} /> Cancel Item
+                                                        </button>
+                                                        <span className="text-[16px] text-gray-500 px-2">
+                                                            Items cannot be canceled once shipped.
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                                {/* Show DISABLED Cancel with a notice if the item is already shipped */}
+                                                {item.order_status === 'shipped' && (
+                                                    <div className="flex flex-col gap-1 sm:items-start">
+                                                        <button
+                                                            disabled
+                                                            className="flex items-center w-fit gap-1.5 text-sm px-4 py-2 border border-gray-200 text-gray-400 font-medium rounded-full bg-gray-50 cursor-not-allowed"
+                                                        >
+                                                            <XCircle size={16} /> Cancel Item
+                                                        </button>
+                                                        <span className="text-[16px] text-gray-500 px-2">
+                                                            Items cannot be canceled once shipped.
+                                                        </span>
+                                                    </div>
+                                                )}
+
+
+                                                {/* Show Return/Replace and standard post-delivery actions if delivered */}
+                                                {item.order_status === 'delivered' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleReturnReplace(item.productVariant.id)}
+                                                            className="flex items-center gap-1.5 text-sm px-4 py-2 border border-orange-300 text-orange-700 font-medium rounded-full hover:bg-orange-50 transition-colors"
+                                                        >
+                                                            <RefreshCcw size={16} /> Return / Replace
+                                                        </button>
+                                                        <button className="text-sm px-4 py-2 bg-blue-50 text-blue-600 font-medium rounded-full hover:bg-blue-100 transition-colors">
+                                                            Buy it again
+                                                        </button>
+                                                        <button className="text-sm px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-full hover:bg-gray-50 transition-colors">
+                                                            Write a Review
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -199,7 +254,7 @@ export default function OrderDetailsPage() {
                         </motion.div>
 
                         {/* Delivery Experience Rating */}
-                        {order?.order_status === 'delivered' && (
+                        {order?.items[0].order_status === 'delivered' && (
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                                 className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 flex flex-col sm:flex-row items-center justify-between gap-4"
@@ -265,7 +320,6 @@ export default function OrderDetailsPage() {
                             </div>
                         </motion.div>
 
-                        {/* Shipping Address */}
                         <motion.div
                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
                             className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200"
@@ -279,8 +333,6 @@ export default function OrderDetailsPage() {
                                 <p>{order?.address?.country}</p>
                             </div>
                         </motion.div>
-
-                        {/* Support / Help */}
                         <motion.div
                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
                             className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col gap-3"
@@ -289,14 +341,15 @@ export default function OrderDetailsPage() {
                             <button className="flex items-center gap-3 text-sm text-blue-600 font-medium hover:underline w-fit">
                                 <HeadphonesIcon size={18} /> Contact Customer Support
                             </button>
+                            {/* Fallback support options just in case */}
                             <button className="flex items-center gap-3 text-sm text-blue-600 font-medium hover:underline w-fit">
-                                <ArrowLeft size={18} /> Return or Replace Items
+                                <RefreshCcw size={18} /> View Return Policy
                             </button>
                         </motion.div>
 
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

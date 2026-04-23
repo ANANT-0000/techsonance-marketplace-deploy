@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { fetchAddWishList, fetchDeleteWishList } from '@/utils/customerApiClient';
-import { companyDomain } from '@/config';
 import { RootState } from '@/lib/store';
 export function WishListBtn({ productVariantId
   , styles, iconSize }: {
@@ -15,7 +14,7 @@ export function WishListBtn({ productVariantId
   }) {
   const dispatch = useAppDispatch();
   const { wishItems } = useAppSelector((state: RootState) => state.wishlist)
-  const { user ,role} = useAppSelector((state: RootState) => state.auth)
+  const { user, role } = useAppSelector((state: RootState) => state.auth)
   const existingWishlistItem = wishItems.some(
     (item) => item.product_variant_id === productVariantId
   );
@@ -42,16 +41,15 @@ export function WishListBtn({ productVariantId
       router.push('/auth/customerLogin');
       return;
     }
-
     if (existingWishlistItem) {
       const itemToRemove = wishItems.find(item => item.product_variant_id === variantId);
       dispatch(removeFromWishlist(itemToRemove?.id ?? ''));
-      await fetchDeleteWishList(variantId, user?.id ?? '', companyDomain);
+      await fetchDeleteWishList(variantId, user?.id ?? '');
       console.log(`Removing product ${productVariantId
         } from wishlist`);
       return;
     }
-    const response = await fetchAddWishList(variantId, user?.id ?? '', companyDomain);
+    const response = await fetchAddWishList(variantId, user?.id ?? '');
     const data: {
       id: string;
       wishlist_id: string;

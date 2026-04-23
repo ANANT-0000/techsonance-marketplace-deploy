@@ -12,10 +12,10 @@ import FinancialCompliance from "@/components/vendor/FinancialCompliance";
 import { Button } from "@/components/common/Button";
 import { RegistrationSuccessModal } from "@/components/common/RegistrationSuccessModal";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { vendorRegisterSchema, VendorRegisterSchemaType } from "@/utils/validation";
+import { vendorRegisterSchema, VendorRegisterSchema } from "@/utils/validation";
 import { vendorRegister } from "@/utils/authApiClient";
 
-const STEP_FIELDS: Record<number, (keyof VendorRegisterSchemaType)[]> = {
+const STEP_FIELDS: Record<number, (keyof VendorRegisterSchema)[]> = {
     0: ["company_name", "store_owner_first_name", "store_owner_last_name", "country_code", "phone_number", "category", "company_structure"],
     1: ["company_domain"],
     2: [],
@@ -70,7 +70,7 @@ export default function VendorFormPage() {
     const prevStep = () => setFormStep((prev) => Math.max(prev - 1, 0));
 
     // Fix 2: single onSubmit — removed the dead first version
-    const onSubmit = async (data: VendorRegisterSchemaType) => {
+    const onSubmit = async (data: VendorRegisterSchema) => {
         setGlobalError(null);
 
 
@@ -129,12 +129,12 @@ export default function VendorFormPage() {
                                                         {subField.type === "select" ? (
                                                             <select
                                                                 className={`input-class w-full ${subField.styles ?? ""}`}
-                                                                {...register(subField.id as keyof VendorRegisterSchemaType, {
+                                                                {...register(subField.id as keyof VendorRegisterSchema, {
                                                                     required: "Country code is required",
                                                                 })}
                                                                 onChange={(e) => {
                                                                     setCountryCode(e.target.value);
-                                                                    register(subField.id as keyof VendorRegisterSchemaType).onChange(e);
+                                                                    register(subField.id as keyof VendorRegisterSchema).onChange(e);
                                                                 }}
                                                             >
                                                                 <option value="">Code</option>
@@ -147,15 +147,15 @@ export default function VendorFormPage() {
                                                                 type={subField.type ?? "text"}
                                                                 className={`input-class w-full ${subField.styles ?? ""}`}
                                                                 placeholder={subField.placeholder}
-                                                                {...register(subField.id as keyof VendorRegisterSchemaType, {
+                                                                {...register(subField.id as keyof VendorRegisterSchema  , {
                                                                     required: "Phone number is required",
                                                                     pattern: { value: /^[0-9\-]+$/, message: "Please use format 123-456-7890" },
                                                                 })}
                                                             />
                                                         )}
-                                                        {errors[subField.id as keyof VendorRegisterSchemaType] && (
+                                                        {errors[subField.id as keyof VendorRegisterSchema] && (
                                                             <p className="input-error">
-                                                                {errors[subField.id as keyof VendorRegisterSchemaType]?.message}
+                                                                {errors[subField.id as keyof VendorRegisterSchema]?.message}
                                                             </p>
                                                         )}
                                                     </span>
@@ -166,7 +166,7 @@ export default function VendorFormPage() {
                                             <>
                                                 <select
                                                     className="input-class"
-                                                    {...register(field.id as keyof VendorRegisterSchemaType, {
+                                                    {...register(field.id as keyof VendorRegisterSchema, {
                                                         required: `${field.label} is required`,
                                                     })}
                                                 >
@@ -175,9 +175,9 @@ export default function VendorFormPage() {
                                                         <option key={o.value} value={o.value}>{o.label}</option>
                                                     ))}
                                                 </select>
-                                                {errors[field.id as keyof VendorRegisterSchemaType] && (
+                                                {errors[field.id as keyof VendorRegisterSchema] && (
                                                     <p className="input-error">
-                                                        {errors[field.id as keyof VendorRegisterSchemaType]?.message}
+                                                        {errors[field.id as keyof VendorRegisterSchema]?.message}
                                                     </p>
                                                 )}
                                             </>
@@ -188,13 +188,13 @@ export default function VendorFormPage() {
                                                     type={field.type ?? "text"}
                                                     className="input-class"
                                                     placeholder={field.placeholder}
-                                                    {...register(field.id as keyof VendorRegisterSchemaType, {
+                                                    {...register(field.id as keyof VendorRegisterSchema, {
                                                         required: `${field.label} is required`,
                                                     })}
                                                 />
-                                                {errors[field.id as keyof VendorRegisterSchemaType] && (
+                                                {errors[field.id as keyof VendorRegisterSchema] && (
                                                     <p className="input-error">
-                                                        {errors[field.id as keyof VendorRegisterSchemaType]?.message}
+                                                        {errors[field.id as keyof VendorRegisterSchema]?.message}
                                                     </p>
                                                 )}
                                             </>
@@ -301,7 +301,7 @@ export default function VendorFormPage() {
                                             type={field.type}
                                             placeholder={field.placeholder}
                                             className="input-class"
-                                            {...register(field.id as keyof VendorRegisterSchemaType, {
+                                            {...register(field.id as keyof VendorRegisterSchema, {
                                                 required: `${field.label} is required`,
                                                 ...(field.id === "confirm_password" && {
                                                     validate: (val) =>
@@ -312,9 +312,9 @@ export default function VendorFormPage() {
                                                 }),
                                             })}
                                         />
-                                        {errors[field.id as keyof VendorRegisterSchemaType] && (
+                                        {errors[field.id as keyof VendorRegisterSchema] && (
                                             <p className="input-error">
-                                                {errors[field.id as keyof VendorRegisterSchemaType]?.message}
+                                                {errors[field.id as keyof VendorRegisterSchema]?.message}
                                             </p>
                                         )}
                                     </div>

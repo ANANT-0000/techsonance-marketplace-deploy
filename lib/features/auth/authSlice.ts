@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { UserRole, UserType, VendorUserType } from '../../../utils/Types';
+import { UserRole, User, VendorUser } from '../../../utils/Types';
 import { ACCESS_TOKEN_KEY, CART_KEY, IS_AUTHENTICATED_KEY, isClient, USER_STORAGE_KEY, WISHLIST_KEY } from '@/constants';
 
 
@@ -21,7 +21,7 @@ const getUserFromLocalStorage = () => {
 
 export interface AuthType {
     isAuthenticated: boolean;
-    user: Partial<UserType | VendorUserType> | null;
+    user: Partial<User | VendorUser> | null;
     loading: boolean;
     error: string | null;
     token: string | null;

@@ -17,7 +17,7 @@ const StarRating = ({ rating, size = 12 }: { rating: number; size?: number }) =>
 );
 
 export const ProductReview = ({ product }: { product: Product }) => {
-    const reviews:Review[] = product?.variants?.[0]?.reviews || [];
+    const reviews: Review[] = product?.variants?.[0]?.reviews || [];
 
     const averageRating = reviews.length > 0
         ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
@@ -57,13 +57,13 @@ export const ProductReview = ({ product }: { product: Product }) => {
                     >
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                <h3 className="font-bold text-gray-900 capitalize">{review.userName}</h3>
+                                {/* <h3 className="font-bold text-gray-900 capitalize">{review.userName}</h3> */}
                                 <div className="mt-1">
                                     <StarRating rating={review.rating} />
                                 </div>
                             </div>
                             <time className="text-xs text-gray-400 font-medium">
-                                {new Date(review.date).toLocaleDateString(undefined, {
+                                {new Date(review.created_at).toLocaleDateString(undefined, {
                                     year: 'numeric',
                                     month: 'short',
                                     day: 'numeric'
@@ -72,7 +72,7 @@ export const ProductReview = ({ product }: { product: Product }) => {
                         </div>
 
                         <p className="text-gray-600 leading-relaxed text-sm italic">
-                            "{review.comment}"
+                            "{review.review}"
                         </p>
                     </motion.div>
                 ))}

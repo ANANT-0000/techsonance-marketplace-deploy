@@ -1,15 +1,15 @@
 ﻿import { BASE_API_URL, CUSTOMER_BASE_URL } from "@/constants";
 import { authToken } from "./authToken";
-import { companyDomain } from "@/config";
 import { getCompanyDomain } from "@/lib/get-domain";
 
 export const fetchCustomerProfile = async () => {
     try {
+        const companyDomain = await getCompanyDomain();
         const response = await fetch(`${CUSTOMER_BASE_URL}/profile`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-
+                "company-domain": companyDomain,
                 // Authorization: `Bearer ${await authToken()}`,
             },
         });
@@ -23,8 +23,9 @@ export const fetchCustomerProfile = async () => {
         throw error;
     }
 };
-export const fetchCustomerWishlist = async (customerId: string, companyDomain: string) => {
+export const fetchCustomerWishlist = async (customerId: string,) => {
     try {
+        const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}wishlist/${customerId} `, {
             method: 'GET',
             headers: {
@@ -43,9 +44,10 @@ export const fetchCustomerWishlist = async (customerId: string, companyDomain: s
 
     }
 }
-export const fetchAddWishList = async (productId: string, customerId: string, companyDomain: string) => {
+export const fetchAddWishList = async (productId: string, customerId: string,) => {
     console.log("productId", productId);
     console.log("customerId", customerId);
+    const companyDomain = await getCompanyDomain();
 
     try {
         const response = await fetch(`${BASE_API_URL}wishlist/${customerId}`, {
@@ -65,7 +67,8 @@ export const fetchAddWishList = async (productId: string, customerId: string, co
         console.log('Error updating wishlist:', error);
     }
 };
-export const fetchDeleteWishList = async (productId: string, customerId: string, companyDomain: string) => {
+export const fetchDeleteWishList = async (productId: string, customerId: string) => {
+    const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}wishlist/${customerId}`, {
             method: 'DELETE',
@@ -85,7 +88,8 @@ export const fetchDeleteWishList = async (productId: string, customerId: string,
         console.log('Error updating wishlist:', error);
     }
 };
-export const fetchAddToCart = async (productVariantId: string, quantity: number, customerId: string, companyDomain: string) => {
+export const fetchAddToCart = async (productVariantId: string, quantity: number, customerId: string) => {
+    const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}cart/${customerId}`, {
             method: 'POST',
@@ -104,13 +108,14 @@ export const fetchAddToCart = async (productVariantId: string, quantity: number,
         console.log('Error adding to cart:', error);
     }
 };
-export const fetchRemoveFromCart = async (customerId: string, cartId: string, cartItemId: string, companyDomain: string) => {
+export const fetchRemoveFromCart = async (customerId: string, cartId: string, cartItemId: string) => {
     console.log('8888888888888')
     console.log('customerId', customerId)
     console.log('cartId', cartId)
     console.log('cartItemId', cartItemId)
 
     try {
+        const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}cart/${customerId}`, {
             method: 'DELETE',
             headers: {
@@ -128,7 +133,8 @@ export const fetchRemoveFromCart = async (customerId: string, cartId: string, ca
         console.log('Error removing from cart:', error);
     }
 };
-export const fetchGetCartList = async (customerId: string, companyDomain: string) => {
+export const fetchGetCartList = async (customerId: string) => {
+    const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}cart/${customerId}`, {
             method: 'GET',
@@ -147,7 +153,8 @@ export const fetchGetCartList = async (customerId: string, companyDomain: string
         console.log('Error fetching cart:', error);
     }
 };
-export const fetchUpdateCartQuantity = async (productVariantId: string, quantity: number, customerId: string, companyDomain: string) => {
+export const fetchUpdateCartQuantity = async (productVariantId: string, quantity: number, customerId: string) => {
+    const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}cart/${customerId}`, {
             method: 'PATCH',
@@ -169,6 +176,7 @@ export const fetchUpdateCartQuantity = async (productVariantId: string, quantity
 }
 
 export const fetchGetUserAddresses = async (customerId: string,) => {
+    const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}address/customer/${customerId}`, {
             method: 'GET',
@@ -316,7 +324,8 @@ export const checkAddressExistence = async (customerId: string) => {
 }
 
 
-export const fetchInitiatePayment = async (customerId: string, paymentData: any, companyDomain: string) => {
+export const fetchInitiatePayment = async (customerId: string, paymentData: any ) => {
+    const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}checkout/${customerId}/initiate`, {
             method: 'POST',
@@ -342,8 +351,7 @@ export const fetchInitiatePayment = async (customerId: string, paymentData: any,
 };
 
 export const fetchUserOrderHistory = async (customerId: string) => {
-    const companyDomainTest = await getCompanyDomain();
-    console.log("companyDomainTest", companyDomainTest)
+    const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}orders/user/${customerId}`, {
             method: 'GET',
@@ -364,6 +372,7 @@ export const fetchUserOrderHistory = async (customerId: string) => {
     }
 };
 export const fetchOrderDetails = async (orderId: string) => {
+    const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}orders/${orderId}`, {
             method: 'GET',
@@ -383,3 +392,25 @@ export const fetchOrderDetails = async (orderId: string) => {
         console.log('Error fetching order details:', error);
     }
 }
+
+export const fetchCancelOrderItem = async (
+    itemId: string,
+    reason: string,
+    domain: string,
+) => {
+    const response = await fetch(
+        `${BASE_API_URL}orders/orderItems/${itemId}/cancel`,
+        {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': domain,
+            },
+            body: JSON.stringify({
+                reason,
+                cancelled_by: 'customer',
+            }),
+        },
+    );
+    return response.json();
+};

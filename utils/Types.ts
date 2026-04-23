@@ -1,5 +1,5 @@
 ﻿
-import { VendorRegisterSchemaType } from "./validation";
+import { VendorRegisterSchema } from "./validation";
 export enum UserStatusEnum {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
@@ -53,7 +53,7 @@ export enum BuyBtnMode {
   CART = 'cart',
   QUICK_BUY = 'quick-buy',
 }
-export interface VendorUserType {
+export interface VendorUser {
   company_id: string;
   vendor_id: string | null;
   id: string;
@@ -72,7 +72,7 @@ export interface VendorUserType {
   joined_at: Date;
 }
 
-export interface UserType {
+export interface User {
   id: string;
   profile_picture_url: string | null;
   first_name: string | null;
@@ -89,7 +89,7 @@ export interface UserType {
 }
 // Supporting Interfaces based on your schema
 // used in multiple places
-export interface AddressType {
+export interface Address {
   address_line1: string;
   address_line2: string;
   address_type: string;
@@ -111,11 +111,11 @@ export interface AddressType {
 
 export interface Cart {
   cart_id: string;
-  items: CartItemType[];
+  items: CartItem[];
   created_at: string;
 }
 //used in cart 
-export interface CartItemType {
+export interface CartItem {
   cartId: string;
   cartItemId: string;
   quantity: number;
@@ -131,7 +131,7 @@ export interface UserOrder {
   order_id: number;
   order_status: OrderStatusEnum;
   delivered_at?: string;
-  shippingTo: AddressType | string;
+  shippingTo: Address | string;
   products?: { product_id: string; quantity: number }[];
   total_amount: number;
   address_id: number;
@@ -185,27 +185,27 @@ export interface ShippingAddress {
 export interface PaymentMethod {
   type: string;
   details: string;
-}export interface BestSellingProductType {
+}export interface BestSellingProduct {
   title: string;
   url: string;
   description: string;
   satisfaction: string;
 }
-export interface CATEGORY_LIST_TYPE {
+export interface CategoryList {
   title: string;
   url: string;
 }
 
-export interface FeedbackType {
+export interface Feedback {
   customerName: string;
   feedback: string;
   rating: number;
 }
-export interface CATEGORY_LIST_TYPE {
+export interface CATEGORY_LIST {
   title: string;
   url: string;
 }
-export interface OrderSuccessStatusTypes {
+export interface OrderSuccessStatus {
   orderId?: string;
   orderDate?: string;
   estimatedDelivery?: string;
@@ -219,7 +219,7 @@ export interface OrderSuccessStatusTypes {
 
 }
 
-export interface OrderFailedStatusTypes {
+export interface OrderFailedStatus {
   errorCode?: string;
   transactionId?: string;
   attemptedAmount?: number;
@@ -227,12 +227,12 @@ export interface OrderFailedStatusTypes {
 }
 
 export interface VendorRegisterFormData {
-  vendor: VendorRegisterSchemaType;
+  vendor: VendorRegisterSchema;
   documents: File[] | undefined | FormData
 
 }
 
-export interface CATEGORY_LIST_TYPE {
+export interface CATEGORY_LIST {
   title: string;
   url: string;
 }
@@ -244,7 +244,7 @@ export interface BestSellingProductType {
   satisfaction: string;
 }
 
-export interface FeedbackType {
+export interface Feedback {
   customerName: string;
   feedback: string;
   rating: number;
@@ -288,17 +288,6 @@ export interface Review {
   product_variant_id: string;
   user_id: string;
 }
-export interface Variant {
-  id: string;
-  variant_name: string;
-  price: string;
-  sku: string;
-  status: ProductStatusEnum;
-  images: ProductImage[];
-  attributes: AttributesType[];
-  inventory: Inventory;
-  reviews?: Review[];
-}
 // used in vendor product list and product details page
 export interface Product {
   id: string;
@@ -307,7 +296,6 @@ export interface Product {
   features: Feature[];
   base_price: string;
   discount_percent: string;
-  status: ProductStatusEnum;
   created_at: string;
   updated_at: string;
   company_id: string;
@@ -447,11 +435,32 @@ export interface Company {
   created_at: string;
   updated_at: string;
 }
+export interface VendorDocument {
+  id: string;
+  document_type: string;
+  document_url: string;
+  document_status: string;
+  created_at: string;
+  updated_at: string;
+  vendor_id: string;
+}
 
 export interface VendorApplication {
-  vendor: Vendor;
-  user: UserType;
+  id: string;
+  store_owner_first_name: string;
+  store_owner_last_name: string;
+  store_name: string;
+  store_description: string;
+  category: string;
+  vendor_status: string;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+  company_id: string;
+  user_id: string;
+  user: User;
   company: Company;
+  documents: VendorDocument[];
 }
 export interface NavLinkType {
   [key: string]: string | null;
@@ -474,11 +483,11 @@ export interface tabLinkType {
   [key: string]: string | null;
 }
 
-export type FeatureType = { title: string; description: string };
+export type ProductFeature = { title: string; description: string };
 // export type ProductFormValuesType = {
 //   productName: string;
 //   description: string;
-//   features: FeatureType[];
+//   features: ProductFeatureType[];
 //   attributes: AttributesType[];
 //   basePrice: string;
 //   discountPercent: string;
@@ -492,7 +501,7 @@ export type FeatureType = { title: string; description: string };
 // };
 
 
-export interface CustomerTicketType {
+export interface CustomerTicket {
   id: number;
   ticket_number: string;
   customer_name: string;
@@ -503,7 +512,7 @@ export interface CustomerTicketType {
   priority: 'High' | 'Medium' | 'Low';
   created: string;
 }
-export interface UserReviewType {
+export interface UserReview {
   id: number;
   user_name: string;
   purchased_item: string;
@@ -513,7 +522,7 @@ export interface UserReviewType {
   actions: { can_reply: boolean; can_report: boolean };
 }
 
-export interface CouponType {
+export interface Coupon {
   id: number;
   code: string;
   discount_type: CouponDiscountTypeEum;
@@ -525,7 +534,7 @@ export interface CouponType {
     customer_segment?: 'ALL' | 'NEW_CUSTOMERS';
     expiry_text: string;
   };
-}export interface GstInvoiceType {
+}export interface GstInvoice {
   id: number;
   date: string;
   invoice_no: string;
@@ -535,7 +544,7 @@ export interface CouponType {
   currency: string;
   download_available: boolean;
 }
-export interface InventoryProductType {
+export interface InventoryProduct {
   id: string;
   productName: string;
   sku: string;
@@ -545,7 +554,7 @@ export interface InventoryProductType {
   warehouse: 'Main Warehouse' | 'North Hub';
   status: InventoryItemStatusEnum;
   imageUrl: string;
-}export interface WarehouseType {
+}export interface Warehouse {
   warehouse_id: number;
   company_id: number;
   name: string;
@@ -559,7 +568,7 @@ export interface InventoryProductType {
   phone?: string;
   location: string
 }
-export type OrderDetailType = {
+export type OrderDetail = {
   id: string;
   orderNumber: string;
   dateTime: string;
@@ -571,7 +580,7 @@ export type OrderDetailType = {
   total: number;
   paymentMethod: 'Paid (UPI)' | 'COD' | 'Refunded' | 'Card payment';
 };
-export interface VendorProductType {
+export interface VendorProduct {
   id: string;
   name: string;
   category: string;
@@ -580,7 +589,7 @@ export interface VendorProductType {
   status: "Active" | "Draft" | "Archived";
   imageUrl: string;
   sales: number;
-}export interface InventoryItemType {
+}export interface InventoryItem {
   id: string;
   name: string;
   sku: string;
@@ -592,7 +601,7 @@ export interface VendorProductType {
 }
 
 
-export interface VendorOrderType {
+export interface VendorOrder {
   orderId: string;
   customerName: string;
   status: OrderStatusEnum,
@@ -601,7 +610,7 @@ export interface VendorOrderType {
   date?: string;
   items?: number;
 }
-export interface ComplianceFieldType {
+export interface ComplianceField {
   value: string;
   label: string;
   placeholder: string;
@@ -609,16 +618,16 @@ export interface ComplianceFieldType {
   helperText: string;
 }
 
-export interface CountryComplianceType {
+export interface CountryCompliance {
   country_code: string;
   country_name: string;
-  fields: ComplianceFieldType[];
+  fields: ComplianceField[];
 }
 
 
-export type FileOrImage = File | ProductImageType;
+export type FileOrImage = File | ProductImage;
 
-export type VariantFormValuesType = {
+export type VariantFormValues = {
   variantName: string;
   attributes: { name: string; value: string }[];
   basePrice: string;
@@ -629,31 +638,36 @@ export type VariantFormValuesType = {
   variantMediaGallery: FileOrImage[];
   status: string;
   productId: string;
+  warehouseId?: string;
 };
 
-export type AttributesType = {
+export type ProductAttributes = {
   name: string,
   value: string
 }
 //used
-export type VariantsType = {
+export type Variant = {
   id: string
   variant_name: string,
   sku: string,
-  attributes: AttributesType[],
+  attributes: ProductAttributes[],
   product_id: string;
   price: string;
   stock_quantity: number;
-  images: ProductImageType[];
-  inventory: InventoryType;
-  reviews?: ReviewType[];
+  status: ProductStatusEnum;
+  seo_meta: string | null;
+  created_at: string;
+  updated_at: string;
+  images: ProductImage[];
+  inventory: Inventory;
+  reviews?: Review[];
 }
 //used
 export type ProductResponseType = {
   id: string;
   name: string;
   description: string;
-  features: ProductFeatureType[];
+  features: ProductFeature[];
   base_price: string;
   discount_percent: string;
   stock_quantity: string;
@@ -664,8 +678,8 @@ export type ProductResponseType = {
   company_id: string;
   vendor_id: string;
   category_id: string;
-  images: ProductImageType[];
-  variants: VariantsType;
+  images: ProductImage[];
+  variants: Variant[];
   tax_profile: string,
 
 };

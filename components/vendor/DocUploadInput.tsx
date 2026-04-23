@@ -1,9 +1,8 @@
 ﻿"use client";
-import { type VendorDocumentTypes } from "@/constants";
-import { ComplianceFieldType, CountryComplianceType } from "@/utils/Types";
+import { VendorDocumentTypes } from "@/constants";
+import { ComplianceField, CountryCompliance } from "@/utils/Types";
 import { DynamicIcon } from "lucide-react/dynamic";
-import { useState, useCallback, useImperativeHandle, forwardRef, Dispatch, SetStateAction } from "react";
-
+import { useState, Dispatch, SetStateAction } from "react";
 
 type FileEntry = {
     file: File | null;
@@ -34,13 +33,12 @@ export const DocUploadInput = (
         setFileMap: Dispatch<SetStateAction<{
             file: File | null;
             type: string;
+            index: number;
         }[]>>,
-        fileMap: {
-            file: File | null;
-            type: string;
-        }[], typeList: ComplianceFieldType[] | typeof VendorDocumentTypes, title: string
+        fileMap: { file: File | null; type: string; index: number }[], typeList: ComplianceField[] | typeof VendorDocumentTypes, title: string
     }) => {
         const [showField, setShowField] = useState(false);
+        const [loggedFileNames, setLoggedFileNames] = useState<string[]>([]);
         // Expose getPairs() to parent via ref
         const handleFileChange = (
             e: React.ChangeEvent<HTMLInputElement>,
@@ -48,10 +46,15 @@ export const DocUploadInput = (
             index: number
         ) => {
             const file = e.target.files?.[0] ?? null;
-            setFileMap((prevMap: any) => {
+            setFileMap((prevMap: { file: File | null; type: string; index: number }[]) => {
                 // 1. Check if an entry with this index already exists
-                const existingIndex = prevMap.findIndex((item: any) => item.index === index);
+                const existingIndex = prevMap.findIndex((item: { file: File | null; type: string; index: number }) => item.index === index);
+                console.log("existingIndex", existingIndex);
+                setLoggedFileNames((prev) =>
+                    [...prev, `existingIndex ${existingIndex}`]
+                )
                 if (existingIndex !== -1) {
+                    console.log("existingIndex", existingIndex);
                     // 2. If it exists, create a copy and replace the item at that position
                     const updatedMap = [...prevMap];
                     updatedMap[existingIndex] = { file, type: fieldId ?? "", index };
@@ -62,11 +65,15 @@ export const DocUploadInput = (
                 }
             });
 
-
         };
-        console.log("   fileMap in change handler", fileMap);
+        console.log(loggedFileNames)
         return (
             <div className="mt-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                {loggedFileNames.length > 0 && loggedFileNames.map((name, idx) => (
+                    <p key={idx} className="text-xs text-gray-500">
+                        {name}
+                    </p>
+                ))}
                 <div className="w-full pb-3 border-b-2 border-b-black/10">
                     <div className="flex items-center justify-between mb-4">
                         <p className="font-semibold text-gray-700">{title}</p>
@@ -89,8 +96,9 @@ export const DocUploadInput = (
                     {showField && (
                         <div className="flex flex-col gap-3">
                             {typeList.map((field, index) => {
-                                const entry = fileMap[field.value as any];
+                                const entry = fileMap.find((item: { index: number }) => item.index === index);
                                 // const isPaired = !!entry?.file && !!entry?.type;
+                                console.log(JSON.stringify(entry))
 
                                 return (
                                     <div
@@ -121,30 +129,6 @@ export const DocUploadInput = (
 
                                             <p>{field.label}</p>
                                         </div>
-                                        {/* Type select — controlled by fileMap */}
-                                        {/* <select
-                                        value={entry?.type ?? ""}
-                                        onChange={(e) => handleTypeChange(e, field.id)}
-                                        className="shrink-0 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500/30 outline-none transition-all"
-                                    >
-                                        <option value="" disabled>
-                                            Select type
-                                        </option>
-                                        {typeList.map((type) => (
-                                            <option key={type.value} value={type.value}>
-                                                {type.label}
-                                            </option>
-                                        ))}
-                                    </select> */}
-
-                                        {/* Paired badge */}
-                                        {/* {
-                                        isPaired && (
-                                            <span className="shrink-0 text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-lg whitespace-nowrap">
-                                                ✓
-                                            </span>
-                                        )
-                                    } */}
                                     </div>
                                 );
                             })}

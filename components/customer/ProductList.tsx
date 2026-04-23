@@ -7,9 +7,9 @@ import { AddToCart } from "./AddToCart";
 import { BuyBtn } from "./BuyBtn";
 import { WishListBtn } from "./WishListBtn";
 import Link from "next/link";
-import { BuyBtnMode, ProductType } from "@/utils/Types";
+import { BuyBtnMode, Product } from "@/utils/Types";
 
-export function ProductList({ products = [], styles }: { products?: ProductType[], styles?: string }) {
+export function ProductList({ products = [], styles }: { products?: Product[], styles?: string }) {
     const isMobile = useMediaQuery({ maxWidth: 768 });
     const isTablet = useMediaQuery({ minWidth: 769, maxWidth: 1024 });
     const [scope, animate] = useAnimate()
@@ -94,7 +94,7 @@ export function ProductList({ products = [], styles }: { products?: ProductType[
     );
 }
 
-function ProductCard({ product, isMobile }: { product: ProductType, isMobile: boolean }) {
+function ProductCard({ product, isMobile }: { product: Product, isMobile: boolean }) {
     return (
         <li className="flex flex-col justify-between text-lg text-gray-700 hover:text-gray-900 cursor-pointer border-2 border-gray-200 rounded-lg p-4 relative  transition-shadow hover:shadow-md"
         >
@@ -105,7 +105,7 @@ function ProductCard({ product, isMobile }: { product: ProductType, isMobile: bo
                 <Link href={`/shopping/${product.id}`} className="block overflow-hidden rounded-lg">
                     <img
                         className="w-full object-cover lg:aspect-9/14 aspect-9/12 rounded-lg mb-4 transform hover:scale-105 transition-transform duration-300"
-                        src={product.images && product.images.length > 0 ? product.images[0].image_url : "https://placehold.net/10.png"}
+                        src={product.variants[0]?.images && product.variants[0].images.length > 0 ? product.variants[0].images[0].image_url : "https://placehold.net/10.png"}
                         alt={product.name?.trim()}
                     />
                 </Link>

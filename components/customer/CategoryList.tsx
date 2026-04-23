@@ -1,8 +1,8 @@
 'use client';
-import { CATEGORY_LIST_TYPE } from "@/utils/Types";
+import {type  CategoryList } from "@/utils/Types";
 import { motion } from "motion/react";
 
-export function CategoryList({ categories, styles }: { categories?: CATEGORY_LIST_TYPE[], styles?: string }) {
+export function CategoryList({ categories, styles }: { categories?: CategoryList[], styles?: string }) {
 
     // Parent container variant to stagger the children
     const containerVariants = {

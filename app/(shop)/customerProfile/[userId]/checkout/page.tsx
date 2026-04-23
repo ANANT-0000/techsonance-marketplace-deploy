@@ -4,15 +4,14 @@ import { useState, useEffect, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { formatCurrency } from "@/lib/utils";
-import { companyDomain } from "@/config";
 import { SelectedPaymentMethod } from "@/components/customer/SelectedPaymentMethod";
 import { BASE_API_URL, PAYMENT_METHODS_FIELDS } from "@/constants";
 import { fetchGetCartList } from "@/utils/customerApiClient";
 import { MapPin, CreditCard, CheckCircle2 } from "lucide-react";
-import Link from "next/link";
 import { AddressSelector } from "@/components/customer/AddressSelector";
 import { fetchProductVariantDetails } from "@/utils/commonAPiClient";
 import { useCheckoutSession } from "@/hooks/UseCheckoutSession";
+import { getCompanyDomain } from "@/lib/get-domain";
 interface VariantDetails {
   id: string;
   variant_name: string;
@@ -75,6 +74,7 @@ function CheckoutContent() {
       setLogger(prev => [...prev, `Loading checkout data for type=${checkoutType} and id=${id}`]);
       setIsLoadingOrder(true);
       setCheckoutError(null);
+      const companyDomain = await getCompanyDomain();
       try {
         console.log('fetching product variant isQuickBuy', isQuickBuy)
         if (isQuickBuy) {
@@ -105,7 +105,7 @@ function CheckoutContent() {
         } else {
           // Fetch cart items
           setLogger(prev => [...prev, `Fetching cart items for user: ${params.userId}`]);
-          const res = await fetchGetCartList(params.userId, companyDomain);
+          const res = await fetchGetCartList(params.userId);
           const cartItems = res?.data ?? [];
 
           if (!res?.success || cartItems.length === 0) {
@@ -145,6 +145,7 @@ function CheckoutContent() {
   console.log("orderData", orderData)
   // --- Coupon ---
   const handleCouponApply = async () => {
+    const companyDomain = await getCompanyDomain();
     if (!couponCode.trim()) return;
     try {
       const response = await fetch(`${BASE_API_URL}checkout/apply-coupon/${user?.id}`, {
@@ -172,6 +173,7 @@ function CheckoutContent() {
 
   // --- Payment ---
   const handlePayment = async () => {
+    const companyDomain = await getCompanyDomain();
     if (!selectedAddressId) {
       alert("Please select a delivery address.");
       return;

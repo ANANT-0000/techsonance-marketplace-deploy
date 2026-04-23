@@ -1,6 +1,6 @@
 ﻿"use client";
 import { formatCurrency } from "@/lib/utils";
-import { AddressType, OrderStatusEnum, ProductType, UserOrder, VariantsType } from "@/utils/Types";
+import { Address, OrderStatusEnum, Product, UserOrder, Variant } from "@/utils/Types";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import { useMediaQuery } from "react-responsive";
@@ -42,7 +42,7 @@ export interface OrderType {
     created_at: string;
     total_amount: string;
     items: OrderItemType[];
-    address: AddressType; // Assuming AddressType matches the JSON payload structure from earlier
+    address: Address; // Assuming Address matches the JSON payload structure from earlier
     payment: PaymentType;
     shipping: unknown | null;
 }

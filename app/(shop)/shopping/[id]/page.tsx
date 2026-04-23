@@ -8,7 +8,7 @@ import { AddToCart } from '@/components/customer/AddToCart';
 import { BuyBtn } from '@/components/customer/BuyBtn';
 import { ProductReview } from '@/components/customer/ProductReview';
 import { ProductSpecifications } from '@/components/customer/ProductSpec';
-import { BuyBtnMode, Product, ProductImage, Variant, VariantsType } from '@/utils/Types';
+import { BuyBtnMode, Product, ProductImage, Variant } from '@/utils/Types';
 import { formatCurrency } from '@/lib/utils';
 import { fetchProduct } from '@/utils/commonAPiClient';
 import { Star } from 'lucide-react';
@@ -78,7 +78,7 @@ export default function ProductPage() {
                                 whileHover={{ scale: 1.05, borderColor: "#3b82f6" }}
                                 whileTap={{ scale: 0.95 }}
                                 alt={`Thumbnail ${idx + 1}`}
-                                className={`shrink-0 aspect-square w-20 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all ${activeImage === img.image_url ? ' border-blue-500 ring-2 ring-blue-300' : 'border-transparent'}`}
+                                className={`shrink-0 aspect-square w-20 h-20 object-contain rounded-xl cursor-pointer border-2 transition-all ${activeImage === img.image_url ? ' border-blue-500 ring-2 ring-blue-300' : 'border-transparent'}`}
                             />
                         ))}
                     </div>
@@ -95,7 +95,7 @@ export default function ProductPage() {
                                 transition={{ duration: 0.3 }}
                                 src={activeImage}
                                 alt={product?.name}
-                                className='w-full h-full object-cover'
+                                className='w-full h-full object-contain'
                             />
                         </AnimatePresence>
                     </div>

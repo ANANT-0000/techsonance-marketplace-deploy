@@ -93,7 +93,7 @@ export default function CustomerLoginPage() {
                             {...register("password")}
                             type="password"
                             placeholder="••••••••"
-                            className={`border rounded-lg py-2 px-3 focus:outline-none focus:ring-2 transition-all ${errors.password ? "border-red-400 focus:ring-red-100" : "border-gray-300 focus:ring-blue-100"
+                            className={`border-2 border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"${errors.password ? "border-red-400 focus:ring-red-100" : "border-gray-300 focus:ring-blue-100"
                                 }`}
                         />
                         {errors.password ? (

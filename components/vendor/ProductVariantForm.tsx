@@ -1,5 +1,5 @@
 ﻿'use client';
-import { FileOrImage, Product, ProductImageType, ProductStatusEnum, ProductType, VariantFormValuesType } from "@/utils/Types";
+import { FileOrImage, ProductImage, ProductStatusEnum, Product, VariantFormValues } from "@/utils/Types";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useCallback, useState } from "react";
@@ -13,8 +13,8 @@ import { ProductVariantFormValuesType, productVariantSchema } from "@/utils/vali
 import { ArrowLeft } from "lucide-react";
 import { generateSKU } from "@/utils/generateSku";
 const FILE_UPLOAD_FIELD_LABELS = [
-    { label: "Product Images / Thumbnail", fieldName: "variantMediaMain" as keyof VariantFormValuesType },
-    { label: "Feature / Specification Media", fieldName: "variantMediaGallery" as keyof VariantFormValuesType },
+    { label: "Product Images / Thumbnail", fieldName: "variantMediaMain" as keyof VariantFormValues },
+    { label: "Feature / Specification Media", fieldName: "variantMediaGallery" as keyof VariantFormValues },
 ] as const;
 
 
@@ -35,7 +35,7 @@ export const ProductVariantForm = ({
         name: string,
         category: { id: string, name: string };
     };
-    existVariant?: VariantFormValuesType;
+    existVariant?: VariantFormValues;
     variantId?: string;
 }) => {
     const isEditMode = Boolean(variantId && existVariant);
@@ -95,7 +95,7 @@ export const ProductVariantForm = ({
             variantName: existVariant.variantName,
             attributes:
                 existVariant.attributes?.length
-                    ? existVariant.attributes.map((attr) => ({ name: attr.name, value: attr.value }))
+                    ? existVariant.attributes.map((attr: { name: string; value: string }) => ({ name: attr.name, value: attr.value }))
                     : [{ name: "", value: "" }],
             basePrice: existVariant.basePrice,
             discountPercent: existVariant.discountPercent,

@@ -8,7 +8,8 @@ import Image from "next/image";
 import { CUSTOMER_REGISTRATION_FIELDS } from "@/constants/dynamicFields";
 import { CustomerRegister } from "@/utils/authApiClient";
 import { customerRegisterSchema, CustomerRegisterSchemaType } from "@/utils/validation";
-import { companyDomain } from "@/config";
+import { getCompanyDomain } from "@/lib/get-domain";
+
 
 export default function CustomerRegisterPage() {
     const router = useRouter();
@@ -48,6 +49,7 @@ export default function CustomerRegisterPage() {
         setIsSubmitting(true);
         setServerError(null);
         try {
+            const companyDomain = await getCompanyDomain();
             const response = await CustomerRegister(data, companyDomain);
             if (response?.status === 201) {
                 router.push('/auth/customerLogin');
