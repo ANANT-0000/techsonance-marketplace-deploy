@@ -17,9 +17,11 @@ export interface ProductVariantType {
 }
 
 export interface OrderItemType {
+    id: string;
     quantity: number;
     price: string;
-    productVariant: ProductVariantType;
+    order_status: OrderStatusEnum;
+    variant: ProductVariantType;
 }
 
 
@@ -39,7 +41,7 @@ export interface PaymentType {
 export interface OrderType {
     id: string;
     user_id: string;
-    order_status: OrderStatusEnum;
+
     created_at: string;
     total_amount: string;
     items: OrderItemType[];

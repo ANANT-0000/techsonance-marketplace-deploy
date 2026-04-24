@@ -64,7 +64,7 @@ const loadWishlistFromLocalOrServer = async (): Promise<Omit<WishlistState, 'loa
         if (customerId && companyDomain) {
             const response = await fetchCustomerWishlist(customerId);
 
-            if (response.ok && response.data) {
+            if (response && 'ok' in response && response.ok && response.data) {
                 const serverData: WishlistServerResponse[] = response.data;
 
                 if (serverData.length > 0) {
@@ -79,7 +79,7 @@ const loadWishlistFromLocalOrServer = async (): Promise<Omit<WishlistState, 'loa
                     saveWishlistToLocalStorage(wishlistId, wishItems);
                     return { wishlistId, wishItems };
                 }
- 
+
             }
         }
     } catch (e) {

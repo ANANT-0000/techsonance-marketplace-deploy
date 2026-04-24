@@ -78,7 +78,7 @@ export default function ProductPage() {
                                 whileHover={{ scale: 1.05, borderColor: "#3b82f6" }}
                                 whileTap={{ scale: 0.95 }}
                                 alt={`Thumbnail ${idx + 1}`}
-                                className={`shrink-0 aspect-square w-20 h-20 object-contain rounded-xl cursor-pointer border-2 transition-all ${activeImage === img.image_url ? ' border-blue-500 ring-2 ring-blue-300' : 'border-transparent'}`}
+                                className={`shrink-0 aspect-square w-20 h-20 object-cover  rounded-xl cursor-pointer border-2 transition-all ${activeImage === img.image_url ? ' border-blue-500 ring-2 ring-blue-300' : 'border-transparent'}`}
                             />
                         ))}
                     </div>
@@ -95,7 +95,7 @@ export default function ProductPage() {
                                 transition={{ duration: 0.3 }}
                                 src={activeImage}
                                 alt={product?.name}
-                                className='w-full h-full object-contain'
+                                className='aspect-square w-full h-full object-contain  rounded-2xl'
                             />
                         </AnimatePresence>
                     </div>
@@ -117,19 +117,17 @@ export default function ProductPage() {
                         </span>
                     </motion.div>
                     <motion.div variants={fadeInUp}>
-                        <h1 className='text-sm lg:text-2xl font-bold text-gray-900 mb-2 capitalize'>{activeVariant?.variant_name}</h1>
+                        <h1 className='text-sm lg:text-xl font-bold text-gray-900 mb-1 capitalize'>{activeVariant?.variant_name}</h1>
                         <p className='text-lg text-gray-500 font-medium leading-relaxed  truncate '>{product?.description}</p>
                     </motion.div>
-                    <motion.div variants={fadeInUp} className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                    <motion.div variants={fadeInUp} className="px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100">
                         <div className="flex items-end gap-3">
-                            <span className='text-1xl lg:text-2xl text-gray-900'>₹{formatCurrency(Number(activeVariant?.price) || 0)}</span>
+                            <span className='text-xl lg:text-2xl text-gray-900'>₹{formatCurrency(Number(activeVariant?.price) || 0)}</span>
                             {Number(product?.discount_percent) > 0 && (<><span className='text-md lg:text-lg line-through text-gray-400 '>₹{formatCurrency(Math.floor(Number(activeVariant?.price) / (1 - Number(product?.discount_percent) / 100)))}</span><span className='text-lg font-semibold text-green-600 '>{Math.round(Number(product?.discount_percent))}% OFF</span></>)}
                         </div>
                         <p className='text-xs text-gray-500 mt-1 font-medium uppercase tracking-wide'>Inclusive of all taxes</p>
                     </motion.div>
                     <div>
-
-
                         <motion.p variants={fadeInUp} className='text-sm text-gray-500 font-medium'>
                             {activeVariant?.attributes[0]?.name && activeVariant?.attributes[0]?.name.charAt(0).toUpperCase() + activeVariant?.attributes[0]?.name.slice(1)}: <span className='font-semibold text-gray-700'>
                                 {activeVariant?.attributes[0]?.value && activeVariant?.attributes[0]?.value.charAt(0).toUpperCase() + activeVariant?.attributes[0]?.value.slice(1)}
@@ -150,27 +148,27 @@ export default function ProductPage() {
                         <motion.div variants={fadeInUp} className='flex gap-4 items-center'>
                             {isMounted && activeVariant && (
                                 <>
-                                    <AddToCart productVariantId={activeVariant.id} styles="text-xl w-32 lg:w-40" />
-                                    <BuyBtn id={activeVariant.id} mode={BuyBtnMode.QUICK_BUY} styles="scale-[0.95]" />
+                                    <AddToCart productVariantId={activeVariant.id} styles="text-xl py-1 w-32 lg:w-40" />
+                                    <BuyBtn id={activeVariant.id} mode={BuyBtnMode.QUICK_BUY} styles="scale-[0.90]" />
                                 </>
                             )}
                         </motion.div>
                     </motion.div>
 
 
-                    <motion.div variants={fadeInUp} className='mt-4'>
-                        <div className='flex gap-4 overflow-x-auto pb-4 hide-scrollbar'>
-                            {brandOffer.map((offer, idx) => (
-                                <motion.div key={offer.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }} className='flex flex-col items-center justify-center gap-2 min-w-[100px] p-3 text-center'>
-                                    <div className="p-2 bg-brand-primary/10 rounded-full text-brand-primary">  <DynamicIcon fallback={() => <p></p>} name={offer.icon as IconName} size={20} /></div>
-                                    <span className='text-xs font-semibold text-gray-700 leading-tight'>{offer.title}</span>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </motion.div>
                 </motion.div>
             </section>
-            <section className='flex flex-col lg:flex-row gap-12 mt-20'>
+            <motion.div variants={fadeInUp} className='mt-2 w-full flex justify-end'>
+                <div className='flex gap-4 overflow-x-auto pb-4 hide-scrollbar'>
+                    {brandOffer.map((offer, idx) => (
+                        <motion.div key={offer.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }} className='flex flex-col items-center justify-center gap-2 min-w-[100px] p-3 text-center'>
+                            <div className="p-2 bg-brand-primary/10 rounded-full text-brand-primary">  <DynamicIcon fallback={() => <p></p>} name={offer.icon as IconName} size={20} /></div>
+                            <span className='text-xs font-semibold text-gray-700 leading-tight'>{offer.title}</span>
+                        </motion.div>
+                    ))}
+                </div>
+            </motion.div>
+            <section className='flex flex-col lg:flex-row gap-12 mt-10'>
                 <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className='lg:w-1/2'>
                     <h2 className='text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2'><span className="w-1 h-8 bg-brand-primary rounded-full"></span>Product Description</h2>
                     <div className="prose prose-gray max-w-none text-gray-600 space-y-3">{product?.description && product.description.split('\n').map((line, idx) => (<p key={idx}>{line}</p>))}</div>

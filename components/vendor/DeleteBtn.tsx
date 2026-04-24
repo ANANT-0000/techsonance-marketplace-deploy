@@ -23,7 +23,7 @@ export const DeleteBtn = (props: DeleteBtnProps) => {
 
     return (
         <button onClick={(() => handleDelete(props.id))} className={props.style} >
-            Delete <Trash2 />
+            <Trash2 />Delete
         </button>
     )
 }

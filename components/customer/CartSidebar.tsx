@@ -142,7 +142,7 @@ export function CartSidebar() {
 
                         <div className="flex flex-col items-end gap-1">
                           <AddToCart productVariantId={item.product_variant_id} styles="small w-24" />
-                          <BuyBtn mode={BuyBtnMode.CART} id={item.product_variant_id} styles="small w-24" />
+                          <BuyBtn mode={BuyBtnMode.CART} id={item.product_variant_id} styles="small w-24 py-1 " />
                         </div>
                       </motion.li>
                     ))}
@@ -160,7 +160,7 @@ export function CartSidebar() {
               >
                 View Full Cart
               </Link>
-              <BuyBtn mode={BuyBtnMode.CART} id={cartId} styles="w-full py-4 rounded-xl shadow-lg" />
+              <BuyBtn mode={BuyBtnMode.CART} id={cartId} styles="w-full py-1 rounded-xl shadow-lg" />
             </div>
           </motion.aside>
         </>

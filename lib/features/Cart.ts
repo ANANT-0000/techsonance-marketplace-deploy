@@ -3,7 +3,6 @@ import { companyDomain } from "@/config";
 import { CART_KEY, CartItem, USER_STORAGE_KEY } from "@/constants";
 import { fetchGetCartList } from "@/utils/customerApiClient";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { getCompanyDomain } from "../get-domain";
 
 export interface CartState {
     cartId: string;
@@ -32,7 +31,7 @@ const loadCartFromLocalOrServer = async (): Promise<Omit<CartState, 'loading' | 
             : null;
         if (customerId && companyDomain) {
             const response = await fetchGetCartList(customerId);
-            if (response.ok && Array.isArray(response.data)) {
+            if (response && 'ok' in response && response.ok && response.data && Array.isArray(response.data)) {
                 const itemList: CartItemListResponse[] = response.data;
 
                 const items: CartItem[] = itemList.map((item) => ({

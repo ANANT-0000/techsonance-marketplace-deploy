@@ -2,6 +2,7 @@
 import { ProductForm } from "@/components/vendor/ProductForm";
 import { Inventory, ProductResponseType, ProductStatusEnum } from "@/utils/Types";
 import { ProductFormInput, ProductFormOutput, ProductFormValuesType } from "@/utils/validation";
+import { get } from "http";
 interface Attribute {
     name: string;
     value: string; // could be string[] if multiple values
@@ -35,7 +36,7 @@ interface Product {
     company_id: string;
     vendor_id: string;
     category_id: string;
-    images: ProductImage[];
+
 }
 
 interface ProductVariant {
@@ -46,6 +47,7 @@ interface ProductVariant {
     attributes: Attribute[];
     status: "active" | "inactive" | string;
     stock_quantity: number;
+    images: ProductImage[];
     seo_meta: string | null;
     created_at: string; // ISO date string
     updated_at: string; // ISO date string
@@ -72,23 +74,36 @@ export default async function ProductUpdateFormPage({ params }: { params: Promis
         console.error("Error fetching warehouse options:", error);
         return [];
     });
-    const exitingData: Partial<ProductFormInput | ProductFormOutput> = {
-        productName: getExitingProduct?.product.name || '',
-        description: getExitingProduct?.product.description || '',
-        features: getExitingProduct?.product.features ? getExitingProduct?.product.features : [],
-        attributes: getExitingProduct?.attributes ? getExitingProduct?.attributes.map((attr) => ({ name: attr.name, value: attr.value })) : [],
-        basePrice: getExitingProduct?.product.base_price || '',
-        discountPercent: getExitingProduct?.product.discount_percent || '',
-        stocks: String(getExitingProduct?.stock_quantity) || '',
-        sku: getExitingProduct?.sku ? getExitingProduct.sku : '',
-        productMedia: getExitingProduct?.product.images && getExitingProduct?.product.images?.filter((img) => img?.imgType === "main") || [],
-        featureMedia: getExitingProduct?.product.images && getExitingProduct?.product.images?.filter((img) => img?.imgType === "gallery") || [],
-        category: getExitingProduct?.product.category_id || '',
+    const exitingData: Partial<ProductFormInput | ProductFormOutput | {}> = getExitingProduct ? {
+        productName: getExitingProduct?.product?.name || '',
+        description: getExitingProduct?.product?.description || '',
+        features: getExitingProduct?.product?.features || [],
+        attributes: getExitingProduct?.attributes
+            ? getExitingProduct.attributes.map((attr) => ({ name: attr.name, value: attr.value }))
+            : [],
+        basePrice: getExitingProduct?.product?.base_price || '',
+        discountPercent: getExitingProduct?.product?.discount_percent || '',
+
+        // Fixed: Stock is inside the 'inventory' object
+        stocks: getExitingProduct?.inventory?.stock_quantity !== undefined
+            ? String(getExitingProduct.inventory.stock_quantity)
+            : '',
+
+        sku: getExitingProduct?.sku || '',
+
+        // Fixed: Images array is at the root level, not inside 'product'
+        productMedia: getExitingProduct?.images?.filter((img) => img?.imgType === "main") || [],
+        featureMedia: getExitingProduct?.images?.filter((img) => img?.imgType === "gallery") || [],
+
+        // Note: 'category_id' isn't in the provided JSON, but kept here if your schema expects it
+        category: getExitingProduct?.product?.category_id || '',
+
         status: getExitingProduct?.status as ProductStatusEnum || '',
         variantId: getExitingProduct?.id || '',
-        warehouseId: getExitingProduct?.warehouse_id || ''
 
-    }
+        // Fixed: Warehouse ID is inside the 'inventory' object
+        warehouseId: getExitingProduct?.inventory?.warehouse_id || ''
+    } : {};
     const categoryOptions = await fetchVendorsProductsCategory(vendorId).then((res) => {
         return res.data.map((c: any) => ({ value: c.id, label: c.name }));
     }).catch((error) => {

@@ -29,7 +29,6 @@ export function ShoppingList({
     const firstIndex = (count - 1) * pageSize;
     const lastIndex = firstIndex + pageSize - 1;
     const [isLoading, setIsLoading] = useState(false);
-    const dispatch = useAppDispatch();
     const sectionRef = useRef<HTMLElement>(null);
 
     const handleScroll = () => {
@@ -99,7 +98,7 @@ export function ShoppingList({
                                                     !isMobile &&
                                                     <div className={`flex gap-2 mt-2   justify-between items-center`}>
                                                         <AddToCart productVariantId={product?.variants && product.variants.length > 0 ? product.variants[0].id : ''} styles="w-full " />
-                                                        <BuyBtn id={product?.variants && product.variants.length > 0 ? product.variants[0].id : ''} mode={BuyBtnMode.QUICK_BUY} styles=" scale-[.9]" />
+                                                        <BuyBtn id={product?.variants && product.variants.length > 0 ? product.variants[0].id : ''} mode={BuyBtnMode.QUICK_BUY} styles="px-6" />
 
                                                     </div>
                                                 }

@@ -16,8 +16,6 @@ export const InnerSideBar = ({
     const [isClosed, setIsClosed] = useState(false)
 
     const links = getVendorInnerSidebarLinks(vendorId, selectedMenu)
-
-    // Auto-collapse when the current path doesn't match any sidebar item
     useEffect(() => {
         const allPaths = links.flatMap((s) =>
             s.sections.flatMap((sec) => sec.list?.map((item) => item.path) ?? [])
@@ -32,10 +30,10 @@ export const InnerSideBar = ({
         relative flex flex-col bg-white border-r border-gray-200 h-screen
         overflow-y-auto overflow-x-hidden
         transition-all duration-300 ease-in-out
-        ${isClosed ? "w-20" : "w-64"}
+        ${isClosed ? "w-20" : "min-w-44 w-64"}
       `}
         >
-            <div className="sticky top-0 z-10 flex items-center justify-end bg-white border-b border-gray-100 px-3 py-3">
+            <div className="sticky top-0 z-10 flex items-center justify-end bg-white border-b border-gray-100 px-3 py-3 w-full">
                 {!isClosed && (
                     <span className="mr-auto text-xs font-semibold uppercase tracking-widest text-gray-400 truncate">
                         {selectedMenu}
@@ -50,7 +48,7 @@ export const InnerSideBar = ({
                 </button>
             </div>
 
-            <aside className="flex-1 py-3 space-y-6">
+            <aside className="flex-1 py-3 space-y-6 w-full">
                 {links.map((section) => (
                     <div key={section.menu}>
                         {section.sections.map((group) => (

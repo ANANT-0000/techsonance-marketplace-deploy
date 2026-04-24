@@ -1,5 +1,5 @@
-﻿import { BASE_API_URL, CUSTOMER_BASE_URL } from "@/constants";
-import { authToken } from "./authToken";
+﻿// 'use server';
+import { BASE_API_URL, CUSTOMER_BASE_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
 
 export const fetchCustomerProfile = async () => {
@@ -324,7 +324,7 @@ export const checkAddressExistence = async (customerId: string) => {
 }
 
 
-export const fetchInitiatePayment = async (customerId: string, paymentData: any ) => {
+export const fetchInitiatePayment = async (customerId: string, paymentData: any) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}checkout/${customerId}/initiate`, {
@@ -392,14 +392,36 @@ export const fetchOrderDetails = async (orderId: string) => {
         console.log('Error fetching order details:', error);
     }
 }
+export const fetchOrderItemDetails = async (orderItemId: string) => {
+    const companyDomain = await getCompanyDomain();
+    try {
+        const response = await fetch(`${BASE_API_URL}order-items/${orderItemId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "company-domain": companyDomain,
+                // Authorization: `Bearer ${await authToken()}`,
+            },
+        });
+        console.log("Order Item Details Response:", response);
+        if (response.status !== 200) {
+            console.log('Failed to fetch order item details');
+        }
+        return await response.json();
+
+    } catch (error) {
+        console.log('Error fetching order item details:', error);
+    }
+}
 
 export const fetchCancelOrderItem = async (
+    userId: string,
     itemId: string,
     reason: string,
-    domain: string,
 ) => {
+    const domain = await getCompanyDomain();
     const response = await fetch(
-        `${BASE_API_URL}orders/orderItems/${itemId}/cancel`,
+        `${BASE_API_URL}order-items/${itemId}/cancel`,
         {
             method: 'PATCH',
             headers: {
@@ -407,10 +429,36 @@ export const fetchCancelOrderItem = async (
                 'company-domain': domain,
             },
             body: JSON.stringify({
-                reason,
+                userId,
+                cancelReason: reason,
                 cancelled_by: 'customer',
             }),
         },
     );
     return response.json();
+};
+export const fetchReturnReplaceItem = async (formData: FormData) => {
+    const domain = await getCompanyDomain();
+    try {
+        const response = await fetch(
+            `${BASE_API_URL}order-items/return-replace`,
+            {
+                method: 'POST',
+                headers: {
+                    // 'Content-Type': 'multipart/form-data', // Let the browser set this with the correct boundary
+                    'company-domain': domain,
+                },
+                body: formData,
+            },
+        );
+        if (!response.ok) {
+            console.log('Failed to submit return/replace request');
+            return { success: false };
+        }
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.log('Error submitting return/replace request:', error);
+        return { success: false };
+    }
 };

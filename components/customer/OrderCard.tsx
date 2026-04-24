@@ -20,7 +20,8 @@ export interface ProductVariantType {
 export interface OrderItemType {
     quantity: number;
     price: string;
-    productVariant: ProductVariantType;
+    variant: ProductVariantType;
+    order_status: OrderStatusEnum;
 }
 
 export interface PaymentType {
@@ -38,7 +39,6 @@ export interface PaymentType {
 export interface OrderType {
     id: string;
     user_id: string;
-    order_status: OrderStatusEnum;
     created_at: string;
     total_amount: string;
     items: OrderItemType[];
@@ -72,7 +72,7 @@ export const OrderCard = ({ order }: { order: OrderType }) => {
                 {/* 1. Header: Status, Date, and Total */}
                 <div className="flex justify-between items-start border-b border-gray-100 pb-3">
                     <div className="flex flex-col gap-1">
-                        {order.order_status === 'delivered' ? (
+                        {order.items[0]?.order_status === 'delivered' ? (
                             <p className="text-green-600 font-bold text-sm">Delivered</p>
                         ) : (
                             <p className="text-orange-600 font-bold text-sm">Pending</p>
@@ -130,8 +130,8 @@ export const OrderCard = ({ order }: { order: OrderType }) => {
                             {/* Image Container: Gray background matching the design */}
                             <div className="w-24 sm:w-28 bg-[#f7f7f7] flex-shrink-0 flex items-center justify-center p-2">
                                 <img
-                                    src={item.productVariant.images[0]?.image_url || "https://placehold.co/150x150/f9fafb/333333?text=Product"}
-                                    alt={item.productVariant.variant_name}
+                                    src={item.variant.images[0]?.image_url || "https://placehold.co/150x150/f9fafb/333333?text=Product"}
+                                    alt={item.variant.variant_name}
                                     className="w-full h-auto object-contain mix-blend-multiply"
                                 />
                             </div>
@@ -139,18 +139,20 @@ export const OrderCard = ({ order }: { order: OrderType }) => {
                             {/* Text Content */}
                             <div className="p-3 flex flex-col justify-center w-full">
                                 <Link
-                                    href={`/shop/product/${item.productVariant.id}`}
+                                    href={`/shop/product/${item.variant.id}`}
                                     /* line-clamp-1 keeps it to one line on phones, sm:line-clamp-2 allows 2 lines on tablets */
                                     className="font-bold text-gray-900 text-sm sm:text-base line-clamp-1 sm:line-clamp-2 hover:underline mb-1"
                                 >
-                                    {item.productVariant.variant_name}
+                                    {item.variant.variant_name}
                                 </Link>
 
                                 <span className="text-xs sm:text-sm text-gray-500">
                                     Qty: {item.quantity} | ₹{formatCurrency(Number(item.price))}
                                 </span>
                             </div>
-
+                            {
+                                item.order_status
+                            }
                         </div>
                     ))}
                 </div>
@@ -160,7 +162,7 @@ export const OrderCard = ({ order }: { order: OrderType }) => {
                     <Link href={`/shop/order-details/${order.id}`} className="text-xs sm:text-sm font-medium text-blue-500 hover:underline">
                         View Details
                     </Link>
-                    {order.order_status === 'delivered' && (
+                    {order.items[0]?.order_status === 'delivered' && (
                         <motion.button
                             whileTap={{ scale: 0.95 }}
                             className="text-xs sm:text-sm px-4 py-1.5 border border-gray-300 rounded-full hover:bg-gray-50 font-medium text-gray-700"
@@ -230,7 +232,7 @@ export const OrderCard = ({ order }: { order: OrderType }) => {
                 </div>
             </header>
 
-            {order.order_status == 'pending' && (
+            {order.items[0]?.order_status == 'pending' && (
                 <motion.div className="mb-4 text-lg font-semibold text-gray-800">
                     Order will deliver soon
                 </motion.div>
@@ -241,20 +243,20 @@ export const OrderCard = ({ order }: { order: OrderType }) => {
                     <div key={index} className="flex justify-between items-center w-full">
                         <div className="flex gap-4">
                             <img
-                                src={item.productVariant.images[0]?.image_url || "https://placehold.net/100x100.png"}
-                                alt={item.productVariant.variant_name}
+                                src={item.variant.images[0]?.image_url || "https://placehold.net/100x100.png"}
+                                alt={item.variant.variant_name}
                                 className="rounded-lg h-20 w-20 object-cover border border-gray-100"
                             />
                             <div className="flex flex-col justify-center items-start gap-1">
-                                <Link href={`/shop/product/${item.productVariant.id}`} className="text-blue-600 hover:underline line-clamp-2 max-w-lg font-medium text-sm">
-                                    {item.productVariant.variant_name}
+                                <Link href={`/shop/product/${item.variant.id}`} className="text-blue-600 hover:underline line-clamp-2 max-w-lg font-medium text-sm">
+                                    {item.variant.variant_name}
                                 </Link>
                                 <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
                                 <p className="text-sm font-semibold text-gray-800">₹{formatCurrency(Number(item.price))}</p>
                             </div>
                         </div>
 
-                        {order.order_status === 'delivered' && (
+                        {order.items[0]?.order_status === 'delivered' && (
                             <motion.button className="text-sm px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors self-start mt-2">
                                 Write review
                             </motion.button>

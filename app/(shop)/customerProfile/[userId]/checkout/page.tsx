@@ -12,6 +12,7 @@ import { AddressSelector } from "@/components/customer/AddressSelector";
 import { fetchProductVariantDetails } from "@/utils/commonAPiClient";
 import { useCheckoutSession } from "@/hooks/UseCheckoutSession";
 import { getCompanyDomain } from "@/lib/get-domain";
+import { fetchInitCheckout, fetchVerifyPayment } from "@/utils/customerApiClient-SA";
 interface VariantDetails {
   id: string;
   variant_name: string;
@@ -173,7 +174,6 @@ function CheckoutContent() {
 
   // --- Payment ---
   const handlePayment = async () => {
-    const companyDomain = await getCompanyDomain();
     if (!selectedAddressId) {
       alert("Please select a delivery address.");
       return;
@@ -192,19 +192,7 @@ function CheckoutContent() {
       };
       setLogger(prev => [...prev, `Initiating checkout with payload: ${JSON.stringify(initPayload)}`]);
       // Step B: Create a PENDING order on the backend
-      const initResponse = await fetch(
-        `${BASE_API_URL}checkout/${params.userId}/initiate`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'company-domain': companyDomain,
-          },
-          body: JSON.stringify(initPayload),
-        }
-      );
-
-      const initData = await initResponse.json();
+      const initData = await fetchInitCheckout(user?.id || '', initPayload)
       setLogger(prev => [...prev, `Received response from initiate endpoint: ${JSON.stringify(initData)}`]);
       if (!initData?.success) {
         setCheckoutError(initData?.message ?? "Failed to initiate order.");
@@ -222,21 +210,13 @@ function CheckoutContent() {
         `SIMULATION: Pay ₹${formatCurrency(orderData.total)}\n\nOK = Success | Cancel = Failure`
       );
       setLogger(prev => [...prev, `User clicked success: ${userClickedSuccess}`]);
-      const verifyResponse = await fetch(`${BASE_API_URL}checkout/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'company-domain': companyDomain,
-        },
-        body: JSON.stringify({
-          orderId: initData.data.orderId,
-          isSuccess: userClickedSuccess,
-          ...(isQuickBuy
-            ? { productVariantId: id }
-            : { cartId: id }),
-        }),
-      });
-      const verifyData = await verifyResponse.json();
+      const verifyData = await fetchVerifyPayment(user?.id || '', {
+        orderId: initData.data.orderId,
+        isSuccess: userClickedSuccess,
+        ...(isQuickBuy
+          ? { productVariantId: id }
+          : { cartId: id }),
+      })
       setLogger(prev => [...prev, `Received response from verify endpoint: ${JSON.stringify(verifyData)}`]);
       if (!verifyData?.success) {
         setCheckoutError(verifyData?.message ?? "Payment verification failed.");

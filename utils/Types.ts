@@ -17,14 +17,14 @@ export enum UserAddressTypeEnum {
   OTHER = 'other'
 }
 export const OrderStatusEnum = {
-  DELIVERED: 'delivered',
-  SHIPPING: 'shipping',
-  PENDING: 'pending',
-  SHIPPED: 'shipped',
-  CANCELLED: 'cancelled'
-} as const;
+  DELIVERED: "delivered",
+  SHIPPING: "shipping",
+  PENDING: "pending",
+  SHIPPED: "shipped",
+  CANCELLED: "cancelled",
+}
 
-export type OrderStatusEnum = typeof OrderStatusEnum[keyof typeof OrderStatusEnum]
+export type OrderStatus = typeof OrderStatusEnum[keyof typeof OrderStatusEnum];
 
 export enum PermissionEnum {
   READ = 'read',
@@ -129,7 +129,7 @@ export interface Wishlist {
 
 export interface UserOrder {
   order_id: number;
-  order_status: OrderStatusEnum;
+  order_status: OrderStatus;
   delivered_at?: string;
   shippingTo: Address | string;
   products?: { product_id: string; quantity: number }[];
@@ -142,7 +142,7 @@ export interface UserOrder {
 export interface Order {
   orderId: string;
   customerName: string;
-  status: OrderStatusEnum;
+  status: OrderStatus;
   amount: number;
   action: 'Ship Now' | 'View';
 }
@@ -303,28 +303,6 @@ export interface Product {
   category_id: string;
   variants: Variant[];
 }
-//Deleted the old PRODUCT_LIST_TYPE and replaced it with ProductType which is more comprehensive and closely aligned with the expected product data structure in a marketplace application.
-// export interface PRODUCT_LIST_TYPE {
-//   id: string;
-//   title: string;
-//   price: number;
-//   discount: number;
-//   category: string;
-//   imgUrl: string;
-//   description: string;
-//   satisfaction: string;
-//   rating?: number;
-//   reviewCount?: number;
-//   productDetails?: {
-//     brand: string;
-//     model: string;
-//     specifications: {
-//       [key: string]: string;
-//     };
-//   };
-//   specificationsImgUrl?: string[];
-//   reviews?: ReviewType[];
-// }
 
 export interface Vendor {
   id: string;
@@ -576,7 +554,7 @@ export type OrderDetail = {
     name: string;
     location: string;
   };
-  status: OrderStatusEnum;
+  status: OrderStatus;
   total: number;
   paymentMethod: 'Paid (UPI)' | 'COD' | 'Refunded' | 'Card payment';
 };
@@ -604,7 +582,7 @@ export interface VendorProduct {
 export interface VendorOrder {
   orderId: string;
   customerName: string;
-  status: OrderStatusEnum,
+  status: OrderStatus,
   amount: number;
   action: "Ship Now" | "View";
   date?: string;

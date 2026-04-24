@@ -134,6 +134,29 @@ export const updateProduct = async (formData: FormData, vendorId: string, produc
         return { status: 500, statusText: 'Internal Server Error' + error };
     }
 }
+export const updateProductStatus = async (productId: string, vendorId: string, status: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}products/update-status/${productId}`, {
+            method: "PATCH",
+            body: JSON.stringify({
+                status: status
+            }),
+            headers: {
+                'company-domain': companyDomain,
+            },
+        });
+        if (!response.ok) {
+            console.error('Failed to create product');
+            return { status: response.status, statusText: response.statusText };
+        }
+        revalidatePath(`/vendor/${vendorId}/products`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error creating product:', error);
+        return { status: 500, statusText: 'Internal Server Error' + error };
+    }
+}
 export const fetchVendorProducts = async (vendorId: string) => {
     try {
         const companyDomain = await getCompanyDomain();
@@ -158,7 +181,7 @@ export const fetchVendorProducts = async (vendorId: string) => {
 export const fetchVendorOneProducts = async (id: string) => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}products/${id}`, {
+        const response = await fetch(`${BASE_API_URL}products/${id}/details`, {
             method: 'GET',
             cache: 'no-cache',
             // next: { revalidate: 3600 },

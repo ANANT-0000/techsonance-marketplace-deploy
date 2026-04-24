@@ -3,17 +3,28 @@
 import './index.css';
 import Navbar from "@/components/vendor/Navbar";
 import { Pagination } from "@/components/common/Pagination";
-import { VENDOR_DASHBOARD_STATS, } from "@/constants/vendor";
+import { VENDOR_DASHBOARD_STATS } from "@/constants/vendor";
 import { useState } from "react";
 import Link from "next/link";
-import { formatCurrency, formatNumber, } from "@/lib/utils";
+import { formatCurrency, formatNumber } from "@/lib/utils";
+import { TrendingUp, Clock, Package, ArrowUpRight } from "lucide-react";
+
 const tableHeaders = ["Order ID", "Customer Name", "Status", "Amount", "Action"];
+
 const VENDOR_ORDER_DATA = [
     { orderId: "1001", customerName: "John Doe", status: "pending", amount: 2500, action: "Ship Now" },
     { orderId: "1002", customerName: "Jane Smith", status: "shipped", amount: 1500, action: "View" },
-]
-export default function DashboardPage() {
+];
 
+const getStatusBadge = (status: string) => {
+    if (status === "pending")
+        return <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-xs font-semibold">● Pending</span>;
+    if (status === "shipped")
+        return <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 py-1 px-3 rounded-full text-xs font-semibold">● Shipped</span>;
+    return <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-xs font-semibold">● Delivered</span>;
+};
+
+export default function DashboardPage() {
     const [count, setCount] = useState(1);
     const pageSize = 5;
     const totalPages = Math.ceil(VENDOR_ORDER_DATA.length / pageSize);
@@ -24,69 +35,125 @@ export default function DashboardPage() {
     return (
         <>
             <Navbar title="Dashboard" />
-            <main>
-                <div className="stats justify-evenly">
-                    <div className="stat">
-                        <div className="stat_title">Total Revenue</div>
-                        <div className="stat_value">₹{formatCurrency(VENDOR_DASHBOARD_STATS.totalRevenue)}</div>
-                        <div className="stat_desc text-green-600">↗︎ {VENDOR_DASHBOARD_STATS.revenueGrowth}% v last month</div>
+            <main className="px-1">
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+
+                    {/* Total Revenue */}
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Revenue</span>
+                            <span className="text-2xl font-bold text-gray-800 mt-1">
+                                ₹{formatCurrency(VENDOR_DASHBOARD_STATS.totalRevenue)}
+                            </span>
+                            <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 mt-1">
+                                <TrendingUp size={13} />
+                                {VENDOR_DASHBOARD_STATS.revenueGrowth}% vs last month
+                            </span>
+                        </div>
+                        <span className="bg-emerald-50 p-3 rounded-xl">
+                            <TrendingUp size={20} className="text-emerald-500" />
+                        </span>
                     </div>
-                    <div className="stat">
-                        <div className="stat_title">Pending Orders</div>
-                        <div className="stat_value">{formatNumber(VENDOR_DASHBOARD_STATS.pendingOrder)}</div>
-                        <div className="stat_desc">Requires immediate shipping</div>
+
+                    {/* Pending Orders */}
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pending Orders</span>
+                            <span className="text-2xl font-bold text-gray-800 mt-1">
+                                {formatNumber(VENDOR_DASHBOARD_STATS.pendingOrder)}
+                            </span>
+                            <span className="text-xs text-amber-600 font-medium mt-1">Requires immediate shipping</span>
+                        </div>
+                        <span className="bg-amber-50 p-3 rounded-xl">
+                            <Clock size={20} className="text-amber-500" />
+                        </span>
                     </div>
-                    <div className="stat">
-                        <div className="stat_title">Active Products</div>
-                        <div className="stat_value">{formatNumber(VENDOR_DASHBOARD_STATS.totalProducts)}</div>
-                        <div className="stat_desc">{VENDOR_DASHBOARD_STATS.lowStock} Products low on stock</div>
+
+                    {/* Active Products */}
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Products</span>
+                            <span className="text-2xl font-bold text-gray-800 mt-1">
+                                {formatNumber(VENDOR_DASHBOARD_STATS.totalProducts)}
+                            </span>
+                            <span className="text-xs text-red-500 font-medium mt-1">
+                                {VENDOR_DASHBOARD_STATS.lowStock} products low on stock
+                            </span>
+                        </div>
+                        <span className="bg-blue-50 p-3 rounded-xl">
+                            <Package size={20} className="text-blue-500" />
+                        </span>
                     </div>
                 </div>
 
-                <div className="my-6 relative flex flex-col w-full h-full overflow-scroll bg-white border rounded-xl bg-clip-border">
-                    <div className="flex justify-between border-b border-gray-400">
-                        <h2 className="font-bold text-xl p-4">Recent Orders</h2>
-                        <Link href="/vendor/orders" className="text-xl p-4 text-blue-600 cursor-pointer underline">View All</Link>
+                {/* Recent Orders Table */}
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden my-6">
+                    <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
+                        <h2 className="font-bold text-lg text-gray-800">Recent Orders</h2>
+                        <Link
+                            href="/vendor/orders"
+                            className="flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                        >
+                            View All <ArrowUpRight size={15} />
+                        </Link>
                     </div>
-                    <table className="w-full table-auto min-w-max">
-                        <thead className="bg-gray-200">
-                            <tr>
-                                {tableHeaders.map((header, index) => (
-                                    <th key={index} className="p-4 border-b border-gray-400">
-                                        {header}
-                                    </th>
-                                ))}
 
-                            </tr>
-                        </thead>
-                        <tbody className="text-center">
-                            {currentData.map((order, index) => (
-                                <tr key={order.orderId} className={`hover:bg-gray-100 ${index === currentData.length - 1 ? 'border-b-0' : 'border-b border-gray-400'}`}>
-                                    <td className="p-4">{order.orderId}</td>
-                                    <td className="p-4">{order.customerName}</td>
-                                    <td className="p-4">
-                                        {order.status === "pending" ? (
-                                            <span className="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-lg text-sm">Pending</span>
-                                        ) : order.status === "shipped" ? (
-                                            <span className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-sm">Shipped</span>
-                                        ) : (
-                                            <span className="bg-gray-100 text-gray-800 py-1 px-3 rounded-lg text-sm">Delivered</span>
-                                        )}
-                                    </td>
-                                    <td className="p-4">₹ {order.amount}</td>
-                                    <td className="p-4">
-                                        {order.action === "Ship Now" ? (
-                                            <button className="text-blue-500 underline py-1 px-3 rounded-lg hover:bg-blue-100">Ship Now</button>
-                                        ) : (
-                                            <button className="text-gray-500 underline py-1 px-3 rounded-lg hover:bg-gray-100">View</button>
-                                        )}
-                                    </td>
+                    <div className="w-full overflow-x-auto">
+                        <table className="w-full table-auto min-w-[500px]">
+                            <thead>
+                                <tr className="bg-gray-50 border-b border-gray-100 text-left">
+                                    {tableHeaders.map((header, index) => (
+                                        <th key={index} className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                                            {header}
+                                        </th>
+                                    ))}
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {currentData.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="py-12 text-center text-gray-400 text-sm">
+                                            No orders found.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    currentData.map((order) => (
+                                        <tr key={order.orderId} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-5 py-4 font-mono text-sm font-semibold text-gray-700">
+                                                #{order.orderId}
+                                            </td>
+                                            <td className="px-5 py-4 text-sm text-gray-700 font-medium whitespace-nowrap">
+                                                {order.customerName}
+                                            </td>
+                                            <td className="px-5 py-4">
+                                                {getStatusBadge(order.status)}
+                                            </td>
+                                            <td className="px-5 py-4 text-sm font-semibold text-gray-800">
+                                                ₹{order.amount.toLocaleString()}
+                                            </td>
+                                            <td className="px-5 py-4">
+                                                {order.action === "Ship Now" ? (
+                                                    <button className="text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 active:bg-blue-700 py-1.5 px-4 rounded-lg transition-colors">
+                                                        Ship Now
+                                                    </button>
+                                                ) : (
+                                                    <button className="text-xs font-semibold text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 py-1.5 px-4 rounded-lg transition-colors">
+                                                        View →
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <span className="flex justify-end">
+
+                {/* Pagination */}
+                <span className="flex justify-end mt-2 mb-6">
                     <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" />
                 </span>
             </main>
