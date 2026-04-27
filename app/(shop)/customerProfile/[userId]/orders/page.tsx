@@ -2,10 +2,10 @@
 import type { RootState } from "@/lib/store";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { OrderStatusEnum, UserOrder } from "@/utils/Types";
+import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
 import { useRouter } from "next/navigation";
 import { useMediaQuery } from "react-responsive";
-import { ChevronLeftCircle } from "lucide-react";
+import { ChevronLeft, ChevronLeftCircle } from "lucide-react";
 import { OrdersList } from "@/components/customer/OrderList";
 import { useAppSelector } from "@/hooks/reduxHooks";
 
@@ -13,22 +13,40 @@ export default function OrdersPage() {
   const { user } = useAppSelector((state: RootState) => state.auth);
   const router = useRouter();
   const isMobile = useMediaQuery({ maxWidth: 640 });
-  const [orderStatus, setOrderStatus] = useState<OrderStatusEnum>(OrderStatusEnum.PENDING);
-  const orders: UserOrder[] = [];
+  const [orderStatus, setOrderStatus] = useState<OrderStatus | 'returns' | null>(
+    OrderStatusEnum.PENDING
+  );
 
-  const ordersStatusMap = [OrderStatusEnum.DELIVERED, OrderStatusEnum.PENDING, OrderStatusEnum.CANCELLED];
+  const ordersStatusMap: Array<OrderStatus | 'returns'> = [
+    OrderStatusEnum.PENDING,
+    OrderStatusEnum.DELIVERED,
+    OrderStatusEnum.CANCELLED,
+    'returns',
+  ];
+
   const statusLabels: Record<string, string> = {
-    [OrderStatusEnum.PENDING]: "Not Shipped yet",
-    [OrderStatusEnum.DELIVERED ]: "Delivered",
+    [OrderStatusEnum.PENDING]: "Not Shipped Yet",
+    [OrderStatusEnum.DELIVERED]: "Delivered",
     [OrderStatusEnum.CANCELLED]: "Cancelled",
+    returns: "Returns & Replacements",
   };
+
   return (
     <>
-      <ChevronLeftCircle className="my-4 block lg:hidden" size={36} onClick={() => router.back()} />
-      <section className="w-full lg:px-4 px-2 min-h-[60vh]">
-        <h1 className="w-full mb-6 font-bold">My Orders</h1>
+      <div className="flex items-center gap-3 my-4 sm:hidden">
+        <button
+          onClick={() => router.back()}
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          aria-label="Go back"
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <h1 className="font-bold text-xl text-gray-900">My Orders</h1>
+      </div>
 
-        <div className="lg:flex xl:flex hidden relative border-gray-300 mb-6 ">
+      <section className="w-full lg:px-4 px-2 min-h-[60vh]">
+        {/* Desktop tabs — hidden on mobile (< sm = 640px) */}
+        <div className="hidden sm:flex relative border-b border-gray-200 mb-6 gap-1">
           {ordersStatusMap.map((status) => {
             const isActive = orderStatus === status;
             return (
@@ -38,27 +56,21 @@ export default function OrdersPage() {
                   color: isActive ? "#1D4ED8" : "#6B7280",
                   borderColor: isActive ? "#1D4ED8" : "transparent",
                 }}
-                transition={{
-                  duration: 0.3,
-                  color: { type: 'spring', ease: 'easeInOut', duration: 0.3 },
-                  background: { type: 'spring', ease: 'easeInOut', duration: 0.5 }
-                }}
-                className={"relative lg:px-6 lg:py-2 px-4 font-medium transition-colors focus:outline-none border-b-4"}
-                onClick={() => setOrderStatus(status as OrderStatusEnum)}
+                transition={{ duration: 0.2 }}
+                className="relative lg:px-6 lg:py-2.5 px-4 py-2 font-medium transition-colors focus:outline-none border-b-2 -mb-px text-sm whitespace-nowrap"
+                onClick={() => setOrderStatus(status)}
               >
-                <motion.p
-                  whileHover={{ scale: 1.05 }}
-                  className="relative z-10"
-                >
-                  {/* 2. Look up the label, or fallback to the raw status if not found */}
-                  {statusLabels[status] || status}
-                </motion.p>
+                {statusLabels[status] || status}
               </motion.button>
             );
           })}
         </div>
-        <OrdersList customerId={user?.id ?? ''} status={orderStatus} />
-      </section >
+
+        <OrdersList
+          customerId={user?.id ?? ''}
+          status={isMobile ? null : orderStatus}
+        />
+      </section>
     </>
-  )
+  );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from "motion/react";
-import { ShoppingBag, Mail, Phone, Timer, MapPin, Lock, Bell, ChevronLeftCircle } from "lucide-react";
+import { ShoppingBag, Mail, Phone, Timer, MapPin, Lock, Bell, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -26,7 +26,17 @@ export default function UserProfilePage() {
             initial="hidden"
             animate="visible"
         >
-            <ChevronLeftCircle className="mb-4 block lg:hidden" size={36} onClick={() => router.back()} />
+            <div className="flex items-center gap-3 my-4 sm:hidden">
+                <button
+                    onClick={() => router.back()}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                    aria-label="Go back"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+                <h1 className="font-bold text-xl text-gray-900">Profile</h1>
+            </div>
+
 
             <motion.section
                 initial="hidden"
@@ -78,7 +88,7 @@ export default function UserProfilePage() {
 
             <div className="mt-8 lg:flex flex-col md:flex-row gap-6 hidden  ">
                 {[
-                    { label: "TOTAL ORDERS", value:3, icon: ShoppingBag, color: "bg-brand-primary", text: "text-brand-primary" },
+                    { label: "TOTAL ORDERS", value: 3, icon: ShoppingBag, color: "bg-brand-primary", text: "text-brand-primary" },
                     { label: "ACTIVE ORDERS", value: activeOrders, icon: Timer, color: "bg-yellow", text: "text-yellow-500" }
                 ].map((stat, idx) => (
                     <motion.div
@@ -121,7 +131,7 @@ export default function UserProfilePage() {
                                     </p>
                                 ))
                             ) : ( */}
-                                <p className="text-sm text-gray-400 italic">No default address set</p>
+                            <p className="text-sm text-gray-400 italic">No default address set</p>
                             {/* )} */}
                         </div>
 

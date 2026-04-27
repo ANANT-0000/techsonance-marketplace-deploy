@@ -4,7 +4,7 @@ import { AddToCart } from "@/components/customer/AddToCart";
 import { BuyBtn } from "@/components/customer/BuyBtn";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeftCircle } from "lucide-react";
+import { ChevronLeft, ChevronLeftCircle } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { formatCurrency } from "@/lib/utils";
 import { fetchGetCartList } from "@/utils/customerApiClient";
@@ -82,19 +82,21 @@ export default function CartList() {
 
     return (
         <main  >
-            <ChevronLeftCircle
-                className="my-4 block lg:hidden"
-                size={36}
-                onClick={() => router.back()}
-            />
-
-
+            <div className="flex items-center gap-3 my-4 sm:hidden">
+                <button
+                    onClick={() => router.back()}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                    aria-label="Go back"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+                <h1 className="font-bold text-xl text-gray-900">My Cart</h1>
+            </div>
             <div className="lg:px-8 px-2 w-full">
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                 >
-                    <h1 className="text-3xl font-bold mb-2">Your Cart</h1>
                     <p className="mb-8 text-gray-500">Confirm your items before checking out</p>
                 </motion.div>
             </div>

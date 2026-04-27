@@ -1,269 +1,295 @@
-﻿"use client";
+﻿'use client';
 import { formatCurrency } from "@/lib/utils";
-import { Address, OrderStatusEnum, Product, UserOrder, Variant } from "@/utils/Types";
+import { Address, OrderStatus, OrderStatusEnum } from "@/utils/Types";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import { useMediaQuery } from "react-responsive";
 import { useState, useRef, useEffect } from "react";
+import { OrderItemType, OrderType, ReturnRequest } from "./OrderList";
+import { Package, RotateCcw, XCircle, Truck, CheckCircle2 } from "lucide-react";
 
-export interface ProductImageType {
-    image_url: string;
+// ── Per-item status badge ────────────────────
+function ItemStatusBadge({ status }: { status: string }) {
+    const s = status?.toLowerCase();
+    if (s === 'delivered')
+        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full"><CheckCircle2 size={9} />Delivered</span>;
+    if (s === 'pending')
+        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full"><Truck size={9} />Pending</span>;
+    if (s === 'cancelled')
+        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full"><XCircle size={9} />Cancelled</span>;
+    return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full capitalize">{status}</span>;
 }
 
-export interface ProductVariantType {
-    id: string;
-    variant_name: string;
-    price: string;
-    images: ProductImageType[];
+// ── Return badge ─────────────────────────────
+function ReturnBadge({ returnRequest }: { returnRequest: ReturnRequest }) {
+    const colorMap: Record<string, string> = {
+        pending: 'bg-amber-50 text-amber-700 border-amber-200',
+        approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        rejected: 'bg-red-50 text-red-700 border-red-200',
+        processing: 'bg-blue-50 text-blue-700 border-blue-200',
+    };
+    const color = colorMap[returnRequest.status?.toLowerCase()] ?? 'bg-gray-100 text-gray-600 border-gray-200';
+    return (
+        <span className={`inline-flex items-center gap-1 text-[10px] font-semibold border px-2 py-0.5 rounded-full ${color}`}>
+            <RotateCcw size={9} />
+            Return · {returnRequest.status}
+        </span>
+    );
 }
 
-export interface OrderItemType {
-    quantity: number;
-    price: string;
-    variant: ProductVariantType;
-    order_status: OrderStatusEnum;
+// ── Single item row ──────────────────────────
+function OrderItemRow({ item, highlighted }: { item: OrderItemType; highlighted: boolean }) {
+    return (
+        <div className={`flex gap-3 rounded-xl overflow-hidden border transition-colors shadow-sm ${highlighted ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200 bg-white'
+            }`}>
+            <div className="w-20 sm:w-24 bg-gray-50 flex-shrink-0 flex items-center justify-center p-2">
+                <img
+                    src={item.variant.images[0]?.image_url || "https://placehold.co/150x150/f9fafb/333?text=Product"}
+                    alt={item.variant.variant_name}
+                    className="w-full h-auto object-contain mix-blend-multiply"
+                />
+            </div>
+            <div className="flex-1 py-3 pr-3 flex flex-col justify-between gap-1 min-w-0">
+                <Link
+                    href={`/shop/product/${item.variant.id}`}
+                    className="font-semibold text-gray-900 text-sm line-clamp-2 hover:underline leading-snug"
+                >
+                    {item.variant.variant_name}
+                </Link>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <span className="text-xs text-gray-500">Qty: {item.quantity}</span>
+                    <span className="text-xs text-gray-400">·</span>
+                    <span className="text-xs font-semibold text-gray-800">₹{formatCurrency(Number(item.price))}</span>
+                    <ItemStatusBadge status={item.order_status} />
+                    {item.return_request && <ReturnBadge returnRequest={item.return_request} />}
+                </div>
+                {item.order_status === OrderStatusEnum.DELIVERED && !item.return_request && (
+                    <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        className="self-start mt-1 text-xs px-3 py-1 border border-gray-300 rounded-full hover:bg-gray-50 font-medium text-gray-700 transition-colors"
+                    >
+                        Write Review
+                    </motion.button>
+                )}
+            </div>
+        </div>
+    );
 }
 
-export interface PaymentType {
-    id: string;
-    payment_method: string;
-    payment_status: string;
-    transaction_ref: string;
-    amount: string;
-    created_at: string;
-    updated_at: string;
-    order_id: string;
-    company_id: string;
-}
+// ── Address dropdown ─────────────────────────
+function AddressDropdown({ address, isMobile }: { address: Address; isMobile: boolean }) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
 
-export interface OrderType {
-    id: string;
-    user_id: string;
-    created_at: string;
-    total_amount: string;
-    items: OrderItemType[];
-    address: Address; // Assuming Address matches the JSON payload structure from earlier
-    payment: PaymentType;
-    shipping: unknown | null;
-}
-
-export const OrderCard = ({ order }: { order: OrderType }) => {
-    const isMobile = useMediaQuery({ maxWidth: 640 });
-
-    // 1. State and Ref for the Address Dropdown
-    const [showAddress, setShowAddress] = useState(false);
-    const addressRef = useRef<HTMLDivElement>(null);
-
-    // 2. Click outside handler to close the dropdown gracefully
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (addressRef.current && !addressRef.current.contains(event.target as Node)) {
-                setShowAddress(false);
-            }
+        const handler = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
         };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
     }, []);
+
+    const block = (
+        <div className="text-xs sm:text-sm text-gray-700 space-y-0.5">
+            <p className="font-semibold text-gray-900">{address.name}</p>
+            {address.address_line1 && <p>{address.address_line1}</p>}
+            {address.address_line2 && <p>{address.address_line2}</p>}
+            <p>{[address.city, address.state, address.postal_code].filter(Boolean).join(', ')}</p>
+            <p>{address.country}</p>
+        </div>
+    );
 
     if (isMobile) {
         return (
-            <motion.div className="w-full flex flex-col border border-gray-200 shadow-sm rounded-xl p-4 gap-4 bg-white">
+            <div>
+                <button
+                    className="flex items-center justify-between w-full text-blue-500 hover:text-blue-700 text-sm font-medium focus:outline-none"
+                    onClick={() => setOpen((p) => !p)}
+                >
+                    <span className="truncate max-w-[80%]">{address.name || 'N/A'}</span>
+                    <motion.span animate={{ rotate: open ? 180 : 0 }} className="text-[10px] ml-1">▼</motion.span>
+                </button>
+                <AnimatePresence>
+                    {open && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden mt-2 bg-gray-50 border border-gray-100 rounded-lg p-3"
+                        >
+                            {block}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        );
+    }
 
-                {/* 1. Header: Status, Date, and Total */}
+    return (
+        <div className="relative" ref={ref}>
+            <button
+                className="flex items-center gap-1 text-blue-500 hover:text-blue-700 text-sm font-medium focus:outline-none"
+                onClick={() => setOpen((p) => !p)}
+            >
+                {address.name || 'N/A'}
+                <span className="text-[10px]">▼</span>
+            </button>
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 shadow-lg rounded-xl p-4 z-50"
+                    >
+                        {block}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+// ── Main OrderCard ───────────────────────────
+export const OrderCard = ({
+    order,
+    activeStatus,
+}: {
+    order: OrderType;
+    activeStatus: OrderStatus | 'returns' | null;
+}) => {
+    const isMobile = useMediaQuery({ maxWidth: 640 });
+
+    // Which items match the current desktop tab?
+    const matchingItems =
+        activeStatus === null
+            ? []
+            : activeStatus === 'returns'
+                ? order.items.filter((i) => i.return_request !== null)
+                : order.items.filter((i) => i.order_status === activeStatus);
+
+    const allMatch = matchingItems.length === order.items.length;
+
+    // Highlight only the relevant items when not all items match the tab
+    const isHighlighted = (item: OrderItemType): boolean => {
+        if (activeStatus === null || allMatch) return false;
+        if (activeStatus === 'returns') return item.return_request !== null;
+        return item.order_status === activeStatus;
+    };
+
+    // Show "partial match" banner only on desktop when needed
+    const showBanner = !isMobile && activeStatus !== null && matchingItems.length > 0 && !allMatch;
+
+    // ── Mobile ───────────────────────────────────
+    if (isMobile) {
+        return (
+            <motion.div className="w-full flex flex-col border border-gray-200 shadow-sm rounded-xl p-4 gap-4 bg-white">
+                {/* Header */}
                 <div className="flex justify-between items-start border-b border-gray-100 pb-3">
-                    <div className="flex flex-col gap-1">
-                        {order.items[0]?.order_status === 'delivered' ? (
-                            <p className="text-green-600 font-bold text-sm">Delivered</p>
-                        ) : (
-                            <p className="text-orange-600 font-bold text-sm">Pending</p>
-                        )}
-                        <p className="text-xs text-gray-500">Ordered on {new Date(order.created_at).toLocaleDateString()}</p>
-                    </div>
+                    <p className="text-xs text-gray-400">
+                        Ordered {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </p>
                     <div className="text-right">
-                        <p className="text-xs text-gray-500 mb-1">Total</p>
+                        <p className="text-xs text-gray-400 mb-0.5">Total</p>
                         <p className="text-sm font-bold text-gray-900">₹{formatCurrency(Number(order.total_amount))}</p>
                     </div>
                 </div>
 
-                {/* 2. Ship To Address (Accordion Style for Mobile/Tablet) */}
+                {/* Ship To */}
                 <div className="border-b border-gray-100 pb-3">
-                    <p className="text-xs text-gray-500 mb-1">Ship To</p>
-                    <button
-                        className="text-blue-500 hover:text-blue-700 text-sm focus:outline-none flex items-center justify-between w-full"
-                        onClick={() => setShowAddress(!showAddress)}
-                    >
-                        <span className="font-medium text-left truncate max-w-[85%]">
-                            {order.address ? order.address.name : 'N/A'}
-                        </span>
-
-                        <motion.span
-                            animate={{ rotate: showAddress ? 180 : 0 }}
-                            className="text-[10px]"
-                        >
-                            &#9660;
-                        </motion.span>
-                    </button>
-
-                    <AnimatePresence>
-                        {showAddress && order.address && (
-                            <motion.div
-                                initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                                animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
-                                exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                                className="overflow-hidden text-xs sm:text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100"
-                            >
-                                <p className="font-semibold text-gray-800 mb-1">{order.address.name}</p>
-                                <p>{order.address.address_line1}</p>
-                                {order.address.address_line2 && <p>{order.address.address_line2}</p>}
-                                <p>{order.address.city}, {order.address.state} {order.address.postal_code}</p>
-                                <p>{order.address.country}</p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    <p className="text-xs text-gray-400 mb-1">Ship To</p>
+                    {order.address && <AddressDropdown address={order.address} isMobile={true} />}
                 </div>
 
-                {/* 3. Order Items (UPDATED TO MATCH YOUR IMAGE DESIGN) */}
+                {/* ALL items shown — no filter, no highlight */}
                 <div className="flex flex-col gap-3">
                     {order.items.map((item, index) => (
-                        <div key={index} className="flex border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
-
-                            {/* Image Container: Gray background matching the design */}
-                            <div className="w-24 sm:w-28 bg-[#f7f7f7] flex-shrink-0 flex items-center justify-center p-2">
-                                <img
-                                    src={item.variant.images[0]?.image_url || "https://placehold.co/150x150/f9fafb/333333?text=Product"}
-                                    alt={item.variant.variant_name}
-                                    className="w-full h-auto object-contain mix-blend-multiply"
-                                />
-                            </div>
-
-                            {/* Text Content */}
-                            <div className="p-3 flex flex-col justify-center w-full">
-                                <Link
-                                    href={`/shop/product/${item.variant.id}`}
-                                    /* line-clamp-1 keeps it to one line on phones, sm:line-clamp-2 allows 2 lines on tablets */
-                                    className="font-bold text-gray-900 text-sm sm:text-base line-clamp-1 sm:line-clamp-2 hover:underline mb-1"
-                                >
-                                    {item.variant.variant_name}
-                                </Link>
-
-                                <span className="text-xs sm:text-sm text-gray-500">
-                                    Qty: {item.quantity} | ₹{formatCurrency(Number(item.price))}
-                                </span>
-                            </div>
-                            {
-                                item.order_status
-                            }
-                        </div>
+                        <OrderItemRow key={item.id ?? index} item={item} highlighted={false} />
                     ))}
                 </div>
 
-                {/* 4. Footer Actions */}
-                <div className="flex justify-between items-center pt-2 mt-1">
-                    <Link href={`/shop/order-details/${order.id}`} className="text-xs sm:text-sm font-medium text-blue-500 hover:underline">
-                        View Details
+                {/* Footer */}
+                <div className="flex justify-between items-center pt-1">
+                    <Link href={`/shop/order-details/${order.id}`} className="text-xs font-medium text-blue-500 hover:underline">
+                        View Details →
                     </Link>
-                    {order.items[0]?.order_status === 'delivered' && (
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            className="text-xs sm:text-sm px-4 py-1.5 border border-gray-300 rounded-full hover:bg-gray-50 font-medium text-gray-700"
-                        >
-                            Write Review
-                        </motion.button>
+                    {order.shipping?.tracking_url && (
+                        <a href={order.shipping.tracking_url} target="_blank" rel="noopener noreferrer"
+                            className="text-xs font-medium text-gray-500 hover:text-gray-800 flex items-center gap-1">
+                            <Truck size={12} /> Track
+                        </a>
                     )}
                 </div>
-
             </motion.div>
-        )
+        );
     }
+
+    // ── Desktop ──────────────────────────────────
     return (
-        <motion.div className="w-full border-2 border-gray-300 rounded-xl p-4">
-            <header className="flex justify-between items-start mb-4 border-b-2 border-gray-200 pb-2">
-                <span className="flex gap-8">
-                    <div className="text-gray-500">
-                        <h3 className="mb-1 text-xs font-semibold">ORDER PLACED</h3>
-                        <p className="text-sm">{new Date(order.created_at).toLocaleDateString()}</p>
+        <motion.div className="w-full border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
+            <header className="flex justify-between items-center px-5 py-3.5 bg-gray-50 border-b border-gray-200">
+                <div className="flex gap-6 items-center">
+                    <div>
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Order Placed</p>
+                        <p className="text-sm text-gray-700">
+                            {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </p>
                     </div>
-                    <div className="text-gray-500">
-                        <h3 className="mb-1 text-xs font-semibold">TOTAL AMOUNT</h3>
-                        <p className="text-sm">₹{formatCurrency(Number(order.total_amount))}</p>
+                    <div>
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Total</p>
+                        <p className="text-sm font-semibold text-gray-800">₹{formatCurrency(Number(order.total_amount))}</p>
                     </div>
-
-                    {/* 3. The newly updated SHIP TO section */}
-                    <div className="text-gray-500 relative" ref={addressRef}>
-                        <h3 className="mb-1 text-xs font-semibold">SHIP TO</h3>
-                        <button
-                            className="text-blue-500 hover:text-blue-700 text-sm focus:outline-none flex items-center gap-1"
-                            onClick={() => setShowAddress(!showAddress)}
-                        >
-                            {order.address ? order.address.name : 'N/A'}
-                            <span className="text-[10px]">&#9660;</span> {/* Tiny down arrow */}
-                        </button>
-
-                        {/* Dropdown Content inside AnimatePresence */}
-                        <AnimatePresence>
-                            {showAddress && order.address && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="absolute top-full left-0 mt-2 p-3 bg-white border border-gray-200 shadow-lg rounded-md z-50 w-64 text-sm text-gray-800"
-                                >
-                                    <p className="font-bold mb-1">{order.address.name}</p>
-                                    <p>{order.address.address_line1}</p>
-                                    {order.address.address_line2 && <p>{order.address.address_line2}</p>}
-                                    <p>{order.address.city}, {order.address.state} {order.address.postal_code}</p>
-                                    <p>{order.address.country}</p>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                    {order.address && (
+                        <div>
+                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Ship To</p>
+                            <AddressDropdown address={order.address} isMobile={false} />
+                        </div>
+                    )}
+                    {order.payment && (
+                        <div>
+                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Payment</p>
+                            <p className="text-sm text-gray-700 flex items-center gap-1.5">
+                                {order.payment.payment_method}
+                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${order.payment.payment_status === 'completed' ? 'bg-emerald-50 text-emerald-700'
+                                        : order.payment.payment_status === 'refunded' ? 'bg-blue-50 text-blue-700'
+                                            : 'bg-amber-50 text-amber-700'
+                                    }`}>
+                                    {order.payment.payment_status}
+                                </span>
+                            </p>
+                        </div>
+                    )}
+                </div>
+                <div className="text-right flex flex-col gap-1">
+                    <p className="text-[10px] text-gray-400 font-mono">#{order.id.split('-')[0].toUpperCase()}</p>
+                    <div className="flex items-center gap-3 text-sm">
+                        <Link href={`/shop/order-details/${order.id}`} className="text-blue-500 hover:underline font-medium">
+                            View Details
+                        </Link>
+                        {order.shipping?.tracking_url && (
+                            <a href={order.shipping.tracking_url} target="_blank" rel="noopener noreferrer"
+                                className="text-gray-500 hover:text-gray-800 flex items-center gap-1 font-medium">
+                                <Truck size={13} /> Track
+                            </a>
+                        )}
                     </div>
-                </span>
-
-                <div className="text-right">
-                    <h1 className="text-gray-500 text-sm mb-1">ORDER #{order.id}</h1>
-                    <span className="space-x-4 text-sm">
-                        <Link href={`orders/${order.id}`} className="text-blue-500 hover:underline">View Details</Link>
-                        <select name="invoice" className="text-blue-500 bg-transparent cursor-pointer focus:outline-none hover:underline">
-                            <option value="invoice">Invoice</option>
-                            <option value="receipt">Receipt</option>
-                        </select>
-                    </span>
                 </div>
             </header>
 
-            {order.items[0]?.order_status == 'pending' && (
-                <motion.div className="mb-4 text-lg font-semibold text-gray-800">
-                    Order will deliver soon
-                </motion.div>
+            {/* Partial-match info banner */}
+            {showBanner && (
+                <div className="px-5 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-700 font-medium flex items-center gap-2">
+                    <Package size={13} />
+                    {matchingItems.length} of {order.items.length} items match this filter — others have a different status.
+                </div>
             )}
 
-            <div className="flex flex-col gap-4">
+            <div className="p-5 flex flex-col gap-3">
                 {order.items.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center w-full">
-                        <div className="flex gap-4">
-                            <img
-                                src={item.variant.images[0]?.image_url || "https://placehold.net/100x100.png"}
-                                alt={item.variant.variant_name}
-                                className="rounded-lg h-20 w-20 object-cover border border-gray-100"
-                            />
-                            <div className="flex flex-col justify-center items-start gap-1">
-                                <Link href={`/shop/product/${item.variant.id}`} className="text-blue-600 hover:underline line-clamp-2 max-w-lg font-medium text-sm">
-                                    {item.variant.variant_name}
-                                </Link>
-                                <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
-                                <p className="text-sm font-semibold text-gray-800">₹{formatCurrency(Number(item.price))}</p>
-                            </div>
-                        </div>
-
-                        {order.items[0]?.order_status === 'delivered' && (
-                            <motion.button className="text-sm px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors self-start mt-2">
-                                Write review
-                            </motion.button>
-                        )}
-                    </div>
+                    <OrderItemRow key={item.id ?? index} item={item} highlighted={isHighlighted(item)} />
                 ))}
             </div>
         </motion.div>
-    )
-}
+    );
+};

@@ -42,7 +42,17 @@ interface OrderType {
     address: OrderAddressType;
     payment: OrderPaymentType;
 }
-
+export const ReturnTableHeader = [
+    "Order ID",
+    "Total Amount",
+    "Qty",
+    "Status",
+    "Customer",
+    "Payment",
+    "Location",
+    "Date",
+    "Actions"
+]
 export default function OrdersPage() {
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [isOpen, setIsOpen] = useState(false);
@@ -168,7 +178,6 @@ export default function OrdersPage() {
                 </span>
             </div>
 
-            {/* Table Wrapper — horizontally scrollable */}
             <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
                 <table className="w-full table-auto min-w-[900px] border-collapse">
                     <thead>
@@ -176,15 +185,9 @@ export default function OrdersPage() {
                             <th className="p-4 w-10">
                                 <input type="checkbox" className="rounded" />
                             </th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Order ID</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Total Amount</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Qty</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Customer</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Payment</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Location</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Date</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                            {ReturnTableHeader.map((header) => (
+                                <th key={header} className="p-4 text-xs Rent-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{header}</th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">

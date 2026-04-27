@@ -13,7 +13,8 @@ import {
     Truck,
     CheckCircle2,
     XCircle,
-    RefreshCcw
+    RefreshCcw,
+    ChevronLeft
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -98,7 +99,7 @@ export default function OrderDetailsPage() {
                 .then((data) => {
                     console.log("Order Details:", data);
                     setOrder(data.data);
-                    setOrderStatus(data.data.items[1].order_status);
+                    setOrderStatus(data.data.items[0].order_status);
                 })
                 .catch((error) => {
                     console.error("Error fetching order details:", error);
@@ -128,9 +129,9 @@ export default function OrderDetailsPage() {
                 <div className="flex items-center gap-4 mb-6 ">
                     <button
                         onClick={() => window.history.back()}
-                        className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                        className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
                     >
-                        <ArrowLeft size={24} className="text-gray-700" />
+                        <ChevronLeft size={24} className="text-gray-700" />
                     </button>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Order Details</h1>
@@ -205,15 +206,7 @@ export default function OrderDetailsPage() {
                                                         alt={item.variant.variant_name}
                                                         className="w-full h-24 object-contain mix-blend-multiply"
                                                     />
-                                                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border-2 bg-white transition-colors
-                                            `}>
-                                                        {item.order_status === 'pending' && <Package size={14} />}
-                                                        {isShipped && <Truck size={14} />}
-                                                        {isDelivered && <CheckCircle2 size={14} />}
-                                                    </div>
-                                                    <span className={`text-[10px] sm:text-xs font-semibold text-center max-w-[60px] sm:max-w-none leading-tight`}>
-                                                        {item.order_status.replace(/_/g, ' ').toUpperCase()}
-                                                    </span>
+
                                                 </div>
                                             </div>
 
@@ -228,7 +221,7 @@ export default function OrderDetailsPage() {
                                                 </div>
 
                                                 {/* Action Buttons (Contextual based on status) */}
-                                                <div className="flex flex-wrap gap-2 xl:mt-4 lg:mt-4 mt-1 items-center">
+                                                <div className="flex flex-wrap gap-2 xl:mt-4 lg:mt-4 mt-1 items-start">
 
                                                     {/* Cancel button — active or disabled */}
                                                     {!isDelivered && (
@@ -242,6 +235,7 @@ export default function OrderDetailsPage() {
                                                                         : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
                                                                     }`}
                                                             >
+
                                                                 <XCircle size={14} />
                                                                 Cancel Item
                                                             </button>
@@ -249,6 +243,12 @@ export default function OrderDetailsPage() {
                                                         </div>
                                                     )}
 
+                                                    {!isDelivered && !isCancelled && (
+                                                        <p className={`py-3 px-4   rounded-lg border border-gray-300 lg:text-md text-xs font-semibold text-center bg-gray-50 capitalize`}>
+                                                            Delivery is {item.order_status.replace(/_/g, ' ')}
+                                                        </p>
+                                                    )
+                                                    }
                                                     {/* Post-delivery actions */}
                                                     {isDelivered && (
                                                         <>

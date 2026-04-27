@@ -25,7 +25,18 @@ export const OrderStatusEnum = {
 }
 
 export type OrderStatus = typeof OrderStatusEnum[keyof typeof OrderStatusEnum];
-
+export enum ReturnType {
+  RETURN = 'return',
+  REPLACEMENT = 'replacement',
+}
+export enum ReturnStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  QC_FAILED = 'qc_failed',
+  SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
+}
 export enum PermissionEnum {
   READ = 'read',
   CREATE = 'create',

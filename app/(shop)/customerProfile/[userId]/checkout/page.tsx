@@ -257,7 +257,7 @@ function CheckoutContent() {
         <p className="text-red-500">{checkoutError}</p>
         <button
           onClick={() => router.back()}
-          className="text-blue-600 underline text-sm"
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
         >
           Go back
         </button>

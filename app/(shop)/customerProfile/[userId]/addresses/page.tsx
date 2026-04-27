@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeftCircle } from "lucide-react";
+import { ChevronLeft, ChevronLeftCircle } from "lucide-react";
 // import { deleteAddress, setDefaultAddress } from "@/lib/features/auth/authSlice";
 
 import { useRouter } from "next/navigation";
@@ -53,7 +53,16 @@ export default function Addresses() {
     };
     return (
         <section className="w-full  mt-2 mx-auto mb-20">
-            <ChevronLeftCircle className="mb-4 block lg:hidden" size={36} onClick={() => router.back()} />
+            <div className="flex items-center gap-3 my-4 sm:hidden">
+                <button
+                    onClick={() => router.back()}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                    aria-label="Go back"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+                <h1 className="font-bold text-xl text-gray-900">My Addresses</h1>
+            </div>
             <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">My Addresses</h1>

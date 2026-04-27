@@ -2,14 +2,13 @@
 import type { RootState } from "@/lib/store";
 import { ChevronLeftCircle, X } from "lucide-react";
 import { AddToCart } from "@/components/customer/AddToCart";
-import { removeFromWishlist } from "@/lib/features/Wishlist";
+import { addToWishlist, removeFromWishlist } from "@/lib/features/Wishlist";
 import { useParams, useRouter } from "next/navigation";
 import { useMediaQuery } from "react-responsive";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useEffect, useState } from "react";
 import { fetchCustomerWishlist, fetchDeleteWishList } from "@/utils/customerApiClient";
 import Link from "next/link";
-import { getCompanyDomain } from "@/lib/get-domain";
 interface WishlistItemType {
     created_at: string;
     id: string;
@@ -65,8 +64,23 @@ export default function WishlistPage() {
             console.error('User ID is missing');
             return;
         }
+        const item = wishlistItems.find(
+            i => i.productVariant.id === productVariantId
+        );
+        if (!item) return;
         dispatch(removeFromWishlist(productVariantId));
-        await fetchDeleteWishList(productVariantId, user.id);
+
+        const response = await fetchDeleteWishList(productVariantId, user.id);
+        if (!response?.success) {
+            console.error('Failed to remove item from wishlist:', response?.message);
+            dispatch(addToWishlist({
+                id: item.id,
+                wishlist_id: item.wishlist_id,
+                product_variant_id: item.productVariant.id,
+                created_at: item.created_at,
+                updated_at: item.updated_at,
+            }));
+        }
         console.log(`Removing product ${productVariantId} from wishlist`);
     }
     return (

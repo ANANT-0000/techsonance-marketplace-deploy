@@ -3,6 +3,7 @@ import { ACCESS_TOKEN_KEY, BASE_API_URL } from "@/constants";
 import { authToken } from "./authToken";
 import { revalidatePath } from "next/cache";
 import { getCompanyDomain } from "@/lib/get-domain";
+import { ReturnStatus } from "./Types";
 export const fetchVendorsProductsCategory = async (vendorId: string) => {
     try {
         const response = await fetch(`${BASE_API_URL}categories/${vendorId}`, {
@@ -558,3 +559,55 @@ export const fetchUpdateOrderItem = async (itemId: string, formData: any) => {
         return { message: 'Error updating order item', success: false };
     }
 }
+
+export const getVendorReturnRequests = async () => {
+    try {
+        const domain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}returns/vendor`, {
+            headers: {
+                'company-domain': domain,
+                // Authorization: `Bearer ${await authToken()}`,    
+            }
+        });
+        return await response.json();
+    } catch (error) {
+        throw error;
+    }
+};
+export const getVendorReturnById = async (returnId: string) => {
+    try {
+        const domain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}returns/vendor/${returnId}`, {
+            headers: {
+                'company-domain': domain,
+                // Authorization: `Bearer ${await authToken()}`,    
+            }
+        });
+        return await response.json();
+    } catch (error) {
+        throw error;
+    }
+};
+export const updateReturnStatus = async (returnId: string, updates: { status: ReturnStatus, store_owner_note?: string }) => {
+    try {
+        const domain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}returns/${returnId}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': domain,
+                // Authorization: `Bearer ${await authToken()}`,
+            },
+            body: JSON.stringify(updates),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update return status');
+        }
+
+        return await response.json();
+    } catch (error) {
+        throw error;
+    }
+};

@@ -31,14 +31,13 @@ export function TabNavBar() {
                     newLink.url = `/customerProfile/${userId}/cart`;
                 }
             } else {
-                // Default server-safe paths
                 if (newLink.url.toLowerCase() === '/profile' || newLink.url.toLowerCase() === '/cart') {
                     newLink.url = '/customerProfile';
                 }
             }
             return newLink;
         });
-    }, [user, isMounted]); // Add isMounted to dependency array
+    }, [user, isMounted]);
 
     if (!isMounted) return null;
     return (

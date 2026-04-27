@@ -437,28 +437,33 @@ export const fetchCancelOrderItem = async (
     );
     return response.json();
 };
-export const fetchReturnReplaceItem = async (formData: FormData) => {
+export const fetchReturnReplaceItem = async (userId: string, formData: FormData) => {
     const domain = await getCompanyDomain();
     try {
         const response = await fetch(
-            `${BASE_API_URL}order-items/return-replace`,
+            `${BASE_API_URL}returns/user/${userId}`,
             {
                 method: 'POST',
                 headers: {
-                    // 'Content-Type': 'multipart/form-data', // Let the browser set this with the correct boundary
                     'company-domain': domain,
                 },
                 body: formData,
             },
         );
-        if (!response.ok) {
-            console.log('Failed to submit return/replace request');
-            return { success: false };
-        }
+        console.log('fetch status:', response.status, response.statusText);
+
         const data = await response.json();
+        console.log('fetch response body:', data);
+
+        if (!response.ok) {
+            console.log('Server error:', data?.message ?? data);
+            return { success: false, error: data?.message ?? 'Request failed' };
+        }
+
         return { success: true, data };
+
     } catch (error) {
-        console.log('Error submitting return/replace request:', error);
-        return { success: false };
+        console.log('Network/parse error:', error);
+        return { success: false, error };
     }
 };

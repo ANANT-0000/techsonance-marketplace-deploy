@@ -2,7 +2,7 @@
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeftCircle, AlertCircle } from "lucide-react";
+import { ChevronLeftCircle, AlertCircle, ChevronLeft } from "lucide-react";
 import { FormInput } from "@/components/common/FormInput";
 import { PASSWORD_CHANGE_FORM_FIELDS } from "@/constants/dynamicFields";
 import { useAppSelector } from "@/hooks/reduxHooks";
@@ -40,11 +40,16 @@ export default function PasswordForm() {
 
     return (
         <>
-            <ChevronLeftCircle
-                className="my-4 block lg:hidden cursor-pointer text-gray-600 hover:text-gray-900"
-                size={36}
-                onClick={() => router.back()}
-            />
+            <div className="flex items-center gap-3 my-4 sm:hidden">
+                <button
+                    onClick={() => router.back()}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                    aria-label="Go back"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+                <h1 className="font-bold text-xl text-gray-900">Change Password</h1>
+            </div>
 
             <form
                 className="max-w-md lg:ml-10 pt-1 lg:px-3 px-1 space-y-6"

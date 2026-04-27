@@ -26,16 +26,18 @@ export function ProfileSidebar() {
     const currentUserId = user?.id ?? '';
 
     const [isMobile, setIsMobile] = useState(false);
-    const [hasMounted, setHasMounted] = useState(false); // add this
+    const [hasMounted, setHasMounted] = useState(false);
+
     useEffect(() => {
         setHasMounted(true);
-        const mql = window.matchMedia('(max-width: 1023px)'); // below lg breakpoint
+        const mql = window.matchMedia('(max-width: 1023px)');
         setIsMobile(mql.matches);
         const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
         mql.addEventListener('change', handler);
         return () => mql.removeEventListener('change', handler);
     }, []);
 
+    if (!hasMounted) return null;
     if (currentPath.includes('checkout')) return null;
 
     const handleNavigation = (linkPath: string) => {
@@ -51,102 +53,54 @@ export function ProfileSidebar() {
 
     const profileOverviewPath = `/customerProfile/${currentUserId}`;
     const isOnOverviewPage = currentPath === profileOverviewPath;
-    if (!hasMounted) return null;
-    // ── MOBILE / TABLET (below lg) ────────────────────────────────────
     if (isMobile) {
-        // On overview page → show quick-access grid BELOW the profile card
-        // (the grid is rendered here, layout positions it via flex-col in the layout)
-        if (isOnOverviewPage) {
-            const mobileLinks = ProfileSidebarLink.filter(
-                link => link.path !== '/customerProfile' && link.path !== '/logout'
-            );
-            return (
-                <motion.ul
-                    className="grid grid-cols-2 gap-2 w-full mt-4"
-                    initial="hidden"
-                    animate="visible"
-                    variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
-                >
-                    {mobileLinks.map((link) => {
-                        const targetPath = `/customerProfile/${currentUserId}${link.path}`;
-                        const isActive =
-                            currentPath === targetPath ||
-                            currentPath.startsWith(targetPath);
+        if (!isOnOverviewPage) return null;
 
-                        return (
-                            <motion.li
-                                key={link.name}
-                                variants={{
-                                    hidden: { opacity: 0, x: -10 },
-                                    visible: { opacity: 1, x: 0 }
-                                }}
-                                className="border-2 border-gray-200 rounded-md"
-                            >
-                                <button
-                                    onClick={() => handleNavigation(link.path)}
-                                    className={`
-                                        w-full flex items-center gap-3 px-3 py-2.5
-                                        text-sm font-semibold transition-colors
-                                        ${isActive
-                                            ? 'text-brand-primary bg-blue-50'
-                                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                                        }
-                                    `}
-                                >
-                                    <DynamicIcon name={link.icon as IconName} size={18} fallback={() => <span />} />
-                                    <span>{link.name}</span>
-                                </button>
-                            </motion.li>
-                        );
-                    })}
-                </motion.ul>
-            );
-        }
+        const mobileLinks = ProfileSidebarLink.filter(
+            link => link.path !== '/customerProfile' && link.path !== '/logout'
+        );
 
-        // On sub-pages (orders, cart, etc.) → horizontal scrollable tab bar
         return (
-            <nav className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4 w-full scrollbar-hide">
-                {ProfileSidebarLink.map((link) => {
-                    if (link.path === '/customerProfile') return null; // skip overview in tab bar
-
-                    const isDanger = link.path === '/logout';
-                    const targetPath = isDanger
-                        ? null
-                        : `/customerProfile/${currentUserId}${link.path}`;
-
-                    const isActive =
-                        !isDanger &&
-                        targetPath !== null &&
-                        (currentPath === targetPath || currentPath.startsWith(targetPath));
+            <motion.ul
+                className="grid grid-cols-2 gap-2 w-full mb-5"
+                initial="hidden"
+                animate="visible"
+                variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
+            >
+                {mobileLinks.map((link) => {
+                    const targetPath = `/customerProfile/${currentUserId}${link.path}`;
+                    const isActive = currentPath === targetPath || currentPath.startsWith(targetPath);
 
                     return (
-                        <button
+                        <motion.li
                             key={link.name}
-                            onClick={() => handleNavigation(link.path)}
-                            className={`
-                                flex items-center gap-1.5 px-3 py-1.5 rounded-lg
-                                text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-colors
-                                ${isDanger
-                                    ? 'text-red-500 hover:bg-red-50'
-                                    : isActive
-                                        ? 'bg-blue-50 text-brand-primary border border-blue-100'
-                                        : 'text-gray-600 hover:bg-gray-100'
-                                }
-                            `}
+                            variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
+                            className="border-2 border-gray-200 rounded-md"
                         >
-                            <DynamicIcon name={link.icon as IconName} size={14} fallback={() => <span />} />
-                            <span>{link.name}</span>
-                        </button>
+                            <button
+                                onClick={() => handleNavigation(link.path)}
+                                className={`
+                                    w-full flex items-center gap-3 px-3 py-2.5
+                                    text-sm font-semibold transition-colors
+                                    ${isActive
+                                        ? 'text-brand-primary bg-blue-50'
+                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                    }
+                                `}
+                            >
+                                <DynamicIcon name={link.icon as IconName} size={18} fallback={() => <span />} />
+                                <span>{link.name}</span>
+                            </button>
+                        </motion.li>
                     );
                 })}
-            </nav>
+            </motion.ul>
         );
     }
 
-    // ── DESKTOP (lg and above) ────────────────────────────────────────
+    // ── DESKTOP ──
     return (
         <aside className="w-72 flex-shrink-0 rounded-xl p-6">
-            {/* User Header */}
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -166,7 +120,6 @@ export function ProfileSidebar() {
                 </div>
             </motion.div>
 
-            {/* Nav Links */}
             <motion.ul
                 className="space-y-1"
                 initial="hidden"
@@ -189,10 +142,7 @@ export function ProfileSidebar() {
                     return (
                         <motion.li
                             key={link.name}
-                            variants={{
-                                hidden: { opacity: 0, x: -10 },
-                                visible: { opacity: 1, x: 0 }
-                            }}
+                            variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
                         >
                             <button
                                 onClick={() => handleNavigation(link.path)}

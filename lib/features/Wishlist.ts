@@ -1,7 +1,7 @@
 import { USER_STORAGE_KEY, WISHLIST_KEY } from "@/constants/constants";
 import { fetchCustomerWishlist } from "@/utils/customerApiClient";
 import { Variant } from "@/utils/Types";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { getCompanyDomain } from "../get-domain";
 
 
@@ -107,28 +107,30 @@ const WishlistSlice = createSlice({
     name: 'wishlist',
     initialState,
     reducers: {
-        addToWishlist: (state, action: { payload: WishlistItem }) => {
+        addToWishlist: (state, action: PayloadAction<WishlistItem>) => {
             if (state.loading) return;
-
+            console.log("action.payload", action.payload)
             const existingItem = state.wishItems.find(
                 (item) => item.product_variant_id === action.payload.product_variant_id
             );
-
+            console.log("existingItem", existingItem)
             if (!existingItem) {
                 state.wishItems.push(action.payload);
+                console.log("state.wishItems", state.wishItems)
                 saveWishlistToLocalStorage(state.wishlistId, state.wishItems);
             }
         },
 
-        removeFromWishlist: (state, action: { payload: string }) => {
+        removeFromWishlist: (state, action: PayloadAction<string>) => {
             state.wishItems = state.wishItems.filter(
-                (item) => item.id !== action.payload
+                (item) => item.id !== action.payload &&
+                    item.product_variant_id !== action.payload
             );
 
             saveWishlistToLocalStorage(state.wishlistId, state.wishItems);
         },
 
-        setWishlistId: (state, action: { payload: string }) => {
+        setWishlistId: (state, action: PayloadAction<string>) => {
             state.wishlistId = action.payload;
         },
 

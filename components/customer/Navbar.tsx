@@ -20,10 +20,10 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: 
     const { wishItems } = useAppSelector((state: RootState) => state.wishlist);
     const { user, isAuthenticated } = useAppSelector((state: RootState) => state.auth);
     console.log('user', user, 'isAuthenticated', isAuthenticated)
- 
+
     const dispatch = useAppDispatch();
-    const wishlistCount = wishItems.length;
-    const cartCount = items.length;
+    const wishlistCount = wishItems.map((item: any) => item.product_variant_id).length;
+    // const cartCount = items.length;
     console.log("wishItems", wishItems)
     console.log("items", items);
     const path = usePathname();
