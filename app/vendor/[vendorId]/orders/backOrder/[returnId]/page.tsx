@@ -127,7 +127,7 @@ export default function BackOrderDetailPage() {
     const [vendorNote, setVendorNote] = useState('');
     const [updating, setUpdating] = useState(false);
     const [lightboxImg, setLightboxImg] = useState<string | null>(null);
-
+    const [trackingUrl, setTrackingUrl] = useState('');
     useEffect(() => {
         const fetchDetails = async () => {
             try {
@@ -155,8 +155,12 @@ export default function BackOrderDetailPage() {
             return toast.error('A note is required for rejections or QC failures');
         }
         setUpdating(true);
-        try {
-            await updateReturnStatus(returnId, { status: newStatus, store_owner_note: vendorNote });
+        try {   
+            if (newStatus === ReturnStatus.SHIPPED) {
+                await updateReturnStatus(returnId, { status: newStatus, store_owner_note: vendorNote, tracking_id: trackingUrl });
+            } else {
+                await updateReturnStatus(returnId, { status: newStatus, store_owner_note: vendorNote });
+            }
             toast.success('Status updated successfully');
             router.back();
         } catch (error: any) {
@@ -390,7 +394,7 @@ export default function BackOrderDetailPage() {
                                     <div>
                                         <p className="text-sm font-semibold text-gray-800">{user?.first_name} {user?.last_name}</p>
                                         <p className="text-xs text-gray-400 font-mono">{user?.email}</p>
-                                    </div>  
+                                    </div>
                                 </div>
                                 <div className="space-y-2 pt-1">
                                     <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -448,7 +452,22 @@ export default function BackOrderDetailPage() {
                                         ))}
                                     </select>
                                 </div>
-
+                                {
+                                    newStatus === ReturnStatus.SHIPPED && (
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
+                                                Tracking URL
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="w-full border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-sm text-gray-700 outline-none focus:border-blue-400 focus:bg-white transition-colors"
+                                                value={trackingUrl}
+                                                onChange={(e) => setTrackingUrl(e.target.value)}
+                                                placeholder="Enter tracking URL"
+                                            />
+                                        </div>
+                                    )
+                                }
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">
                                         Internal Note

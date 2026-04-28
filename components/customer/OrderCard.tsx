@@ -51,7 +51,7 @@ function OrderItemRow({ item, highlighted }: { item: OrderItemType; highlighted:
             </div>
             <div className="flex-1 py-3 pr-3 flex flex-col justify-between gap-1 min-w-0">
                 <Link
-                    href={`/shop/product/${item.variant.id}`}
+                    href={`shipping/${item.variant.id}`}
                     className="font-semibold text-gray-900 text-sm line-clamp-2 hover:underline leading-snug"
                 >
                     {item.variant.variant_name}
@@ -211,7 +211,7 @@ export const OrderCard = ({
 
                 {/* Footer */}
                 <div className="flex justify-between items-center pt-1">
-                    <Link href={`/shop/order-details/${order.id}`} className="text-xs font-medium text-blue-500 hover:underline">
+                    <Link href={`orders/${order.id}`} className="text-xs font-medium text-blue-500 hover:underline">
                         View Details →
                     </Link>
                     {order.shipping?.tracking_url && (
@@ -252,8 +252,8 @@ export const OrderCard = ({
                             <p className="text-sm text-gray-700 flex items-center gap-1.5">
                                 {order.payment.payment_method}
                                 <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${order.payment.payment_status === 'completed' ? 'bg-emerald-50 text-emerald-700'
-                                        : order.payment.payment_status === 'refunded' ? 'bg-blue-50 text-blue-700'
-                                            : 'bg-amber-50 text-amber-700'
+                                    : order.payment.payment_status === 'refunded' ? 'bg-blue-50 text-blue-700'
+                                        : 'bg-amber-50 text-amber-700'
                                     }`}>
                                     {order.payment.payment_status}
                                 </span>
@@ -264,7 +264,7 @@ export const OrderCard = ({
                 <div className="text-right flex flex-col gap-1">
                     <p className="text-[10px] text-gray-400 font-mono">#{order.id.split('-')[0].toUpperCase()}</p>
                     <div className="flex items-center gap-3 text-sm">
-                        <Link href={`/shop/order-details/${order.id}`} className="text-blue-500 hover:underline font-medium">
+                        <Link href={`orders/${order.id}`} className="text-blue-500 hover:underline font-medium">
                             View Details
                         </Link>
                         {order.shipping?.tracking_url && (

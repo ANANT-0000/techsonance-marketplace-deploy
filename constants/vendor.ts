@@ -1,5 +1,6 @@
 import type { Link } from "@/components/common/InnerSideBar";
 import { Coupon, CustomerTicket, GstInvoice, InventoryItem, InventoryProduct, NavLinkType, OrderDetail, UserReview, VendorOrder, VendorProduct, Warehouse } from "@/utils/Types";
+import { Section } from "lucide-react";
 
 //used
 export const VendorDocumentTypes: { label: string; value: string }[] = [
@@ -137,6 +138,25 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
       },
     ],
   },
+  {
+    menu: 'Finances',
+    sections: [
+      {
+        section: 'Overview',
+        list: [
+          { title: 'Earnings', path: `/vendor/${vendorId}/finances`, icon: 'trending-up' },
+          { title: 'Payouts', path: `/vendor/${vendorId}/finances/payouts`, icon: 'credit-card' },
+        ]
+      },
+      {
+        section: 'Ledger',
+        list: [
+          { title: 'Refunds', path: `/vendor/${vendorId}/refunds`, icon: 'corner-down-left' },
+          { title: 'Invoices', path: `/vendor/${vendorId}/finances/invoices`, icon: 'receipt' },
+        ]
+      }
+    ]
+  }
 ].filter(section => section.menu.toLowerCase() === selectedMenu.toLowerCase());
 
 // ============================================================

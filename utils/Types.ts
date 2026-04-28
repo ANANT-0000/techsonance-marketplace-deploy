@@ -22,6 +22,9 @@ export const OrderStatusEnum = {
   PENDING: "pending",
   SHIPPED: "shipped",
   CANCELLED: "cancelled",
+  RETURNED: "returned",
+  REFUNDED: "refunded",
+  REPLACED: "replaced",
 }
 
 export type OrderStatus = typeof OrderStatusEnum[keyof typeof OrderStatusEnum];

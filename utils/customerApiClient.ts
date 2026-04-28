@@ -467,3 +467,24 @@ export const fetchReturnReplaceItem = async (userId: string, formData: FormData)
         return { success: false, error };
     }
 };
+
+export const fetchUserReturns = async (userId: string) => {
+    const domain = await getCompanyDomain();
+    try {
+        const response = await fetch(`${BASE_API_URL}returns/user/${userId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "company-domain": domain,
+                // Authorization: `Bearer ${await authToken()}`,
+            },
+        });
+        console.log("User Returns Response:", response);
+        if (response.status !== 200) {
+            console.log('Failed to fetch user returns');
+        }
+        return await response.json();
+    } catch (error) {
+        console.log('Error fetching user returns:', error);
+    }
+};

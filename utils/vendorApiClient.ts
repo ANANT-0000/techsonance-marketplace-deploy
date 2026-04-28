@@ -588,7 +588,7 @@ export const getVendorReturnById = async (returnId: string) => {
         throw error;
     }
 };
-export const updateReturnStatus = async (returnId: string, updates: { status: ReturnStatus, store_owner_note?: string }) => {
+export const updateReturnStatus = async (returnId: string, updates: { status: ReturnStatus, store_owner_note?: string, tracking_id?: string }) => {
     try {
         const domain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}returns/${returnId}/status`, {
@@ -596,7 +596,7 @@ export const updateReturnStatus = async (returnId: string, updates: { status: Re
             headers: {
                 'Content-Type': 'application/json',
                 'company-domain': domain,
-                // Authorization: `Bearer ${await authToken()}`,
+                // Authorization: `Bearer ${await authToken()}`,   
             },
             body: JSON.stringify(updates),
         });

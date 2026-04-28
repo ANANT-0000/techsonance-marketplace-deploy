@@ -39,6 +39,13 @@ interface OrderItem {
     price: string;
     order_status: OrderStatus;
     variant: ProductVariant;
+    return_request: {
+        id: string
+        status: string
+        store_owner_note: string,
+        tracking_id: string | null
+        type: string
+    } | null
 }
 
 interface Address {
@@ -74,6 +81,7 @@ interface OrderDetailType {
     shipping: {
         tracking_url: string;
     } | null;
+
 }
 
 export default function OrderDetailsPage() {
@@ -177,106 +185,157 @@ export default function OrderDetailsPage() {
                         }
 
                         {/* Order Items */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200"
-                        >
-                            <h2 className="text-lg font-bold text-gray-900 mb-4">Items in this Order</h2>
-                            <div className="space-y-4">
-                                {order?.items.map((item, index) => {
-                                    const CANCELLABLE_STATUSES = ['pending', 'processing'];
-                                    const isCancellable = CANCELLABLE_STATUSES.includes(item.order_status);
-                                    const isShipped = item.order_status === 'shipped';
-                                    const isCancelled = item.order_status === 'cancelled';
-                                    const isDelivered = item.order_status === 'delivered';
+                        {order?.items.map((item, index) => {
+                            // 1. Clean Boolean Logic
+                            const CANCELLABLE_STATUSES = ['pending', 'processing'];
+                            const isCancellable = CANCELLABLE_STATUSES.includes(item.order_status);
+                            const isShipped = item.order_status === 'shipped';
+                            const isCancelled = item.order_status === 'cancelled';
 
-                                    const cancelHint = isShipped
-                                        ? 'Cannot cancel — item has already shipped.'
-                                        : isCancelled
-                                            ? 'This item has been cancelled.'
+                            // Check if the item has reached the customer's door at any point
+                            const isPastDelivery = ['delivered', 'returned', 'replaced'].includes(item.order_status);
+
+                            // Return/Replace State Logic (Based purely on the request object)
+                            const hasActiveReturnRequest = !!item.return_request;
+                            const isReturn = item.return_request?.type.toLowerCase() === 'return';
+                            const isReplace = item.return_request?.type.toLowerCase() === 'replacement';
+
+                            // Can only initiate a return if it's delivered and no request currently exists
+                            const canInitiateReturn = item.order_status === 'delivered' && !hasActiveReturnRequest;
+
+                            const cancelHint = isShipped
+                                ? 'Cannot cancel — item has already shipped.'
+                                : isCancelled
+                                    ? 'This item has been cancelled.'
+                                    : isReturn
+                                        ? 'This item is being returned.'
+                                        : isReplace
+                                            ? 'This item is being replaced.'
                                             : 'Items can be canceled before shipment.';
-                                    return (
-                                        <div key={index} className="flex flex-col sm:flex-row gap-4 py-4 border-b border-gray-100 last:border-0 last:pb-0">
-                                            <div className="relative z-10 flex flex-col items-center gap-2">
 
-                                                {/* Image */}
-                                                <div className="w-full sm:w-32 bg-[#f7f7f7] rounded-xl flex flex-col  items-center justify-center p-3">
-                                                    <img
-                                                        src={item.variant.images[0]?.image_url}
-                                                        alt={item.variant.variant_name}
-                                                        className="w-full h-24 object-contain mix-blend-multiply"
-                                                    />
+                            return (
+                                <div key={index} className="flex flex-col sm:flex-row gap-4 py-4 border-b border-gray-100 last:border-0 last:pb-0">
+                                    <div className="relative z-10 flex flex-col items-center gap-2">
+                                        {/* Image */}
+                                        <div className="w-full sm:w-32 bg-[#f7f7f7] rounded-xl flex flex-col items-center justify-center p-3">
+                                            <img
+                                                src={item.variant.images[0]?.image_url}
+                                                alt={item.variant.variant_name}
+                                                className="w-full h-24 object-contain mix-blend-multiply"
+                                            />
+                                        </div>
+                                    </div>
 
+                                    {/* Details */}
+                                    <div className="flex-grow flex flex-col justify-between">
+                                        <div className="mb-1">
+                                            <Link href={`/shopping/${item.variant.id}`} className="font-bold text-gray-900 text-sm sm:text-base hover:text-blue-600 line-clamp-2 transition-colors">
+                                                {item.variant.variant_name}
+                                            </Link>
+                                            <p className="text-gray-500 text-sm mt-1">Qty: {item.quantity}</p>
+                                            <p className="text-gray-900 font-semibold mt-1">₹{formatCurrency(Number(item.price))}</p>
+                                        </div>
+
+                                        {/* Action Buttons */}
+                                        <div className="flex flex-wrap gap-2 xl:mt-4 lg:mt-4 mt-1 items-start">
+
+                                            {/* Show Cancel button ONLY if it hasn't been delivered/returned/cancelled yet */}
+                                            {!isPastDelivery && !isCancelled && (
+                                                <div className="flex flex-col gap-1">
+                                                    <button
+                                                        onClick={isCancellable ? () => handleCancelItem(item.id) : undefined}
+                                                        disabled={!isCancellable}
+                                                        className={`flex items-center w-fit gap-1.5 text-sm lg:px-4 px-2 py-1 lg:py-2 rounded-xl font-medium border transition-colors ${isCancellable
+                                                            ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 cursor-pointer'
+                                                            : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
+                                                            }`}
+                                                    >
+                                                        <XCircle size={14} />
+                                                        Cancel Item
+                                                    </button>
+                                                    <span className="text-xs text-gray-400 px-1">{cancelHint}</span>
                                                 </div>
-                                            </div>
+                                            )}
 
-                                            {/* Details */}
-                                            <div className="flex-grow flex flex-col justify-between">
-                                                <div className="mb-1">
-                                                    <Link href={`/shopping/${item.variant.id}`} className="font-bold text-gray-900 text-sm sm:text-base hover:text-blue-600 line-clamp-2 transition-colors">
-                                                        {item.variant.variant_name}
-                                                    </Link>
-                                                    <p className="text-gray-500 text-sm mt-1">Qty: {item.quantity}</p>
-                                                    <p className="text-gray-900 font-semibold mt-1">₹{formatCurrency(Number(item.price))}</p>
-                                                </div>
+                                            {/* Delivery Status Tag (Shows while in transit or processing) */}
+                                            {!isPastDelivery && !isCancelled && (
+                                                <p className="py-3 px-4 rounded-lg border border-gray-300 lg:text-md text-xs font-semibold text-center bg-gray-50 capitalize">
+                                                    Delivery is {item.order_status.replace(/_/g, ' ')}
+                                                </p>
+                                            )}
 
-                                                {/* Action Buttons (Contextual based on status) */}
-                                                <div className="flex flex-wrap gap-2 xl:mt-4 lg:mt-4 mt-1 items-start">
+                                            {/* Post-delivery actions (Only show Return/Replace if NO return request exists) */}
+                                            {canInitiateReturn && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleReturnReplace(item.id)}
+                                                        className="flex items-center gap-1.5 text-sm px-4 py-2 bg-white border border-orange-200 text-orange-700 font-medium rounded-xl hover:bg-orange-50 transition-colors"
+                                                    >
+                                                        <RefreshCcw size={14} /> Return / Replace
+                                                    </button>
+                                                    <button className="text-sm px-4 py-2 bg-blue-50 border border-blue-200 text-blue-600 font-medium rounded-xl hover:bg-blue-100 transition-colors">
+                                                        Buy Again
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleWriteReview(item.id)}
+                                                        className="text-sm px-4 py-2 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        Write a Review
+                                                    </button>
+                                                </>
+                                            )}
 
-                                                    {/* Cancel button — active or disabled */}
-                                                    {!isDelivered && (
-                                                        <div className="flex flex-col gap-1">
-                                                            <button
-                                                                onClick={isCancellable ? () => handleCancelItem(item.id) : undefined}
-                                                                disabled={!isCancellable}
-                                                                className={`flex items-center w-fit gap-1.5 text-sm lg:px-4 px-2  py-1 lg:py-2 rounded-xl font-medium border transition-colors
-          ${isCancellable
-                                                                        ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 cursor-pointer'
-                                                                        : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
-                                                                    }`}
-                                                            >
+                                            {/* Active Return/Replace Tracking UI */}
+                                            {/* Active Return/Replace Tracking UI */}
+                                            {hasActiveReturnRequest && (
+                                                <div className="py-3 px-4 rounded-xl border border-orange-200 bg-orange-50 flex flex-col gap-2 w-full sm:w-auto">
+                                                    {/* Main Status */}
+                                                    <div>
+                                                        {isReturn && (
+                                                            <p className="text-sm font-bold text-orange-800 uppercase tracking-wide">
+                                                                Return Status: {item.return_request && item.return_request.status.replace(/_/g, ' ')}
+                                                            </p>
+                                                        )}
+                                                        {isReplace && (
+                                                            <p className="text-sm font-bold text-orange-800 uppercase tracking-wide">
+                                                                Replacement Status: {item.return_request && item.return_request.status.replace(/_/g, ' ')}
+                                                            </p>
+                                                        )}
+                                                    </div>
 
-                                                                <XCircle size={14} />
-                                                                Cancel Item
-                                                            </button>
-                                                            <span className="text-xs text-gray-400 px-1">{cancelHint}</span>
+                                                    {item.return_request && item.return_request.tracking_id ? (
+                                                        <a
+                                                            href={item.return_request.tracking_id}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 w-fit"
+                                                        >
+                                                            Track 3PL Shipment ↗
+                                                        </a>
+                                                    ) : (
+                                                        /* Show "Available soon" if approved but tracking isn't uploaded yet */
+                                                        (item.return_request && item.return_request.status === 'APPROVED') && (
+                                                            <p className="text-sm font-medium text-orange-600">
+                                                                Tracking URL: <span className="italic text-orange-500 opacity-80">Available soon...</span>
+                                                            </p>
+                                                        )
+                                                    )}
+
+                                                    {/* Rejection / QC Failure Note (Bonus UI) */}
+                                                    {item.return_request && item.return_request.store_owner_note && ['REJECTED', 'QC_FAILED'].includes(item.return_request.status) && (
+                                                        <div className="mt-1 p-2 bg-red-50 border border-red-100 rounded-lg">
+                                                            <p className="text-xs text-red-700">
+                                                                <span className="font-bold">Reason:</span> {item.return_request.store_owner_note}
+                                                            </p>
                                                         </div>
                                                     )}
-
-                                                    {!isDelivered && !isCancelled && (
-                                                        <p className={`py-3 px-4   rounded-lg border border-gray-300 lg:text-md text-xs font-semibold text-center bg-gray-50 capitalize`}>
-                                                            Delivery is {item.order_status.replace(/_/g, ' ')}
-                                                        </p>
-                                                    )
-                                                    }
-                                                    {/* Post-delivery actions */}
-                                                    {isDelivered && (
-                                                        <>
-                                                            <button
-                                                                onClick={() => handleReturnReplace(item.id)}
-                                                                className="flex items-center gap-1.5 text-sm px-4 py-2 bg-white border border-orange-200 text-orange-700 font-medium rounded-xl hover:bg-orange-50 transition-colors"
-                                                            >
-                                                                <RefreshCcw size={14} /> Return / Replace
-                                                            </button>
-                                                            <button className="text-sm px-4 py-2 bg-blue-50 border border-blue-200 text-blue-600 font-medium rounded-xl hover:bg-blue-100 transition-colors">
-                                                                Buy Again
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleWriteReview(item.id)}
-                                                                className="text-sm px-4 py-2 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
-                                                            >
-                                                                Write a Review
-                                                            </button>
-                                                        </>
-                                                    )}
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
-                                    )
-                                })
-                                }
-                            </div>
-                        </motion.div>
+                                    </div>
+                                </div>
+                            );
+                        })}
 
                         {/* Delivery Experience Rating */}
                         {order?.items[0].order_status === 'delivered' && (
