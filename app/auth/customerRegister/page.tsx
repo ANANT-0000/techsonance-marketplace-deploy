@@ -72,9 +72,9 @@ export default function CustomerRegisterPage() {
                     className="flex flex-col px-8 py-10 lg:px-12 justify-center flex-1"
                 >
                     <h1 className="text-2xl font-bold text-center text-gray-800">Create an account</h1>
-                    <p className="text-sm text-slate-500 mb-8 text-center font-medium">
+                    {/* <p className="text-sm text-slate-500 mb-8 text-center font-medium">
                         Form Valid: {isValid ? "✅" : "❌"} | Changed: {isDirty ? "✅" : "❌"}
-                    </p>
+                    </p> */}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         {CUSTOMER_REGISTRATION_FIELDS.map((field) => (

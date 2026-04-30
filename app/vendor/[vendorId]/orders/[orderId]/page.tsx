@@ -10,6 +10,7 @@ import {
     CreditCard,
     Truck,
     User,
+    RefreshCcw,
     ExternalLink,
     CheckCircle2,
     Clock,
@@ -24,9 +25,9 @@ import {
     fetchUpdateOrderStatus,
     fetchVendorOrderDetails,
 } from "@/utils/vendorApiClient";
-import { OrderStatusEnum } from "@/constants";
 import { fetchCancelOrderItem } from "@/utils/customerApiClient";
 import { getCompanyDomain } from "@/lib/get-domain";
+import { OrderStatusEnum } from "@/utils/Types";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -64,7 +65,6 @@ const STATUS_CONFIG = {
 } as const;
 
 type OrderStatus = keyof typeof STATUS_CONFIG;
-
 interface OrderItem {
     id: string;
     quantity: number;
@@ -80,6 +80,25 @@ interface OrderItem {
         price: string;
         image_url: string;
     };
+    return?: {
+        id: string;
+        type: string;
+        status: string;
+        reason: string;
+        customer_note: string;
+        evidence_images: { url: string }[];
+    } | null;
+    cancel?: {
+        id: string;
+        reason: string;
+        cancelled_by: string;
+    } | null;
+    refund?: {
+        id: string;
+        refund_amount: string;
+        refund_reason: string;
+        refund_status: string;
+    } | null;
 }
 
 interface Order {
@@ -111,7 +130,7 @@ interface Order {
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: OrderStatus }) {
-    const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.PENDING;
+    const cfg = STATUS_CONFIG[ status ] ?? STATUS_CONFIG.PENDING;
     return (
         <span
             className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${cfg.className}`}
@@ -127,16 +146,24 @@ function StatusBadge({ status }: { status: OrderStatus }) {
 interface StatusEditorProps {
     status: OrderStatus;
     onSave: (s: OrderStatus) => Promise<void>;
+    setOrderStatus?: React.Dispatch<React.SetStateAction<OrderStatus>>;
+    setItemStatuses?: React.Dispatch<React.SetStateAction<Record<string, OrderStatus>>>;
 }
 
-function StatusEditor({ status, onSave }: StatusEditorProps) {
-    const [editing, setEditing] = useState(false);
-    const [draft, setDraft] = useState(status);
-    const [saving, setSaving] = useState(false);
+function StatusEditor({ status, onSave, setOrderStatus, setItemStatuses }: StatusEditorProps) {
+    const [ editing, setEditing ] = useState(false);
+    const [ draft, setDraft ] = useState(status);
+    const [ saving, setSaving ] = useState(false);
 
     const handleSave = async () => {
         setSaving(true);
         await onSave(draft);
+        if (setOrderStatus) {
+            setOrderStatus(draft);
+        }
+        if (setItemStatuses) {
+            setItemStatuses((prev) => ({ ...prev, draft }))
+        }
         setSaving(false);
         setEditing(false);
     };
@@ -163,7 +190,7 @@ function StatusEditor({ status, onSave }: StatusEditorProps) {
                 className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
             >
                 {(Object.keys(STATUS_CONFIG) as OrderStatus[]).map((s) => (
-                    <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                    <option key={s} value={s}>{STATUS_CONFIG[ s ].label}</option>
                 ))}
             </select>
             <button
@@ -191,9 +218,9 @@ interface TrackingEditorProps {
 }
 
 function TrackingEditor({ trackingUrl, onSave }: TrackingEditorProps) {
-    const [editing, setEditing] = useState(false);
-    const [draft, setDraft] = useState("");
-    const [saving, setSaving] = useState(false);
+    const [ editing, setEditing ] = useState(false);
+    const [ draft, setDraft ] = useState("");
+    const [ saving, setSaving ] = useState(false);
 
     const handleSave = async () => {
         if (!draft.trim()) return;
@@ -276,8 +303,8 @@ interface CancelModalProps {
 }
 
 function CancelModal({ onConfirm, onClose }: CancelModalProps) {
-    const [reason, setReason] = useState("");
-    const [submitting, setSubmitting] = useState(false);
+    const [ reason, setReason ] = useState("");
+    const [ submitting, setSubmitting ] = useState(false);
 
     const handleConfirm = async () => {
         if (!reason.trim()) return;
@@ -342,24 +369,24 @@ export default function VendorOrderDetails() {
     const { orderId } = useParams<{ orderId: string }>();
     const router = useRouter();
 
-    const [order, setOrder] = useState<Order | null>(null);
-    const [orderStatus, setOrderStatus] = useState<OrderStatus>("PENDING");
-    const [cancellingItemId, setCancellingItemId] = useState<string | null>(null);
+    const [ order, setOrder ] = useState<Order | null>(null);
+    const [ orderStatus, setOrderStatus ] = useState<OrderStatus>(OrderStatusEnum.PROCESSING as OrderStatus);
+    const [ cancellingItemId, setCancellingItemId ] = useState<string | null>(null);
 
     // Per-item local state for multi-warehouse
-    const [itemStatuses, setItemStatuses] = useState<Record<string, OrderStatus>>({});
+    const [ itemStatuses, setItemStatuses ] = useState<Record<string, OrderStatus>>({});
 
     const loadOrder = async () => {
         try {
             const res = await fetchVendorOrderDetails(orderId);
             const data: Order = res.data;
             setOrder(data);
-            if (data.items?.[0]?.order_status) {
-                setOrderStatus(data.items[0].order_status.toUpperCase() as OrderStatus);
+            if (data.items?.[ 0 ]?.order_status) {
+                setOrderStatus(data.items[ 0 ].order_status.toUpperCase() as OrderStatus);
             }
             const statusMap: Record<string, OrderStatus> = {};
             data.items.forEach((item) => {
-                statusMap[item.id] = item.order_status.toUpperCase() as OrderStatus;
+                statusMap[ item.id ] = item.order_status.toUpperCase() as OrderStatus;
             });
             setItemStatuses(statusMap);
         } catch (err) {
@@ -373,7 +400,7 @@ export default function VendorOrderDetails() {
 
     // ── Order-level status save (single warehouse) ─────────────────────────────
     const handleOrderLevelStatusSave = async (newStatus: OrderStatus) => {
-        const res = await fetchUpdateOrderStatus(orderId, newStatus as OrderStatusEnum);
+        const res = await fetchUpdateOrderStatus(orderId, newStatus as OrderStatus);
         if (res.success) {
             setOrderStatus(newStatus);
             setOrder((prev) =>
@@ -385,7 +412,7 @@ export default function VendorOrderDetails() {
     // ── Per-item status save (multi-warehouse) ─────────────────────────────────
     const handleItemStatusSave = async (itemId: string, newStatus: OrderStatus) => {
         // TODO: call per-item status API
-        setItemStatuses((prev) => ({ ...prev, [itemId]: newStatus }));
+        setItemStatuses((prev) => ({ ...prev, [ itemId ]: newStatus }));
         setOrder((prev) =>
             prev
                 ? { ...prev, items: prev.items.map((i) => i.id === itemId ? { ...i, order_status: newStatus.toLowerCase() } : i) }
@@ -404,12 +431,14 @@ export default function VendorOrderDetails() {
     };
 
     const handleItemTrackingUrl = async (itemId: string, url: string) => {
-        // TODO: call per-item tracking URL API
-        setOrder((prev) =>
-            prev
-                ? { ...prev, items: prev.items.map((i) => i.id === itemId ? { ...i, tracking_url: url } : i) }
-                : prev
-        );
+        const response = await fetchAddTrackingUrl(itemId, url);
+        if (response?.success) {
+            setOrder((prev) =>
+                prev
+                    ? { ...prev, items: prev.items.map((i) => i.id === itemId ? { ...i, tracking_url: url } : i) }
+                    : prev
+            );
+        }
     };
 
     // ── Cancellation ──────────────────────────────────────────────────────────
@@ -423,7 +452,7 @@ export default function VendorOrderDetails() {
 
     if (!order)
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="h-screen w-full bg-slate-50 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-3 text-slate-400">
                     <div className="w-8 h-8 border-2 border-slate-200 border-t-blue-400 rounded-full animate-spin" />
                     <span className="text-sm">Loading order…</span>
@@ -481,7 +510,7 @@ export default function VendorOrderDetails() {
                         <SectionCard title={`Items (${order.items.length})`} icon={Package}>
                             <div className="divide-y divide-slate-100">
                                 {order.items.map((item) => {
-                                    const displayStatus = (itemStatuses[item.id] ?? item.order_status.toUpperCase()) as OrderStatus;
+                                    const displayStatus = (itemStatuses?.[ item.id ] ?? item.order_status.toUpperCase()) as OrderStatus;
                                     return (
                                         <div key={item.id} className="px-5 py-4 flex flex-col gap-3">
                                             {/* Product row */}
@@ -531,10 +560,11 @@ export default function VendorOrderDetails() {
                                                         <StatusEditor
                                                             status={displayStatus}
                                                             onSave={(s) => handleItemStatusSave(item.id, s)}
+                                                            setItemStatuses={setItemStatuses}
                                                         />
                                                     </div>
                                                     {/* Tracking URL */}
-                                                    <div className="bg-slate-50 rounded-xl p-3 space-y-1.5">
+                                                    {(displayStatus.toLowerCase() === OrderStatusEnum.SHIPPED.toLowerCase() || displayStatus.toLowerCase() === OrderStatusEnum.DELIVERED.toLowerCase()) ? <div className="bg-slate-50 rounded-xl p-3 space-y-1.5">
                                                         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                                                             Tracking URL
                                                         </p>
@@ -542,7 +572,13 @@ export default function VendorOrderDetails() {
                                                             trackingUrl={item.tracking_url}
                                                             onSave={(url) => handleItemTrackingUrl(item.id, url)}
                                                         />
-                                                    </div>
+                                                    </div> :
+                                                        (<div className="border-t border-slate-100 pt-4 space-y-2">
+                                                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                                                                Tracking URL    (Only after shipping)
+                                                            </p>
+                                                        </div>)
+                                                    }
                                                 </div>
                                             )}
 
@@ -557,7 +593,97 @@ export default function VendorOrderDetails() {
                                                     </button>
                                                 </div>
                                             )}
+                                            {/* ── RETURN, CANCEL & REFUND SECTION ── */}
+                                            {(item.return || item.cancel || item.refund) && (
+                                                <div className="mt-2 bg-slate-50 border border-slate-200 rounded-xl pb-4 px-4 space-y-4">
+
+                                                    {/* Return/Replacement Info */}
+                                                    {item.return && (
+                                                        <div className="">
+                                                            <div className="flex justify-between items-start gap-2 mb-2 bg-gray-50">
+                                                                <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 capitalize mt-4">
+                                                                    <RefreshCcw size={16} className="text-blue-500" />
+                                                                    {item.return.type} Request
+                                                                </div>
+
+                                                                <button
+                                                                    onClick={() => router.push(`backOrders/${item.id}`)}
+                                                                    className="inline-flex items-center gap-2.5 group cursor-pointer mt-4"
+                                                                >
+                                                                    <span className="text-[12px] uppercase tracking-wider font-bold px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-600 group-hover:border-blue-300 transition-colors">
+                                                                        {item.return.status}
+                                                                    </span>
+                                                                    <span className="text-sm font-medium text-blue-600 group-hover:text-blue-800 group-hover:underline underline-offset-4 transition-all">
+                                                                        Process Return →
+                                                                    </span>
+                                                                </button>
+                                                            </div>
+                                                            <div className="text-xs text-slate-600 space-y-1 bg-white border border-slate-100 p-3 rounded-lg">
+                                                                <p><span className="font-medium text-slate-700">Reason:</span> {item.return.reason}</p>
+                                                                {item.return.customer_note && (
+                                                                    <p><span className="font-medium text-slate-700">Note:</span> {item.return.customer_note}</p>
+                                                                )}
+                                                            </div>
+                                                            {item.return.evidence_images && item.return.evidence_images.length > 0 && (
+                                                                <div className="flex gap-2 pt-1">
+                                                                    {item.return.evidence_images.map((img, idx) => (
+                                                                        <a key={idx} href={img.url} target="_blank" rel="noopener noreferrer">
+                                                                            <img
+                                                                                src={img.url}
+                                                                                alt={`Evidence ${idx + 1}`}
+                                                                                className="w-14 h-14 object-cover rounded-lg border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer"
+                                                                            />
+                                                                        </a>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Cancellation Info */}
+                                                    {item.cancel && (
+                                                        <div className="space-y-2">
+                                                            <div className="flex justify-between items-start gap-2">
+                                                                <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                                                                    <XCircle size={16} className="text-red-500" />
+                                                                    Cancellation Details
+                                                                </div>
+                                                                <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-600">
+                                                                    By {item.cancel.cancelled_by}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-xs text-slate-600 bg-white border border-slate-100 p-3 rounded-lg">
+                                                                <p><span className="font-medium text-slate-700">Reason:</span> {item.cancel.reason}</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Refund Info */}
+                                                    {item.refund && (
+                                                        <div className={`space-y-2 ${(item.return || item.cancel) ? 'pt-4 border-t border-slate-200' : ''}`}>
+                                                            <div className="flex justify-between items-start gap-2">
+                                                                <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                                                                    <CreditCard size={16} className="text-emerald-500" />
+                                                                    Refund Information
+                                                                </div>
+                                                                <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-md border ${item.refund.refund_status === 'processed'
+                                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                                    : 'bg-white text-slate-600 border-slate-200'
+                                                                    }`}>
+                                                                    {item.refund.refund_status}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-xs text-slate-600 bg-white border border-slate-100 p-3 rounded-lg flex flex-col gap-1">
+                                                                <p><span className="font-medium text-slate-700">Amount:</span> ₹{formatCurrency(Number(item.refund.refund_amount))}</p>
+                                                                <p><span className="font-medium text-slate-700">Reason:</span> {item.refund.refund_reason}</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
                                         </div>
+
                                     );
                                 })}
                             </div>
@@ -646,11 +772,12 @@ export default function VendorOrderDetails() {
                                         <StatusEditor
                                             status={orderStatus}
                                             onSave={handleOrderLevelStatusSave}
+                                            setOrderStatus={setOrderStatus}
                                         />
                                     </div>
 
                                     {/* Tracking URL */}
-                                    <div className="border-t border-slate-100 pt-4 space-y-2">
+                                    {orderStatus.toLowerCase() === OrderStatusEnum.SHIPPED.toLowerCase() || orderStatus.toLowerCase() === OrderStatusEnum.DELIVERED.toLowerCase() ? <div className="border-t border-slate-100 pt-4 space-y-2">
                                         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                                             Tracking URL
                                         </p>
@@ -659,6 +786,11 @@ export default function VendorOrderDetails() {
                                             onSave={handleOrderTrackingUrl}
                                         />
                                     </div>
+                                        : (<div className="border-t border-slate-100 pt-4 space-y-2">
+                                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                                                Tracking URL    (Only after shipping)
+                                            </p>
+                                        </div>)}
                                 </div>
                             </SectionCard>
                         )}

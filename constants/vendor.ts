@@ -51,7 +51,7 @@ export const VENDOR_NAV_LINKS: NavLinkType[] = [
   { Dashboard: null, icon: 'layout-dashboard' },
   { Products: "products", icon: 'package' },
   { Orders: "orders", icon: 'shopping-cart' },
-  { Analytics: "finances", icon: 'chart-column-stacked' },
+  { Analytics: "analytics", icon: 'chart-column-stacked' },
   { Finances: "finances", icon: 'hand-coins' },
   { Marketing: "marketing", icon: 'megaphone' },
   { "Customer Care": "customerCare", icon: 'headset' },
@@ -99,9 +99,9 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
         section: "Sellings",
         list: [
           { title: "Orders", path: `/vendor/${vendorId}/orders`, icon: "shopping-cart" },
-          { title: "Back Orders", path: `/vendor/${vendorId}/orders/backOrder`, icon: "rotate-ccw" },
-          { title: "Failed Orders", path: `/vendor/${vendorId}/orders/failedOrder`, icon: "x-circle" },
-          { title: "Archived", path: `/vendor/${vendorId}/orders/archivedOrder`, icon: "archive" },
+          { title: "Back Orders", path: `/vendor/${vendorId}/orders/backOrders`, icon: "rotate-ccw" },
+          { title: "Failed Orders", path: `/vendor/${vendorId}/orders/failedOrders`, icon: "x-circle" },
+          { title: "Archived", path: `/vendor/${vendorId}/orders/archivedOrders`, icon: "archive" },
         ],
       },
       {
@@ -151,7 +151,7 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
       {
         section: 'Ledger',
         list: [
-          { title: 'Refunds', path: `/vendor/${vendorId}/refunds`, icon: 'corner-down-left' },
+          { title: 'Refunds', path: `/vendor/${vendorId}/finances/refunds`, icon: 'corner-down-left' },
           { title: 'Invoices', path: `/vendor/${vendorId}/finances/invoices`, icon: 'receipt' },
         ]
       }

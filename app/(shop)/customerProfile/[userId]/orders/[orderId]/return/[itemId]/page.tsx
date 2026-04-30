@@ -26,8 +26,9 @@ const PROOF_REQUIRED_REASONS = [
 
 export enum ReturnReplaceTypeEnum {
     RETURN = "return",
-    REPLACE = "replacement"
-}
+    REFUND = "refund",
+    REPLACEMENT = "replacement"
+  }
 
 export default function ReturnReplacePage() {
     const { orderId, itemId } = useParams<{ orderId: string; itemId: string }>();
@@ -35,7 +36,7 @@ export default function ReturnReplacePage() {
     const { user } = useAppSelector((state: RootState) => state.auth);
 
     const [targetItem, setTargetItem] = useState<any>(null);
-    const [requestType, setRequestType] = useState<ReturnReplaceTypeEnum>(ReturnReplaceTypeEnum.REPLACE);
+    const [requestType, setRequestType] = useState<ReturnReplaceTypeEnum>(ReturnReplaceTypeEnum.RETURN);
     const [selectedReason, setSelectedReason] = useState("");
     const [comments, setComments] = useState("");
     const [proofFiles, setProofFiles] = useState<File[]>([]);
@@ -168,18 +169,18 @@ export default function ReturnReplacePage() {
                         1. What would you like to do? <span className="text-red-500 m-1">*</span>
                     </h2>
                     <div className="grid lg:grid-cols-2 grid-rows-1 gap-2 lg:gap-4">
-                        {[ReturnReplaceTypeEnum.REPLACE, ReturnReplaceTypeEnum.RETURN].map((type) => (
+                        {[ReturnReplaceTypeEnum.REPLACEMENT, ReturnReplaceTypeEnum.RETURN].map((type) => (
                             <div
                                 key={type}
-                                onClick={() => setRequestType(type)}
+                                onClick={() => setRequestType(type as ReturnReplaceTypeEnum)}
                                 className={`lg:p-4 p-1 border-2 rounded-xl cursor-pointer text-center lg:text-left transition-all ${requestType === type ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
                                     }`}
                             >
                                 <p className="font-bold text-gray-900 lg:text-lg text-sm">
-                                    {type === ReturnReplaceTypeEnum.REPLACE ? 'Replace Item' : 'Return Item'}
+                                    {type === ReturnReplaceTypeEnum.REPLACEMENT ? 'Replace Item' : 'Return Item'}
                                 </p>
                                 <p className="text-xs text-gray-500 lg:mt-1 mt-0">
-                                    {type === ReturnReplaceTypeEnum.REPLACE ? 'Get an exact replacement' : 'Get a refund to original payment'}
+                                    {type === ReturnReplaceTypeEnum.REPLACEMENT ? 'Get an exact replacement' : 'Get a refund to original payment'}
                                 </p>
                             </div>
                         ))}

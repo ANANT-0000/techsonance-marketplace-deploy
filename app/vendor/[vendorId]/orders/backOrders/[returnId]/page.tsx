@@ -1,7 +1,7 @@
 ﻿'use client';
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getVendorReturnById, updateReturnStatus } from '@/utils/vendorApiClient';
+import { fetchGetVendorReturnById, FetchUpdateReturnStatus } from '@/utils/vendorApiClient';
 import { toast } from 'react-hot-toast';
 import { LoaderSpinner } from '@/components/common/LoaderSpinner';
 import { ReturnStatus } from '@/utils/Types';
@@ -132,7 +132,7 @@ export default function BackOrderDetailPage() {
         const fetchDetails = async () => {
             try {
                 setLoading(true);
-                const res = await getVendorReturnById(returnId);
+                const res = await fetchGetVendorReturnById(returnId);
                 setRequestData(res.data);
                 setNewStatus(res.data.status as ReturnStatus);
                 setVendorNote(res.data.store_owner_note || '');
@@ -157,9 +157,9 @@ export default function BackOrderDetailPage() {
         setUpdating(true);
         try {   
             if (newStatus === ReturnStatus.SHIPPED) {
-                await updateReturnStatus(returnId, { status: newStatus, store_owner_note: vendorNote, tracking_id: trackingUrl });
+                await FetchUpdateReturnStatus(returnId, { status: newStatus, store_owner_note: vendorNote, tracking_id: trackingUrl });
             } else {
-                await updateReturnStatus(returnId, { status: newStatus, store_owner_note: vendorNote });
+                await FetchUpdateReturnStatus(returnId, { status: newStatus, store_owner_note: vendorNote });
             }
             toast.success('Status updated successfully');
             router.back();

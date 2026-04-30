@@ -26,6 +26,7 @@ interface InventoryItem {
     variant_id: string;
     variant_name: string;
     variant_image: string;
+    activeStatus: string
 }
 interface LowStockAlert {
     inventoryId: string;
@@ -39,7 +40,43 @@ interface LowStockAlert {
 }
 
 
-
+export const InventoryStats = ({ inventory }: { inventory: InventoryItem[] }) => {
+    return (
+        <div className="flex gap-4 my-6 flex-wrap">
+            {[
+                { label: "Total SKUs", value: inventory.length, color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
+                {
+                    label: "Low Stock",
+                    value: inventory.filter((i) => i.isLowStock && !i.isOutOfStock).length,
+                    color: "text-yellow-600",
+                    bg: "bg-yellow-50 border-yellow-200",
+                },
+                {
+                    label: "Out of Stock",
+                    value: inventory.filter((i) => i.isOutOfStock).length,
+                    color: "text-red-600",
+                    bg: "bg-red-50 border-red-200",
+                },
+                {
+                    label: "Healthy",
+                    value: inventory.filter((i) => !i.isLowStock).length,
+                    color: "text-green-600",
+                    bg: "bg-green-50 border-green-200",
+                },
+            ].map((stat) => (
+                <div
+                    key={stat.label}
+                    className={`border rounded-2xl px-6 py-4 flex flex-col gap-1 ${stat.bg}`}
+                >
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        {stat.label}
+                    </p>
+                    <p className={`text-3xl font-extrabold ${stat.color}`}>{stat.value}</p>
+                </div>
+            ))}
+        </div>
+    )
+}
 async function fetchInventory(domain: string): Promise<InventoryItem[]> {
     const res = await fetch(`${BASE_API_URL}inventory`, {
         headers: { "company-domain": domain },
@@ -74,21 +111,21 @@ async function updateStock(inventoryId: string, quantity: number,) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function InventoryPage() {
-    const [inventory, setInventory] = useState<InventoryItem[]>([]);
-    const [alerts, setAlerts] = useState<LowStockAlert[]>([]);
-    const [search, setSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState<"all" | "low" | "out">("all");
-    const [loading, setLoading] = useState(true);
-    const [editId, setEditId] = useState<string | null>(null);
-    const [editQty, setEditQty] = useState<number>(0);
-    const [saving, setSaving] = useState(false);
-    const [count, setCount] = useState(1);
+    const [ inventory, setInventory ] = useState<InventoryItem[]>([]);
+    const [ alerts, setAlerts ] = useState<LowStockAlert[]>([]);
+    const [ search, setSearch ] = useState("");
+    const [ statusFilter, setStatusFilter ] = useState<"all" | "low" | "out">("all");
+    const [ loading, setLoading ] = useState(true);
+    const [ editId, setEditId ] = useState<string | null>(null);
+    const [ editQty, setEditQty ] = useState<number>(0);
+    const [ saving, setSaving ] = useState(false);
+    const [ count, setCount ] = useState(1);
     const pageSize = 8;
 
     const reload = async () => {
         const domain = await getCompanyDomain();
         setLoading(true);
-        const [inv, alrt] = await Promise.all([fetchInventory(domain), fetchAlerts(domain)]);
+        const [ inv, alrt ] = await Promise.all([ fetchInventory(domain), fetchAlerts(domain) ]);
         setInventory(inv);
         setAlerts(alrt);
         setLoading(false);
@@ -162,40 +199,8 @@ export default function InventoryPage() {
                         </motion.section>
                     )}
                 </AnimatePresence>
-                <div className="flex gap-4 my-6 flex-wrap">
-                    {[
-                        { label: "Total SKUs", value: inventory.length, color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
-                        {
-                            label: "Low Stock",
-                            value: inventory.filter((i) => i.isLowStock && !i.isOutOfStock).length,
-                            color: "text-yellow-600",
-                            bg: "bg-yellow-50 border-yellow-200",
-                        },
-                        {
-                            label: "Out of Stock",
-                            value: inventory.filter((i) => i.isOutOfStock).length,
-                            color: "text-red-600",
-                            bg: "bg-red-50 border-red-200",
-                        },
-                        {
-                            label: "Healthy",
-                            value: inventory.filter((i) => !i.isLowStock).length,
-                            color: "text-green-600",
-                            bg: "bg-green-50 border-green-200",
-                        },
-                    ].map((stat) => (
-                        <div
-                            key={stat.label}
-                            className={`border rounded-2xl px-6 py-4 flex flex-col gap-1 ${stat.bg}`}
-                        >
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                {stat.label}
-                            </p>
-                            <p className={`text-3xl font-extrabold ${stat.color}`}>{stat.value}</p>
-                        </div>
-                    ))}
-                </div>
 
+                <InventoryStats inventory={inventory} />
                 {/* ── Filters ─────────────────────────────────────────────── */}
                 <div className="flex gap-3 mb-4 flex-wrap items-center justify-between">
                     <span className="border-2 flex items-center gap-0 border-gray-300 px-4 rounded-2xl bg-white">
@@ -210,7 +215,7 @@ export default function InventoryPage() {
                     </span>
 
                     <div className="flex gap-2">
-                        {(["all", "low", "out"] as const).map((f) => (
+                        {([ "all", "low", "out" ] as const).map((f) => (
                             <button
                                 key={f}
                                 onClick={() => { setStatusFilter(f); setCount(1); }}
@@ -243,6 +248,8 @@ export default function InventoryPage() {
                             <tr className="bg-gray-50 text-left">
                                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">Product</th>
                                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">SKU</th>
+                                <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">Active</th>
+
                                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">Warehouse</th>
                                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">Stock</th>
                                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">Status</th>
@@ -297,9 +304,20 @@ export default function InventoryPage() {
 
                                         {/* SKU */}
                                         <td className="p-4 font-mono text-gray-500 text-xs">{item.sku}</td>
+                                        {/* Actvie */}
+                                        <td className={`p-4 font-mono text-gray-500 text-xs `}>
+                                            <span
+                                                className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full border ${item.activeStatus === 'active'
+                                                    ? "bg-green-100 text-green-700  border-green-400"
+                                                    : "text-gray-600 bg-gray-100  border-gray-400"
+                                                    }`}
+                                            >
+                                                {item.activeStatus}
+                                            </span>
+                                        </td>
 
                                         {/* Warehouse */}
-                                        <td className="p-4 text-gray-600">{item.locations ? item.locations[0]?.warehouse_name ?? "—" : "—"}</td>
+                                        <td className="p-4 text-gray-600">{item.locations ? item.locations[ 0 ]?.warehouse_name ?? "—" : "—"}</td>
 
                                         {/* Stock */}
                                         <td className="p-4">

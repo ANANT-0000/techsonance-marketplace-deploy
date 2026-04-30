@@ -149,7 +149,7 @@ export default function ProductPage() {
                             {isMounted && activeVariant && (
                                 <>
                                     <AddToCart productVariantId={activeVariant.id} styles="text-xl py-1 w-32 lg:w-40" />
-                                    <BuyBtn id={activeVariant.id} mode={BuyBtnMode.QUICK_BUY} styles="scale-[0.90]" />
+                                    <BuyBtn id={activeVariant.id} mode={BuyBtnMode.QUICK_BUY} styles="px-6" />
                                 </>
                             )}
                         </motion.div>

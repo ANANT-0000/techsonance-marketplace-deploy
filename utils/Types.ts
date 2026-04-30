@@ -17,17 +17,22 @@ export enum UserAddressTypeEnum {
   OTHER = 'other'
 }
 export const OrderStatusEnum = {
-  DELIVERED: "delivered",
-  SHIPPING: "shipping",
-  PENDING: "pending",
-  SHIPPED: "shipped",
-  CANCELLED: "cancelled",
-  RETURNED: "returned",
-  REFUNDED: "refunded",
-  REPLACED: "replaced",
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  SHIPPED: 'shipped',
+  DELIVERED: 'delivered',
+  CANCELLED: 'cancelled',
+  RETURNED: 'returned',
+  REFUNDED: 'refunded',
+  REPLACED: 'replaced',
 }
-
-export type OrderStatus = typeof OrderStatusEnum[keyof typeof OrderStatusEnum];
+export enum ProductVariantStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  DISCONTINUED = 'discontinued',
+  DRAFT = 'draft',
+}
+export type OrderStatus = typeof OrderStatusEnum[ keyof typeof OrderStatusEnum ];
 export enum ReturnType {
   RETURN = 'return',
   REPLACEMENT = 'replacement',
@@ -167,14 +172,14 @@ export interface RoleDefinition {
   can: PermissionEnum[];
 }
 export const role: Record<UserRole, RoleDefinition> = {
-  [UserRole.Admin]: {
-    can: [PermissionEnum.CREATE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.DELETE]
+  [ UserRole.Admin ]: {
+    can: [ PermissionEnum.CREATE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.DELETE ]
   },
-  [UserRole.Vendor]: {
-    can: [PermissionEnum.CREATE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.DELETE]
+  [ UserRole.Vendor ]: {
+    can: [ PermissionEnum.CREATE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.DELETE ]
   },
-  [UserRole.Customer]: {
-    can: [PermissionEnum.READ,]
+  [ UserRole.Customer ]: {
+    can: [ PermissionEnum.READ, ]
   }
 }
 
@@ -455,7 +460,7 @@ export interface VendorApplication {
   documents: VendorDocument[];
 }
 export interface NavLinkType {
-  [key: string]: string | null;
+  [ key: string ]: string | null;
 }
 
 export interface FooterLinkType {
@@ -472,7 +477,7 @@ export interface FooterSectionType {
 }
 
 export interface tabLinkType {
-  [key: string]: string | null;
+  [ key: string ]: string | null;
 }
 
 export type ProductFeature = { title: string; description: string };

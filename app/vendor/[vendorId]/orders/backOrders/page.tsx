@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getVendorReturnRequests } from '@/utils/vendorApiClient';
+import { fetchGetVendorReturnRequests } from '@/utils/vendorApiClient';
 import { toast } from 'react-hot-toast';
 import { LoaderSpinner } from '@/components/common/LoaderSpinner';
 import { searchImgDark } from '@/constants/common';
@@ -83,13 +83,13 @@ export const ReturnTableHeader = [
     "Actions"
 ]
 export default function BackOrdersListPage() {
-    const [returns, setReturns] = useState<ReturnRequest[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [date, setDate] = useState<Date | undefined>(undefined);
-    const [isOpen, setIsOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [typeFilter, setTypeFilter] = useState('all');
+    const [ returns, setReturns ] = useState<ReturnRequest[]>([]);
+    const [ loading, setLoading ] = useState(true);
+    const [ date, setDate ] = useState<Date | undefined>(undefined);
+    const [ isOpen, setIsOpen ] = useState(false);
+    const [ searchQuery, setSearchQuery ] = useState('');
+    const [ statusFilter, setStatusFilter ] = useState('all');
+    const [ typeFilter, setTypeFilter ] = useState('all');
 
     const handleDateChange = (selectedDate: Date | undefined) => {
         setDate(selectedDate);
@@ -100,7 +100,7 @@ export default function BackOrdersListPage() {
         const fetchReturns = async () => {
             try {
                 setLoading(true);
-                const res = await getVendorReturnRequests();
+                const res = await fetchGetVendorReturnRequests();
                 setReturns(res.data);
             } catch (error) {
                 toast.error('Failed to load return requests');
@@ -245,106 +245,112 @@ export default function BackOrdersListPage() {
             </div>
 
             {/* Table */}
-            <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
-                <table className="w-full table-auto overflow-x-scroll min-w-[1000px] border-collapse">
-                    <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 text-left">
-                            <th className="p-4 w-10">
-                                <input type="checkbox" className="rounded" />
-                            </th>
-                            {ReturnTableHeader.map((header) => (
-                                <th key={header} className="p-4 text-xs Rent-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{header}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {filteredReturns.length === 0 ? (
-                            <tr>
-                                <td colSpan={11} className="py-16 text-center text-gray-400 text-sm">
-                                    <RotateCcw size={36} className="mx-auto mb-3 opacity-30" />
-                                    No back orders found.
-                                </td>
+            <div className="w-full rounded-xl border border-gray-200 shadow-sm bg-white flex flex-col min-w-0">
+             
+ 
+                <div className="overflow-x-auto w-full rounded-xl">
+
+                  
+                    <table className="w-full min-w-[900px] table-auto border-collapse">
+                        <thead>
+                            <tr className="bg-gray-50 border-b border-gray-200 text-left">
+                                <th className="p-4 w-10">
+                                    <input type="checkbox" className="rounded" />
+                                </th>
+                                {ReturnTableHeader.map((header) => (
+                                    <th key={header} className="p-4 text-xs Rent-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{header}</th>
+                                ))}
                             </tr>
-                        ) : (
-                            filteredReturns.map((req) => (
-                                <tr key={req.id} className="hover:bg-gray-50 transition-colors group">
-                                    <td className="p-4">
-                                        <input type="checkbox" className="rounded" />
-                                    </td>
-
-                                    {/* REQUEST ID */}
-                                    <td className="p-4">
-                                        <span className="font-mono text-sm font-semibold text-gray-800">
-                                            #{req.id.split('-')[0].toUpperCase()}
-                                        </span>
-                                    </td>
-
-                                    {/* TYPE */}
-                                    <td className="p-4">
-                                        {getTypeBadge(req.type)}
-                                    </td>
-                                    {/* PRODUCT */}
-                                    <td className="p-4">
-                                        <div className="text-xs text-gray-700 max-w-[200px] line-clamp-2 leading-snug">
-                                            {req.orderItem?.variant?.variant_name || 'N/A'}
-                                        </div>
-                                        {req.orderItem?.variant?.sku && (
-                                            <div className="text-xs text-gray-400 mt-0.5 font-mono">
-                                                SKU: {req.orderItem.variant.sku}
-                                            </div>
-                                        )}
-                                    </td>
-
-                                    {/* PRICE */}
-                                    <td className="p-4">
-                                        <span className="font-semibold text-gray-800">
-                                            ₹{Number(req.orderItem?.price).toLocaleString()}
-                                        </span>
-                                        <div className="text-xs text-gray-400">
-                                            Qty: {req.orderItem?.quantity ?? 1}
-                                        </div>
-                                    </td>
-
-                                    {/* REASON */}
-                                    <td className="p-4 text-sm text-gray-600 max-w-[160px]">
-                                        <span className="line-clamp-2">{req.reason || 'N/A'}</span>
-                                    </td>
-
-                                    {/* STATUS */}
-                                    <td className="p-4">
-                                        {getStatusBadge(req.status)}
-                                    </td>
-
-                                    {/* LOCATION */}
-                                    <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
-                                        {[
-                                            req.orderItem?.order?.address?.state,
-                                            req.orderItem?.order?.address?.country,
-                                            req.orderItem?.order?.address?.postal_code,
-                                        ]
-                                            .filter(Boolean)
-                                            .join(', ') || 'N/A'}
-                                    </td>
-
-                                    {/* DATE */}
-                                    <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
-                                        {new Date(req.created_at).toLocaleDateString('en-GB')}
-                                    </td>
-
-                                    {/* ACTIONS */}
-                                    <td className="p-4">
-                                        <Link
-                                            href={`backOrder/${req.id}`}
-                                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
-                                        >
-                                            Review →
-                                        </Link>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {filteredReturns.length === 0 ? (
+                                <tr>
+                                    <td colSpan={11} className="py-16 text-center text-gray-400 text-sm whitespace-nowrap">
+                                        <RotateCcw size={36} className="mx-auto mb-3 opacity-30" />
+                                        No back orders found.
                                     </td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            ) : (
+                                filteredReturns.map((req) => (
+                                    <tr key={req.id} className="hover:bg-gray-50 transition-colors group whitespace-nowrap">
+                                        <td className="p-4">
+                                            <input type="checkbox" className="rounded" />
+                                        </td>
+
+                                        {/* REQUEST ID */}
+                                        <td className="p-4 whitespace-nowrap">
+                                            <span className="font-mono text-sm font-semibold text-gray-800">
+                                                #{req.id.split('-')[ 0 ].toUpperCase()}
+                                            </span>
+                                        </td>
+
+                                        {/* TYPE */}
+                                        <td className="p-4 whitespace-nowrap">
+                                            {getTypeBadge(req.type)}
+                                        </td>
+                                        {/* PRODUCT */}
+                                        <td className="p-4 whitespace-nowrap">
+                                            <div className="text-xs text-gray-700 max-w-[200px] line-clamp-2 leading-snug">
+                                                {req.orderItem?.variant?.variant_name || 'N/A'}
+                                            </div>
+                                            {req.orderItem?.variant?.sku && (
+                                                <div className="text-xs text-gray-400 mt-0.5 font-mono">
+                                                    SKU: {req.orderItem.variant.sku}
+                                                </div>
+                                            )}
+                                        </td>
+
+                                        {/* PRICE */}
+                                        <td className="p-4">
+                                            <span className="font-semibold text-gray-800 whitespace-nowrap">
+                                                ₹{Number(req.orderItem?.price).toLocaleString()}
+                                            </span>
+                                            <div className="text-xs text-gray-400">
+                                                Qty: {req.orderItem?.quantity ?? 1}
+                                            </div>
+                                        </td>
+
+                                        {/* REASON */}
+                                        <td className="p-4 text-sm text-gray-600 max-w-[160px] whitespace-nowrap">
+                                            <span className="line-clamp-2">{req.reason || 'N/A'}</span>
+                                        </td>
+
+                                        {/* STATUS */}
+                                        <td className="p-4  whitespace-nowrap">
+                                            {getStatusBadge(req.status)}
+                                        </td>
+
+                                        {/* LOCATION */}
+                                        <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
+                                            {[
+                                                req.orderItem?.order?.address?.state,
+                                                req.orderItem?.order?.address?.country,
+                                                req.orderItem?.order?.address?.postal_code,
+                                            ]
+                                                .filter(Boolean)
+                                                .join(', ') || 'N/A'}
+                                        </td>
+
+                                        {/* DATE */}
+                                        <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
+                                            {new Date(req.created_at).toLocaleDateString('en-GB')}
+                                        </td>
+
+                                        {/* ACTIONS */}
+                                        <td className="p-4">
+                                            <Link
+                                                href={`backOrder/${req.id}`}
+                                                className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                                            >
+                                                Review →
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
     );

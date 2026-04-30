@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { motion } from "motion/react";
 import { ADDRESS_FIELDS } from "@/constants/dynamicFields";
 import { AddressForEnum, AddressOperationEnum, Address, User } from "@/utils/Types";
-import { fetchCreateUserAddress, fetchUpdateUserAddress } from "@/utils/customerApiClient";
+import { fetchCreateUserAddress, fetchUpdateUserAddress } from "@/utils/customerApiClient-SA";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";

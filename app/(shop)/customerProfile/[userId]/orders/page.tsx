@@ -13,24 +13,26 @@ export default function OrdersPage() {
   const { user } = useAppSelector((state: RootState) => state.auth);
   const router = useRouter();
   const isMobile = useMediaQuery({ maxWidth: 640 });
-  const [orderStatus, setOrderStatus] = useState<OrderStatus | 'returns' | null>(
+  const [ orderStatus, setOrderStatus ] = useState<OrderStatus | 'returns' | null>(
     OrderStatusEnum.PENDING
   );
 
   const ordersStatusMap: Array<OrderStatus | 'returns'> = [
-    OrderStatusEnum.PENDING,
+    OrderStatusEnum.PROCESSING,
+    OrderStatusEnum.SHIPPED,
     OrderStatusEnum.DELIVERED,
     OrderStatusEnum.CANCELLED,
     'returns',
   ];
 
   const statusLabels: Record<string, string> = {
-    [OrderStatusEnum.PENDING]: "Not Shipped Yet",
-    [OrderStatusEnum.DELIVERED]: "Delivered",
-    [OrderStatusEnum.CANCELLED]: "Cancelled",
+    [ OrderStatusEnum.SHIPPED ]: "Orders",
+    [ OrderStatusEnum.DELIVERED ]: "Delivered",
+    [ OrderStatusEnum.CANCELLED ]: "Cancelled",
+    [ OrderStatusEnum.PROCESSING ]: "Not Shipped Yet",
     returns: "Returns & Replacements",
   };
-
+  
   return (
     <>
       <div className="flex items-center gap-3 my-4 sm:hidden">
@@ -60,7 +62,7 @@ export default function OrdersPage() {
                 className="relative lg:px-6 lg:py-2.5 px-4 py-2 font-medium transition-colors focus:outline-none border-b-2 -mb-px text-sm whitespace-nowrap"
                 onClick={() => setOrderStatus(status)}
               >
-                {statusLabels[status] || status}
+                {statusLabels[ status ] || status}
               </motion.button>
             );
           })}

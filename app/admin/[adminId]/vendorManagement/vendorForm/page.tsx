@@ -58,7 +58,7 @@ export default function VendorFormPage() {
     const [countryCode, setCountryCode] = useState("");
     const [formStep, setFormStep] = useState(0);
     const totalSteps = Object.keys(RegistrationStages).length;
-    const [fileMap, setFileMap] = useState<{ file: File | null; type: string }[]>([]);
+    const [fileMap, setFileMap] = useState<{ file: File | null; type: string,index:number }[]>([]);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const nextStep = async () => {
         const fields = STEP_FIELDS[formStep];

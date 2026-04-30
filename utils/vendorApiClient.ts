@@ -3,7 +3,7 @@ import { ACCESS_TOKEN_KEY, BASE_API_URL } from "@/constants";
 import { authToken } from "./authToken";
 import { revalidatePath } from "next/cache";
 import { getCompanyDomain } from "@/lib/get-domain";
-import { ReturnStatus } from "./Types";
+import { OrderStatus, ReturnStatus } from "./Types";
 export const fetchVendorsProductsCategory = async (vendorId: string) => {
     try {
         const response = await fetch(`${BASE_API_URL}categories/${vendorId}`, {
@@ -135,15 +135,15 @@ export const updateProduct = async (formData: FormData, vendorId: string, produc
         return { status: 500, statusText: 'Internal Server Error' + error };
     }
 }
-export const updateProductStatus = async (productId: string, vendorId: string, status: string) => {
+export const updateProductVariantStatus = async (productVariantId: string, vendorId: string, nextStatus: string) => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}products/update-status/${productId}`, {
+        console.log("nextStatus", nextStatus);
+        const response = await fetch(`${BASE_API_URL}product-variant/update-status/${productVariantId}`, {
             method: "PATCH",
-            body: JSON.stringify({
-                status: status
-            }),
+            body: JSON.stringify({ status: nextStatus }),
             headers: {
+                'Content-Type': 'application/json',
                 'company-domain': companyDomain,
             },
         });
@@ -151,17 +151,41 @@ export const updateProductStatus = async (productId: string, vendorId: string, s
             console.error('Failed to create product');
             return { status: response.status, statusText: response.statusText };
         }
+
         revalidatePath(`/vendor/${vendorId}/products`);
+        revalidatePath(`/vendor/${vendorId}/products/${productVariantId}/productVariants`);
+        console.log('Product variant status updated');
         return await response.json();
     } catch (error) {
         console.error('Error creating product:', error);
         return { status: 500, statusText: 'Internal Server Error' + error };
     }
 }
-export const fetchVendorProducts = async (vendorId: string) => {
+export const fetchVendorProducts = async () => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}products/all`, {
+            method: 'GET',
+            cache: 'force-cache',
+            next: { revalidate: 3600 },
+            headers: {
+                'company-domain': companyDomain,
+                // Authorization: `Bearer ${await authToken()}`,
+            },
+        });
+        if (response.status !== 200) {
+            console.error('Failed to fetch products');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+    }
+}
+export const fetchVendorActiveProducts = async () => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}products/active`, {
             method: 'GET',
             cache: 'force-cache',
             next: { revalidate: 3600 },
@@ -345,15 +369,35 @@ export const fetchVariant = async (variantId: string,) => {
         console.error('Error fetching variant data:', error);
     }
 }
-export const fetchVendorOrderList = async () => {
+export const fetchVendorPendingOrders = async () => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}orders`, {
+        const response = await fetch(`${BASE_API_URL}orders/pending`, {
+            method: 'GET',
+            headers: {
+                'company-domain': companyDomain,
+                // Authorization: `Bearer ${await authToken()}`,
+            },
+        });
+        if (response.status !== 200) {
+            console.error('Failed to fetch pending orders');
+            return [];
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching pending orders:', error);
+        return [];
+    }
+}
+export const fetchVendorOrderList = async (offset: number = 0, limit: number = 10, status?: OrderStatus | undefined, sortBy?: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}orders?offset=${offset}&limit=${limit}&status=${status || undefined}&sortBy=${sortBy || undefined}`, {
             method: 'GET',
             cache: 'no-cache',
             headers: {
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${await authToken()}`,
+                // Authorization: `Bearer ${await authToken()}`,    
             },
         });
         if (response.status !== 200) {
@@ -560,10 +604,12 @@ export const fetchUpdateOrderItem = async (itemId: string, formData: any) => {
     }
 }
 
-export const getVendorReturnRequests = async () => {
+export const fetchGetVendorReturnRequests = async () => {
     try {
         const domain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}returns/vendor`, {
+            method: 'GET',
+            cache: 'no-store',
             headers: {
                 'company-domain': domain,
                 // Authorization: `Bearer ${await authToken()}`,    
@@ -574,7 +620,7 @@ export const getVendorReturnRequests = async () => {
         throw error;
     }
 };
-export const getVendorReturnById = async (returnId: string) => {
+export const fetchGetVendorReturnById = async (returnId: string) => {
     try {
         const domain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}returns/vendor/${returnId}`, {
@@ -588,7 +634,7 @@ export const getVendorReturnById = async (returnId: string) => {
         throw error;
     }
 };
-export const updateReturnStatus = async (returnId: string, updates: { status: ReturnStatus, store_owner_note?: string, tracking_id?: string }) => {
+export const FetchUpdateReturnStatus = async (returnId: string, updates: { status: ReturnStatus, store_owner_note?: string, tracking_id?: string }) => {
     try {
         const domain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}returns/${returnId}/status`, {
@@ -606,6 +652,37 @@ export const updateReturnStatus = async (returnId: string, updates: { status: Re
             throw new Error(errorData.message || 'Failed to update return status');
         }
 
+        return await response.json();
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const fetchGetCompanyRefunds = async () => {
+    try {
+        const domain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}refunds`, {
+            headers: {
+                'company-domain': domain,
+                // Authorization: `Bearer ${await authToken()}`,    
+            }
+        });
+        return await response.json();
+    } catch (error) {
+        throw error;
+    }
+};
+export const fetchProcessRefund = async (refundId: string) => {
+    try {
+        const domain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}refunds/${refundId}/process`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': domain,
+                // Authorization: `Bearer ${await authToken()}`,   
+            },
+        });
         return await response.json();
     } catch (error) {
         throw error;

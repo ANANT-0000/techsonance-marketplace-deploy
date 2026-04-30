@@ -9,8 +9,9 @@ import { AddressCard } from "@/components/customer/AddressCard";
 import { AddressModal } from "@/components/customer/AddressModel";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
-import { fetchDeleteUserAddress, fetchGetUserAddresses, fetchSetDefaultAddress } from "@/utils/customerApiClient";
+import { fetchGetUserAddresses, fetchSetDefaultAddress } from "@/utils/customerApiClient";
 import { AddressOperationEnum, Address } from "@/utils/Types";
+import { fetchDeleteUserAddress } from "@/utils/customerApiClient-SA";
 
 export default function Addresses() {
     const user = useAppSelector((state: RootState) => state.auth.user);
@@ -28,7 +29,7 @@ export default function Addresses() {
             }
         }
         fetchAddresses();
-    }, [user, addressList.length]);
+    }, [user, addressList.length, isModalOpen]);
     const router = useRouter()
     const openAdd = () => {
         setModalMode(AddressOperationEnum.ADD);
@@ -46,6 +47,7 @@ export default function Addresses() {
             await fetchDeleteUserAddress(userId, id);
             setAddressList(prev => prev.filter(addr => addr.id !== id));
         }
+        
     };
     const handleSetDefault = async (userId: string, id: string) => {
         await fetchSetDefaultAddress(userId, id);

@@ -5,6 +5,7 @@ import { DeleteBtn } from "@/components/vendor/DeleteBtn";
 import { VariantImgGrid } from "@/components/vendor/VariantImgGrid";
 import { ProductImage } from "@/utils/Types";
 import { formatCurrency } from "@/lib/utils";
+import { StatusToggle } from "@/components/common/StatusToggle";
 
 interface ProductVariant {
     id: string;
@@ -107,14 +108,13 @@ export default async function VariantListingPage({
                                                 {variant.sku || "—"}
                                             </p>
                                         </div>
-                                        <span
-                                            className={`mt-0.5 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap ${variant.status === "active"
-                                                ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
-                                                : "bg-slate-100 text-slate-500 border border-slate-200"
-                                                }`}
-                                        >
-                                            {variant.status.charAt(0).toUpperCase() + variant.status.slice(1)}
-                                        </span>
+
+                                        {/* Status */}
+                                        <StatusToggle
+                                            productVariantId={variant.id}
+                                            vendorId={vendorId}
+                                            initialStatus={variant.status ?? "inactive"}
+                                        />
                                     </div>
 
 
@@ -178,6 +178,6 @@ export default async function VariantListingPage({
                     </div>
                 )}
             </div>
-        </main>
+        </main >
     );
 }
