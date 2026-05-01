@@ -7,6 +7,8 @@ import { FormInput } from '@/components/common/FormInput';
 import { ADDRESS_FIELDS, WAREHOUSE_ADDRESS_FIELDS } from '@/constants/dynamicFields';
 import { fetchCreateWarehouseLocation, fetchDeleteWarehouseLocation, fetchUpdateWarehouseLocation, fetchVendorWarehouseLocations } from '@/utils/vendorApiClient';
 import { motion, AnimatePresence } from "motion/react";
+import { authToken } from '@/utils/authToken';
+import { redirect } from 'next/navigation';
 
 
 interface Address {
@@ -41,6 +43,7 @@ export default function LocationsPage() {
     const [closedLocationForm, setClosedLocationForm] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<Warehouse | null>(null);
     const [isEditing, setIsEditing] = useState<boolean>(false);
+    const token = authToken();
     const [fetchError, setFetchError] = useState<{
         message: string | null;
         success: boolean | null;
@@ -69,7 +72,10 @@ export default function LocationsPage() {
     });
 
     const deleteLocation = async (id: string) => {
-        const response = await fetchDeleteWarehouseLocation(id);
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
+        const response = await fetchDeleteWarehouseLocation(id, token);
         console.log(response)
         const updatedLocations = locationList.filter(location => location.id !== id);
         setLocationList(updatedLocations);
@@ -82,15 +88,18 @@ export default function LocationsPage() {
     };
 
     const onSubmit = async (data: AddressType, isEditing: boolean) => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
         if (isEditing && selectedLocation) {
-            const response = await fetchUpdateWarehouseLocation(selectedLocation.id, data).then((res) => {
+            const response = await fetchUpdateWarehouseLocation(selectedLocation.id, data, token).then((res) => {
                 console.log(res)
             }).catch((error) => {
                 console.error("Error updating warehouse location:", error);
             });
             console.log(response)
         } else {
-            const response = await fetchCreateWarehouseLocation(data).then((res) => {
+            const response = await fetchCreateWarehouseLocation(data, token).then((res) => {
                 setLocationList(prevList => [...prevList, { ...res, warehouse_name: data.name, address: { ...res.address, ...data } }]);
                 console.log(res)
             }).catch((error) => {
@@ -110,8 +119,11 @@ export default function LocationsPage() {
     };
 
     useEffect(() => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
         const getWarehouseList = async () => {
-            await fetchVendorWarehouseLocations().then((response) => {
+            await fetchVendorWarehouseLocations(token).then((response) => {
                 console.log(response)
                 if (response.success) {
                     console.log(response.data)

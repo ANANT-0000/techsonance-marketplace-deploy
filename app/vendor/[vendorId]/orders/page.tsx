@@ -8,6 +8,8 @@ import { Pagination } from "@/components/common/Pagination";
 import { fetchVendorOrderList } from "@/utils/vendorApiClient";
 import Link from "next/link";
 import { OrderStatus as OrderStatusType, OrderStatusEnum } from "@/utils/Types";
+import { redirect } from "next/navigation";
+import { authToken } from "@/utils/authToken";
 
 interface OrderAddressType {
     name: string;
@@ -58,7 +60,7 @@ export const orderTableHeader = [
     "Actions"
 ]
 const getStatusBadges = (statuses: string | string[]) => {
-    const statusArray = (Array.isArray(statuses) ? statuses : [ statuses ]).filter(Boolean);
+    const statusArray = (Array.isArray(statuses) ? statuses : [statuses]).filter(Boolean);
     const uniqueStatuses = Array.from(new Set(statusArray.map(s => s.toLowerCase())));
     const renderBadge = (status: string, index: number) => {
         switch (status) {
@@ -99,27 +101,30 @@ const getPaymentBadge = (method: string, status: string) => {
 };
 
 export default function OrdersPage() {
-    const [ date, setDate ] = useState<Date | undefined>(new Date());
-    const [ isOpen, setIsOpen ] = useState(false);
-    const [ orderStatus, setOrderStatus ] = useState<OrderStatusType>('');
-    const [ sortBy, setSortBy ] = useState<string>("desc");
-    const [ count, setCount ] = useState(1);
-    const [ orders, setOrders ] = useState<OrderType[]>([]);
+    const [date, setDate] = useState<Date | undefined>(new Date());
+    const [isOpen, setIsOpen] = useState(false);
+    const [orderStatus, setOrderStatus] = useState<OrderStatusType>('');
+    const [sortBy, setSortBy] = useState<string>("desc");
+    const [count, setCount] = useState(1);
+    const [orders, setOrders] = useState<OrderType[]>([]);
 
     const handleDateChange = (selectedDate: Date | undefined) => {
         setDate(selectedDate);
         setIsOpen(false);
     };
-
+    const token = authToken()
     useEffect(() => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
         const getOrderList = async () => {
-            await fetchVendorOrderList(0, 10, orderStatus, sortBy)
+            await fetchVendorOrderList(0, 10, token, orderStatus, sortBy)
                 .then((res) => {
                     console.log("Vendor Orders List:", res);
-                    setOrders(res.data);
+                    setOrders(res.data || []);
                 })
                 .catch((err) => {
-                    console.error("Error fetching vendor orders list:", err);
+                    console.log("Error fetching vendor orders list:", err);
                 });
         };
         getOrderList();
@@ -133,7 +138,7 @@ export default function OrdersPage() {
                 <div className="flex items-center gap-2 text-gray-700">
                     <Package size={22} className="text-blue-500" />
                     <h1 className="text-2xl font-bold text-gray-800">Orders</h1>
-                    {orders.length > 0 && (
+                    {orders && orders.length > 0 && (
                         <span className="ml-2 bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
                             {orders.length}
                         </span>
@@ -226,7 +231,7 @@ export default function OrdersPage() {
                                 </td>
                             </tr>
                         ) : (
-                            orders.map((item) => (
+                            orders && orders?.map((item) => (
                                 <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
                                     <td className="p-4">
                                         <input type="checkbox" className="rounded" />
@@ -235,7 +240,7 @@ export default function OrdersPage() {
                                     {/* ORDER ID */}
                                     <td className="p-4">
                                         <span className="font-mono text-sm font-semibold text-gray-800">
-                                            #{item.id.split("-")[ 0 ].toUpperCase()}
+                                            #{item.id.split("-")[0].toUpperCase()}
                                         </span>
                                     </td>
 
@@ -270,7 +275,7 @@ export default function OrdersPage() {
 
                                     {/* LOCATION */}
                                     <td className="p-4 text-sm text-gray-500 whitespace-nowrap max-w-[200px] truncate">
-                                        {[ item.address?.city, item.address?.state, item.address?.country, item.address?.postal_code ]
+                                        {[item.address?.city, item.address?.state, item.address?.country, item.address?.postal_code]
                                             .filter(Boolean)
                                             .join(", ") || "N/A"}
                                     </td>

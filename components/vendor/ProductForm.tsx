@@ -3,6 +3,7 @@ import { companyDomain } from "@/config";
 import { BASE_API_URL, ORGANIZATION_TAXATION_OPTIONS, PRODUCT_FORM_FIELDS, PRODUCT_FORM_PRICING_FIELDS } from "@/constants";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { usePreviewUrls } from "@/lib/clientUtils";
+import { authToken } from "@/utils/authToken";
 import { generateSKU } from "@/utils/generateSku";
 import { FileOrImage, ProductImage, ProductStatusEnum, VendorUser } from "@/utils/Types";
 import { ProductFormInput, ProductFormOutput, ProductFormValuesType, productSchema } from "@/utils/validation";
@@ -11,7 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod/dist/zod.js";
 import { get } from "http";
 import { ArrowLeft } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useEffect, useCallback, useState, use } from "react";
 import { FieldErrors, useFieldArray, useForm } from "react-hook-form";
 
@@ -108,7 +109,7 @@ export function ProductForm({
     const [deletedImgs, setDeletedImgs] = useState<string[]>([]);
 
     const { getPreviewUrl, revokeAll, revokeOne } = usePreviewUrls();
-
+    const token = authToken();
     useEffect(() => {
         return () => revokeAll();
     }, [revokeAll]);
@@ -190,7 +191,11 @@ export function ProductForm({
     );
 
     // ── Submit ──
+
     const onSubmit = async (data: ProductFormValuesType) => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
         // On create, both image sets must have at least one file
         if (!isUpdate && (productFiles.length === 0 || featureFiles.length === 0)) {
             console.warn("Product or feature files are missing.");
@@ -237,9 +242,9 @@ export function ProductForm({
             let response: { ok: boolean; status: number; statusText: string; data?: any };
 
             if (isUpdate) {
-                response = await updateProduct(formData, vendorId, productId!);
+                response = await updateProduct(formData, vendorId, productId!, token);
             } else {
-                response = await createProduct(formData, vendorId);
+                response = await createProduct(formData, vendorId, token);
                 console.log("response", response);
             }
             if (response.status !== 201 && response.status !== 200) {

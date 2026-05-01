@@ -1,42 +1,44 @@
-import { useEffect } from "react";
+"use client";
+
+import { useEffect, useMemo } from "react";
 import { LoaderSpinner } from "./LoaderSpinner";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export function ProtectedRoute({
     children,
-    allowedRoles
+    allowedRoles,
+    loginPath = '/auth/customerLogin'
 }: {
     children: React.ReactNode,
-    allowedRoles: string[]
+    allowedRoles: string[],
+    loginPath?: string
 }) {
     const router = useRouter();
-    const { isAuthenticated, user, loading, role } = useAppSelector(
+    const pathname = usePathname();
+    const { isAuthenticated, loading, role } = useAppSelector(
         (state: RootState) => state.auth
     );
 
-
-    useEffect(() => {
-        if (loading) return; // wait for auth state to resolve
+    const isAuthorized = useMemo(() => {
         const userRole = role?.toLowerCase() ?? null;
-        const isAuthorized = userRole !== null && allowedRoles
+        return userRole !== null && allowedRoles
             .map(r => r.toLowerCase())
             .includes(userRole);
+    }, [role, allowedRoles]);
 
-        if (!isAuthenticated || !isAuthorized) {
+    useEffect(() => {
+        if (loading) return;
+        if (!isAuthenticated) {
+            router.replace(loginPath);
+        } else if (!isAuthorized) {
             router.replace('/unauthorized');
         }
-    }, [isAuthenticated, loading, router]);
+    }, [isAuthenticated, isAuthorized, loading, router, loginPath]);
 
-    // Show spinner while auth state is loading
-    if (loading) return <LoaderSpinner />;
-    const userRole = role?.toLowerCase() ?? null;
-    const isAuthorized = userRole !== null && allowedRoles
-        .map(r => r.toLowerCase())
-        .includes(userRole);
-    // Prevent flash of protected content before redirect fires
-    if (!isAuthenticated || !isAuthorized) return <LoaderSpinner />;
-
+    if (loading || !isAuthenticated || !isAuthorized) {
+        return <LoaderSpinner />;
+    }
     return <>{children}</>;
 }

@@ -6,6 +6,8 @@ import { VariantImgGrid } from "@/components/vendor/VariantImgGrid";
 import { ProductImage } from "@/utils/Types";
 import { formatCurrency } from "@/lib/utils";
 import { StatusToggle } from "@/components/common/StatusToggle";
+import { authToken } from "@/utils/authToken";
+import { redirect } from "next/navigation";
 
 interface ProductVariant {
     id: string;
@@ -24,7 +26,11 @@ export default async function VariantListingPage({
 }) {
     const { vendorId, productId } = await params;
 
-    const getVariants = await fetchProductVariants(productId);
+    const token = authToken();
+    if (!token) {
+        redirect("/auth/vendorLogin")
+    }
+    const getVariants = await fetchProductVariants(productId, token);
     console.log(getVariants)
     const variants: ProductVariant[] = getVariants.data;
 

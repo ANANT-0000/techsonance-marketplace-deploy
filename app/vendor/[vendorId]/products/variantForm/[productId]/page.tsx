@@ -1,7 +1,9 @@
 ﻿import { ProductVariantForm } from "@/components/vendor/ProductVariantForm";
 import { BASE_API_URL } from "@/constants";
+import { authToken } from "@/utils/authToken";
 import { fetchProduct } from "@/utils/commonAPiClient";
 import { fetchVendorWarehouse } from "@/utils/vendorApiClient";
+import { redirect } from "next/navigation";
 
 export default async function ProductVariantFormPage({ params }: { params: Promise<{ vendorId: string, productId: string }> }) {
     const { vendorId, productId } = await params;
@@ -14,7 +16,11 @@ export default async function ProductVariantFormPage({ params }: { params: Promi
             });
         return response?.data || null;
     };
-    const warehouseOptions = await fetchVendorWarehouse().then((res) => {
+    const token = authToken();
+    if (!token) {
+        redirect("/auth/vendorLogin")
+    }
+    const warehouseOptions = await fetchVendorWarehouse(token).then((res) => {
         return res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name }));
     }).catch((error) => {
         console.error("Error fetching warehouse options:", error);

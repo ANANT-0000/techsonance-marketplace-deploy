@@ -1,22 +1,32 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { UserRole, User, VendorUser } from '../../../utils/Types';
-import { ACCESS_TOKEN_KEY, CART_KEY, IS_AUTHENTICATED_KEY, isClient, USER_STORAGE_KEY, WISHLIST_KEY } from '@/constants';
+import { User, UserRole, VendorUser } from '../../../utils/Types';
+import { ACCESS_TOKEN_KEY, CART_KEY, IS_AUTHENTICATED_KEY, isClient, REFRESH_TOKEN_KEY, USER_STORAGE_KEY } from '@/constants';
 
-
+// Helper to get User
 const getUserFromLocalStorage = () => {
     if (!isClient) return null;
     try {
         const serializedUser = localStorage.getItem(USER_STORAGE_KEY);
-        if (serializedUser !== undefined && serializedUser !== null) {
+        console.log("serializedUser", serializedUser);
+        if (serializedUser && serializedUser !== 'undefined' && serializedUser !== 'null') {
             return JSON.parse(serializedUser);
-        } else {
-            return null;
         }
-    }
-    catch (e) {
+        return null;
+    } catch (e) {
         console.error("Could not load user from localStorage", e);
         return null;
     }
+}
+
+// Helper to get Token
+const getAccessTokenFromLocalStorage = () => {
+    if (!isClient) return null;
+    return localStorage.getItem(ACCESS_TOKEN_KEY) || null;
+}
+
+const getRefreshTokenFromLocalStorage = () => {
+    if (!isClient) return null;
+    return localStorage.getItem(REFRESH_TOKEN_KEY) || null;
 }
 
 export interface AuthType {
@@ -24,21 +34,21 @@ export interface AuthType {
     user: Partial<User | VendorUser> | null;
     loading: boolean;
     error: string | null;
-    token: string | null;
+    access_token: string | null;
+    refresh_token: string | null;
     role: UserRole;
-    // addresses: any[] | null;
 }
-
 
 const initialState: AuthType = {
     isAuthenticated: false,
     user: getUserFromLocalStorage(),
     loading: false,
     error: null,
-    token: null,
+    access_token: getAccessTokenFromLocalStorage(),
+    refresh_token: getRefreshTokenFromLocalStorage(),
     role: UserRole.Customer,
-    // addresses: null,
 };
+
 export const getPreloadedAuthState = (): { auth: AuthType } => {
     if (!isClient) {
         return {
@@ -47,22 +57,24 @@ export const getPreloadedAuthState = (): { auth: AuthType } => {
                 user: null,
                 loading: false,
                 error: null,
-                token: null,
+                access_token: null,
+                refresh_token: null,
                 role: UserRole.Customer,
             }
         };
     }
     const isAuthRaw = localStorage.getItem(IS_AUTHENTICATED_KEY);
     const parsedAuth = isAuthRaw ? JSON.parse(isAuthRaw) : null;
+
     return {
         auth: {
             isAuthenticated: !!parsedAuth?.isAuthenticated,
             user: getUserFromLocalStorage(),
             loading: false,
             error: null,
-            token: null,
+            access_token: getAccessTokenFromLocalStorage(),
+            refresh_token: getRefreshTokenFromLocalStorage(),
             role: parsedAuth?.role || UserRole.Customer,
-            // addresses: null,
         }
     };
 };
@@ -82,85 +94,45 @@ const authSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
-        loginSuccess(state, action: { payload: { user: any, token: string, role: UserRole } }) {
+        loginSuccess(state, action: { payload: { user: any, access_token: string, refresh_token: string, role: UserRole } }) {
             state.isAuthenticated = true;
             state.user = action.payload.user;
-            state.token = action.payload.token;
+            state.access_token = action.payload.access_token;
+            state.refresh_token = action.payload.refresh_token;
             state.role = action.payload.role;
             state.loading = false;
             state.error = null;
-            console.log("state.user", state.user);
+
             if (isClient) {
+                // Keep everything uniformly in localStorage
                 localStorage.setItem(IS_AUTHENTICATED_KEY, JSON.stringify({ isAuthenticated: true, role: action.payload.role }));
                 localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(action.payload.user));
-                sessionStorage.setItem(ACCESS_TOKEN_KEY, JSON.stringify({
-                    token: action.payload.token,
-                    expiresAt: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString()
-                }));
+                localStorage.setItem(ACCESS_TOKEN_KEY, action.payload.access_token); // Store token as a raw string
+                localStorage.setItem(REFRESH_TOKEN_KEY, action.payload.refresh_token); // Store token as a raw string
             }
         },
         logOut(state) {
-
             state.isAuthenticated = false;
             state.user = null;
-            state.token = null;
+            state.access_token = null;
+            state.refresh_token = null;
             state.loading = false;
             state.error = null;
+
             if (isClient) {
                 localStorage.removeItem(USER_STORAGE_KEY);
                 localStorage.removeItem(CART_KEY);
                 localStorage.removeItem(IS_AUTHENTICATED_KEY);
-                localStorage.removeItem(WISHLIST_KEY);
-                sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+                localStorage.removeItem(ACCESS_TOKEN_KEY);
+                localStorage.removeItem(REFRESH_TOKEN_KEY);
             }
         },
 
-        // ========== USER PROFILE MANAGEMENT ==========
         updateUserProfile: (state, action) => {
             if (state.user) {
                 Object.assign(state.user, action.payload);
             }
         },
-
-        // ========== ADDRESS MANAGEMENT ==========
-        //     createAddress: (state, action) => {
-        //         if (state.user) {
-        //             state.addresses.push(action.payload);
-        //         }
-        //     },
-
-        //     updateAddress: (state, action) => {
-        //         if (state.user) {
-        //             const index = state.addresses.findIndex(
-        //                 address => address.address_id === action.payload.address_id
-        //             );
-        //             if (index !== -1) {
-        //                 state.addresses[index] = action.payload;
-        //             }
-        //         }
-        //     },
-
-        //     deleteAddress: (state, action) => {
-        //         if (state.user) {
-        //             state.user.addresses = state.user.addresses.filter(
-        //                 address => address.address_id !== action.payload
-        //             );
-        //         }
-        //     },
-
-        //     setDefaultAddress: (state, action) => {
-        //         if (state.user) {
-        //             state.user.addresses.forEach(address => {
-        //                 address.is_default = false;
-        //             });
-        //             const address = state.user.addresses.find(
-        //                 addr => addr.address_id === action.payload
-        //             );
-        //             if (address) {
-        //                 address.is_default = true;
-        //             }
-        //         }
-        //     }
     }
 });
 
@@ -171,10 +143,6 @@ export const {
     loginSuccess,
     logOut,
     updateUserProfile,
-    // createAddress,
-    // updateAddress,
-    // deleteAddress,
-    // setDefaultAddress
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

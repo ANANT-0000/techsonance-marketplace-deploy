@@ -8,6 +8,8 @@ import { ADMIN_BASE_URL, down_arrow, internet_icon } from "@/constants";
 import { approveVendor, fetchApplications, rejectVendor } from "@/utils/adminApiClients";
 import { formatStructure, formatDate } from "@/lib/utils";
 import { DocumentsSection } from "@/components/admin/DocumentSection";
+import { authToken } from "@/utils/authToken";
+import { redirect } from "next/navigation";
 
 
 
@@ -16,9 +18,12 @@ import { DocumentsSection } from "@/components/admin/DocumentSection";
 export default function ApproveVendorsPage() {
     const [isOpen, setIsOpen] = useState<number | null>(null);
     const [vendorApplications, setVendorApplications] = useState<VendorApplication[]>([]);
-
+    const token = authToken();
     useEffect(() => {
-        fetchApplications()
+        if (!token) {
+            redirect("/auth/adminLogin");
+        }
+        fetchApplications(token)
             .then((applications) => {
                 setVendorApplications(applications.data);
                 console.log(applications.data[0]);
@@ -28,8 +33,11 @@ export default function ApproveVendorsPage() {
             });
     }, [vendorApplications.length]);
     const onApprove = async (vendorId: string) => {
+        if (!token) {
+            redirect("/admin/login");
+        }
         try {
-            await approveVendor(vendorId);
+            await approveVendor(vendorId, token);
             setVendorApplications((prev) =>
                 prev.map((app) =>
                     app.id === vendorId ? { ...app, company: { ...app.company, company_status: 'approved' }, vendor_status: 'approved' } : app
@@ -40,8 +48,11 @@ export default function ApproveVendorsPage() {
         }
     }
     const onReject = async (vendorId: string) => {
+        if (!token) {
+            redirect("/admin/login");
+        }
         try {
-            await rejectVendor(vendorId);
+            await rejectVendor(vendorId, token);
             setVendorApplications((prev) =>
                 prev.map((app) =>
                     app.id === vendorId ? { ...app, company: { ...app.company, company_status: 'rejected' }, vendor_status: 'rejected' } : app

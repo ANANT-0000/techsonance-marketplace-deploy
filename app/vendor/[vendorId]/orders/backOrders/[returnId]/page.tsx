@@ -1,6 +1,6 @@
 ﻿'use client';
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { redirect, useParams, useRouter } from 'next/navigation';
 import { fetchGetVendorReturnById, FetchUpdateReturnStatus } from '@/utils/vendorApiClient';
 import { toast } from 'react-hot-toast';
 import { LoaderSpinner } from '@/components/common/LoaderSpinner';
@@ -21,6 +21,7 @@ import {
     Mail,
     ShoppingBag,
 } from 'lucide-react';
+import { authToken } from '@/utils/authToken';
 
 /* ─────────────────── Types ─────────────────── */
 interface Address {
@@ -128,11 +129,15 @@ export default function BackOrderDetailPage() {
     const [updating, setUpdating] = useState(false);
     const [lightboxImg, setLightboxImg] = useState<string | null>(null);
     const [trackingUrl, setTrackingUrl] = useState('');
+    const token = authToken();
     useEffect(() => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
         const fetchDetails = async () => {
             try {
                 setLoading(true);
-                const res = await fetchGetVendorReturnById(returnId);
+                const res = await fetchGetVendorReturnById(returnId, token);
                 setRequestData(res.data);
                 setNewStatus(res.data.status as ReturnStatus);
                 setVendorNote(res.data.store_owner_note || '');
@@ -147,6 +152,9 @@ export default function BackOrderDetailPage() {
     }, [returnId]);
 
     const handleUpdateSubmit = async () => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
         if (!newStatus) return toast.error('Please select a status');
         if (
             (newStatus === ReturnStatus.REJECTED || newStatus === ReturnStatus.QC_FAILED) &&
@@ -155,11 +163,11 @@ export default function BackOrderDetailPage() {
             return toast.error('A note is required for rejections or QC failures');
         }
         setUpdating(true);
-        try {   
+        try {
             if (newStatus === ReturnStatus.SHIPPED) {
-                await FetchUpdateReturnStatus(returnId, { status: newStatus, store_owner_note: vendorNote, tracking_id: trackingUrl });
+                await FetchUpdateReturnStatus(returnId, { status: newStatus, store_owner_note: vendorNote, tracking_id: trackingUrl }, token);
             } else {
-                await FetchUpdateReturnStatus(returnId, { status: newStatus, store_owner_note: vendorNote });
+                await FetchUpdateReturnStatus(returnId, { status: newStatus, store_owner_note: vendorNote }, token);
             }
             toast.success('Status updated successfully');
             router.back();

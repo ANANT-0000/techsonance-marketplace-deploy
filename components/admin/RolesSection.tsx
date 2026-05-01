@@ -1,10 +1,19 @@
 import React, { Suspense } from "react";
 import { fetchRoles, handleAddRole, handleDeleteRole, handleRemovePermission } from "@/utils/adminApiClients";
 import RoleList from "./RoleList";
+import { authToken } from "@/utils/authToken";
+import { redirect } from "next/navigation";
 
 export default async function RolesSection({ roles, adminId }: { roles: any[], adminId: string }) {
-
-  const onAddRole=handleAddRole.bind(null,adminId);
+  const token = authToken();
+  if (!token) {
+    redirect("/auth/adminLogin");
+  }
+  const onAddRole = async (formData: FormData) => {
+    await handleAddRole(adminId, formData, token).catch((error) => {
+      console.error("Error adding role:", error);
+    });
+  };
 
   return (
     <div>

@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { handleAssignPermission } from "@/utils/adminApiClients";
+import { authToken } from "@/utils/authToken";
+import { redirect } from "next/navigation";
 
 interface Permission { id: string; permission_name: string; }
 interface Role { id: string; role_name: string; permissions?: Permission[]; }
@@ -29,7 +31,11 @@ export default function AssignSection({ roles, permissions, adminId, rolePermiss
 
     setIsPending(true);
     try {
-      await handleAssignPermission(adminId, roleId, permId);
+      const token = authToken();
+      if (!token) {
+        redirect("/auth/adminLogin");
+      }
+      await handleAssignPermission(adminId, roleId, permId, token);
       setPermId("");
     } catch (error) {
       console.error("Assignment failed", error);

@@ -10,7 +10,8 @@ import { formatCurrency, formatNumber } from "@/lib/utils";
 import { TrendingUp, Clock, Package, ArrowUpRight } from "lucide-react";
 import { fetchVendorActiveProducts, fetchVendorOrderList, fetchVendorPendingOrders } from '@/utils/vendorApiClient';
 import { OrderStatus as OrderStatusType, OrderStatusEnum } from '@/utils/Types';
-import { useParams, useRouter } from 'next/navigation';
+import { redirect, useParams, useRouter } from 'next/navigation';
+import { authToken } from '@/utils/authToken';
 
 
 interface OrderAddressType {
@@ -62,7 +63,7 @@ export const orderTableHeader = [
     "Actions"
 ]
 const getStatusBadges = (statuses: string | string[]) => {
-    const statusArray = (Array.isArray(statuses) ? statuses : [ statuses ]).filter(Boolean);
+    const statusArray = (Array.isArray(statuses) ? statuses : [statuses]).filter(Boolean);
     const uniqueStatuses = Array.from(new Set(statusArray.map(s => s.toLowerCase())));
     const renderBadge = (status: string, index: number) => {
         switch (status) {
@@ -103,35 +104,26 @@ const getPaymentBadge = (method: string, status: string) => {
 };
 
 
-const VENDOR_ORDER_DATA = [
-    { orderId: "1001", customerName: "John Doe", status: "pending", amount: 2500, action: "Ship Now" },
-    { orderId: "1002", customerName: "Jane Smith", status: "shipped", amount: 1500, action: "View" },
-];
-
-const getStatusBadge = (status: string) => {
-    if (status === "pending")
-        return <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-xs font-semibold">● Pending</span>;
-    if (status === "shipped")
-        return <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 py-1 px-3 rounded-full text-xs font-semibold">● Shipped</span>;
-    return <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-xs font-semibold">● Delivered</span>;
-};
-
 export default function DashboardPage() {
-    const [ count, setCount ] = useState(1);
+    const [count, setCount] = useState(1);
     const { vendorId } = useParams<{ vendorId: string }>();
-    const [ recentOrders, setRecentOrders ] = useState<OrderType[]>([]);
-    const [ totalRevenue, setTotalRevenue ] = useState(VENDOR_DASHBOARD_STATS.totalRevenue)
-    const [ pendingOrders, setPendingOrders ] = useState(0)
-    const [ activeProducts, setActiveProducts ] = useState(0)
-    const [ lowStock, setLowStock ] = useState(VENDOR_DASHBOARD_STATS.lowStock)
-    const [ revenueGrowth, setRevenueGrowth ] = useState(VENDOR_DASHBOARD_STATS.revenueGrowth)
+    const [recentOrders, setRecentOrders] = useState<OrderType[]>([]);
+    const [totalRevenue, setTotalRevenue] = useState(VENDOR_DASHBOARD_STATS.totalRevenue)
+    const [pendingOrders, setPendingOrders] = useState(0)
+    const [activeProducts, setActiveProducts] = useState(0)
+    const [lowStock, setLowStock] = useState(VENDOR_DASHBOARD_STATS.lowStock)
+    const [revenueGrowth, setRevenueGrowth] = useState(VENDOR_DASHBOARD_STATS.revenueGrowth)
     const router = useRouter()
     const pageSize = 5;
-    const totalPages = Math.ceil(VENDOR_ORDER_DATA.length / pageSize);
+    const [totalPages, setTotalPages] = useState(0);
     const startIndex = (count - 1) * pageSize;
     const endIndex = startIndex + pageSize;
+    const token = authToken();
 
     useEffect(() => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
         const loadData = async () => {
             await fetchVendorOrderList(0, pageSize, OrderStatusEnum.PROCESSING)
                 .then((res) => {
@@ -140,14 +132,14 @@ export default function DashboardPage() {
                 .catch((err) => {
                     console.error("Error fetching vendor orders list:", err);
                 });
-            await fetchVendorPendingOrders()
+            await fetchVendorPendingOrders(token)
                 .then((res) => {
-                    setPendingOrders(res.data.length);
+                    setPendingOrders(res.data ? res.data.length : 0);
                 })
                 .catch((err) => {
                     console.error("Error fetching vendor pending orders:", err);
                 });
-            await fetchVendorActiveProducts()
+            await fetchVendorActiveProducts(token)
                 .then((res) => {
                     setActiveProducts(res.data.length)
                 })
@@ -159,13 +151,16 @@ export default function DashboardPage() {
     }, []);
 
     const handleOrderFilter = async (orderStatus: OrderStatusType) => {
-        await fetchVendorOrderList(0, pageSize, orderStatus)
-            .then((res) => {
-                setRecentOrders(res.data);
-            })
-            .catch((err) => {
-                console.error("Error fetching vendor orders list:", err);
-            });
+        if (token) {
+
+            await fetchVendorOrderList(0, pageSize, token, orderStatus)
+                .then((res) => {
+                    setRecentOrders(res.data);
+                })
+                .catch((err) => {
+                    console.error("Error fetching vendor orders list:", err);
+                });
+        }
     }
 
 
@@ -232,11 +227,12 @@ export default function DashboardPage() {
                         <h2 className="font-bold text-lg text-gray-800">Recent Orders</h2>
                         <span className='flex gap-4 items-center justify-between'>
                             <select name="" className='text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors' id="" onChange={(e) => handleOrderFilter(e.target.value as OrderStatusType)}>
-                                <option value={OrderStatusEnum.PENDING}>Pending</option>
-                                <option value={OrderStatusEnum.PROCESSING}>Processing</option>
-                                <option value={OrderStatusEnum.SHIPPED}>Shipped</option>
-                                <option value={OrderStatusEnum.DELIVERED}>Delivered</option>
-                                <option value={OrderStatusEnum.CANCELLED}>Cancelled</option>
+                                <option value="">Select Status</option>
+                                {
+                                    Object.values(OrderStatusEnum).map((status) => (
+                                        <option key={status} value={status}>{status}</option>
+                                    ))
+                                }
                             </select>
                             <button
                                 onClick={() => router.push(`/vendor/${vendorId}/orders`)}
@@ -260,7 +256,7 @@ export default function DashboardPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {recentOrders.length === 0 ? (
+                                {recentOrders && recentOrders.length === 0 ? (
                                     <tr>
                                         <td colSpan={10} className="py-16 text-center text-gray-400 text-sm">
                                             <Package size={36} className="mx-auto mb-3 opacity-30" />
@@ -268,7 +264,7 @@ export default function DashboardPage() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    recentOrders.map((item) => (
+                                    recentOrders && recentOrders.map((item) => (
                                         <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
                                             <td className="p-4">
                                                 <input type="checkbox" className="rounded" />
@@ -277,7 +273,7 @@ export default function DashboardPage() {
                                             {/* ORDER ID */}
                                             <td className="p-4">
                                                 <span className="font-mono text-sm font-semibold text-gray-800">
-                                                    #{item.id.split("-")[ 0 ].toUpperCase()}
+                                                    #{item.id.split("-")[0].toUpperCase()}
                                                 </span>
                                             </td>
 
@@ -312,7 +308,7 @@ export default function DashboardPage() {
 
                                             {/* LOCATION */}
                                             <td className="p-4 text-sm text-gray-500 whitespace-nowrap max-w-[200px] truncate">
-                                                {[ item.address?.city, item.address?.state, item.address?.country, item.address?.postal_code ]
+                                                {[item.address?.city, item.address?.state, item.address?.country, item.address?.postal_code]
                                                     .filter(Boolean)
                                                     .join(", ") || "N/A"}
                                             </td>

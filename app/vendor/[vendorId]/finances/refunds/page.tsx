@@ -6,8 +6,9 @@ import { ChevronDown, ChevronUp, Download, CornerDownLeft, AlertCircle } from "l
 import { Calendar } from "@/components/ui/calendar";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { fetchGetCompanyRefunds, fetchProcessRefund } from "@/utils/vendorApiClient";
-
+import { fetchGetCompanyRefunds } from "@/utils/vendorApiClient";
+import { authToken } from "@/utils/authToken";
+import { redirect } from "next/navigation";
 // Mapped exactly to your backend response structure
 interface RefundRecord {
     id: string;
@@ -73,21 +74,23 @@ export default function RefundsPage() {
     const params = useParams();
     const vendorId = params.vendorId as string;
 
-    const [ date, setDate ] = useState<Date | undefined>(new Date());
-    const [ isOpen, setIsOpen ] = useState(false);
-    const [ dashboardData, setDashboardData ] = useState<RefundDashboardData | null>(null);
-    const [ loading, setLoading ] = useState(true);
-    const [ processingId, setProcessingId ] = useState<string | null>(null);
+    const [date, setDate] = useState<Date | undefined>(new Date());
+    const [isOpen, setIsOpen] = useState(false);
+    const [dashboardData, setDashboardData] = useState<RefundDashboardData | null>(null);
+    const [loading, setLoading] = useState(true);
 
     const handleDateChange = (selectedDate: Date | undefined) => {
         setDate(selectedDate);
         setIsOpen(false);
     };
-
+    const token = authToken();
     const fetchRefunds = async () => {
+        if (!token) {
+            redirect("/auth/vendorLogin");
+        }
         setLoading(true);
         try {
-            const response = await fetchGetCompanyRefunds()
+            const response = await fetchGetCompanyRefunds(token)
             console.log("refunds", response.data)
             setDashboardData(response.data);
         } catch (err) {
@@ -252,14 +255,14 @@ export default function RefundsPage() {
                                         {/* REFUND ID */}
                                         <td className="p-4">
                                             <span className="font-mono text-sm font-semibold text-gray-800">
-                                                REF-{item.id.split("-")[ 0 ].toUpperCase()}
+                                                REF-{item.id.split("-")[0].toUpperCase()}
                                             </span>
                                         </td>
 
                                         {/* ORDER REF - Using direct order_id from response */}
                                         <td className="p-4">
                                             <Link href={`/vendor/${vendorId}/orders/${item.order_id}`} className="font-mono text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline">
-                                                ORD-{item.order_id.split("-")[ 0 ].toUpperCase()}
+                                                ORD-{item.order_id.split("-")[0].toUpperCase()}
                                             </Link>
                                         </td>
 

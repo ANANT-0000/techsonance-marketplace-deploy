@@ -1,7 +1,7 @@
 ﻿'use client';
 import { FileOrImage, ProductImage, ProductStatusEnum, Product, VariantFormValues } from "@/utils/Types";
 import { useAppSelector } from "@/hooks/reduxHooks";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { DynamicIcon } from "lucide-react/dynamic";
@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductVariantFormValuesType, productVariantSchema } from "@/utils/validation";
 import { ArrowLeft } from "lucide-react";
 import { generateSKU } from "@/utils/generateSku";
+import { authToken } from "@/utils/authToken";
 const FILE_UPLOAD_FIELD_LABELS = [
     { label: "Product Images / Thumbnail", fieldName: "variantMediaMain" as keyof VariantFormValues },
     { label: "Feature / Specification Media", fieldName: "variantMediaGallery" as keyof VariantFormValues },
@@ -116,8 +117,9 @@ export const ProductVariantForm = ({
         setValue("variantMediaGallery", initialFeatureFiles as any, { shouldDirty: false });
     }, [existVariant, variantId]); // reset is stable, no need to add it
 
-
+    const token = authToken();
     useEffect(() => {
+        if (!token) redirect("/auth/vendorLogin");
         return () => revokeAll();
     }, []);
     const fileStateMap = {
@@ -185,17 +187,20 @@ export const ProductVariantForm = ({
             formData.append('imagesToDelete', JSON.stringify(deletedImgs))
         }
         const createOrUpdate = async () => {
+            if (!token) {
+                redirect("/auth/vendorLogin")
+            }
             if (variantId && existVariant?.productId) {
                 console.log('updating')
                 console.log("update ", (formData.getAll('variant_data')))
-                return await updateProductVariant(formData, vendorId, existVariant.productId, variantId)
+                return await updateProductVariant(formData, vendorId, existVariant.productId, variantId, token)
             } else {
                 console.log('creating')
                 if (!productId) {
                     console.error("Product ID is required to create a variant");
                     return;
                 }
-                return await createProductVariant(formData, vendorId, productId);
+                return await createProductVariant(formData, vendorId, productId, token);
             }
         }
         const response = await createOrUpdate();

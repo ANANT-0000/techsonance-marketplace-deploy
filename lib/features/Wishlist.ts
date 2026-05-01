@@ -50,17 +50,17 @@ const loadWishlistFromLocalOrServer = async (): Promise<Omit<WishlistState, 'loa
     try {
         const serializedWishlist = localStorage.getItem(WISHLIST_KEY);
 
-        if (serializedWishlist) {
+        if (serializedWishlist && serializedWishlist !== 'undefined' && serializedWishlist !== 'null') {
             const parsed = JSON.parse(serializedWishlist);
             if (parsed && Array.isArray(parsed.wishItems)) {
                 localFallback = { ...parsed, wishItems: parsed.wishItems as WishlistItem[] };
             }
         }
 
-        const customerId = localStorage.getItem(USER_STORAGE_KEY)
-            ? JSON.parse(localStorage.getItem(USER_STORAGE_KEY) as string)?.id
-            : null;
-
+        let customerId = localStorage.getItem(USER_STORAGE_KEY)
+        if (customerId && customerId !== 'undefined' && customerId !== 'null') {
+            customerId = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) as string)?.id
+        }
         if (customerId && companyDomain) {
             const response = await fetchCustomerWishlist(customerId);
 

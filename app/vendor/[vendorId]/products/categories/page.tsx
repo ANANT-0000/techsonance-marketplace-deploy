@@ -1,11 +1,16 @@
 ﻿import CategoryManager from "@/components/vendor/CategoryManager";
+import { authToken } from "@/utils/authToken";
 import { fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
+import { redirect } from "next/navigation";
 
 export default async function CategoryPage({ params }: { params: Promise<{ vendorId: string }> }) {
     const { vendorId } = await params;
-    console.log(vendorId);
 
-    const getCategory = await fetchVendorsProductsCategory(vendorId);
+    const token = authToken();
+    if (!token) {
+        redirect("/auth/vendorLogin")
+    }
+    const getCategory = await fetchVendorsProductsCategory(vendorId, token);
     const categories = getCategory?.data || [];
 
     return (

@@ -8,6 +8,8 @@ import { LoaderSpinner } from '@/components/common/LoaderSpinner';
 import { searchImgDark } from '@/constants/common';
 import { ChevronDown, ChevronUp, Download, RotateCcw } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
+import { authToken } from '@/utils/authToken';
+import { redirect } from 'next/navigation';
 
 interface ReturnVariant {
     images: any[];
@@ -83,24 +85,28 @@ export const ReturnTableHeader = [
     "Actions"
 ]
 export default function BackOrdersListPage() {
-    const [ returns, setReturns ] = useState<ReturnRequest[]>([]);
-    const [ loading, setLoading ] = useState(true);
-    const [ date, setDate ] = useState<Date | undefined>(undefined);
-    const [ isOpen, setIsOpen ] = useState(false);
-    const [ searchQuery, setSearchQuery ] = useState('');
-    const [ statusFilter, setStatusFilter ] = useState('all');
-    const [ typeFilter, setTypeFilter ] = useState('all');
+    const [returns, setReturns] = useState<ReturnRequest[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [date, setDate] = useState<Date | undefined>(undefined);
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [typeFilter, setTypeFilter] = useState('all');
 
     const handleDateChange = (selectedDate: Date | undefined) => {
         setDate(selectedDate);
         setIsOpen(false);
     };
 
+    const token = authToken();
     useEffect(() => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
         const fetchReturns = async () => {
             try {
                 setLoading(true);
-                const res = await fetchGetVendorReturnRequests();
+                const res = await fetchGetVendorReturnRequests(token);
                 setReturns(res.data);
             } catch (error) {
                 toast.error('Failed to load return requests');
@@ -246,11 +252,11 @@ export default function BackOrdersListPage() {
 
             {/* Table */}
             <div className="w-full rounded-xl border border-gray-200 shadow-sm bg-white flex flex-col min-w-0">
-             
- 
+
+
                 <div className="overflow-x-auto w-full rounded-xl">
 
-                  
+
                     <table className="w-full min-w-[900px] table-auto border-collapse">
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-200 text-left">
@@ -280,7 +286,7 @@ export default function BackOrdersListPage() {
                                         {/* REQUEST ID */}
                                         <td className="p-4 whitespace-nowrap">
                                             <span className="font-mono text-sm font-semibold text-gray-800">
-                                                #{req.id.split('-')[ 0 ].toUpperCase()}
+                                                #{req.id.split('-')[0].toUpperCase()}
                                             </span>
                                         </td>
 

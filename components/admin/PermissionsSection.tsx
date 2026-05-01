@@ -1,6 +1,8 @@
 import { handleAddPermission, handleDeletePermission } from "@/utils/adminApiClients";
 import { Suspense } from "react";
 import { PermissionList } from "./PermissionList";
+import { authToken } from "@/utils/authToken";
+import { redirect } from "next/navigation";
 
 interface Permission { id: string; permission_name: string; }
 
@@ -10,7 +12,15 @@ interface Props {
 }
 
 export default async function PermissionsSection({ permissions, adminId }: Props) {
-  const onAddPermission = handleAddPermission.bind(null, adminId);
+  const token = authToken();
+  if (!token) {
+    redirect("/auth/adminLogin");
+  }
+  const onAddPermission = async (formData: FormData) => {
+    await handleAddPermission(adminId, formData, token).catch((error) => {
+      console.error("Error adding permission:", error);
+    });
+  };
   return (
     <div>
       <h2 className="text-sm font-semibold text-gray-700 mb-3">Permissions</h2>
@@ -31,7 +41,7 @@ export default async function PermissionsSection({ permissions, adminId }: Props
           {permissions.length === 0 ? (
             <p className="text-xs text-gray-400 p-3">No permissions yet.</p>
           ) : (
-            <PermissionList permissions={permissions}  adminId={adminId} />
+            <PermissionList permissions={permissions} adminId={adminId} />
           )}
 
         </Suspense>

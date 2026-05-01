@@ -6,13 +6,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DeleteBtn } from "@/components/vendor/DeleteBtn";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { Product } from "@/utils/Types";
+import { authToken } from "@/utils/authToken";
+import { redirect } from "next/navigation";
 
 export const PRODUCT_TABLE_HEAD = ["PRODUCT", "VARIANT", "SKU", "STOCK", "PRICE", "ACTION"];
 
 export default async function Products({ params }: { params: Promise<{ vendorId: string }> }) {
     const { vendorId } = await params;
 
-    const categoryOptions: { value: string; label: string }[] = await fetchVendorsProductsCategory(vendorId)
+    const token = authToken();
+    if (!token) {
+        redirect("/auth/vendorLogin")
+    }
+    const categoryOptions: { value: string; label: string }[] = await fetchVendorsProductsCategory(vendorId, token)
         .then((res) => {
             const categories = res?.data || [];
             return categories.map((cat: any) => ({ value: cat.id, label: cat.name }));
@@ -22,7 +28,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
             return [];
         });
 
-    const getProducts = await fetchVendorProducts()
+    const getProducts = await fetchVendorProducts(token)
         .then((res) => res?.data || [])
         .catch((error) => {
             console.error("Error fetching products:", error);
@@ -30,7 +36,6 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
         });
 
     const productList: Product[] = getProducts || [];
-    console.log("productList[1].variants", productList[1].variants)
     let count = 1;
     const pageSize = 5;
     const totalPages = Math.ceil(productList.length / pageSize);

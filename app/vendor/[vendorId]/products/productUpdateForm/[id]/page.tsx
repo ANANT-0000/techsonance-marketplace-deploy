@@ -2,7 +2,8 @@
 import { ProductForm } from "@/components/vendor/ProductForm";
 import { Inventory, ProductResponseType, ProductStatusEnum } from "@/utils/Types";
 import { ProductFormInput, ProductFormOutput, ProductFormValuesType } from "@/utils/validation";
-import { get } from "http";
+import { authToken } from "@/utils/authToken";
+import { redirect } from "next/navigation";
 interface Attribute {
     name: string;
     value: string; // could be string[] if multiple values
@@ -60,15 +61,18 @@ interface ProductVariant {
 export default async function ProductUpdateFormPage({ params }: { params: Promise<{ vendorId: string, id: string }> }) {
 
     const { vendorId, id } = await params;
-    const getExitingProduct: ProductVariant | null = id ? await fetchVendorOneProducts(id).then((res) => {
-        console.log("Existing Product Data:", res.data);
+    const token = authToken();
+    if (!token) {
+        redirect("/auth/vendorLogin")
+    }
+    const getExitingProduct: ProductVariant | null = id ? await fetchVendorOneProducts(id, token).then((res) => {
         return res.data;
     }).catch((error) => {
         console.error("Error fetching existing product data:", error);
         return null;
     }) : null;
     // console.log(getExitingProduct)
-    const warehouseOptions = await fetchVendorWarehouse().then((res) => {
+    const warehouseOptions = await fetchVendorWarehouse(token).then((res) => {
         return res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name }));
     }).catch((error) => {
         console.error("Error fetching warehouse options:", error);
@@ -104,7 +108,7 @@ export default async function ProductUpdateFormPage({ params }: { params: Promis
         // Fixed: Warehouse ID is inside the 'inventory' object
         warehouseId: getExitingProduct?.inventory?.warehouse_id || ''
     } : {};
-    const categoryOptions = await fetchVendorsProductsCategory(vendorId).then((res) => {
+    const categoryOptions = await fetchVendorsProductsCategory(vendorId, token).then((res) => {
         return res.data.map((c: any) => ({ value: c.id, label: c.name }));
     }).catch((error) => {
         console.error("Error fetching category options:", error);

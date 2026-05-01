@@ -19,7 +19,7 @@ import {
     Link2,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { useParams, useRouter } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import {
     fetchAddTrackingUrl,
     fetchUpdateOrderStatus,
@@ -28,6 +28,7 @@ import {
 import { fetchCancelOrderItem } from "@/utils/customerApiClient";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { OrderStatusEnum } from "@/utils/Types";
+import { authToken } from "@/utils/authToken";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -130,7 +131,7 @@ interface Order {
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: OrderStatus }) {
-    const cfg = STATUS_CONFIG[ status ] ?? STATUS_CONFIG.PENDING;
+    const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.PENDING;
     return (
         <span
             className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${cfg.className}`}
@@ -151,9 +152,9 @@ interface StatusEditorProps {
 }
 
 function StatusEditor({ status, onSave, setOrderStatus, setItemStatuses }: StatusEditorProps) {
-    const [ editing, setEditing ] = useState(false);
-    const [ draft, setDraft ] = useState(status);
-    const [ saving, setSaving ] = useState(false);
+    const [editing, setEditing] = useState(false);
+    const [draft, setDraft] = useState(status);
+    const [saving, setSaving] = useState(false);
 
     const handleSave = async () => {
         setSaving(true);
@@ -190,7 +191,7 @@ function StatusEditor({ status, onSave, setOrderStatus, setItemStatuses }: Statu
                 className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
             >
                 {(Object.keys(STATUS_CONFIG) as OrderStatus[]).map((s) => (
-                    <option key={s} value={s}>{STATUS_CONFIG[ s ].label}</option>
+                    <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
                 ))}
             </select>
             <button
@@ -218,9 +219,9 @@ interface TrackingEditorProps {
 }
 
 function TrackingEditor({ trackingUrl, onSave }: TrackingEditorProps) {
-    const [ editing, setEditing ] = useState(false);
-    const [ draft, setDraft ] = useState("");
-    const [ saving, setSaving ] = useState(false);
+    const [editing, setEditing] = useState(false);
+    const [draft, setDraft] = useState("");
+    const [saving, setSaving] = useState(false);
 
     const handleSave = async () => {
         if (!draft.trim()) return;
@@ -303,8 +304,8 @@ interface CancelModalProps {
 }
 
 function CancelModal({ onConfirm, onClose }: CancelModalProps) {
-    const [ reason, setReason ] = useState("");
-    const [ submitting, setSubmitting ] = useState(false);
+    const [reason, setReason] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     const handleConfirm = async () => {
         if (!reason.trim()) return;
@@ -369,24 +370,33 @@ export default function VendorOrderDetails() {
     const { orderId } = useParams<{ orderId: string }>();
     const router = useRouter();
 
-    const [ order, setOrder ] = useState<Order | null>(null);
-    const [ orderStatus, setOrderStatus ] = useState<OrderStatus>(OrderStatusEnum.PROCESSING as OrderStatus);
-    const [ cancellingItemId, setCancellingItemId ] = useState<string | null>(null);
+    const [order, setOrder] = useState<Order | null>(null);
+    const [orderStatus, setOrderStatus] = useState<OrderStatus>(OrderStatusEnum.PROCESSING as OrderStatus);
+    const [cancellingItemId, setCancellingItemId] = useState<string | null>(null);
 
     // Per-item local state for multi-warehouse
-    const [ itemStatuses, setItemStatuses ] = useState<Record<string, OrderStatus>>({});
-
+    const [itemStatuses, setItemStatuses] = useState<Record<string, OrderStatus>>({});
+    const token = authToken();
+    useEffect(() => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
+    }, [])
     const loadOrder = async () => {
+        const token = authToken();
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
         try {
-            const res = await fetchVendorOrderDetails(orderId);
+            const res = await fetchVendorOrderDetails(orderId, token);
             const data: Order = res.data;
             setOrder(data);
-            if (data.items?.[ 0 ]?.order_status) {
-                setOrderStatus(data.items[ 0 ].order_status.toUpperCase() as OrderStatus);
+            if (data.items?.[0]?.order_status) {
+                setOrderStatus(data.items[0].order_status.toUpperCase() as OrderStatus);
             }
             const statusMap: Record<string, OrderStatus> = {};
             data.items.forEach((item) => {
-                statusMap[ item.id ] = item.order_status.toUpperCase() as OrderStatus;
+                statusMap[item.id] = item.order_status.toUpperCase() as OrderStatus;
             });
             setItemStatuses(statusMap);
         } catch (err) {
@@ -400,7 +410,10 @@ export default function VendorOrderDetails() {
 
     // ── Order-level status save (single warehouse) ─────────────────────────────
     const handleOrderLevelStatusSave = async (newStatus: OrderStatus) => {
-        const res = await fetchUpdateOrderStatus(orderId, newStatus as OrderStatus);
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
+        const res = await fetchUpdateOrderStatus(orderId, newStatus as OrderStatus, token);
         if (res.success) {
             setOrderStatus(newStatus);
             setOrder((prev) =>
@@ -411,8 +424,7 @@ export default function VendorOrderDetails() {
 
     // ── Per-item status save (multi-warehouse) ─────────────────────────────────
     const handleItemStatusSave = async (itemId: string, newStatus: OrderStatus) => {
-        // TODO: call per-item status API
-        setItemStatuses((prev) => ({ ...prev, [ itemId ]: newStatus }));
+        setItemStatuses((prev) => ({ ...prev, [itemId]: newStatus }));
         setOrder((prev) =>
             prev
                 ? { ...prev, items: prev.items.map((i) => i.id === itemId ? { ...i, order_status: newStatus.toLowerCase() } : i) }
@@ -422,16 +434,22 @@ export default function VendorOrderDetails() {
 
     // ── Tracking URL ──────────────────────────────────────────────────────────
     const handleOrderTrackingUrl = async (url: string, action: "add" | "update") => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
         const res = action === "add"
-            ? await fetchAddTrackingUrl(orderId, url)
-            : await fetchUpdateOrderStatus(orderId, url);
+            ? await fetchAddTrackingUrl(orderId, url, token)
+            : await fetchUpdateOrderStatus(orderId, url, token);
         if (res.success) {
             setOrder((prev) => prev ? { ...prev, shipping: { tracking_url: url } } : prev);
         }
     };
 
     const handleItemTrackingUrl = async (itemId: string, url: string) => {
-        const response = await fetchAddTrackingUrl(itemId, url);
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
+        const response = await fetchAddTrackingUrl(itemId, url, token);
         if (response?.success) {
             setOrder((prev) =>
                 prev
@@ -510,7 +528,7 @@ export default function VendorOrderDetails() {
                         <SectionCard title={`Items (${order.items.length})`} icon={Package}>
                             <div className="divide-y divide-slate-100">
                                 {order.items.map((item) => {
-                                    const displayStatus = (itemStatuses?.[ item.id ] ?? item.order_status.toUpperCase()) as OrderStatus;
+                                    const displayStatus = (itemStatuses?.[item.id] ?? item.order_status.toUpperCase()) as OrderStatus;
                                     return (
                                         <div key={item.id} className="px-5 py-4 flex flex-col gap-3">
                                             {/* Product row */}

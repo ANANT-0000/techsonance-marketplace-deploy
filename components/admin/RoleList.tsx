@@ -1,23 +1,30 @@
 ﻿'use client';
 
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { handleDeleteRole, handleRemovePermission } from "@/utils/adminApiClients";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
+import { authToken } from "@/utils/authToken";
 
 export default function RoleList({ roles, adminId }: { roles: any[]; adminId: string }) {
     const { user, role } = useAppSelector((state: RootState) => state.auth);
     const router = useRouter();
     const isAdmin = role === "admin";
+    const token = authToken();
+    if (!token) {
+        redirect("/auth/adminLogin");
+    }
     const onDelete = async (id: string) => {
         if (!adminId) return;
-        await handleDeleteRole(adminId, id);
+        await handleDeleteRole(adminId, id, token);
         router.refresh();
     };
 
     const onRemovePermission = async (roleId: string, permId: string) => {
         if (!adminId) return;
-        await handleRemovePermission(adminId, roleId, permId);
+        await handleRemovePermission(adminId, roleId, permId, token).catch((error) => {
+            console.error("Error removing permission:", error);
+        });
         router.refresh();
     };
 

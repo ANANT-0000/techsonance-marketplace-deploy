@@ -1,6 +1,8 @@
 ﻿import { ProductVariantForm } from "@/components/vendor/ProductVariantForm";
+import { authToken } from "@/utils/authToken";
 import { fetchVariant, fetchVendorWarehouse } from "@/utils/vendorApiClient";
 import { id, is } from "date-fns/locale";
+import { redirect } from "next/navigation";
 interface Attribute {
     name: string;
     value: string; // could be string[] if multiple values
@@ -62,14 +64,17 @@ export default async function ProductVariantFormPage({
     params: Promise<{ vendorId: string; variantId: string }>;
 }) {
     const { vendorId, variantId } = await params;
-
-    const existVariant: ProductVariantResponseType | null = await fetchVariant(variantId)
+    const token = authToken();
+    if (!token) {
+        redirect("/auth/vendorLogin")
+    }
+    const existVariant: ProductVariantResponseType | null = await fetchVariant(variantId, token)
         .then((res) => res.data)
         .catch((error) => {
             console.error("Error fetching variant data:", error);
             return null;
         });
-    const warehouseOptions = await fetchVendorWarehouse().then((res) => {
+    const warehouseOptions = await fetchVendorWarehouse(token).then((res) => {
         return res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name }));
     }).catch((error) => {
         console.error("Error fetching warehouse options:", error);

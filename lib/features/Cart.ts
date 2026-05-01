@@ -26,9 +26,10 @@ const loadCartFromLocalOrServer = async (): Promise<Omit<CartState, 'loading' | 
     if (!isClient) return { cartId: '', items: [], itemList: [] };
     try {
         const serializedCart = localStorage.getItem(CART_KEY);
-        const customerId = localStorage.getItem(USER_STORAGE_KEY)
-            ? JSON.parse(localStorage.getItem(USER_STORAGE_KEY) as string)?.id
-            : null;
+        let customerId = localStorage.getItem(USER_STORAGE_KEY)
+        if (customerId && customerId !== 'undefined' && customerId !== 'null') {
+            customerId = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) as string)?.id
+        }
         if (customerId && companyDomain) {
             const response = await fetchGetCartList(customerId);
             if (response && 'ok' in response && response.ok && response.data && Array.isArray(response.data)) {
