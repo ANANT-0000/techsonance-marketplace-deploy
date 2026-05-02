@@ -94,7 +94,7 @@ const authSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
-        loginSuccess(state, action: { payload: { user: any, access_token: string, refresh_token: string, role: UserRole } }) {
+        loginSuccess(state, action: { payload: { user: Partial<User |VendorUser>, access_token: string, refresh_token: string, role: UserRole } }) {
             state.isAuthenticated = true;
             state.user = action.payload.user;
             state.access_token = action.payload.access_token;

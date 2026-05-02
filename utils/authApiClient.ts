@@ -3,6 +3,7 @@ import axios from "axios";
 import { VendorUser, UserRole, VendorRegisterFormData, User } from "./Types";
 import { ADMIN_AUTH_URL, CUSTOMER_AUTH_URL, CUSTOMER_BASE_URL, VENDOR_AUTH_URL, BASE_API_URL } from "@/constants";
 import { CustomerRegisterSchemaType } from "./validation";
+import { getCompanyDomain } from "@/lib/get-domain";
 
 export const AxiosAPI = axios.create({
     baseURL: BASE_API_URL,
@@ -85,10 +86,19 @@ export const adminLogin = async (data: { admin_id: string; password: string }) =
 }
 
 export const CustomerLogin = async (data: { email: string; password: string }) => {
+    const domain = await getCompanyDomain()
+    console.log("domain", domain);
+    if (!domain) {
+        return { status: false, message: "Domain not found", data: null }
+    }
     try {
         const response = await AxiosAPI.post(`${CUSTOMER_AUTH_URL}/login-user`, {
             email: data.email,
             password: data.password
+        }, {
+            headers: {
+                'company-domain': domain
+            }
         });
 
         const result = response.data;
@@ -134,3 +144,38 @@ export const CustomerRegister = async (data: CustomerRegisterSchemaType, company
         return { status: false, message: errorMessage, data: [] };
     }
 }
+
+
+export const requestPasswordResetOTP = async (email: string) => {
+    const domain = await getCompanyDomain();
+
+    const response = await AxiosAPI.post(`${BASE_API_URL}/v1/auth/request-password-reset`, {
+        email: email
+    }, {
+        headers: {
+            'company-domain': domain,
+        },
+    });
+
+    if (!response.status) throw new Error('Failed to request OTP');
+    return response.data
+};
+
+export const resetPasswordWithOTP = async (email: string, otp: string, newPassword: string) => {
+    const domain = await getCompanyDomain();
+
+    const response = await fetch(`${BASE_API_URL}/v1/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'company-domain': domain,
+        },
+        body: JSON.stringify({ email, otp, newPassword }),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to reset password');
+    }
+    return response.json();
+};

@@ -8,6 +8,7 @@ import { BASE_API_URL } from "@/constants";
 import { companyDomain } from "@/config";
 import { Address } from "@/utils/Types";
 import { getCompanyDomain } from "@/lib/get-domain";
+import { authToken } from "@/utils/authToken";
 
 interface InventoryLocation {
     inventory_id: string;
@@ -77,9 +78,9 @@ export const InventoryStats = ({ inventory }: { inventory: InventoryItem[] }) =>
         </div>
     )
 }
-async function fetchInventory(domain: string): Promise<InventoryItem[]> {
-    const res = await fetch(`${BASE_API_URL}inventory`, {
-        headers: { "company-domain": domain },
+async function fetchInventory(domain: string, token: string): Promise<InventoryItem[]> {
+    const res = await fetch(`${BASE_API_URL}/v1/inventory`, {
+        headers: { "company-domain": domain, "Authorization": `Bearer ${token}` },
         cache: "no-cache",
     });
     const json = await res.json();
@@ -87,9 +88,9 @@ async function fetchInventory(domain: string): Promise<InventoryItem[]> {
     return json.data ?? [];
 }
 
-async function fetchAlerts(domain: string): Promise<LowStockAlert[]> {
-    const res = await fetch(`${BASE_API_URL}inventory/alerts/low-stock`, {
-        headers: { "company-domain": domain },
+async function fetchAlerts(domain: string, token: string): Promise<LowStockAlert[]> {
+    const res = await fetch(`${BASE_API_URL}/v1/inventory/alerts/low-stock`, {
+        headers: { "company-domain": domain, "Authorization": `Bearer ${token}` },
         cache: "no-cache",
     });
     const json = await res.json();
@@ -98,12 +99,12 @@ async function fetchAlerts(domain: string): Promise<LowStockAlert[]> {
     return json.data ?? [];
 }
 
-async function updateStock(inventoryId: string, quantity: number,) {
+async function updateStock(inventoryId: string, quantity: number, token: string) {
     const domain = await getCompanyDomain();
 
-    const res = await fetch(`${BASE_API_URL}inventory/${inventoryId}`, {
+    const res = await fetch(`${BASE_API_URL}/v1/inventory/${inventoryId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "company-domain": domain },
+        headers: { "Content-Type": "application/json", "company-domain": domain, "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ quantity }),
     });
     return res.json();
@@ -111,21 +112,25 @@ async function updateStock(inventoryId: string, quantity: number,) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function InventoryPage() {
-    const [ inventory, setInventory ] = useState<InventoryItem[]>([]);
-    const [ alerts, setAlerts ] = useState<LowStockAlert[]>([]);
-    const [ search, setSearch ] = useState("");
-    const [ statusFilter, setStatusFilter ] = useState<"all" | "low" | "out">("all");
-    const [ loading, setLoading ] = useState(true);
-    const [ editId, setEditId ] = useState<string | null>(null);
-    const [ editQty, setEditQty ] = useState<number>(0);
-    const [ saving, setSaving ] = useState(false);
-    const [ count, setCount ] = useState(1);
+    const [inventory, setInventory] = useState<InventoryItem[]>([]);
+    const [alerts, setAlerts] = useState<LowStockAlert[]>([]);
+    const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState<"all" | "low" | "out">("all");
+    const [loading, setLoading] = useState(true);
+    const [editId, setEditId] = useState<string | null>(null);
+    const [editQty, setEditQty] = useState<number>(0);
+    const [saving, setSaving] = useState(false);
+    const [count, setCount] = useState(1);
     const pageSize = 8;
 
+    const token = authToken()
     const reload = async () => {
         const domain = await getCompanyDomain();
         setLoading(true);
-        const [ inv, alrt ] = await Promise.all([ fetchInventory(domain), fetchAlerts(domain) ]);
+        if (!token) {
+            return;
+        }
+        const [inv, alrt] = await Promise.all([fetchInventory(domain, token), fetchAlerts(domain, token)]);
         setInventory(inv);
         setAlerts(alrt);
         setLoading(false);
@@ -151,7 +156,10 @@ export default function InventoryPage() {
     // ── Stock update ──
     const handleSave = async (inventoryId: string) => {
         setSaving(true);
-        await updateStock(inventoryId, editQty);
+        if (!token) {
+            return;
+        }
+        await updateStock(inventoryId, editQty, token);
         setSaving(false);
         setEditId(null);
         await reload();
@@ -215,7 +223,7 @@ export default function InventoryPage() {
                     </span>
 
                     <div className="flex gap-2">
-                        {([ "all", "low", "out" ] as const).map((f) => (
+                        {(["all", "low", "out"] as const).map((f) => (
                             <button
                                 key={f}
                                 onClick={() => { setStatusFilter(f); setCount(1); }}
@@ -317,7 +325,7 @@ export default function InventoryPage() {
                                         </td>
 
                                         {/* Warehouse */}
-                                        <td className="p-4 text-gray-600">{item.locations ? item.locations[ 0 ]?.warehouse_name ?? "—" : "—"}</td>
+                                        <td className="p-4 text-gray-600">{item.locations ? item.locations[0]?.warehouse_name ?? "—" : "—"}</td>
 
                                         {/* Stock */}
                                         <td className="p-4">

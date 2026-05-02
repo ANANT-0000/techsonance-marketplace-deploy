@@ -33,11 +33,11 @@ export enum RegistrationStages {
 }
 
 export const CUSTOMER_REGISTRATION_FIELDS = [
-    { id: "first_name", label: "First name", type: "text", placeholder: "Enter your first name" },
-    { id: "last_name", label: "Last name", type: "text", placeholder: "Enter your last name" },
-    { id: "email", label: "Email", type: "text", placeholder: "Enter your email" },
-    { id: "password", label: "Password", type: "password", placeholder: "Password" },
-    { id: "confirm_password", label: "Confirm Password", type: "password", placeholder: "Please reenter password" },
+    { id: "first_name", label: "First name", type: "text", placeholder: "Enter your first name", required: true },
+    { id: "last_name", label: "Last name", type: "text", placeholder: "Enter your last name", required: true },
+    { id: "email", label: "Email", type: "text", placeholder: "Enter your email", required: true },
+    { id: "password", label: "Password", type: "password", placeholder: "Password", required: true },
+    { id: "confirm_password", label: "Confirm Password", type: "password", placeholder: "Please reenter password", required: true },
 ]
 export const PASSWORD_CHANGE_FORM_FIELDS = [
     {

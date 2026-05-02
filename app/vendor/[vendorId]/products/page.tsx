@@ -15,9 +15,11 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
     const { vendorId } = await params;
 
     const token = authToken();
-    if (!token) {
-        redirect("/auth/vendorLogin")
-    }
+    setTimeout(() => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
+    }, 1000)
     const categoryOptions: { value: string; label: string }[] = await fetchVendorsProductsCategory(vendorId, token)
         .then((res) => {
             const categories = res?.data || [];

@@ -190,7 +190,7 @@ export const fetchVendorActiveProducts = async (token: string) => {
             method: 'GET',
             cache: 'no-cache',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${cleanToken}`,
                 'company-domain': companyDomain,
             },
         });

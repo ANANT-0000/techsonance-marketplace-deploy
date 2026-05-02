@@ -67,7 +67,7 @@ export const customerRegisterSchema = z.object({
 
   confirm_password: z.string(),
 
-  terms_accepted: z.boolean().optional(),
+  terms_accepted: z.boolean().default(false),
 }).refine((data) => data.password === data.confirm_password, {
   message: "Passwords do not match",
   path: ["confirm_password"],
