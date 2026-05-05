@@ -13,7 +13,6 @@ const ProfileSidebarLink = [
     { name: 'My Cart', path: '/cart', icon: 'shopping-cart' },
     { name: 'Wishlist', path: '/wishlist', icon: 'heart' },
     { name: 'My Addresses', path: '/addresses', icon: 'map-pin' },
-    { name: 'Change Password', path: '/changePassword', icon: 'lock' },
     { name: 'Customer Support', path: '/support', icon: 'headphones' },
     { name: 'Logout', path: '/logout', icon: 'log-out', isDanger: true }
 ];

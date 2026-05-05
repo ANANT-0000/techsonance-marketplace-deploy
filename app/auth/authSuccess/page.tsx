@@ -5,6 +5,7 @@ import { useAppDispatch } from '@/hooks/reduxHooks';
 import { jwtDecode } from "jwt-decode";
 import { loginSuccess } from '@/lib/features/auth/authSlice';
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, User, UserRole } from '@/constants';
+import { AccountReactivation } from '@/components/customer/AccountReactivationModel';
 export enum LoginStatusEnum {
     PROCESSING = 'processing',
     SUCCESS = 'success',
@@ -17,16 +18,33 @@ function AuthSuccessHandler() {
     const dispatch = useAppDispatch();
     const [status, setStatus] = useState<LoginStatusEnum>(LoginStatusEnum.PROCESSING);
     const [errorMessage, setErrorMessage] = useState<string>('');
+     const [ isReactivationOpen, setIsReactivationOpen] = useState(false);
+    const [userEmail, setUserEmail] = useState<string>('');
 
     useEffect(() => {
         const handleAuthSuccess = async () => {
             try {
                 const accessToken = searchParams.get('access_token');
                 const refreshToken = searchParams.get('refresh_token');
+                const message = searchParams.get('message');
+                const status = searchParams.get('status');
+                const email = searchParams.get('email');
+                setUserEmail(email ? email : '');
+                console.log('accessToken', accessToken);
+                console.log('refreshToken', refreshToken);
 
+                console.log('message', message);
+                console.log('status', status);
+                
                 if (!accessToken) {
-                    setStatus(LoginStatusEnum.ERROR);
-                    setErrorMessage('Authentication token not found');
+                    if(status == "423") {
+                        setIsReactivationOpen(true);
+                        setErrorMessage(message ? message : 'Authentication token not found');
+                        setUserEmail(email ? email : '');
+                        return;
+                    }
+                    setStatus(status ? LoginStatusEnum[status as keyof typeof LoginStatusEnum] : LoginStatusEnum.ERROR);
+                    setErrorMessage(message ? message : 'Authentication token not found');
                     setTimeout(() => router.push('/auth/customerLogin'), 2000);
                     return;
                 }
@@ -80,10 +98,15 @@ function AuthSuccessHandler() {
 
         handleAuthSuccess();
     }, [searchParams, router, dispatch]);
-
+   const handleReactivationSuccess = () => {
+        setIsReactivationOpen(false);
+        // The account is now active! Log them in and redirect to dashboard.
+        router.push('/auth/customerLogin');
+        // alert("Redirecting to dashboard...");
+    };
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-            <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4">
+            <div className="bg-white p-8 rounded-2xl shadow-2xl  w-full mx-4">
 
                 {status === LoginStatusEnum.PROCESSING && (
                     <div className="text-center animate-in fade-in duration-300">
@@ -128,6 +151,12 @@ function AuthSuccessHandler() {
                 )}
 
             </div>
+             <AccountReactivation
+                            isOpen={isReactivationOpen}
+                            onClose={() => setIsReactivationOpen(false)}
+                            onSuccess={handleReactivationSuccess}
+                            emailMasked={userEmail}
+                        />
         </div>
     );
 }

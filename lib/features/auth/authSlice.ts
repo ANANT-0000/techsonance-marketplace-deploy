@@ -7,7 +7,6 @@ const getUserFromLocalStorage = () => {
     if (!isClient) return null;
     try {
         const serializedUser = localStorage.getItem(USER_STORAGE_KEY);
-        console.log("serializedUser", serializedUser);
         if (serializedUser && serializedUser !== 'undefined' && serializedUser !== 'null') {
             return JSON.parse(serializedUser);
         }

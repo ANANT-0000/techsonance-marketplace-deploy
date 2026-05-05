@@ -11,6 +11,7 @@ import { loginSchema } from "@/utils/validation";
 import { CustomerLogin } from "@/utils/authApiClient";
 import { BASE_API_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
+import { AccountReactivation } from "@/components/customer/AccountReactivationModel";
 
 interface LoginFormData {
     email: string;
@@ -24,10 +25,11 @@ export default function CustomerLoginPage() {
     const [serverError, setServerError] = useState<string | null>(null);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
+    const [isReactivationOpen, setIsReactivationOpen] = useState(false);
     const {
         register,
         handleSubmit,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
@@ -37,6 +39,7 @@ export default function CustomerLoginPage() {
             password: "",
         }
     });
+    const userEmail = watch("email");
 
     // Check for registration success message
     useEffect(() => {
@@ -52,11 +55,16 @@ export default function CustomerLoginPage() {
 
         try {
             const response = await CustomerLogin(data);
-            console.log("Login response:", response);
+            console.log("Login response:", response.status);
 
-            if (response.status === true) {
+            if (response.status === 200) {
                 dispatch(loginSuccess(response?.data));
                 router.push('/');
+            } else if (response.status === 423) {
+                console.log('resonse statsu', response)
+                dispatch(loginFailure(response?.message));
+                setServerError(response?.message);
+                setIsReactivationOpen(true);
             } else {
                 const message = response?.message || "Login failed. Please check your credentials.";
                 dispatch(loginFailure(message));
@@ -70,13 +78,13 @@ export default function CustomerLoginPage() {
         }
     };
 
-    const handleGoogleLogin =async () => {
+    const handleGoogleLogin = async () => {
         setIsGoogleLoading(true);
         setServerError(null);
         setSuccessMessage(null);
 
         try {
-            const domain =await getCompanyDomain();
+            const domain = await getCompanyDomain();
             if (domain == null) {
                 throw new Error("Company domain not found");
             }
@@ -87,7 +95,12 @@ export default function CustomerLoginPage() {
             setIsGoogleLoading(false);
         }
     };
-
+    const handleReactivationSuccess = () => {
+        setIsReactivationOpen(false);
+        // The account is now active! Log them in and redirect to dashboard.
+        // router.push('/dashboard');
+        alert("Redirecting to dashboard...");
+    };
     return (
         <main className="flex justify-center items-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
             <div className="flex flex-col md:flex-row bg-white rounded-2xl shadow-2xl overflow-hidden max-w-4xl w-full">
@@ -167,8 +180,8 @@ export default function CustomerLoginPage() {
                                 type="email"
                                 placeholder="Enter your email"
                                 className={`border-2 rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:ring-2 transition-all ${errors.email
-                                        ? "border-red-400 focus:ring-red-200 bg-red-50"
-                                        : "border-slate-300 focus:ring-blue-200 focus:border-blue-400"
+                                    ? "border-red-400 focus:ring-red-200 bg-red-50"
+                                    : "border-slate-300 focus:ring-blue-200 focus:border-blue-400"
                                     }`}
                                 disabled={isSubmitting || isGoogleLoading}
                             />
@@ -200,8 +213,8 @@ export default function CustomerLoginPage() {
                                 type="password"
                                 placeholder="Enter your password"
                                 className={`border-2 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${errors.password
-                                        ? "border-red-400 focus:ring-red-200 bg-red-50"
-                                        : "border-slate-300 focus:ring-blue-200 focus:border-blue-400"
+                                    ? "border-red-400 focus:ring-red-200 bg-red-50"
+                                    : "border-slate-300 focus:ring-blue-200 focus:border-blue-400"
                                     }`}
                                 disabled={isSubmitting || isGoogleLoading}
                             />
@@ -245,6 +258,12 @@ export default function CustomerLoginPage() {
                     </form>
                 </div>
             </div>
+            <AccountReactivation
+                isOpen={isReactivationOpen}
+                onClose={() => setIsReactivationOpen(false)}
+                onSuccess={handleReactivationSuccess}
+                emailMasked={userEmail}
+            />
         </main>
     );
 }

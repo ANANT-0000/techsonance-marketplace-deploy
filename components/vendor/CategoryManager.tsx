@@ -1,19 +1,29 @@
 ﻿'use client';
 import { isClient, USER_STORAGE_KEY } from "@/constants";
+import { authToken } from "@/utils/authToken";
 import { createVendorProductCategory, deleteVendorProductCategory, } from "@/utils/vendorApiClient";
+import { useRouter } from "next/navigation";
 import { Suspense, } from "react";
+import toast from "react-hot-toast";
 export default function CategoryManager({ categories, vendorId }: any) {
     const company_id = isClient ? localStorage.getItem(USER_STORAGE_KEY) ? JSON.parse(localStorage.getItem(USER_STORAGE_KEY) as string)?.company_id : null : null;
-
+    const router = useRouter()
+    const token = authToken();
     const handleCreateCategory = async (formData: FormData) => {
-
+        if (!token) {
+            toast.error("Authentication Token not found! Try to Login Again!");
+            setTimeout(() => {
+                router.push('/login');
+            }, 2000);
+            return;
+        }
         try {
             const name = formData.get('name') as string;
             const description = formData.get('description') as string;
             const categoryData = { name, description };
-            
-            await createVendorProductCategory(vendorId, categoryData);
 
+            await createVendorProductCategory(vendorId, categoryData, token);
+            toast.success("Category created successfully");
         } catch (error) {
             console.error('Error creating category:', error);
         }
@@ -83,7 +93,7 @@ export default function CategoryManager({ categories, vendorId }: any) {
                                             <td className="px-6 py-4 text-right space-x-3">
                                                 <button className="text-blue-600 hover:underline font-medium">Edit</button>
                                                 <button className="text-red-600 hover:underline font-medium"
-                                                    onClick={() => deleteVendorProductCategory(vendorId, cat.id)}
+                                                    onClick={() => deleteVendorProductCategory(vendorId, cat.id, token ?? '')}
                                                 >
                                                     Delete
                                                 </button>

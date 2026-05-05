@@ -1,6 +1,6 @@
 import { CartItemListResponse } from "@/app/(shop)/customerProfile/[userId]/cart/page";
 import { companyDomain } from "@/config";
-import { CART_KEY, CartItem, USER_STORAGE_KEY } from "@/constants";
+import { CART_KEY, CartItem, IS_AUTHENTICATED_KEY, USER_STORAGE_KEY } from "@/constants";
 import { fetchGetCartList } from "@/utils/customerApiClient";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
@@ -25,6 +25,13 @@ const saveCartToLocalStorage = (cartId: string, items: CartItem[]) => {
 const loadCartFromLocalOrServer = async (): Promise<Omit<CartState, 'loading' | 'error'>> => {
     if (!isClient) return { cartId: '', items: [], itemList: [] };
     try {
+        const isCusomter: {
+            isAuthenticated: boolean;
+            role: string;
+        } | null = JSON.parse(localStorage.getItem(IS_AUTHENTICATED_KEY) || '{}')
+        if (isCusomter?.role === 'admin' || isCusomter?.role === 'vendor') {
+            return { cartId: '', items: [], itemList: [] };
+        }
         const serializedCart = localStorage.getItem(CART_KEY);
         let customerId = localStorage.getItem(USER_STORAGE_KEY)
         if (customerId && customerId !== 'undefined' && customerId !== 'null') {

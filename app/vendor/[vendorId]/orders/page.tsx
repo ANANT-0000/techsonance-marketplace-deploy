@@ -105,7 +105,6 @@ export default function OrdersPage() {
     const [isOpen, setIsOpen] = useState(false);
     const [orderStatus, setOrderStatus] = useState<OrderStatusType>('');
     const [sortBy, setSortBy] = useState<string>("desc");
-    const [count, setCount] = useState(1);
     const [orders, setOrders] = useState<OrderType[]>([]);
 
     const handleDateChange = (selectedDate: Date | undefined) => {

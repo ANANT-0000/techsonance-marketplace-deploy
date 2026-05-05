@@ -103,7 +103,6 @@ export const CustomerLogin = async (data: { email: string; password: string }) =
 
         const result = response.data;
         console.log(result);
-
         const payload: { user: User; access_token: string; role: UserRole; refresh_token: string } = {
             user: result.data.user,
             access_token: result.data.access_token,
@@ -112,11 +111,28 @@ export const CustomerLogin = async (data: { email: string; password: string }) =
         };
         console.log(payload);
 
-        return { status: true, message: "Login successful", data: payload };
+        return { status: 200, message: "Login successful", data: payload };
     } catch (err: any) {
+        if (err.response && err.response.status === 423) {
+            console.log("Account deactivated (423) caught!");
+            return {
+                status: err.response.status,
+                message: "This Account is deactivated",
+                data: err.response.data?.message
+            };
+        }
+
+        // 2. Handle all other errors (400, 401, 500, network issues, etc.)
         const errorMessage = err.response?.data?.message || err.message || "Login failed";
-        console.log(errorMessage, err);
-        return { status: false, message: errorMessage, data: err };
+        console.log("error from login", errorMessage, "\n from err", err.message);
+
+        return {
+            status: false,
+            message: errorMessage,
+            data: {
+                status: err.response?.data // Note: changed from err.data to err.response?.data
+            }
+        };
     }
 }
 

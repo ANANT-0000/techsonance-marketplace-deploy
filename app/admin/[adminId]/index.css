@@ -6,7 +6,7 @@
     }
 
     .stat {
-        @apply border-2 border-gray-300 rounded-md py-4 px-6 bg-white min-w-70 gap-2 flex flex-col items-start;
+        @apply border-2 grow border-gray-300 rounded-lg py-4 px-6 bg-white min-w-70 gap-2 flex flex-col items-start;
         transition: transform 0.2s ease-in-out;
     }
 

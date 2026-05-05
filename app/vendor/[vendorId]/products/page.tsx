@@ -19,8 +19,8 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
         if (!token) {
             redirect("/auth/vendorLogin")
         }
-    }, 1000)
-    const categoryOptions: { value: string; label: string }[] = await fetchVendorsProductsCategory(vendorId, token)
+    }, 1500)
+    const categoryOptions: { value: string; label: string }[] = await fetchVendorsProductsCategory(vendorId, token ??'')
         .then((res) => {
             const categories = res?.data || [];
             return categories.map((cat: any) => ({ value: cat.id, label: cat.name }));
@@ -30,7 +30,7 @@ export default async function Products({ params }: { params: Promise<{ vendorId:
             return [];
         });
 
-    const getProducts = await fetchVendorProducts(token)
+    const getProducts = await fetchVendorProducts(token ??'')
         .then((res) => res?.data || [])
         .catch((error) => {
             console.error("Error fetching products:", error);

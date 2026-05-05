@@ -2,14 +2,16 @@
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeftCircle, AlertCircle, ChevronLeft } from "lucide-react";
+import { ChevronLeftCircle, AlertCircle, ChevronLeft, EyeOff, Eye, Key } from "lucide-react";
 import { FormInput } from "@/components/common/FormInput";
 import { PASSWORD_CHANGE_FORM_FIELDS } from "@/constants/dynamicFields";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { changePasswordSchema, ChangePasswordData } from "@/utils/validation";
+import { useState } from "react";
 
 export default function PasswordForm() {
     const { user } = useAppSelector((state) => state.auth);
+    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
     const {
@@ -23,7 +25,6 @@ export default function PasswordForm() {
         defaultValues: {
             current_password: "",
             new_password: "",
-            confirm_password: ""
         }
     });
 
@@ -50,48 +51,56 @@ export default function PasswordForm() {
                 </button>
                 <h1 className="font-bold text-xl text-gray-900">Change Password</h1>
             </div>
-
-            <form
-                className="max-w-md lg:ml-10 pt-1 lg:px-3 px-1 space-y-6"
-                onSubmit={handleSubmit(onSubmit)}
-                noValidate
-            >
-                {PASSWORD_CHANGE_FORM_FIELDS.map((field) => (
-                    <div className="flex flex-col gap-1.5" key={field.id}>
-                        <FormInput
-                            label={field.label}
-                            placeholder={field.placeholder}
-                            register={register}
-                            type={field.type}
-                            id={field.id}
-                        />
-                        {/* Display Zod Errors */}
-                        {errors[field.id as keyof ChangePasswordData] && (
-                            <p className="text-red-500 text-xs flex items-center gap-1 font-medium">
-                                <AlertCircle size={12} />
-                                {errors[field.id as keyof ChangePasswordData]?.message}
-                            </p>
-                        )}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
+                <div className="p-6 border-b border-gray-100 flex items-center gap-3">
+                    <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                        <Key size={20} />
                     </div>
-                ))}
-
-                <div className="flex justify-end gap-4 pt-4">
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        className="px-6 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-200 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="px-6 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
-                    >
-                        {isSubmitting ? "Updating..." : "Change Password"}
-                    </button>
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-800">Change Password</h2>
+                        <p className="text-sm text-gray-500">Ensure your account is using a long, random password to stay secure.</p>
+                    </div>
                 </div>
-            </form>
+                <div className="p-6">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
+                            <input
+                                type="password"
+                                className="w-full rounded-xl border border-gray-300 py-2.5 px-4 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                placeholder="Enter current password"
+                                {...register("current_password")}
+                            />
+                            {errors.current_password && <p className="text-red-500 text-sm">{errors.current_password.message}</p>}
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    className="w-full rounded-xl border border-gray-300 py-2.5 pl-4 pr-10 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                    placeholder="Enter new password"
+                                    {...register("new_password")}
+                                />
+                                {errors.new_password && <p className="text-red-500 text-sm">{errors.new_password.message}</p>}
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1.5">Must be at least 8 characters long.</p>
+                        </div>
+                        <div className="pt-2">
+                            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm">
+                                Update Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </>
     );
 }

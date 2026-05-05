@@ -1,13 +1,15 @@
 import axios from 'axios';
 import { ACCESS_TOKEN_KEY, USER_STORAGE_KEY, IS_AUTHENTICATED_KEY, CART_KEY, BASE_API_URL } from '@/constants';
+import { getCompanyDomain } from './get-domain';
 
 // Create a base Axios instance
 const AxiosAPI = axios.create({
-    // Point this to your NestJS backend URL
     baseURL: BASE_API_URL,
     headers: {
         'Content-Type': 'application/json',
+        'company-domain': await getCompanyDomain()
     },
+    withCredentials: true
 });
 
 // ==========================================
@@ -18,7 +20,6 @@ AxiosAPI.interceptors.request.use(
         // Only access localStorage if we are on the client side (browser)
         if (typeof window !== 'undefined') {
             const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-
             // If a token exists, attach it to the Authorization header
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
@@ -43,14 +44,12 @@ AxiosAPI.interceptors.response.use(
         // If the backend throws a 401 Unauthorized (Expired or Invalid Token)
         if (error.response && error.response.status === 401) {
             console.warn("Token expired or unauthorized. Logging out...");
-
             if (typeof window !== 'undefined') {
                 // Nuke all auth data from storage
                 localStorage.removeItem(ACCESS_TOKEN_KEY);
                 localStorage.removeItem(USER_STORAGE_KEY);
                 localStorage.removeItem(IS_AUTHENTICATED_KEY);
                 localStorage.removeItem(CART_KEY);
-
                 // Figure out where to kick the user based on their current URL
                 const currentPath = window.location.pathname;
                 if (currentPath.includes('/admin')) {
@@ -62,7 +61,6 @@ AxiosAPI.interceptors.response.use(
                 }
             }
         }
-
         return Promise.reject(error);
     }
 );

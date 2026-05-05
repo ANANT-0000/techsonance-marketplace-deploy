@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { updateProductVariantStatus } from "@/utils/vendorApiClient"; // adjust import to your actual API util
 import { ProductVariantStatus } from "@/utils/Types";
+import { authToken } from "@/utils/authToken";
+import toast from "react-hot-toast";
 
 interface StatusToggleProps {
     productVariantId: string;
@@ -17,12 +19,16 @@ export function StatusToggle({ productVariantId, vendorId, initialStatus }: Stat
 
     const isActive = status === ProductVariantStatus.ACTIVE;
     const nextStatus = isActive ? ProductVariantStatus.INACTIVE : ProductVariantStatus.ACTIVE;
-
+    const token = authToken()
     const handleConfirm = async () => {
         setLoading(true);
         setShowModal(false);
+        if (!token) {
+            toast.error("Authentication Token not found");
+            return;
+        }
         try {
-            await updateProductVariantStatus(productVariantId, vendorId, nextStatus);
+            await updateProductVariantStatus(productVariantId, vendorId, nextStatus, token);
             setStatus(nextStatus);
         } catch (err) {
             console.error("Failed to update status:", err);

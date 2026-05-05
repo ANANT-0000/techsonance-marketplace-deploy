@@ -32,12 +32,15 @@ export default function AdminLoginPage() {
         const result: { status: boolean, message: string, data?: any } = await adminLogin({ admin_id: adminLoginID!, password: adminLoginPass! });
         dispatch(result.status ? loginSuccess(result.data) : loginFailure(result.message));
         const userId = result.data?.user?.id;
-        router.replace(`/admin/${userId}`);
+        console.log('result.data.user', result.status);
         if (!result.status) {
             setError(result.message);
+            router.replace('/');
+            return;
         } else {
             setError(null);
         }
+        router.replace(`/admin/${userId}`);
     }
 
 

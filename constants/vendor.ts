@@ -54,7 +54,8 @@ export const VENDOR_NAV_LINKS: NavLinkType[] = [
   { Analytics: "analytics", icon: 'chart-column-stacked' },
   { Finances: "finances", icon: 'hand-coins' },
   { Marketing: "marketing", icon: 'megaphone' },
-  { "Customer Care": "customerCare", icon: 'headset' },
+  { "Customer Management": "customers", icon: 'users' },
+  { "Support Tickets": "supportTickets", icon: 'headset' },
   { Settings: "settings", icon: 'settings' },
 ];
 // Define reusable types
