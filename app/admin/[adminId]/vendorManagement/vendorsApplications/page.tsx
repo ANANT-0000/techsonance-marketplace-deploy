@@ -15,7 +15,7 @@ import { redirect } from "next/navigation";
 
 
 /* ── Main Page ── */
-export default function ApproveVendorsPage() {
+export default function VendorsApplicationsPage() {
     const [isOpen, setIsOpen] = useState<number | null>(null);
     const [vendorApplications, setVendorApplications] = useState<VendorApplication[]>([]);
     const token = authToken();
@@ -26,7 +26,7 @@ export default function ApproveVendorsPage() {
         fetchApplications(token)
             .then((applications) => {
                 setVendorApplications(applications.data);
-                console.log(applications.data[0]);
+                console.log(applications.data);
             })
             .catch((error) => {
                 console.error('Error fetching vendor applications:', error);

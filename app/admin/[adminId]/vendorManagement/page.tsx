@@ -54,40 +54,18 @@ export interface User {
     email: string;
 }
 
+
 const getVendorRequests = async () => {
     try {
-        const response = await fetch(`${ADMIN_BASE_URL}/vendor-applications`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include'
-        });
-        const resJson: {
-            data: {
-                company: {
-                    company_status: string
-                }
-            }[];
-            message: string;
-            status: string;
-        } = await response.json();
-
-        let count = 0;
-        if (resJson.data?.length !== undefined) {
-            for (const application of resJson.data) {
-                if (application?.company?.company_status === 'pending') {
-                    count++;
-                }
-            }
-        }
+        const response = await AxiosAPI.get(`${ADMIN_BASE_URL}/vendor-applications-count`);
+        const count = response.data.data.count;
+        console.log(response.data)
         return count;
     } catch (error) {
         console.error('Error fetching vendor applications:', error);
         return 0;
     }
 };
-
 const getStatusBadgeClass = (status: string) => {
     switch (status?.toLowerCase()) {
         case 'active':
@@ -156,7 +134,7 @@ export default function VendorManagementPage() {
                     <div className="flex flex-wrap gap-3">
                         {vendorRequests > 0 && (
                             <Link
-                                href="vendorManagement/approveVendors"
+                                href="vendorManagement/vendorsApplications"
                                 className="flex items-center gap-2 font-semibold text-sm bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-xl px-4 py-2.5 transition-colors shadow-sm"
                             >
                                 <ClipboardCheck size={16} />

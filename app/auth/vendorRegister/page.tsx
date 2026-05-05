@@ -1,22 +1,23 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { COUNTRIES, } from "@/constants/common";
+import { COUNTRIES } from "@/constants/common";
 import { vendorRegister } from "@/utils/authApiClient";
-import { VendorRegisterFormData, } from "@/utils/Types";
 import { RegistrationSuccessModal } from "@/components/common/RegistrationSuccessModal";
 import FinancialCompliance from "@/components/vendor/FinancialCompliance";
-import { DocUploadInput, DocUploadInputRef } from "@/components/vendor/DocUploadInput";
-import { CATEGORY_LIST, VendorDocumentTypes } from "@/constants";
-import { BUSINESS_ADMIN_ACCOUNT_FIELDS, ORGANIZATION_DETAIL_FIELDS, RegistrationStages } from "@/constants/dynamicFields";
+import { DocUploadInput } from "@/components/vendor/DocUploadInput";
+import { VendorDocumentTypes } from "@/constants";
+import {
+    BUSINESS_ADMIN_ACCOUNT_FIELDS,
+    ORGANIZATION_DETAIL_FIELDS,
+    RegistrationStages,
+} from "@/constants/dynamicFields";
 import { Button } from "@/components/common/Button";
 import { vendorRegisterSchema, VendorRegisterSchema } from "@/utils/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// Fields that belong to each step — used for per-step validation
-const STEP_FIELDS: Record<number, string[]> = {
+const STEP_FIELDS: Record<number, (keyof VendorRegisterSchema)[]> = {
     0: ["company_name", "store_owner_first_name", "store_owner_last_name", "country_code", "phone_number", "category", "company_structure"],
     1: ["company_domain"],
     2: [],
@@ -27,64 +28,75 @@ const STEP_FIELDS: Record<number, string[]> = {
 export default function VendorRegisterPage() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [globalError, setGlobalError] = useState<string | null>(null);
-    const [countryCode, setCountryCode] = useState("");
     const [formStep, setFormStep] = useState(0);
     const totalSteps = Object.keys(RegistrationStages).length;
-    const [financialFileMap, setFinancialFileMap] = useState<{ file: File | null; type: string; index: number }[]>([]);
-    const [legalFileMap, setLegalFileMap] = useState<{ file: File | null; type: string; index: number }[]>([]);
+
+    const [countryCode, setCountryCode] = useState("");
+
+    const [financialFileMap, setFinancialFileMap] = useState<
+        { file: File | null; type: string; index: number }[]
+    >([]);
+    const [legalFileMap, setLegalFileMap] = useState<
+        { file: File | null; type: string; index: number }[]
+    >([]);
+
     const {
         register,
         handleSubmit,
         trigger,
         watch,
         reset,
-        control,
         formState: { errors, isSubmitting },
-    } = useForm({
+    } = useForm<VendorRegisterSchema>({
         mode: "onChange",
         resolver: zodResolver(vendorRegisterSchema),
         defaultValues: {
-            first_name: '',
-            last_name: '',
-            phone_number: '',
-            company_name: '',
-            store_owner_first_name: '',
-            store_owner_last_name: '',
-            category: '',
-            company_domain: '',
-            company_structure: '',
-            email: '',
-            country_code: '',
-            password: '',
-            confirm_password: '',
+            first_name: "",
+            last_name: "",
+            phone_number: "",
+            company_name: "",
+            store_owner_first_name: "",
+            store_owner_last_name: "",
+            category: "",
+            company_domain: "",
+            company_structure: "",
+            email: "",
+            country_code: "",
+            password: "",
+            confirm_password: "",
         },
     });
-
-    // Validate only the current step's fields before advancing
     const nextStep = async () => {
-        const fields = STEP_FIELDS[formStep];
-        const valid = fields.length > 0 ? await trigger(fields as keyof typeof register) : true;
+        const fields = STEP_FIELDS[formStep] ?? [];
+        const valid = fields.length > 0 ? await trigger(fields) : true;
         if (!valid) return;
         setFormStep((prev) => Math.min(prev + 1, totalSteps - 1));
     };
 
     const prevStep = () => setFormStep((prev) => Math.max(prev - 1, 0));
+
     const onSubmit = async (data: VendorRegisterSchema) => {
         setGlobalError(null);
         const formData = new FormData();
+
         [...financialFileMap, ...legalFileMap].forEach(({ file, type }) => {
             if (file) {
-                const renamedFile = new File([file], `${type}__${file.name}`, { type: file.type });
+                const renamedFile = new File([file], `${type}__${file.name}`, {
+                    type: file.type,
+                });
                 formData.append("documents", renamedFile);
             }
         });
+
         formData.append("vendor", JSON.stringify(data));
-        console.log(formData.getAll("documents"));
-        console.log(formData.get("vendor"));
+
         try {
             const result = await vendorRegister(formData);
-            if (result?.status) {
+            if (result?.status == 201) {
                 reset();
+                setFinancialFileMap([]);
+                setLegalFileMap([]);
+                setCountryCode("");
                 setShowSuccessModal(true);
             } else {
                 setGlobalError(result?.message ?? "Registration failed. Please try again.");
@@ -96,7 +108,7 @@ export default function VendorRegisterPage() {
 
     return (
         <>
-            <RegistrationSuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />
+
 
             <main className="py-20 m-auto max-w-4xl px-6 font-[inter] mb-2 flex flex-col items-center">
                 <div className="w-full mb-6">
@@ -112,7 +124,7 @@ export default function VendorRegisterPage() {
                     {formStep === 0 && (
                         <section className="border border-gray-100 bg-white p-6 rounded-2xl w-full shadow-md shadow-gray-100/80">
                             <h2 className="font-bold text-xl mb-6">Organization Details</h2>
-                            <div className="grid grid-cols-2  gap-6">
+                            <div className="grid grid-cols-2 gap-6">
                                 {ORGANIZATION_DETAIL_FIELDS.map((field) => (
                                     <div key={field.id} className="col-span-2 flex flex-col gap-2 w-full">
                                         <label className="input-label">
@@ -120,25 +132,23 @@ export default function VendorRegisterPage() {
                                         </label>
 
                                         {field.groupField ? (
-                                            <div className="w-full flex items-start gap-2"> {/* Changed grid to flex */}
+                                            <div className="w-full flex items-start gap-2">
                                                 {field.groupField.map((subField) => (
                                                     <div
                                                         key={subField.id}
-                                                        className={`flex flex-col gap-1 ${subField.type === "select" ? "w-32" : "flex-1" // Select gets fixed width, Input fills remaining
+                                                        className={`flex flex-col gap-1 ${subField.type === "select" ? "w-32" : "flex-1"
                                                             }`}
                                                     >
                                                         {subField.type === "select" ? (
                                                             <select
                                                                 className={`input-class w-full ${subField.styles ?? ""}`}
                                                                 {...register(subField.id as keyof VendorRegisterSchema)}
-                                                                onChange={(e) => {
-                                                                    setCountryCode(e.target.value);
-                                                                    register(subField.id as keyof VendorRegisterSchema).onChange(e);
-                                                                }}
                                                             >
-                                                                <option value="">code</option>
+                                                                <option value="">Code</option>
                                                                 {subField.options?.map((o) => (
-                                                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                                                    <option key={o.value} value={o.value}>
+                                                                        {o.label}
+                                                                    </option>
                                                                 ))}
                                                             </select>
                                                         ) : (
@@ -149,39 +159,47 @@ export default function VendorRegisterPage() {
                                                                 {...register(subField.id as keyof VendorRegisterSchema)}
                                                             />
                                                         )}
-
                                                         {errors[subField.id as keyof VendorRegisterSchema] && (
                                                             <p className="input-error text-xs">
-                                                                {errors[subField.id as keyof VendorRegisterSchema]?.message}
+                                                                {/* @ts-ignore */}
+                                                                {errors[subField.id as any]?.message}
                                                             </p>
                                                         )}
                                                     </div>
                                                 ))}
                                             </div>
-                                        ) : (
+                                        ) : field.type === "select" ? (
                                             <>
-                                                {field.type === "select" ? (
-                                                    <select
-                                                        className={`input-class w-full ${""}`}
-                                                        {...register(field.id as keyof VendorRegisterSchema)}
-                                                        onChange={(e) => {
-                                                            setCountryCode(e.target.value);
-                                                            register(field.id as keyof VendorRegisterSchema).onChange(e);
-                                                        }}
-                                                    >
-                                                        <option value="">Select {field.label}</option>
-                                                        {field.options?.map((o) => (
-                                                            <option key={o.value} value={o.value}>{o.label}</option>
-                                                        ))}
-                                                    </select>) : (<input
-                                                        type={field.type ?? "text"}
-                                                        className="input-class"
-                                                        placeholder={field.placeholder}
-                                                        {...register(field.id as keyof VendorRegisterSchema)}
-                                                    />)}
+                                                <select
+                                                    className="input-class w-full"
+                                                    {...register(field.id as keyof VendorRegisterSchema)}
+                                                >
+                                                    <option value="">Select {field.label}</option>
+                                                    {field.options?.map((o) => (
+                                                        <option key={o.value} value={o.value}>
+                                                            {o.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
                                                 {errors[field.id as keyof VendorRegisterSchema] && (
                                                     <p className="input-error">
-                                                        {errors[field.id as keyof VendorRegisterSchema]?.message}
+                                                        {/* @ts-ignore */}
+                                                        {errors[field.id as any]?.message}
+                                                    </p>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <input
+                                                    type={field.type ?? "text"}
+                                                    className="input-class"
+                                                    placeholder={field.placeholder}
+                                                    {...register(field.id as keyof VendorRegisterSchema)}
+                                                />
+                                                {errors[field.id as keyof VendorRegisterSchema] && (
+                                                    <p className="input-error">
+                                                        {/* @ts-ignore */}
+                                                        {errors[field.id as any]?.message}
                                                     </p>
                                                 )}
                                             </>
@@ -209,10 +227,18 @@ export default function VendorRegisterPage() {
                                     .platform.com
                                 </p>
                             </div>
-                            <p className="text-sm text-gray-400 mt-1">This will be the URL where customers access this vendor.</p>
-                            {errors.company_domain && <p className="input-error mt-1">{errors.company_domain.message}</p>}
+                            <p className="text-sm text-gray-400 mt-1">
+                                This will be the URL where customers access this vendor.
+                            </p>
+                            {errors.company_domain && (
+                                <p className="input-error mt-1">{errors.company_domain.message}</p>
+                            )}
                             <div className="w-full flex justify-end gap-4 mt-6">
-                                <Button label="Previous" onClick={prevStep} className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all" />
+                                <Button
+                                    label="Previous"
+                                    onClick={prevStep}
+                                    className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
+                                />
                                 <Button label="Next" onClick={nextStep} />
                             </div>
                         </section>
@@ -220,50 +246,74 @@ export default function VendorRegisterPage() {
 
                     {/* ── Step 2: Legal & Financial Compliance + Documents ── */}
                     {formStep === 2 && (
-
                         <section className="border border-gray-100 bg-white p-6 rounded-2xl w-full shadow-md shadow-gray-100/80">
                             <h2 className="font-bold text-xl mb-2">Legal & Financial Information</h2>
                             <p className="text-sm text-gray-500 text-balance mb-4">
                                 Mandatory financial information is required for vendor registration.
                             </p>
-                            <label className="input-label">Country <span className="text-red-500">*</span></label>
+                            <label className="input-label">
+                                Country <span className="text-red-500">*</span>
+                            </label>
                             <select
                                 className="input-class w-full mt-2"
+                                value={countryCode}
                                 onChange={(e) => setCountryCode(e.target.value)}
-                                defaultValue=""
                             >
                                 <option value="" disabled>Select Country</option>
                                 {COUNTRIES.map((c) => (
-                                    <option key={c.country_code} value={c.country_code}>{c.country_name}</option>
+                                    <option key={c.country_code} value={c.country_code}>
+                                        {c.country_name}
+                                    </option>
                                 ))}
                             </select>
-                            <FinancialCompliance country_code={countryCode} />
+
+                            <FinancialCompliance
+                                country_code={countryCode}
+                                register={register}
+                                errors={errors}
+                            />
 
                             <DocUploadInput
                                 setFileMap={setFinancialFileMap}
                                 fileMap={financialFileMap}
-                                typeList={COUNTRIES.find((c) => c.country_code === countryCode)?.fields || []}
+                                typeList={
+                                    COUNTRIES.find((c) => c.country_code === countryCode)?.fields || []
+                                }
                                 title="Financial Documents"
                             />
                             <div className="w-full flex justify-end gap-4 mt-6">
-                                <Button label="Previous" onClick={prevStep} className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all" />
+                                <Button
+                                    label="Previous"
+                                    onClick={prevStep}
+                                    className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
+                                />
                                 <Button label="Next" onClick={nextStep} />
                             </div>
                         </section>
                     )}
+
+                    {/* ── Step 3: Legal Document Upload ── */}
                     {formStep === 3 && (
                         <section className="border border-gray-100 bg-white p-6 rounded-2xl w-full shadow-md shadow-gray-100/80">
-                            <h2 className="text-lg font-bold text-gray-800 mb-4">Legal & Financial Document Upload</h2>
-                            <p className="text-sm text-gray-500 mb-6">Please ensure all documents are clear and legible.</p>
+                            <h2 className="text-lg font-bold text-gray-800 mb-4">
+                                Legal & Financial Document Upload
+                            </h2>
+                            <p className="text-sm text-gray-500 mb-6">
+                                Please ensure all documents are clear and legible.
+                            </p>
+                            {/* FIX: uses legalFileMap, not financialFileMap */}
                             <DocUploadInput
                                 setFileMap={setLegalFileMap}
                                 fileMap={legalFileMap}
                                 typeList={VendorDocumentTypes}
                                 title="Legal Business / Store Documents"
                             />
-
                             <div className="w-full flex justify-end gap-4 mt-6">
-                                <Button label="Previous" onClick={prevStep} className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all" />
+                                <Button
+                                    label="Previous"
+                                    onClick={prevStep}
+                                    className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
+                                />
                                 <Button label="Next" onClick={nextStep} />
                             </div>
                         </section>
@@ -288,27 +338,35 @@ export default function VendorRegisterPage() {
                                             className="input-class"
                                             {...register(field.id as keyof VendorRegisterSchema, {
                                                 required: `${field.label} is required`,
-                                                // Extra rule: confirm_password must match password
                                                 ...(field.id === "confirm_password" && {
                                                     validate: (val) =>
                                                         val === watch("password") || "Passwords do not match",
+                                                }),
+                                                ...(field.id === "email" && {
+                                                    pattern: {
+                                                        value: /^\S+@\S+\.\S+$/,
+                                                        message: "Enter a valid email",
+                                                    },
                                                 }),
                                             })}
                                         />
                                         {errors[field.id as keyof VendorRegisterSchema] && (
                                             <p className="input-error">
-                                                {errors[field.id as keyof VendorRegisterSchema]?.message}
+                                                {/* @ts-ignore */}
+                                                {errors[field.id as any]?.message}
                                             </p>
                                         )}
                                     </div>
                                 ))}
                             </div>
+
                             <section className="rounded-2xl w-full mb-2 mt-6">
                                 {globalError && (
-                                    <p className="text-red-600 text-center text-sm font-medium mb-4">{globalError}</p>
+                                    <p className="text-red-600 text-center text-sm font-medium mb-4">
+                                        {globalError}
+                                    </p>
                                 )}
                                 <div className="w-full flex justify-between gap-4">
-
                                     <Button
                                         label="Previous"
                                         onClick={prevStep}
@@ -316,7 +374,13 @@ export default function VendorRegisterPage() {
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => { reset(); setFormStep(0); }}
+                                        onClick={() => {
+                                            reset();
+                                            setFinancialFileMap([]);
+                                            setLegalFileMap([]);
+                                            setCountryCode("");
+                                            setFormStep(0);
+                                        }}
                                         className="py-2 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
                                     >
                                         Cancel
@@ -331,13 +395,18 @@ export default function VendorRegisterPage() {
                                 </div>
                                 <p className="text-center text-sm text-gray-600 mt-4">
                                     Already have an account?{" "}
-                                    <Link className="text-blue-500 underline" href="/auth/vendorLogin">Log in</Link>
+                                    <Link className="text-blue-500 underline" href="/auth/vendorLogin">
+                                        Log in
+                                    </Link>
                                 </p>
                             </section>
                         </section>
                     )}
-
                 </form>
+                <RegistrationSuccessModal
+                    isOpen={showSuccessModal}
+                    onClose={() => setShowSuccessModal(false)}
+                />
             </main>
         </>
     );

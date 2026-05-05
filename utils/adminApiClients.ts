@@ -122,8 +122,8 @@ export const fetchApplications = async( token: string)=> {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
             },
-            credentials: 'include',
         });
         if (!response.ok) {
             throw new Error('Failed to fetch vendor applications');
@@ -168,8 +168,8 @@ export const approveVendor = async (vendorId: string, token: string) => {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
             },
-            credentials: 'include',
         });
         if (!response.ok) {
             throw new Error('Failed to approve vendor');
@@ -187,8 +187,8 @@ export const rejectVendor = async (vendorId: string, token: string) => {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
             },
-            credentials: 'include',
         });
         if (!response.ok) {
             throw new Error('Failed to reject vendor');

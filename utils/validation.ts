@@ -4,6 +4,10 @@ export const passwordValidation = new RegExp(
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
 );
 export const passwordValidationSchema = z.string().regex(passwordValidation, "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character");
+const financialDetailsSchema = z.record(
+  z.string(),
+  z.string().optional()
+);
 
 export const vendorRegisterSchema = z.object({
   company_name: z.string().min(2, "Company name is required"),
@@ -23,6 +27,7 @@ export const vendorRegisterSchema = z.object({
   first_name: z.string().min(2, "First name is required"),
   last_name: z.string().min(2, "Last name is required"),
   email: z.email("Enter a valid email address"),
+  financial_details: financialDetailsSchema.optional(),
   password: z.string().regex(passwordValidation, "Password must contain at least one letter and one number and be at least 8 characters long"),
   confirm_password: z.string().regex(passwordValidation, "Password must contain at least one letter and one number and be at least 8 characters long"),
 }).refine((data) => data.password === data.confirm_password, {
