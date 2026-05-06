@@ -26,7 +26,7 @@ export const getCompanyDomain = async (): Promise<string> => {
 
     // 4. Extract the subdomain/company name
     // Transforms 'techsonance-marketplace-infotech-llp.vercel.app' -> 'techsonance-marketplace-infotech-llp'
-    const extractedDomain = rawHost.split('.')[0];
+    
 
-    return extractedDomain;
+    return rawHost
 };
