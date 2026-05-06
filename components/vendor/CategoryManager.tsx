@@ -1,19 +1,19 @@
 ﻿'use client';
-import { isClient, USER_STORAGE_KEY } from "@/constants";
 import { authToken } from "@/utils/authToken";
 import { createVendorProductCategory, deleteVendorProductCategory, } from "@/utils/vendorApiClient";
 import { useRouter } from "next/navigation";
-import { Suspense, } from "react";
+import { Suspense, useState } from "react";
 import toast from "react-hot-toast";
-export default function CategoryManager({ categories, vendorId }: any) {
-    const company_id = isClient ? localStorage.getItem(USER_STORAGE_KEY) ? JSON.parse(localStorage.getItem(USER_STORAGE_KEY) as string)?.company_id : null : null;
+export default function CategoryManager({ categories, vendorId, setCheckChange }: any) {
+    console.log(categories);
     const router = useRouter()
     const token = authToken();
+    const [isLoading, setIsLoading] = useState(false);
     const handleCreateCategory = async (formData: FormData) => {
         if (!token) {
             toast.error("Authentication Token not found! Try to Login Again!");
             setTimeout(() => {
-                router.push('/login');
+                router.push('/auth/vendorLogin');
             }, 2000);
             return;
         }
@@ -21,13 +21,21 @@ export default function CategoryManager({ categories, vendorId }: any) {
             const name = formData.get('name') as string;
             const description = formData.get('description') as string;
             const categoryData = { name, description };
-
-            await createVendorProductCategory(vendorId, categoryData, token);
-            toast.success("Category created successfully");
+            setIsLoading(true);
+            const response = await createVendorProductCategory(vendorId, categoryData, token);
+            console.log(response, '\n', response.status)
+            if (response?.status === 201 || response?.status === 200) {
+                toast.success("Category created successfully");
+                setCheckChange((prev: boolean) => !prev);
+            } else {
+                toast.error(response.message);
+            }
         } catch (error) {
             console.error('Error creating category:', error);
+            toast.error("Failed to create category. Please try again.");
+        } finally {
+            setIsLoading(false);
         }
-
     };
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
@@ -63,10 +71,9 @@ export default function CategoryManager({ categories, vendorId }: any) {
                         <button
                             type="submit"
                             disabled={false}
-                            className="w-full bg-gray-900 text-white py-2 rounded-xl text-sm font-medium hover:bg-black disabled:opacity-50"
+                            className="w-full bg-gray-900 text-white py-2 rounded-xl text-sm font-medium hover:bg-black disabled:opacity-50 cursor-pointer"
                         >
-                            Create Category
-                            {/* {isAdding ? 'Creating...' : 'Create Category'} */}
+                            {isLoading ? 'Creating...' : 'Create Category'}
                         </button>
                     </form>
                 </div>
@@ -86,14 +93,14 @@ export default function CategoryManager({ categories, vendorId }: any) {
                         <tbody className="divide-y divide-gray-100">
                             <Suspense fallback={<p className="px-6 py-10 text-center text-gray-400">Loading categories...</p>}>
                                 {categories.length > 0 ?
-                                    categories.map((cat: any) => (
-                                        <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
+                                    categories.map((cat: any, idx: number) => (
+                                        <tr key={idx} className="hover:bg-gray-50 transition-colors">
                                             <td className="px-6 py-4 font-medium text-gray-900">{cat.name}</td>
-                                            <td className="px-6 py-4 text-gray-500 max-w-[200px] truncate">{cat.description || '-'}</td>
+                                            <td className="px-6 py-4 text-gray-500 md:max-w-[200px] truncate">{cat.description || '-'}</td>
                                             <td className="px-6 py-4 text-right space-x-3">
-                                                <button className="text-blue-600 hover:underline font-medium">Edit</button>
-                                                <button className="text-red-600 hover:underline font-medium"
-                                                    onClick={() => deleteVendorProductCategory(vendorId, cat.id, token ?? '')}
+                                                <button className="bg-blue-50 px-2 py-1 rounded-lg text-blue-600 hover:underline font-medium cursor-pointer">Edit</button>
+                                                <button className="bg-red-50 px-2 py-1 rounded-lg text-red-600 hover:underline font-medium cursor-pointer"
+                                                    onClick={() => deleteVendorProductCategory(vendorId, cat.id, token ?? '').then(() => setCheckChange((prev: boolean) => !prev))}
                                                 >
                                                     Delete
                                                 </button>

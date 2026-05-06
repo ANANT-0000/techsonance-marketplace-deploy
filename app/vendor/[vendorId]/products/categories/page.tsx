@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 const getCategoryOptions = async (token: string, vendorId: string, setCategoryOptions: any) => {
     await fetchVendorsProductsCategory(vendorId, token).then((res) => {
-        setCategoryOptions(res.data.map((c: any) => ({ value: c.id, label: c.name })));
+        setCategoryOptions(res.data.map((c: any) => ({ id: c.id, name: c.name, description: c.description })));
     }).catch((error) => {
         console.error("Error fetching category options:", error);
     });
@@ -16,13 +16,13 @@ const getCategoryOptions = async (token: string, vendorId: string, setCategoryOp
 export default function CategoryPage() {
     const { vendorId } = useParams<{ vendorId: string }>();
     const token = authToken();
-    const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string; }[]>([]);
-
+    const [categoryOptions, setCategoryOptions] = useState<{ id: string; name: string; description: string }[]>([]);
+    const [checkChange, setCheckChange] = useState(false);
     useEffect(() => {
         if (token) {
             getCategoryOptions(token, vendorId, setCategoryOptions);
         }
-    }, [token]);
+    }, [token, checkChange]);
 
     if (!token) {
         redirect("/auth/vendorLogin")
@@ -36,6 +36,7 @@ export default function CategoryPage() {
             </header>
 
             <CategoryManager
+                setCheckChange={setCheckChange}
                 categories={categoryOptions}
                 vendorId={vendorId}
             />

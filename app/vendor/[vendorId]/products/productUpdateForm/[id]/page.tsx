@@ -69,6 +69,7 @@ const getCategoryOptions = async (setCategoryOptions: (categoryOptions: { value:
 }
 const getExitingProduct = async (setGetExitingProduct: (getExitingProduct: ProductVariant | null) => void, id: string, token: string) => {
     id ? await fetchVendorOneProducts(id, token).then((res) => {
+        console.log('res', res.data)
         setGetExitingProduct(res.data);
     }).catch((error) => {
         console.error("Error fetching existing product data:", error);
@@ -98,7 +99,7 @@ export default function ProductUpdateFormPage() {
         getCategoryOptions(setCategoryOptions, vendorId, token);
         getwarehouseOptions(setWarehouseOptions, token);
     }, [token, id]);
-
+    console.log("exitingProduct",exitingProduct)
     const exitingData: Partial<ProductFormInput | ProductFormOutput | {}> = exitingProduct ? {
         productName: exitingProduct?.product?.name || '',
         description: exitingProduct?.product?.description || '',

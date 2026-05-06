@@ -5,10 +5,16 @@ import { getCompanyDomain } from "@/lib/get-domain";
 import { OrderStatus, ReturnStatus } from "./Types";
 export const fetchVendorsProductsCategory = async (vendorId: string, token: string) => {
     try {
+        const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/categories/${vendorId}`, {
             method: 'GET',
             cache: 'force-cache',
             next: { revalidate: 3600 },
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+            },
         });
         if (response.status !== 200) {
             return { data: [], message: 'Failed to fetch product categories' };
@@ -26,7 +32,7 @@ export const createVendorProductCategory = async (vendorId: string, categoryData
         const response = await fetch(`${BASE_API_URL}/v1/categories/${vendorId}`, {
             method: 'POST',
             headers: {
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json',
                 'company-domain': companyDomain,
             },
@@ -165,13 +171,13 @@ export const fetchVendorProducts = async (token: string) => {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/products/all`, {
             method: 'GET',
-            cache: 'force-cache',
-            next: { revalidate: 3600 },
+            // cache: 'force-cache',
+            // next: { revalidate: 3600 },
             headers: {
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
-        });
+        }); console.log(response.status)
         if (response.status !== 200) {
             console.error('Failed to fetch products');
         }
@@ -697,7 +703,7 @@ export const FetchSuspendCustomer = async (customerId: string, token: string) =>
                 Authorization: `Bearer ${token}`,
             }
         });
- 
+
         return await response.json();
     } catch (error) {
         throw error;

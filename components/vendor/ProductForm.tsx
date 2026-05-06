@@ -86,7 +86,7 @@ export function ProductForm({
     const categoryName = watch('category');
     // Auto-generate SKU when variant details change, ONLY if the user hasn't manually typed a custom SKU
     const [isAutoGenerating, setIsAutoGenerating] = useState(true);
-
+    console.log("existingData",existingData)
     useEffect(() => {
         if (isAutoGenerating && productName) {
             const newSku = generateSKU({
@@ -122,6 +122,7 @@ export function ProductForm({
 
     // Populate form when editing an existing product
     useEffect(() => {
+        console.log("existingData in effect",existingData)
         if (!isUpdate || !existingData) return;
         reset({
             productName: existingData.productName || "",
@@ -153,7 +154,7 @@ export function ProductForm({
         setValue("productMedia", initialProductFiles as any, { shouldDirty: false });
         setValue("featureMedia", initialFeatureFiles as any, { shouldDirty: false });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [productId]);
+    }, [productId,existingData]);
 
     // ── File handlers ──
     const handleFileSelect = useCallback(
@@ -196,6 +197,7 @@ export function ProductForm({
         if (!token) {
             redirect("/auth/vendorLogin")
         }
+        console.log(token)
         // On create, both image sets must have at least one file
         if (!isUpdate && (productFiles.length === 0 || featureFiles.length === 0)) {
             console.warn("Product or feature files are missing.");

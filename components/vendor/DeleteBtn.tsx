@@ -19,14 +19,13 @@ export const DeleteBtn = (props: DeleteBtnProps) => {
             }, 2000);
             return;
         }
-        const confirmed = window.confirm(`Are you sure you want to delete this product? This action cannot be undone.`);
-        if (!confirmed) return;
         if (props.toDelete === "VARIANT") {
             console.log(props.id, props.vendorId, props?.variantId)
             const result = await deleteProductVariant(productId, props.variantId, props.vendorId, token);
             console.log(result)
             return;
         } else if (props.toDelete === "PRODUCT") {
+            
             const result = await deleteProduct(productId, props.vendorId, token);
             console.log(result)
             return;

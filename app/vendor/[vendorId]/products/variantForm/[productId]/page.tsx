@@ -1,4 +1,5 @@
-﻿import { ProductVariantForm } from "@/components/vendor/ProductVariantForm";
+﻿"use client"
+import { ProductVariantForm } from "@/components/vendor/ProductVariantForm";
 import { BASE_API_URL } from "@/constants";
 import { authToken } from "@/utils/authToken";
 import { fetchProduct } from "@/utils/commonAPiClient";
