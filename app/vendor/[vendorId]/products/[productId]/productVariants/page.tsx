@@ -1,4 +1,5 @@
-﻿import Link from "next/link";
+﻿"use client"
+import Link from "next/link";
 import { Plus, Package, Edit, ArrowLeft, Layers, Tag, ImageOff } from "lucide-react";
 import { fetchProductVariants } from "@/utils/vendorApiClient";
 import { DeleteBtn } from "@/components/vendor/DeleteBtn";
@@ -7,7 +8,8 @@ import { ProductImage } from "@/utils/Types";
 import { formatCurrency } from "@/lib/utils";
 import { StatusToggle } from "@/components/common/StatusToggle";
 import { authToken } from "@/utils/authToken";
-import { redirect } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface ProductVariant {
     id: string;
@@ -19,22 +21,22 @@ interface ProductVariant {
     images: ProductImage[] | null;
 }
 
-export default async function VariantListingPage({
-    params,
-}: {
-    params: Promise<{ vendorId: string; productId: string }>;
-}) {
-    const { vendorId, productId } = await params;
+export default function VariantListingPage() {
+    const { vendorId, productId } = useParams<{ vendorId: string; productId: string }>();
 
     const token = authToken();
     if (!token) {
         redirect("/auth/vendorLogin")
     }
-    const getVariants = await fetchProductVariants(productId, token);
-    console.log(getVariants)
-    const variants: ProductVariant[] = getVariants.data;
+    const [variants, setVariants] = useState<ProductVariant[]>([]);
 
-    console.log(variants)
+    useEffect(() => {
+        fetchProductVariants(productId, token).then((res) => {
+            setVariants(res.data);
+        }).catch((error) => {
+            console.error("Error fetching variants:", error);
+        });
+    }, [productId, token]);
     return (
         <main className="min-h-screen w-full py-10 ">
             <div className="mx-auto  space-y-8">

@@ -1,17 +1,32 @@
-﻿import CategoryManager from "@/components/vendor/CategoryManager";
-import { authToken } from "@/utils/authToken";
+﻿"use client"
 import { fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
-import { redirect } from "next/navigation";
+import CategoryManager from "@/components/vendor/CategoryManager";
+import { authToken } from "@/utils/authToken";
+import { redirect, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default async function CategoryPage({ params }: { params: Promise<{ vendorId: string }> }) {
-    const { vendorId } = await params;
+const getCategoryOptions = async (token: string, vendorId: string, setCategoryOptions: any) => {
+    await fetchVendorsProductsCategory(vendorId, token).then((res) => {
+        setCategoryOptions(res.data.map((c: any) => ({ value: c.id, label: c.name })));
+    }).catch((error) => {
+        console.error("Error fetching category options:", error);
+    });
+}
 
+export default function CategoryPage() {
+    const { vendorId } = useParams<{ vendorId: string }>();
     const token = authToken();
+    const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string; }[]>([]);
+
+    useEffect(() => {
+        if (token) {
+            getCategoryOptions(token, vendorId, setCategoryOptions);
+        }
+    }, [token]);
+
     if (!token) {
         redirect("/auth/vendorLogin")
     }
-    const getCategory = await fetchVendorsProductsCategory(vendorId, token);
-    const categories = getCategory?.data || [];
 
     return (
         <div className=" p-6 w-full">
@@ -21,7 +36,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ vendo
             </header>
 
             <CategoryManager
-                categories={categories}
+                categories={categoryOptions}
                 vendorId={vendorId}
             />
         </div>

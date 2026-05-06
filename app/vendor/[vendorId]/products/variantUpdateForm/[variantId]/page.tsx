@@ -2,7 +2,8 @@
 import { authToken } from "@/utils/authToken";
 import { fetchVariant, fetchVendorWarehouse } from "@/utils/vendorApiClient";
 import { id, is } from "date-fns/locale";
-import { redirect } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 interface Attribute {
     name: string;
     value: string; // could be string[] if multiple values
@@ -57,29 +58,33 @@ interface ProductVariantResponseType {
     product: Product;
     images: ProductImage[];
 }
-
-export default async function ProductVariantFormPage({
-    params,
-}: {
-    params: Promise<{ vendorId: string; variantId: string }>;
-}) {
-    const { vendorId, variantId } = await params;
-    const token = authToken();
-    if (!token) {
-        redirect("/auth/vendorLogin")
-    }
-    const existVariant: ProductVariantResponseType | null = await fetchVariant(variantId, token)
-        .then((res) => res.data)
+const getexistVariant = async (variantId: string, setExistVariant: (existVariant: ProductVariantResponseType | null) => void, token: string) => {
+    await fetchVariant(variantId, token)
+        .then((res) => setExistVariant(res.data))
         .catch((error) => {
             console.error("Error fetching variant data:", error);
-            return null;
         });
-    const warehouseOptions = await fetchVendorWarehouse(token).then((res) => {
-        return res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name }));
+}
+const getwarehouseOptions = async ({ setWarehouseOptions, token }: { setWarehouseOptions: (warehouseOptions: { value: string; label: string; }[]) => void, token: string }) => {
+    await fetchVendorWarehouse(token).then((res) => {
+        setWarehouseOptions(res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name })));
     }).catch((error) => {
         console.error("Error fetching warehouse options:", error);
         return [];
     });
+}
+export default function ProductVariantFormPage() {
+    const { vendorId, variantId } = useParams<{ vendorId: string; variantId: string }>();
+    const [existVariant, setExistVariant] = useState<ProductVariantResponseType | null>(null);
+    const [warehouseOptions, setWarehouseOptions] = useState<{ value: string; label: string; }[]>([]);
+    const token = authToken();
+    if (!token) {
+        redirect("/auth/vendorLogin")
+    }
+    useEffect(() => {
+        getexistVariant(variantId, setExistVariant, token);
+        getwarehouseOptions({ setWarehouseOptions, token });
+    }, [token])
     const existingProductVariant = existVariant
         ? {
             id: existVariant.id,

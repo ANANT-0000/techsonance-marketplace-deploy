@@ -1,9 +1,11 @@
-﻿import { fetchVendorOneProducts, fetchVendorsProductsCategory, fetchVendorWarehouse } from "@/utils/vendorApiClient";
+﻿"use client"
+import { fetchVendorOneProducts, fetchVendorsProductsCategory, fetchVendorWarehouse } from "@/utils/vendorApiClient";
 import { ProductForm } from "@/components/vendor/ProductForm";
 import { Inventory, ProductResponseType, ProductStatusEnum } from "@/utils/Types";
 import { ProductFormInput, ProductFormOutput, ProductFormValuesType } from "@/utils/validation";
 import { authToken } from "@/utils/authToken";
-import { redirect } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 interface Attribute {
     name: string;
     value: string; // could be string[] if multiple values
@@ -57,64 +59,77 @@ interface ProductVariant {
     inventory: Inventory;
     warehouse_id: string;
 }
-
-export default async function ProductUpdateFormPage({ params }: { params: Promise<{ vendorId: string, id: string }> }) {
-
-    const { vendorId, id } = await params;
-    const token = authToken();
-    if (!token) {
-        redirect("/auth/vendorLogin")
-    }
-    const getExitingProduct: ProductVariant | null = id ? await fetchVendorOneProducts(id, token).then((res) => {
-        return res.data;
+const getCategoryOptions = async (setCategoryOptions: (categoryOptions: { value: string; label: string; }[]) => void, vendorId: string, token: string) => {
+    await fetchVendorsProductsCategory(vendorId, token).then((res) => {
+        setCategoryOptions(res.data.map((c: any) => ({ value: c.id, label: c.name })));
+    }).catch((error) => {
+        console.error("Error fetching category options:", error);
+        setCategoryOptions([]);
+    });
+}
+const getExitingProduct = async (setGetExitingProduct: (getExitingProduct: ProductVariant | null) => void, id: string, token: string) => {
+    id ? await fetchVendorOneProducts(id, token).then((res) => {
+        setGetExitingProduct(res.data);
     }).catch((error) => {
         console.error("Error fetching existing product data:", error);
-        return null;
+        setGetExitingProduct(null);
     }) : null;
-    // console.log(getExitingProduct)
-    const warehouseOptions = await fetchVendorWarehouse(token).then((res) => {
-        return res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name }));
+}
+
+const getwarehouseOptions = async (setWarehouseOptions: (warehouseOptions: { value: string; label: string; }[]) => void, token: string) => {
+    await fetchVendorWarehouse(token).then((res) => {
+        setWarehouseOptions(res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name })));
     }).catch((error) => {
         console.error("Error fetching warehouse options:", error);
         return [];
     });
-    const exitingData: Partial<ProductFormInput | ProductFormOutput | {}> = getExitingProduct ? {
-        productName: getExitingProduct?.product?.name || '',
-        description: getExitingProduct?.product?.description || '',
-        features: getExitingProduct?.product?.features || [],
-        attributes: getExitingProduct?.attributes
-            ? getExitingProduct.attributes.map((attr) => ({ name: attr.name, value: attr.value }))
+}
+export default function ProductUpdateFormPage() {
+    const { vendorId, id } = useParams<{ vendorId: string, id: string }>();
+    const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string; }[]>([]);
+    const [warehouseOptions, setWarehouseOptions] = useState<{ value: string; label: string; }[]>([]);
+    const [exitingProduct, setGetExitingProduct] = useState<ProductVariant | null>(null);
+    const token = authToken();
+    if (!token) {
+        redirect("/auth/vendorLogin")
+    }
+    useEffect(() => {
+        getExitingProduct(setGetExitingProduct, id, token);
+        getCategoryOptions(setCategoryOptions, vendorId, token);
+        getwarehouseOptions(setWarehouseOptions, token);
+    }, [token, id]);
+
+    const exitingData: Partial<ProductFormInput | ProductFormOutput | {}> = exitingProduct ? {
+        productName: exitingProduct?.product?.name || '',
+        description: exitingProduct?.product?.description || '',
+        features: exitingProduct?.product?.features || [],
+        attributes: exitingProduct?.attributes
+            ? exitingProduct.attributes.map((attr) => ({ name: attr.name, value: attr.value }))
             : [],
-        basePrice: getExitingProduct?.product?.base_price || '',
-        discountPercent: getExitingProduct?.product?.discount_percent || '',
+        basePrice: exitingProduct?.product?.base_price || '',
+        discountPercent: exitingProduct?.product?.discount_percent || '',
 
         // Fixed: Stock is inside the 'inventory' object
-        stocks: getExitingProduct?.inventory?.stock_quantity !== undefined
-            ? String(getExitingProduct.inventory.stock_quantity)
+        stocks: exitingProduct?.inventory?.stock_quantity !== undefined
+            ? String(exitingProduct.inventory.stock_quantity)
             : '',
 
-        sku: getExitingProduct?.sku || '',
+        sku: exitingProduct?.sku || '',
 
         // Fixed: Images array is at the root level, not inside 'product'
-        productMedia: getExitingProduct?.images?.filter((img) => img?.imgType === "main") || [],
-        featureMedia: getExitingProduct?.images?.filter((img) => img?.imgType === "gallery") || [],
+        productMedia: exitingProduct?.images?.filter((img) => img?.imgType === "main") || [],
+        featureMedia: exitingProduct?.images?.filter((img) => img?.imgType === "gallery") || [],
 
         // Note: 'category_id' isn't in the provided JSON, but kept here if your schema expects it
-        category: getExitingProduct?.product?.category_id || '',
+        category: exitingProduct?.product?.category_id || '',
 
-        status: getExitingProduct?.status as ProductStatusEnum || '',
-        variantId: getExitingProduct?.id || '',
+        status: exitingProduct?.status as ProductStatusEnum || '',
+        variantId: exitingProduct?.id || '',
 
         // Fixed: Warehouse ID is inside the 'inventory' object
-        warehouseId: getExitingProduct?.inventory?.warehouse_id || ''
+        warehouseId: exitingProduct?.inventory?.warehouse_id || ''
     } : {};
-    const categoryOptions = await fetchVendorsProductsCategory(vendorId, token).then((res) => {
-        return res.data.map((c: any) => ({ value: c.id, label: c.name }));
-    }).catch((error) => {
-        console.error("Error fetching category options:", error);
-        return [];
-    });
-    console.log("exitingData", exitingData)
+
 
     return (
         <main className="min-h-screen  py-8 w-full">
