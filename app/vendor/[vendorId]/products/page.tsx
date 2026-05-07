@@ -1,3 +1,4 @@
+'use client';
 import Link from "next/link";
 import { Edit, Plus, Download, Package } from "lucide-react";
 import { Pagination } from "@/components/common/Pagination";
@@ -7,37 +8,48 @@ import { DeleteBtn } from "@/components/vendor/DeleteBtn";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { Product } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
-import { redirect } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export const PRODUCT_TABLE_HEAD = ["PRODUCT", "VARIANT", "SKU", "STOCK", "PRICE", "ACTION"];
-
-export default async function Products({ params }: { params: Promise<{ vendorId: string }> }) {
-    const { vendorId } = await params;
+ const getCategoryOptions=async(setCategoryOptions: (options: { value: string; label: string }[]) => void, vendorId: string, token: string) =>{
+    await fetchVendorsProductsCategory(vendorId, token ?? '')
+        .then((res) => {
+            const categories = res?.data || [];
+            setCategoryOptions(categories.map((cat: any) => ({ value: cat.id, label: cat.name })));
+        })
+        .catch((error) => {
+            console.error("Error fetching category options:", error);
+            setCategoryOptions([]);
+        });
+    };
+    const getProducts =async(setProducts: (products: Product[]) => void, token: string) =>{ 
+        await fetchVendorProducts(token ?? '')
+        .then((res) => { console.log('resssss', res); setProducts(res?.data || []);  })
+        .catch((error) => {
+            console.error("Error fetching products:", error);
+            setProducts([]);
+            return [];
+        });
+    };
+export default  function Products({ params }: { params: Promise<{ vendorId: string }> }) {
+    const { vendorId } = useParams<{ vendorId: string }>();
 
     const token = authToken();
-    setTimeout(() => {
+   
+    const [productList, setProductList] = useState<Product[]>([]);
+    const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
+    useEffect(() => {   
+         setTimeout(() => {
         if (!token) {
             redirect("/auth/vendorLogin")
         }
     }, 1500)
-    const categoryOptions: { value: string; label: string }[] = await fetchVendorsProductsCategory(vendorId, token ?? '')
-        .then((res) => {
-            const categories = res?.data || [];
-            return categories.map((cat: any) => ({ value: cat.id, label: cat.name }));
-        })
-        .catch((error) => {
-            console.error("Error fetching category options:", error);
-            return [];
-        });
-
-    const getProducts = await fetchVendorProducts(token ?? '')
-        .then((res) => { console.log('resssss', res); return res?.data || [] })
-        .catch((error) => {
-            console.error("Error fetching products:", error);
-            return [];
-        });
-
-    const productList: Product[] = getProducts || [];
+      //@ts-ignore
+            getProducts(setProductList, token);
+      //@ts-ignore
+            getCategoryOptions(setCategoryOptions, vendorId, token);
+    }, [token]);
     let count = 1;
     const pageSize = 5;
     const totalPages = Math.ceil(productList.length / pageSize);

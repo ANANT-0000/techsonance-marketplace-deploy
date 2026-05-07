@@ -1,4 +1,5 @@
-﻿import { ProductVariantForm } from "@/components/vendor/ProductVariantForm";
+﻿'use client';
+import { ProductVariantForm } from "@/components/vendor/ProductVariantForm";
 import { authToken } from "@/utils/authToken";
 import { fetchVariant, fetchVendorWarehouse } from "@/utils/vendorApiClient";
 import { id, is } from "date-fns/locale";
@@ -58,14 +59,14 @@ interface ProductVariantResponseType {
     product: Product;
     images: ProductImage[];
 }
-const getexistVariant = async (variantId: string, setExistVariant: (existVariant: ProductVariantResponseType | null) => void, token: string) => {
+const getExistVariant = async (variantId: string, setExistVariant: (existVariant: ProductVariantResponseType | null) => void, token: string) => {
     await fetchVariant(variantId, token)
         .then((res) => setExistVariant(res.data))
         .catch((error) => {
             console.error("Error fetching variant data:", error);
         });
 }
-const getwarehouseOptions = async ({ setWarehouseOptions, token }: { setWarehouseOptions: (warehouseOptions: { value: string; label: string; }[]) => void, token: string }) => {
+const getWarehouseOptions = async ({ setWarehouseOptions, token }: { setWarehouseOptions: (warehouseOptions: { value: string; label: string; }[]) => void, token: string }) => {
     await fetchVendorWarehouse(token).then((res) => {
         setWarehouseOptions(res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name })));
     }).catch((error) => {
@@ -82,8 +83,8 @@ export default function ProductVariantFormPage() {
         redirect("/auth/vendorLogin")
     }
     useEffect(() => {
-        getexistVariant(variantId, setExistVariant, token);
-        getwarehouseOptions({ setWarehouseOptions, token });
+        getExistVariant(variantId, setExistVariant, token);
+        getWarehouseOptions({ setWarehouseOptions, token });
     }, [token])
     const existingProductVariant = existVariant
         ? {
