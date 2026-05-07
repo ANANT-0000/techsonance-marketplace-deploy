@@ -3,7 +3,7 @@ import { BASE_API_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { revalidatePath } from "next/cache";
 
-export const fetchInitCheckout = async (userId: string, initPayload: any) => {
+export const fetchInitCheckout = async (userId: string, initPayload: any, token: string) => {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(
         `${BASE_API_URL}/v1/checkout/${userId}/initiate`,
@@ -12,6 +12,7 @@ export const fetchInitCheckout = async (userId: string, initPayload: any) => {
             headers: {
                 'Content-Type': 'application/json',
                 'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(initPayload),
         }
@@ -19,27 +20,30 @@ export const fetchInitCheckout = async (userId: string, initPayload: any) => {
     return await response.json();
 
 }
-export const fetchVerifyPayment = async (userId: string, verifyPayload: any) => {
+export const fetchVerifyPayment = async (userId: string, verifyPayload: any, token: string) => {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/checkout/verify`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'company-domain': companyDomain,
+            Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(verifyPayload),
     });
     revalidatePath(`/customerProfile`);
     return await response.json();
 }
-export const fetchCreateUserAddress = async (customerId: string, addressData: any) => {
+export const fetchCreateUserAddress = async (customerId: string, addressData: any, token: string) => {
     try {
+        const companyDomain = await getCompanyDomain();
+
         const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,
+                "company-domain": companyDomain,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(addressData),
         });
@@ -63,15 +67,17 @@ export const fetchCreateUserAddress = async (customerId: string, addressData: an
         console.log('Error creating address:', error);
     }
 }
-export const fetchUpdateUserAddress = async (customerId: string, addressId: string, addressData: any) => {
+export const fetchUpdateUserAddress = async (customerId: string, addressId: string, addressData: any, token: string) => {
     try {
+        const companyDomain = await getCompanyDomain();
+
         console.log("customerId", customerId, '\n address id', addressId)
         const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}/${addressId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                // "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,
+                "company-domain": companyDomain,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(addressData),
         });
@@ -95,15 +101,16 @@ export const fetchUpdateUserAddress = async (customerId: string, addressId: stri
         console.log('Error updating address:', error);
     }
 }
-export const fetchDeleteUserAddress = async (customerId: string, addressId: string) => {
+export const fetchDeleteUserAddress = async (customerId: string, addressId: string, token: string) => {
     try {
+        const companyDomain = await getCompanyDomain();
         console.log(customerId, addressId)
         const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}/${addressId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                // "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,
+                "company-domain": companyDomain,
+                Authorization: `Bearer ${token}`,
             },
         });
         if (response.status !== 200) {

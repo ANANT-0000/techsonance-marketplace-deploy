@@ -5,6 +5,7 @@ import { ArrowLeft, AlertCircle } from "lucide-react";
 import { fetchOrderDetails, fetchCancelOrderItem, fetchOrderItemDetails } from "@/utils/customerApiClient";
 import { formatCurrency } from "@/lib/utils";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { authToken } from "@/utils/authToken";
 
 const CANCEL_REASONS = [
     "Order created by mistake",
@@ -27,17 +28,18 @@ export default function CancelItemPage() {
     const [additionalComments, setAdditionalComments] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
-
+const token=authToken()
     useEffect(() => {
+        if (!orderId || !itemId || !token) return;
         const getOrder = async () => {
-            const res = await fetchOrderItemDetails(itemId);
+            const res = await fetchOrderItemDetails(itemId, token);
             if (res?.data) {
                 console.log(res.data)
                 setItemToCancel(res.data);
             }
         };
         getOrder();
-    }, [orderId, itemId]);
+    }, [orderId, itemId, token]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -49,12 +51,12 @@ export default function CancelItemPage() {
         setError("");
         try {
             const fullReason = `${selectedReason} - ${additionalComments}`;
-            if (!userId) {
+            if (!userId || !itemId || !token) {
                 setError("User not found.");
                 return;
             }
 
-            const response = await fetchCancelOrderItem(userId, itemId, fullReason);
+            const response = await fetchCancelOrderItem(userId, itemId, fullReason, token);
             console.log(response)
             if (response) {
                 router.back();

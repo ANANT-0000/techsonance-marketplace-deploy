@@ -7,10 +7,11 @@ import { useRouter } from 'next/navigation';
 import { checkAddressExistence } from '@/utils/customerApiClient';
 import { BuyBtnMode } from '@/utils/Types';
 import { createCheckoutSession } from '@/hooks/UseCheckoutSession';
+import { authToken } from '@/utils/authToken';
 
 export function BuyBtn({ id, styles, mode }: { id?: string, styles?: string, mode?: BuyBtnMode }) {
   const { user } = useAppSelector((state: RootState) => state.auth);
-  console.log(user)
+    const token = authToken();
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const isSmall = styles?.includes('small');
@@ -20,10 +21,10 @@ export function BuyBtn({ id, styles, mode }: { id?: string, styles?: string, mod
   const userId = user?.id ? user.id : '';
   const handleBuyClick = async () => {
     console.log(userId)
-    if (!user || !userId) {
+    if (!user || !userId ||!token) {
       return router.push('/auth/customerLogin');
     }
-    const checkAddress = await checkAddressExistence(userId);
+    const checkAddress = await checkAddressExistence(userId, token);
     console.log("checkAddress count:", checkAddress.count);
 
     if (!checkAddress.hasAddresses || checkAddress.count === 0) {

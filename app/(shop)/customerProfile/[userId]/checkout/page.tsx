@@ -13,6 +13,7 @@ import { fetchProductVariantDetails } from "@/utils/commonAPiClient";
 import { useCheckoutSession } from "@/hooks/UseCheckoutSession";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { fetchInitCheckout, fetchVerifyPayment } from "@/utils/customerApiClient-SA";
+import { authToken } from "@/utils/authToken";
 interface VariantDetails {
   id: string;
   variant_name: string;
@@ -45,7 +46,7 @@ export default function CheckoutPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [logger, setLogger] = useState<string[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
-
+const token=authToken()
   // --- Dynamic Order State ---
   const [orderData, setOrderData] = useState({
     title: 'Loading...',
@@ -58,7 +59,7 @@ export default function CheckoutPage() {
   console.log('effect fetching')
   useEffect(() => {
     setLogger(prev => [...prev, `useEffect triggered with checkoutType=${checkoutType} and id=${id}`]);
-    if (checkoutType === null || id === null) return;
+    if (checkoutType === null || id === null || !token) return;
     if (!checkoutType || !id) {
       router.replace(`/customerProfile/${params.userId}/cart`);
     }
@@ -98,7 +99,7 @@ export default function CheckoutPage() {
         } else {
           // Fetch cart items
           setLogger(prev => [...prev, `Fetching cart items for user: ${params.userId}`]);
-          const res = await fetchGetCartList(params.userId);
+          const res = await fetchGetCartList(params.userId, token);
           const cartItems = res?.data ?? [];
 
           if (!res?.success || cartItems.length === 0) {
@@ -134,7 +135,7 @@ export default function CheckoutPage() {
     };
 
     loadCheckoutData();
-  }, [id, checkoutType, isQuickBuy, params.userId]);
+  }, [id, checkoutType, isQuickBuy, params.userId, token]);
   console.log("orderData", orderData)
   // --- Coupon ---
   const handleCouponApply = async () => {
@@ -170,7 +171,7 @@ export default function CheckoutPage() {
       alert("Please select a delivery address.");
       return;
     }
-    if (!id) return;
+    if (!id || !token) return;
 
     setIsProcessing(true);
     setCheckoutError(null);
@@ -185,7 +186,7 @@ export default function CheckoutPage() {
       console.log("Initiating checkout with payload: ", initPayload)
       setLogger(prev => [...prev, `Initiating checkout with payload: ${JSON.stringify(initPayload)}`]);
       // Step B: Create a PENDING order on the backend
-      const initData = await fetchInitCheckout(user?.id || '', initPayload)
+      const initData = await fetchInitCheckout(user?.id || '', initPayload,token);
       console.log("Received response from initiate endpoint: ", initData)
       setLogger(prev => [...prev, `Received response from initiate endpoint: ${JSON.stringify(initData)}`]);
       if (!initData?.success) {
@@ -210,7 +211,7 @@ export default function CheckoutPage() {
         ...(isQuickBuy
           ? { productVariantId: id }
           : { cartId: id }),
-      })
+      }, token)
       setLogger(prev => [...prev, `Received response from verify endpoint: ${JSON.stringify(verifyData)}`]);
       if (!verifyData?.success) {
         setCheckoutError(verifyData?.message ?? "Payment verification failed.");

@@ -9,6 +9,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useEffect, useState } from "react";
 import { fetchCustomerWishlist, fetchDeleteWishList } from "@/utils/customerApiClient";
 import Link from "next/link";
+import { authToken } from "@/utils/authToken";
 interface WishlistItemType {
     created_at: string;
     id: string;
@@ -39,13 +40,19 @@ export default function WishlistPage() {
     const { userId } = useParams<{ userId: string }>();
     console.log("userId", userId)
     const [wishlistItems, setWishlistItems] = useState<WishlistItemType[]>([]);
+    const token = authToken();
     useEffect(() => {
         const getWishlistProducts = async () => {
             if (!userId && typeof userId !== 'string') {
                 console.error("User ID is missing");
                 return;
             }
-            fetchCustomerWishlist(userId).then((response) => {
+            const token = authToken();
+            if (!token) {
+                console.error("Authentication token is missing");
+                return;
+            }
+            fetchCustomerWishlist(userId, token).then((response) => {
                 console.log(response)
                 setWishlistItems(response?.data[0].items || []);
             }).catch((error) => {
@@ -60,8 +67,8 @@ export default function WishlistPage() {
     const isMobileOrTablet = useMediaQuery({ minWidth: 340, maxWidth: 1024 });
     const isEmpty = Array.isArray(wishlistItems) ? wishlistItems.length === 0 : [];
     const deleteItemFromWishlist = async (productVariantId: string) => {
-        if (!user?.id) {
-            console.error('User ID is missing');
+        if (!user?.id || !token) {
+            console.error('User ID or token is missing');
             return;
         }
         const item = wishlistItems.find(
@@ -70,7 +77,7 @@ export default function WishlistPage() {
         if (!item) return;
         dispatch(removeFromWishlist(productVariantId));
 
-        const response = await fetchDeleteWishList(productVariantId, user.id);
+        const response = await fetchDeleteWishList(productVariantId, user.id,token);
         if (!response?.success) {
             console.error('Failed to remove item from wishlist:', response?.message);
             dispatch(addToWishlist({

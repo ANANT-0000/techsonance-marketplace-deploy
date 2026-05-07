@@ -10,18 +10,34 @@ import { RootState } from "@/lib/store";
 import { fetchGetUserAddresses, fetchSetDefaultAddress } from "@/utils/customerApiClient";
 import { AddressOperationEnum, Address } from "@/utils/Types";
 import { fetchDeleteUserAddress } from "@/utils/customerApiClient-SA";
+import { authToken } from "@/utils/authToken";
+import { ActionType, ConfirmationModal } from "@/components/common/ConfirmationModal";
+import { se } from "date-fns/locale";
+import { AxiosAPI } from "@/utils/authApiClient";
 
 export default function Addresses() {
     const user = useAppSelector((state: RootState) => state.auth.user);
     const dispatch = useAppDispatch();
     const [isModalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<AddressOperationEnum>(AddressOperationEnum.ADD);
+
     const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
     const [addressList, setAddressList] = useState<Address[]>([]);
+    const [confirmModalConfig, setConfirmModalConfig] = useState({
+        title: "",
+        message: "",
+        actionType: "" as ActionType,
+        confirmText: "",
+        onConfirm: () => { }
+        
+    });
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const token=authToken()
     useEffect(() => {
         const fetchAddresses = async () => {
-            if (user?.id) {
-                const response = await fetchGetUserAddresses(user.id);
+            if (user?.id && token) {
+                const response = await fetchGetUserAddresses(user.id, token);
                 console.log("address Response", response);
                 setAddressList(response.data);
             }
@@ -41,15 +57,27 @@ export default function Addresses() {
         setModalOpen(true);
     };
     const handleDelete = async (userId: string, id: string) => {
-        if (confirm(`Are you sure you want to delete this address? ${id}`)) {
-            await fetchDeleteUserAddress(userId, id);
-            setAddressList(prev => prev.filter(addr => addr.id !== id));
-        }
-        
+        token && setConfirmModalConfig({
+            title: "Delete Address?",
+            message: "This action cannot be undone. Are you sure you want to delete this address?",
+            actionType: "danger",
+            confirmText: "Yes, Delete",
+            onConfirm: async () => {
+                setIsProcessing(true);
+                await fetchDeleteUserAddress(userId, id , token);
+                setAddressList(prev => prev.filter(addr => addr.id !== id));
+                setIsProcessing(false);
+                setIsConfirmModalOpen(false);
+            }
+        });
     };
+   
+             
     const handleSetDefault = async (userId: string, id: string) => {
-        await fetchSetDefaultAddress(userId, id);
+        if (token) {
+        await fetchSetDefaultAddress(userId, id, token);
         setAddressList(prev => prev.map(addr => ({ ...addr, is_default: addr.id === id })));
+        }
     };
     return (
         <section className="w-full  mt-2 mx-auto mb-20">
@@ -115,6 +143,17 @@ export default function Addresses() {
                     />
                 )}
             </AnimatePresence>
+            <ConfirmationModal 
+                isOpen={confirmModalConfig.actionType === "danger" && isConfirmModalOpen}
+                title={confirmModalConfig.title}
+                message={confirmModalConfig.message}
+                onConfirm={confirmModalConfig.onConfirm}
+                onClose={() => setIsConfirmModalOpen(false)}
+                cancelText="Cancel"
+                actionType="danger"
+                confirmText={confirmModalConfig.confirmText}
+                isLoading={isProcessing}
+            />
         </section>
     );
 }

@@ -9,6 +9,7 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AddressSchema } from "@/utils/validation";
+import { authToken } from "@/utils/authToken";
 
 
 
@@ -62,7 +63,7 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose 
     });
     console.log("Existing Address in Modal", addressList);
     console.log("Existing Address id in Modal", addressId);
-
+    const token = authToken();
     useEffect(() => {
         const fetchAddressDetails = async () => {
         };
@@ -94,9 +95,13 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose 
 
 
     const onSubmit = async (data: any) => {
+        if (!token) {
+            console.error("Authentication token is missing");
+            return;
+        }
         if (operation === AddressOperationEnum.EDIT && addressId && user.id) {
 
-            const result = await fetchUpdateUserAddress(user.id, addressId, data);
+            const result = await fetchUpdateUserAddress(user.id, addressId, data, token);
             if (!result?.success) {
                 setFetchError({
                     message: result?.message || 'Failed to update address',
@@ -104,7 +109,7 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose 
                 });
             }
         } else {
-            const result = await fetchCreateUserAddress(user.id || "", data);
+            const result = await fetchCreateUserAddress(user.id || "", data, token);
             if (!result?.success) {
                 setFetchError({
                     message: result?.message || 'Failed to create address',

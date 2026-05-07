@@ -2,7 +2,7 @@
 import { BASE_API_URL, CUSTOMER_BASE_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
 
-export const fetchCustomerProfile = async () => {
+export const fetchCustomerProfile = async (token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${CUSTOMER_BASE_URL}/profile`, {
@@ -10,7 +10,7 @@ export const fetchCustomerProfile = async () => {
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
         if (response.status !== 200) {
@@ -23,7 +23,7 @@ export const fetchCustomerProfile = async () => {
         throw error;
     }
 };
-export const fetchCustomerWishlist = async (customerId: string,) => {
+export const fetchCustomerWishlist = async (customerId: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/wishlist/${customerId} `, {
@@ -31,7 +31,7 @@ export const fetchCustomerWishlist = async (customerId: string,) => {
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
         console.log(response)
@@ -44,7 +44,7 @@ export const fetchCustomerWishlist = async (customerId: string,) => {
 
     }
 }
-export const fetchAddWishList = async (productId: string, customerId: string,) => {
+export const fetchAddWishList = async (productId: string, customerId: string, token: string) => {
     console.log("productId", productId);
     console.log("customerId", customerId);
     const companyDomain = await getCompanyDomain();
@@ -55,7 +55,7 @@ export const fetchAddWishList = async (productId: string, customerId: string,) =
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ productVariantId: productId }),
         });
@@ -67,7 +67,7 @@ export const fetchAddWishList = async (productId: string, customerId: string,) =
         console.log('Error updating wishlist:', error);
     }
 };
-export const fetchDeleteWishList = async (productId: string, customerId: string) => {
+export const fetchDeleteWishList = async (productId: string, customerId: string, token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/wishlist/${customerId}`, {
@@ -75,7 +75,7 @@ export const fetchDeleteWishList = async (productId: string, customerId: string)
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ productVariantId: productId }),
         });
@@ -88,7 +88,7 @@ export const fetchDeleteWishList = async (productId: string, customerId: string)
         console.log('Error updating wishlist:', error);
     }
 };
-export const fetchAddToCart = async (productVariantId: string, quantity: number, customerId: string) => {
+export const fetchAddToCart = async (productVariantId: string, quantity: number, customerId: string, token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/cart/${customerId}`, {
@@ -96,7 +96,7 @@ export const fetchAddToCart = async (productVariantId: string, quantity: number,
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ productVariantId, quantity }),
         });
@@ -108,7 +108,7 @@ export const fetchAddToCart = async (productVariantId: string, quantity: number,
         console.log('Error adding to cart:', error);
     }
 };
-export const fetchRemoveFromCart = async (customerId: string, cartId: string, cartItemId: string) => {
+export const fetchRemoveFromCart = async (customerId: string, cartId: string, cartItemId: string, token: string) => {
     console.log('8888888888888')
     console.log('customerId', customerId)
     console.log('cartId', cartId)
@@ -121,7 +121,7 @@ export const fetchRemoveFromCart = async (customerId: string, cartId: string, ca
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,    
             },
             body: JSON.stringify({ cartId, cartItemId }),
         });
@@ -133,7 +133,7 @@ export const fetchRemoveFromCart = async (customerId: string, cartId: string, ca
         console.log('Error removing from cart:', error);
     }
 };
-export const fetchGetCartList = async (customerId: string) => {
+export const fetchGetCartList = async (customerId: string, token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/cart/${customerId}`, {
@@ -142,7 +142,7 @@ export const fetchGetCartList = async (customerId: string) => {
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,    
             },
         });
         if (response.status !== 200) {
@@ -153,7 +153,7 @@ export const fetchGetCartList = async (customerId: string) => {
         console.log('Error fetching cart:', error);
     }
 };
-export const fetchUpdateCartQuantity = async (productVariantId: string, quantity: number, customerId: string) => {
+export const fetchUpdateCartQuantity = async (productVariantId: string, quantity: number, customerId: string,token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/cart/${customerId}`, {
@@ -161,7 +161,7 @@ export const fetchUpdateCartQuantity = async (productVariantId: string, quantity
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,    
             },
             body: JSON.stringify({ productVariantId, quantity }),
         });
@@ -175,15 +175,15 @@ export const fetchUpdateCartQuantity = async (productVariantId: string, quantity
     }
 }
 
-export const fetchGetUserAddresses = async (customerId: string,) => {
+export const fetchGetUserAddresses = async (customerId: string, token: string   ) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                // "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,    
+                "company-domain": companyDomain,
+                Authorization: `Bearer ${token}`,    
             },
         });
         if (response.status !== 200) {
@@ -197,16 +197,17 @@ export const fetchGetUserAddresses = async (customerId: string,) => {
 };
 
 
-export const fetchGetAddressById = async (customerId: string, addressId: string) => { }
+export const fetchGetAddressById = async (customerId: string, addressId: string, token: string  ) => { }
 
-export const fetchSetDefaultAddress = async (customerId: string, addressId: string) => {
+export const fetchSetDefaultAddress = async (customerId: string, addressId: string, token: string) => {
     try {
+        const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}/${addressId}/default`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                // "company-domain": companyDomain, 
-                // Authorization: `Bearer ${token}`,
+                "company-domain": companyDomain, 
+                Authorization: `Bearer ${token}`,
             },
         });
         if (response.status !== 200) {
@@ -220,12 +221,14 @@ export const fetchSetDefaultAddress = async (customerId: string, addressId: stri
     }
 }
 
-export const checkAddressExistence = async (customerId: string) => {
+export const checkAddressExistence = async (customerId: string, token: string) => {
     try {
         const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}/addresses-exist`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                "company-domain": await getCompanyDomain(),
+                Authorization: `Bearer ${token}`,
             },
         });
         const responseData = await response.json();
@@ -244,7 +247,7 @@ export const checkAddressExistence = async (customerId: string) => {
 }
 
 
-export const fetchInitiatePayment = async (customerId: string, paymentData: any) => {
+export const fetchInitiatePayment = async (customerId: string, paymentData: any, token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/checkout/${customerId}/initiate`, {
@@ -252,7 +255,7 @@ export const fetchInitiatePayment = async (customerId: string, paymentData: any)
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(paymentData),
         });
@@ -270,7 +273,7 @@ export const fetchInitiatePayment = async (customerId: string, paymentData: any)
     }
 };
 
-export const fetchUserOrderHistory = async (customerId: string) => {
+export const fetchUserOrderHistory = async (customerId: string, token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/orders/user/${customerId}`, {
@@ -278,7 +281,7 @@ export const fetchUserOrderHistory = async (customerId: string) => {
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         }
         );
@@ -291,7 +294,7 @@ export const fetchUserOrderHistory = async (customerId: string) => {
         console.log('Error fetching order history:', error);
     }
 };
-export const fetchOrderDetails = async (orderId: string) => {
+export const fetchOrderDetails = async (orderId: string, token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/orders/${orderId}`, {
@@ -299,7 +302,7 @@ export const fetchOrderDetails = async (orderId: string) => {
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
         console.log("Order Details Response:", response);
@@ -312,7 +315,7 @@ export const fetchOrderDetails = async (orderId: string) => {
         console.log('Error fetching order details:', error);
     }
 }
-export const fetchOrderItemDetails = async (orderItemId: string) => {
+export const fetchOrderItemDetails = async (orderItemId: string, token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/order-items/${orderItemId}`, {
@@ -320,7 +323,7 @@ export const fetchOrderItemDetails = async (orderItemId: string) => {
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
         console.log("Order Item Details Response:", response);
@@ -338,6 +341,7 @@ export const fetchCancelOrderItem = async (
     userId: string,
     itemId: string,
     reason: string,
+    token: string
 ) => {
     const domain = await getCompanyDomain();
     const response = await fetch(
@@ -347,6 +351,7 @@ export const fetchCancelOrderItem = async (
             headers: {
                 'Content-Type': 'application/json',
                 'company-domain': domain,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
                 userId,
@@ -357,7 +362,7 @@ export const fetchCancelOrderItem = async (
     );
     return response.json();
 };
-export const fetchReturnReplaceItem = async (userId: string, formData: FormData) => {
+export const fetchReturnReplaceItem = async (userId: string, formData: FormData, token: string) => {
     const domain = await getCompanyDomain();
     try {
         const response = await fetch(
@@ -366,6 +371,7 @@ export const fetchReturnReplaceItem = async (userId: string, formData: FormData)
                 method: 'POST',
                 headers: {
                     'company-domain': domain,
+                    Authorization: `Bearer ${token}`,
                 },
                 body: formData,
             },
@@ -388,7 +394,7 @@ export const fetchReturnReplaceItem = async (userId: string, formData: FormData)
     }
 };
 
-export const fetchUserReturns = async (userId: string) => {
+export const fetchUserReturns = async (userId: string, token: string) => {
     const domain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/returns/user/${userId}`, {
@@ -396,7 +402,7 @@ export const fetchUserReturns = async (userId: string) => {
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": domain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
         console.log("User Returns Response:", response);

@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import { fetchOrderDetails } from "@/utils/customerApiClient";
 import { useRouter } from "next/navigation";
 import { OrderStatus } from "@/utils/Types";
+import { authToken } from "@/utils/authToken";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -422,13 +423,13 @@ export default function OrderDetailsPage() {
     const { orderId } = useParams<{ orderId: string }>();
     const [order, setOrder] = useState<OrderDetailType | null>(null);
     const router = useRouter();
-
+    const token=authToken(); 
     useEffect(() => {
-        if (!orderId) return;
-        fetchOrderDetails(orderId)
+        if (!orderId || !token) return;
+        fetchOrderDetails(orderId, token)
             .then((data) => setOrder(data.data))
             .catch((err) => console.error("Error fetching order details:", err));
-    }, [orderId]);
+    }, [orderId, token]);
 
     const handleCancelItem = (id: string) => router.push(`${orderId}/cancel/${id}`);
     const handleReturnReplace = (id: string) => router.push(`${orderId}/return/${id}`);

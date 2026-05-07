@@ -100,7 +100,7 @@ export default function SecuritySettingsPage() {
     };
 
     const handleDeleteClick = () => {
-        setModalConfig({
+        setConfirmModalConfig({
             title: "Permanently Delete Account?",
             message: "Warning: This action is irreversible. All your data, order history, and preferences will be permanently erased.",
             actionType: "danger",
@@ -110,11 +110,11 @@ export default function SecuritySettingsPage() {
                 // Simulate API call
                 await new Promise(res => setTimeout(res, 1500));
                 setIsProcessing(false);
-                setIsModalOpen(false);
+                setIsConfirmModalOpen(false);
                 // Redirect to logout/home
             }
         });
-        setIsModalOpen(true);
+        setIsConfirmModalOpen(true);
     };
 
     return (

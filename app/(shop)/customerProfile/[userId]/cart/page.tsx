@@ -10,6 +10,7 @@ import { formatCurrency } from "@/lib/utils";
 import { fetchGetCartList } from "@/utils/customerApiClient";
 import { BuyBtnMode, Variant } from "@/utils/Types";
 import { setItemList } from "@/lib/features/Cart";
+import { authToken } from "@/utils/authToken";
 
 
 export interface CartItemListResponse {
@@ -50,10 +51,15 @@ export default function CartList() {
     const router = useRouter();
     const [cartList, setCartList] = useState<CartItemListResponse[]>([]);
     const dispatch = useAppDispatch();
+    const token=authToken()
     useEffect(() => {
         const fetchCartList = async () => {
+            if (!userId || !token) {
+                setTimeout(() => router.push('/auth/customerLogin'), 1000);
+                return;
+            }
             try {
-                const response = await fetchGetCartList(userId);
+                const response = await fetchGetCartList(userId, token);
 
                 if (!response?.data) {
                     console.warn("fetchGetCartList: unexpected response shape", response);

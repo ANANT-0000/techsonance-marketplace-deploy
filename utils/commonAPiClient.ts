@@ -7,7 +7,7 @@ export const fetchProduct = async (productId: string) => {
     try {
         const response = await fetch(`${BASE_API_URL}/v1/products/${productId}`, {
             method: 'GET',
-            // cache: "force-cache",
+            cache: "force-cache",
             next: { revalidate: 60 },
             headers: {
                 'Content-Type': 'application/json',

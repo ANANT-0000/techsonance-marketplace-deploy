@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { fetchAddWishList, fetchDeleteWishList } from '@/utils/customerApiClient';
 import { RootState } from '@/lib/store';
 import { useState } from 'react';
+import { authToken } from '@/utils/authToken';
 export function WishListBtn({ productVariantId
   , styles, iconSize }: {
     productVariantId
@@ -30,10 +31,11 @@ export function WishListBtn({ productVariantId
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const iconSizeValue = iconSize || (isMobile ? 28 : 32);
   const router = useRouter();
+  const token = authToken();
   console.log("productVariantId", productVariantId);
   const handleAddToWishlist = async (variantId: string) => {
     if (isPending || !variantId) return;
-    if (!user?.id || role?.toLowerCase() !== 'customer') {
+    if (!user?.id||!token) {
       router.push('/auth/customerLogin');
       return;
     }
@@ -49,7 +51,7 @@ export function WishListBtn({ productVariantId
         if (!itemToRemove) return;
         dispatch(removeFromWishlist(itemToRemove.id));
 
-        const response = await fetchDeleteWishList(variantId, user.id);
+        const response = await fetchDeleteWishList(variantId, user.id, token);
 
         if (!response?.success) {
           dispatch(addToWishlist({
@@ -63,7 +65,7 @@ export function WishListBtn({ productVariantId
 
       } else {
         // ── ADD PATH ─────────────────────────────────────────────
-        const response = await fetchAddWishList(variantId, user.id);
+        const response = await fetchAddWishList(variantId, user.id, token);
 
         if (!response?.success || !response?.data) {
           console.error('Add to wishlist failed:', response?.message);

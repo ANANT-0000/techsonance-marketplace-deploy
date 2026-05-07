@@ -90,7 +90,7 @@ export interface FinancialData {
 export default function VendorDetailPage() {
     const params = useParams();
     const router = useRouter();
-    // const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'financials'>('overview');
+    // const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'financial'>('overview');
     const [vendorData, setVendorData] = useState<AdminVendorDetail | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const token = authToken();

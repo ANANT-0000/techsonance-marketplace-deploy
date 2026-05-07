@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/utils";
 import { toast } from 'react-hot-toast';
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
+import { authToken } from "@/utils/authToken";
 
 const RETURN_REASONS = [
     "Item is damaged or broken",
@@ -43,16 +44,17 @@ export default function ReturnReplacePage() {
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
-
+    const token=authToken()
     useEffect(() => {
+        if (!itemId || !token) return;
         const getOrder = async () => {
-            const res = await fetchOrderItemDetails(itemId);
+            const res = await fetchOrderItemDetails(itemId, token);
             if (res?.data) {
                 setTargetItem(res.data);
             }
         };
         getOrder();
-    }, [orderId, itemId]);
+    }, [orderId, itemId, token]);
 
     // Revoke object URLs to prevent memory leaks
     useEffect(() => {
@@ -93,7 +95,7 @@ export default function ReturnReplacePage() {
             return;
         }
 
-        if (!user?.id) {
+        if (!user?.id || !token) {
             setError("User ID is required. Please log in and try again.");
             return;
         }
@@ -110,7 +112,7 @@ export default function ReturnReplacePage() {
             console.log(formData.getAll('customer_note'))
             console.log(formData.getAll('evidence_images'))
             console.log(formData.getAll('type'))
-            const response = await fetchReturnReplaceItem(user.id, formData);
+            const response = await fetchReturnReplaceItem(user.id, formData, token);
             if (response.success) {
                 toast.success(
                     `${requestType === ReturnReplaceTypeEnum.RETURN ? 'Return' : 'Replacement'} requested successfully!`

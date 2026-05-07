@@ -5,6 +5,7 @@ import { Dispatch, SetStateAction, use, useEffect, useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { on } from "events";
+import { authToken } from "@/utils/authToken";
 
 const BADGE_STYLES: Record<string, string> = {
     home: "bg-green-50 text-green-700",
@@ -23,11 +24,15 @@ export function AddressSelector({
 }) {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-
+    const token = authToken();  
     useEffect(() => {
+        if (!token) {
+            console.error("Authentication token is missing");
+            return;
+        }
         const fetchAddresses = async () => {
             setIsLoading(true);
-            const userAddresses = await fetchGetUserAddresses(userId);
+            const userAddresses = await fetchGetUserAddresses(userId, token);
             if (userAddresses.status === 200) setAddresses(userAddresses.data);
             setIsLoading(false);
         };

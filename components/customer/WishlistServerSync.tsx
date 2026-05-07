@@ -2,6 +2,7 @@
 import { addToWishlist } from "@/lib/features/Wishlist";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { RootState } from "@/lib/store";
+import { authToken } from "@/utils/authToken";
 import { fetchCustomerWishlist } from "@/utils/customerApiClient";
 import { useEffect, useRef } from "react";
 
@@ -11,7 +12,7 @@ export const WishlistServerSync = () => {
     const { user } = useAppSelector((state: RootState) => state.auth);
     const { wishItems } = useAppSelector((state: RootState) => state.wishlist);
     const syncedForUser = useRef<string | null>(null);
-
+                const token = authToken();
     // Pass wishItems as a ref so the async closure always reads current value
     const wishItemsRef = useRef(wishItems);
     useEffect(() => {
@@ -19,11 +20,12 @@ export const WishlistServerSync = () => {
     }, [wishItems]);
 
     useEffect(() => {
-        if (!user?.id || syncedForUser.current === user.id) return;
+        if (!user?.id || !token || syncedForUser.current === user.id) return;
 
         const sync = async () => {
             try {
-                const response = await fetchCustomerWishlist(user.id ?? '');
+
+                const response = await fetchCustomerWishlist(user.id ?? '', token);
                 const serverItems = response?.data?.[0]?.items ?? [];
                 syncedForUser.current = user.id ?? null;
 

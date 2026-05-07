@@ -15,6 +15,7 @@ import { fetchGetCartList } from "@/utils/customerApiClient";
 import { setItemList } from "@/lib/features/Cart";
 import { CartItemListResponse } from "@/app/(shop)/customerProfile/[userId]/cart/page";
 import { BuyBtnMode } from "@/utils/Types";
+import { authToken } from "@/utils/authToken";
 
 
 
@@ -26,11 +27,13 @@ export function CartSidebar() {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
   const [cartList, setCartList] = useState<CartItemListResponse[]>([]);
+    const token = authToken();
+  
   useEffect(() => {
     const fetchCartList = async () => {
-      if (user?.id) {
+      if (user?.id && token) {
         try {
-          const response = await fetchGetCartList(user.id);
+          const response = await fetchGetCartList(user.id, token);
 
           setCartList(response.data || []);
         } catch (error) {

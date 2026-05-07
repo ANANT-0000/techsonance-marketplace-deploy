@@ -3,6 +3,7 @@ import { fetchCustomerWishlist } from "@/utils/customerApiClient";
 import { Variant } from "@/utils/Types";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { getCompanyDomain } from "../get-domain";
+import { authToken } from "@/utils/authToken";
 
 
 export interface WishlistItem {
@@ -43,7 +44,9 @@ const saveWishlistToLocalStorage = (wishlistId: string, wishItems: WishlistItem[
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 const loadWishlistFromLocalOrServer = async (): Promise<Omit<WishlistState, 'loading' | 'error'>> => {
+
     if (!isClient) return { wishlistId: '', wishItems: [] };
+                    const token = authToken();
     const companyDomain = await getCompanyDomain();
     let localFallback: Omit<WishlistState, 'loading' | 'error'> = { wishlistId: '', wishItems: [] };
 
@@ -58,18 +61,18 @@ const loadWishlistFromLocalOrServer = async (): Promise<Omit<WishlistState, 'loa
         }
 
         let customerId = localStorage.getItem(USER_STORAGE_KEY)
-        const isCusomter: {
+        const isCustomer: {
             isAuthenticated: boolean;
             role: string;
         } | null = JSON.parse(localStorage.getItem(IS_AUTHENTICATED_KEY) || '{}')
-        if (isCusomter?.role === 'admin' || isCusomter?.role === 'vendor') {
+        if (isCustomer?.role === 'admin' || isCustomer?.role === 'vendor') {
             return { wishlistId: '', wishItems: [] };
         }
         if (customerId && customerId !== 'undefined' && customerId !== 'null') {
             customerId = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) as string)?.id
         }
-        if (customerId && companyDomain) {
-            const response = await fetchCustomerWishlist(customerId);
+        if (customerId && companyDomain && token) {
+            const response = await fetchCustomerWishlist(customerId, token);
 
             if (response && 'ok' in response && response.ok && response.data) {
                 const serverData: WishlistServerResponse[] = response.data;

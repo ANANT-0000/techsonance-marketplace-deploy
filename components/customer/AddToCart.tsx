@@ -9,6 +9,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 
 import { fetchAddToCart, fetchRemoveFromCart } from "@/utils/customerApiClient";
 import { useEffect } from "react";
+import { authToken } from "@/utils/authToken";
 
 interface AddToCartProps {
     productVariantId: string;
@@ -30,7 +31,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     const { user } = useAppSelector((state: RootState) => state.auth);
     const path = usePathname();
     const router = useRouter();
-
+    const token = authToken();
 
     useEffect(() => {
         if (items.length === 0) {
@@ -55,14 +56,14 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     };
 
     const handleIncrement = async () => {
-        if (!user?.id) {
+        if (!user?.id || !token) {
             router.push('/auth/customerLogin');
             return;
         }
 
         try {
             const newQuantity = quantity === 0 ? 1 : quantity + 1;
-            const response = await fetchAddToCart(productVariantId, newQuantity, user?.id,);
+            const response = await fetchAddToCart(productVariantId, newQuantity, user?.id, token);
             const cartResponse: CartItemResponse = response.data;
 
 
@@ -82,13 +83,19 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     };
 
     const handleDecrement = async () => {
-        if (!user?.id || !cartItem) return;
+        if (!user?.id || !cartItem || !token) return;
 
         try {
+            if (!token) {
+                console.error("Authentication token is missing");
+                return;
+            }
+
             const response = await fetchRemoveFromCart(
                 user?.id,
                 cartItem.cartId,
                 cartItem.cartItemId,
+                token
             );
             const cartResponse: CartItemResponse = response.data;
 

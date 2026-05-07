@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Star, AlertCircle } from "lucide-react";
 import { fetchOrderDetails } from "@/utils/customerApiClient";
 import { formatCurrency } from "@/lib/utils";
+import { authToken } from "@/utils/authToken";
 
 export default function WriteReviewPage() {
     const { orderId, itemId } = useParams<{ orderId: string; itemId: string }>();
@@ -16,11 +17,12 @@ export default function WriteReviewPage() {
     const [reviewText, setReviewText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
-
+    const token = authToken();
     // Fetch the product details to display at the top
     useEffect(() => {
+        if (!orderId || !token) return;
         const getOrder = async () => {
-            const res = await fetchOrderDetails(orderId);
+            const res = await fetchOrderDetails(orderId, token);
             if (res?.data) {
                 const specificItem = res.data.items.find(
                     (i: any) => i.productVariant.id === itemId
@@ -29,7 +31,7 @@ export default function WriteReviewPage() {
             }
         };
         getOrder();
-    }, [orderId, itemId]);
+    }, [orderId, itemId, token]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

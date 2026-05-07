@@ -461,9 +461,9 @@ export default function VendorOrderDetails() {
 
     // ── Cancellation ──────────────────────────────────────────────────────────
     const handleCancelItem = async (reason: string) => {
-        if (!cancellingItemId) return;
-        const companyDomain = await getCompanyDomain();
-        const result = await fetchCancelOrderItem(cancellingItemId, reason, companyDomain);
+
+        if (!cancellingItemId || !token) return;
+        const result = await fetchUpdateOrderStatus(cancellingItemId, 'cancelled', token);
         if (result?.data?.success) await loadOrder();
         setCancellingItemId(null);
     };

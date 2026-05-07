@@ -1,13 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { AlertTriangle, ShieldAlert, CheckCircle2, X } from 'lucide-react';
 
 export type ActionType = 'suspend' | 'deactivate' | 'activate' | 'approve' | 'danger';
 
 interface ConfirmationModalProps {
     isOpen: boolean;
-    onClose: () => void;
+    onClose: () => void | Dispatch<SetStateAction<boolean>> | false;
     onConfirm: () => void;
     title: string;
     message: string;
