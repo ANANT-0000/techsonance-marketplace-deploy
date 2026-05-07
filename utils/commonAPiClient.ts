@@ -13,8 +13,7 @@ export const fetchProduct = async (productId: string) => {
                 'Content-Type': 'application/json',
                 'company-domain': companyDomain,
             },
-            // Authorization: `Bearer ${authToken()}`,
-        });
+});
         console.log(response)
         if (response.status !== 200) {
             console.log('Failed to fetch product', response);
@@ -57,14 +56,13 @@ export const fetchProductVariantDetails = async (id: string) => {
 export const fetchProductVendorProducts = async () => {
     const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/products/all`, {
+        const response = await fetch(`${BASE_API_URL}/v1/products/all`, {
             method: 'GET',
             cache: "force-cache",
             next: { revalidate: 3600 },
             headers: {
                 'Content-Type': 'application/json',
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${authToken()}`,
             },
 
         });
