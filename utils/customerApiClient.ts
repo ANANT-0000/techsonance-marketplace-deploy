@@ -26,7 +26,7 @@ export const fetchCustomerProfile = async () => {
 export const fetchCustomerWishlist = async (customerId: string,) => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/api/v1/wishlist/${customerId} `, {
+        const response = await fetch(`${BASE_API_URL}/v1/wishlist/${customerId} `, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ export const fetchAddWishList = async (productId: string, customerId: string,) =
     const companyDomain = await getCompanyDomain();
 
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/wishlist/${customerId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/wishlist/${customerId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export const fetchAddWishList = async (productId: string, customerId: string,) =
 export const fetchDeleteWishList = async (productId: string, customerId: string) => {
     const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/wishlist/${customerId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/wishlist/${customerId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ export const fetchDeleteWishList = async (productId: string, customerId: string)
 export const fetchAddToCart = async (productVariantId: string, quantity: number, customerId: string) => {
     const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/cart/${customerId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/cart/${customerId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ export const fetchRemoveFromCart = async (customerId: string, cartId: string, ca
 
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/api/v1/cart/${customerId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/cart/${customerId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ export const fetchRemoveFromCart = async (customerId: string, cartId: string, ca
 export const fetchGetCartList = async (customerId: string) => {
     const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/cart/${customerId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/cart/${customerId}`, {
             method: 'GET',
             cache: 'no-cache',
             headers: {
@@ -156,7 +156,7 @@ export const fetchGetCartList = async (customerId: string) => {
 export const fetchUpdateCartQuantity = async (productVariantId: string, quantity: number, customerId: string) => {
     const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/cart/${customerId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/cart/${customerId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -178,7 +178,7 @@ export const fetchUpdateCartQuantity = async (productVariantId: string, quantity
 export const fetchGetUserAddresses = async (customerId: string,) => {
     const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/address/customer/${customerId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -201,7 +201,7 @@ export const fetchGetAddressById = async (customerId: string, addressId: string)
 
 export const fetchSetDefaultAddress = async (customerId: string, addressId: string) => {
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/address/customer/${customerId}/${addressId}/default`, {
+        const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}/${addressId}/default`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -222,7 +222,7 @@ export const fetchSetDefaultAddress = async (customerId: string, addressId: stri
 
 export const checkAddressExistence = async (customerId: string) => {
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/address/customer/${customerId}/addresses-exist`, {
+        const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}/addresses-exist`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ export const checkAddressExistence = async (customerId: string) => {
 export const fetchInitiatePayment = async (customerId: string, paymentData: any) => {
     const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/checkout/${customerId}/initiate`, {
+        const response = await fetch(`${BASE_API_URL}/v1/checkout/${customerId}/initiate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -273,7 +273,7 @@ export const fetchInitiatePayment = async (customerId: string, paymentData: any)
 export const fetchUserOrderHistory = async (customerId: string) => {
     const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/orders/user/${customerId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/orders/user/${customerId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -294,7 +294,7 @@ export const fetchUserOrderHistory = async (customerId: string) => {
 export const fetchOrderDetails = async (orderId: string) => {
     const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/orders/${orderId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/orders/${orderId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -315,7 +315,7 @@ export const fetchOrderDetails = async (orderId: string) => {
 export const fetchOrderItemDetails = async (orderItemId: string) => {
     const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/order-items/${orderItemId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/order-items/${orderItemId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -341,7 +341,7 @@ export const fetchCancelOrderItem = async (
 ) => {
     const domain = await getCompanyDomain();
     const response = await fetch(
-        `${BASE_API_URL}/api/v1/order-items/${itemId}/cancel`,
+        `${BASE_API_URL}/v1/order-items/${itemId}/cancel`,
         {
             method: 'PATCH',
             headers: {
@@ -361,7 +361,7 @@ export const fetchReturnReplaceItem = async (userId: string, formData: FormData)
     const domain = await getCompanyDomain();
     try {
         const response = await fetch(
-            `${BASE_API_URL}/api/v1/returns/user/${userId}`,
+            `${BASE_API_URL}/v1/returns/user/${userId}`,
             {
                 method: 'POST',
                 headers: {
@@ -391,7 +391,7 @@ export const fetchReturnReplaceItem = async (userId: string, formData: FormData)
 export const fetchUserReturns = async (userId: string) => {
     const domain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/returns/user/${userId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/returns/user/${userId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

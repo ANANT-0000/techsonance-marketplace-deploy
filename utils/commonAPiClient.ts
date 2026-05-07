@@ -5,7 +5,7 @@ export const fetchProduct = async (productId: string) => {
     const companyDomain = await getCompanyDomain();
     console.log('company domain  in product by id', companyDomain)
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/products/${productId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/products/${productId}`, {
             method: 'GET',
             // cache: "force-cache",
             next: { revalidate: 60 },
@@ -28,7 +28,7 @@ export const fetchProduct = async (productId: string) => {
 export const fetchProductVariantDetails = async (id: string) => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/api/v1/product-variant/details/${id}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/product-variant/details/${id}`, {
             method: 'GET',
             cache: 'no-cache',
             headers: {

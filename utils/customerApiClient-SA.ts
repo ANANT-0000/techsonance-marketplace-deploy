@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 export const fetchInitCheckout = async (userId: string, initPayload: any) => {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(
-        `${BASE_API_URL}/api/v1/checkout/${userId}/initiate`,
+        `${BASE_API_URL}/v1/checkout/${userId}/initiate`,
         {
             method: 'POST',
             headers: {
@@ -21,7 +21,7 @@ export const fetchInitCheckout = async (userId: string, initPayload: any) => {
 }
 export const fetchVerifyPayment = async (userId: string, verifyPayload: any) => {
     const companyDomain = await getCompanyDomain();
-    const response = await fetch(`${BASE_API_URL}/api/v1/checkout/verify`, {
+    const response = await fetch(`${BASE_API_URL}/v1/checkout/verify`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ export const fetchVerifyPayment = async (userId: string, verifyPayload: any) => 
 }
 export const fetchCreateUserAddress = async (customerId: string, addressData: any) => {
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/address/customer/${customerId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ export const fetchCreateUserAddress = async (customerId: string, addressData: an
 export const fetchUpdateUserAddress = async (customerId: string, addressId: string, addressData: any) => {
     try {
         console.log("customerId", customerId, '\n address id', addressId)
-        const response = await fetch(`${BASE_API_URL}/api/v1/address/customer/${customerId}/${addressId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}/${addressId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ export const fetchUpdateUserAddress = async (customerId: string, addressId: stri
 export const fetchDeleteUserAddress = async (customerId: string, addressId: string) => {
     try {
         console.log(customerId, addressId)
-        const response = await fetch(`${BASE_API_URL}/api/v1/address/customer/${customerId}/${addressId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}/${addressId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',

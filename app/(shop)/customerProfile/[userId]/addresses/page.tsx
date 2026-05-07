@@ -2,8 +2,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronLeftCircle } from "lucide-react";
-// import { deleteAddress, setDefaultAddress } from "@/lib/features/auth/authSlice";
-
 import { useRouter } from "next/navigation";
 import { AddressCard } from "@/components/customer/AddressCard";
 import { AddressModal } from "@/components/customer/AddressModel";
@@ -29,7 +27,7 @@ export default function Addresses() {
             }
         }
         fetchAddresses();
-    }, [user, addressList.length, isModalOpen]);
+    }, [user, addressList && addressList.length, isModalOpen]);
     const router = useRouter()
     const openAdd = () => {
         setModalMode(AddressOperationEnum.ADD);

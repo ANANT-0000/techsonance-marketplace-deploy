@@ -4,7 +4,7 @@ import { authToken } from "./authToken";
 import { revalidatePath } from "next/cache";
 
 export const fetchRoles = async( token: string)=> {
-    const response = await fetch(`${BASE_API_URL}/api/v1/roles`, {
+    const response = await fetch(`${BASE_API_URL}/v1/roles`, {
         headers: { Authorization: `Bearer ${token}` },
         next: { tags: ['roles'] }
     });
@@ -16,7 +16,7 @@ export const fetchRoles = async( token: string)=> {
 };
 export const fetchPermissions = async (token: string) => {
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/permissions`, {
+        const response = await fetch(`${BASE_API_URL}/v1/permissions`, {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -33,7 +33,7 @@ export const fetchPermissions = async (token: string) => {
 };
 export const createRole = async (role: string, token: string) => {
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/roles`, {
+        const response = await fetch(`${BASE_API_URL}/v1/roles`, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -54,7 +54,7 @@ export const createRole = async (role: string, token: string) => {
 
 export const createPermission = async (permissionName: string, token: string) => {
     try {
-        const response = await fetch(`${BASE_API_URL}/api/v1/permissions/create`, {
+        const response = await fetch(`${BASE_API_URL}/v1/permissions/create`, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -81,7 +81,7 @@ export const handleAddRole = async (adminId: string, formData: FormData, token: 
 
 };
 export const handleDeleteRole = async (adminId: string, id: string, token: string) => {
-    await fetch(`${BASE_API_URL}/api/v1/roles/${id}`, {
+    await fetch(`${BASE_API_URL}/v1/roles/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -96,7 +96,7 @@ export const handleAddPermission = async (adminId: string, formData: FormData, t
 };
 
 export const handleDeletePermission = async (adminId: string, id: string, token: string) => {
-    const response = await fetch(`${BASE_API_URL}/api/v1/permissions/${id}`, {
+    const response = await fetch(`${BASE_API_URL}/v1/permissions/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -109,7 +109,7 @@ export const handleDeletePermission = async (adminId: string, id: string, token:
 };
 
 export const handleRemovePermission = async (adminId: string, roleId: string, permId: string, token: string) => {
-    await fetch(`${BASE_API_URL}/api/v1/roles/remove-permission-from-role`, {
+    await fetch(`${BASE_API_URL}/v1/roles/remove-permission-from-role`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ roleId, permissionId: permId }),
@@ -137,7 +137,7 @@ export const fetchApplications = async( token: string)=> {
 };
 export const fetchRolePermissions = async(token: string)=> {
 
-    const response = await fetch(`${BASE_API_URL}/api/v1/roles/get-role-permissions`, {
+    const response = await fetch(`${BASE_API_URL}/v1/roles/get-role-permissions`, {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -149,7 +149,7 @@ export const fetchRolePermissions = async(token: string)=> {
     return res
 };
 export const handleAssignPermission = async (adminId: string, roleId: string, permissionId: string, token: string) => {
-    await fetch(`${BASE_API_URL}/api/v1/roles/add-permission-to-role`, {
+    await fetch(`${BASE_API_URL}/v1/roles/add-permission-to-role`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
