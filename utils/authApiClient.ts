@@ -9,6 +9,7 @@ export const AxiosAPI = axios.create({
     baseURL: BASE_API_URL,
     headers: {
         'Content-Type': 'application/json',
+        'company-domain':await getCompanyDomain() 
     },
 });
 
@@ -146,7 +147,7 @@ export const CustomerRegister = async (data: CustomerRegisterSchemaType, company
     console.log('registering customer:', customerData);
 
     try {
-        const response = await AxiosAPI.post(`${CUSTOMER_AUTH_URL}/register-user/${companyId}`, {
+        const response = await AxiosAPI.post(`${CUSTOMER_AUTH_URL}/register-user`, {
             customer_data: customerData
         });
 
