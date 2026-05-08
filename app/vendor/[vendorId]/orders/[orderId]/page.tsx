@@ -17,6 +17,7 @@ import {
     AlertCircle,
     XCircle,
     Link2,
+    FileText,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { redirect, useParams, useRouter } from "next/navigation";
@@ -101,7 +102,12 @@ interface OrderItem {
         refund_status: string;
     } | null;
 }
-
+interface Invoice {
+    id: string;
+    invoice_url: string;
+    order_id: string;
+    invoice_number: string;
+}
 interface Order {
     id: string;
     total_amount: string;
@@ -124,6 +130,7 @@ interface Order {
         postal_code: string;
         country: string;
     } | null;
+    invoice:Invoice
     payment: { amount: string; payment_method: string } | null;
     shipping: { tracking_url: string | null };
 }
@@ -391,7 +398,8 @@ export default function VendorOrderDetails() {
             const res = await fetchVendorOrderDetails(orderId, token);
             const data: Order = res.data;
             setOrder(data);
-            if (data.items?.[0]?.order_status) {
+
+            if (data.items &&  data.items?.[0]?.order_status) {
                 setOrderStatus(data.items[0].order_status.toUpperCase() as OrderStatus);
             }
             const statusMap: Record<string, OrderStatus> = {};
@@ -403,7 +411,7 @@ export default function VendorOrderDetails() {
             console.error("Error fetching vendor order details:", err);
         }
     };
-
+    console.log("orderDatael",order)
     useEffect(() => { loadOrder(); }, []);
 
     const isSingleWarehouse = order?.is_single_warehouse ?? true;
@@ -468,6 +476,23 @@ export default function VendorOrderDetails() {
         setCancellingItemId(null);
     };
 
+    const handleDownload = async (url: string, filename: string) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename || 'invoice.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error('Download failed:', error);
+  }
+};
     if (!order)
         return (
             <div className="h-screen w-full bg-slate-50 flex items-center justify-center">
@@ -503,10 +528,23 @@ export default function VendorOrderDetails() {
                             #{order.id.toUpperCase()}
                         </p>
                     </div>
+
+                    <div className="flex flex-col gap-4 justify-between">
                     <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 bg-white border border-slate-200 rounded-xl px-3 py-2">
                         <Clock size={12} />
                         {new Date(order.created_at).toLocaleString("en-GB")}
                     </div>
+                    {order.invoice && (
+                        <button
+                        onClick={() => handleDownload(order.invoice.invoice_url, `${order.invoice.invoice_number}.pdf`)}
+                            className="bg-white border border-slate-200 rounded-xl px-3 py-2 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors group cursor-pointer"
+                        >
+                            <FileText size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+                            View Invoice
+                        </button>
+                    )}
+                     </div>
+                    
                 </div>
 
                 {/* ── Multi-warehouse notice ── */}
@@ -582,7 +620,7 @@ export default function VendorOrderDetails() {
                                                         />
                                                     </div>
                                                     {/* Tracking URL */}
-                                                    {(displayStatus.toLowerCase() === OrderStatusEnum.SHIPPED.toLowerCase() || displayStatus.toLowerCase() === OrderStatusEnum.DELIVERED.toLowerCase()) ? <div className="bg-slate-50 rounded-xl p-3 space-y-1.5">
+                                                    {/* {(displayStatus.toLowerCase() === OrderStatusEnum.SHIPPED.toLowerCase() || displayStatus.toLowerCase() === OrderStatusEnum.DELIVERED.toLowerCase()) ? <div className="bg-slate-50 rounded-xl p-3 space-y-1.5">
                                                         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                                                             Tracking URL
                                                         </p>
@@ -596,7 +634,16 @@ export default function VendorOrderDetails() {
                                                                 Tracking URL    (Only after shipping)
                                                             </p>
                                                         </div>)
-                                                    }
+                                                    } */}
+{order.invoice && (
+                        <button
+                        onClick={() => handleDownload(order.invoice.invoice_url, `${order.invoice.invoice_number}.pdf`)}
+                            className="bg-white border border-slate-200 rounded-xl px-3 py-2 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors group cursor-pointer"
+                        >
+                            <FileText size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+                            View Invoice
+                        </button>
+                    )}
                                                 </div>
                                             )}
 

@@ -51,6 +51,7 @@ interface OrderItem {
     order_status: OrderStatus;
     variant: ProductVariant;
     return_request: ReturnRequest | null;
+    invoice: Invoice | null;
 }
 
 interface Address {
@@ -75,6 +76,13 @@ interface Payment {
     company_id: string;
 }
 
+interface Invoice {
+    company_id:string;
+order_id:string;
+invoice_url: string;
+invoice_number?: string;
+
+}
 interface OrderDetailType {
     id: string;
     user_id: string;
@@ -83,6 +91,7 @@ interface OrderDetailType {
     items: OrderItem[];
     address: Address;
     payment: Payment;
+    invoice: Invoice;
     shipping: { tracking_url: string } | null;
 }
 
@@ -430,7 +439,7 @@ export default function OrderDetailsPage() {
             .then((data) => setOrder(data.data))
             .catch((err) => console.error("Error fetching order details:", err));
     }, [orderId, token]);
-
+    console.log("order",order)
     const handleCancelItem = (id: string) => router.push(`${orderId}/cancel/${id}`);
     const handleReturnReplace = (id: string) => router.push(`${orderId}/return/${id}`);
     const handleWriteReview = (id: string) =>
@@ -446,6 +455,23 @@ export default function OrderDetailsPage() {
     const paymentStatus = order?.payment?.payment_status ?? "";
     console.log('paymentStatus', order?.payment.payment_status
 )
+const handleDownload = async (url: string, filename: string) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename || 'invoice.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error('Download failed:', error);
+  }
+};
     return (
         <div className="min-h-screen pb-12 font-sans rounded-2xl">
             <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -598,10 +624,18 @@ export default function OrderDetailsPage() {
                             )}
 
                             <div className="flex flex-col gap-2">
-                                <button className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
-                                    <Download size={16} /> Download Invoice
-                                </button>
-                                <button className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+                                {order?.invoice?.invoice_url && (
+                                     <button 
+      onClick={() => handleDownload(
+        order.invoice.invoice_url,
+        order.invoice.invoice_number ?? "invoice.pdf"
+      )}
+                                        className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
+                                    >
+                                        <Download size={16} /> Download Invoice
+                                    </button>
+                                )}
+                                <button className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer">
                                     <FileText size={16} /> Request Warranty Slip
                                 </button>
                             </div>

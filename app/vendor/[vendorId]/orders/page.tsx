@@ -117,6 +117,7 @@ export default function OrdersPage() {
             redirect("/auth/vendorLogin")
         }
         const getOrderList = async () => {
+            
             await fetchVendorOrderList(0, 10, token, orderStatus, sortBy)
                 .then((res) => {
                     console.log("Vendor Orders List:", res);

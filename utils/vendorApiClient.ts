@@ -396,7 +396,9 @@ export const fetchVendorPendingOrders = async (token: string) => {
 }
 export const fetchVendorOrderList = async (offset: number = 0, limit: number = 10, token: string, status?: OrderStatus | undefined, sortBy?: string,) => {
     try {
+    
         const companyDomain = await getCompanyDomain();
+        
         const response = await fetch(`${BASE_API_URL}/v1/orders?offset=${offset}&limit=${limit}&status=${status || undefined}&sortBy=${sortBy || undefined}`, {
             method: 'GET',
             cache: 'no-cache',
@@ -405,6 +407,7 @@ export const fetchVendorOrderList = async (offset: number = 0, limit: number = 1
                 Authorization: `Bearer ${token}`,
             },
         });
+        console.log(response.status);
         if (response.status !== 200) {
             console.error('Failed to fetch orders');
 
@@ -424,7 +427,7 @@ export const fetchVendorOrderDetails = async (orderId: string, token: string) =>
             cache: 'no-cache',
             headers: {
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
         if (response.status !== 200) {

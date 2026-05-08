@@ -42,7 +42,11 @@ export interface PaymentType {
 export interface ShippingType {
     tracking_url?: string;
 }
-
+export interface Invoice {
+    company_id:string;
+order_id:string;
+invoice_url: string;
+}
 export interface OrderType {
     id: string;
     user_id: string;
@@ -51,6 +55,7 @@ export interface OrderType {
     items: OrderItemType[];
     address: Address;
     payment: PaymentType;
+    invoice: Invoice;
     shipping: ShippingType | null;
 }
 
