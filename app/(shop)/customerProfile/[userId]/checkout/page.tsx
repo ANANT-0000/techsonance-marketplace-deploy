@@ -264,18 +264,7 @@ const token=authToken()
         <p className="text-gray-500 animate-pulse">Loading...</p>
       </div>
     }>
-      <section className="max-w-6xl mx-auto lg:px-4 py-8 min-h-[60vh]">{
-        logger.length > 0 && (
-          <div className="mb-6 p-4 bg-gray-100 rounded-lg">
-            <h3 className="font-semibold mb-2">Debug Log:</h3>
-            <ul className="text-xs text-gray-700">
-              {logger.map((log, index) => (
-                <li key={index}>- {log}</li>
-              ))}
-            </ul>
-          </div>
-        )
-      }
+      <section className="max-w-6xl mx-auto lg:px-4 py-8 min-h-[60vh]"> 
         <h1 className="text-2xl font-bold text-center mb-8">Secure Checkout</h1>
 
         {/* Checkout type badge */}
