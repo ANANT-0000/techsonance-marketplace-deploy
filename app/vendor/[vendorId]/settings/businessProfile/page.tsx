@@ -45,9 +45,9 @@ export default function BusinessProfilePage() {
         <>
              
            
-              <main className={`mt-6 `}>
-               
-                <form className="vendor_settings_content ml-70   rounded-2xl border-gray-300 p-6 bg-white  border-2 " onSubmit={handleSubmit((data) => {
+             <main className={`w-full mx-auto mt-6 `}>
+
+        <form className="vendor_settings_content p-6 bg-white rounded-lg border-2 border-gray-300 " onSubmit={handleSubmit((data) => {
                     console.log(data);
                 })}>
                     <h2 className="text-2xl font-bold mb-4">Business Profile</h2>

@@ -14,9 +14,9 @@ export default function VendorProfilePage() {
     <>
 
 
-      <main className={`mt-6 `}>
+      <main className={`w-full mx-auto mt-6 `}>
 
-        <section className="vendor_settings_content ml-70 p-6 bg-white rounded-lg border-2 border-gray-300 ">
+        <section className="vendor_settings_content p-6 bg-white rounded-lg border-2 border-gray-300 ">
           <div className="flex justify-between">
             <h2 className="text-2xl font-bold mb-4">Store Profile</h2>
             <button onClick={saveChanges} className="px-6 py-2 bg-blue-500 text-white font-medium rounded-xl" >Save Changes</button>

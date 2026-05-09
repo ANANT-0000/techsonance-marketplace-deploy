@@ -58,7 +58,9 @@ export default function BillingAndBankingPage() {
     };
 
     return (
-        <main className="max-w-5xl mx-auto py-10 px-6">
+       <main className={`w-full mx-auto mt-6 `}>
+
+        {/* <section className="vendor_settings_content p-6 bg-white rounded-lg border-2 border-gray-300 "> */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
 
                 {/* --- TAX IDENTITY --- */}

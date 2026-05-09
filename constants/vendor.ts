@@ -140,24 +140,70 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
     ],
   },
   {
-    menu: 'Finances',
-    sections: [
-      {
-        section: 'Overview',
-        list: [
-          { title: 'Earnings', path: `/vendor/${vendorId}/finances`, icon: 'trending-up' },
-          { title: 'Payouts', path: `/vendor/${vendorId}/finances/payouts`, icon: 'credit-card' },
-        ]
-      },
-      {
-        section: 'Ledger',
-        list: [
-          { title: 'Refunds', path: `/vendor/${vendorId}/finances/refunds`, icon: 'corner-down-left' },
-          { title: 'Invoices', path: `/vendor/${vendorId}/finances/invoices`, icon: 'receipt' },
-        ]
-      }
-    ]
-  }
+  menu: 'Finances',
+  sections: [
+    {
+      section: 'Overview',
+      list: [
+        { title: 'Earnings', path: `/vendor/${vendorId}/finances`, icon: 'trending-up' },
+        { title: 'Payouts', path: `/vendor/${vendorId}/finances/payouts`, icon: 'credit-card' },
+      ]
+    },
+    {
+      section: 'Ledger',
+      list: [
+        { title: 'Refunds', path: `/vendor/${vendorId}/finances/refunds`, icon: 'corner-down-left' },
+        { title: 'Invoices', path: `/vendor/${vendorId}/finances/invoices`, icon: 'receipt' },
+      ]
+    },
+    {
+      section: 'GST & Compliance',
+      list: [
+        { title: 'GST Registrations', path: `/vendor/${vendorId}/finances/gst`, icon: 'shield-check' },
+        { title: 'Add GST Number', path: `/vendor/${vendorId}/finances/gst/new`, icon: 'plus-circle' },
+      ]
+    },
+    {
+      section: 'Taxation',
+      list: [
+        { title: 'Tax Profiles', path: `/vendor/${vendorId}/finances/tax-profiles`, icon: 'layers' },
+        { title: 'Tax Types & Rates', path: `/vendor/${vendorId}/finances/tax-rates`, icon: 'percent' },
+        { title: 'Product Tax Mapping', path: `/vendor/${vendorId}/finances/product-taxes`, icon: 'tag' },
+      ]
+    }
+  ]
+},
+{
+  menu: 'Settings',
+  sections: [
+    {
+      section: 'General',
+      list: [
+        { title: 'Store Profile', path: `/vendor/${vendorId}/settings`, icon: 'store' },
+        { title: 'Locations & Warehouses', path: `/vendor/${vendorId}/settings/locations`, icon: 'map-pin' },
+        { title: 'Business Hours', path: `/vendor/${vendorId}/settings/business-hours`, icon: 'clock' },
+      ]
+    },
+    {
+      section: 'Organization',
+      list: [
+        { title: 'Billing & Banking', path: `/vendor/${vendorId}/settings/billing`, icon: 'landmark' },
+        { title: 'Tax & Compliance', path: `/vendor/${vendorId}/settings/compliance`, icon: 'file-check' },
+        { title: 'Documents', path: `/vendor/${vendorId}/settings/documents`, icon: 'folder-open' },
+      ]
+    },
+    {
+      section: 'Account',
+      list: [
+        { title: 'Business Profile', path: `/vendor/${vendorId}/settings/businessProfile`, icon: 'building-2' },
+        { title: 'Security & Password', path: `/vendor/${vendorId}/settings/security`, icon: 'shield' },
+        { title: 'Notifications', path: `/vendor/${vendorId}/settings/notifications`, icon: 'bell' },
+        { title: 'Team & Roles', path: `/vendor/${vendorId}/settings/team`, icon: 'users' },
+      ]
+    }
+  ]
+}
+
 ].filter(section => section.menu.toLowerCase() === selectedMenu.toLowerCase());
 
 // ============================================================
