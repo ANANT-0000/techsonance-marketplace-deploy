@@ -7,6 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
+import { fetchGstInvoices } from "@/utils/vendorApiClient";
 
 interface InvoiceType {
     id: string;
@@ -55,10 +56,8 @@ export default function InvoicesPage() {
         const fetchInvoices = async () => {
             setLoading(true);
             try {
-                // const res = await vendorApiClient.get('/finances/invoices', {
-                //     headers: { Authorization: `Bearer ${token}` }
-                // });
-                // setInvoices(res.data?.data || []);
+                const res = await fetchGstInvoices(sortBy, date, token);
+                setInvoices(res.data?.data || []);
             } catch (err) {
                 console.log("Error fetching invoices:", err);
             } finally {

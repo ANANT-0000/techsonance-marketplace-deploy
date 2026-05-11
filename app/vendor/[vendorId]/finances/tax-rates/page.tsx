@@ -7,6 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
+import { fetchTaxRates } from "@/utils/vendorApiClient";
 
 interface TaxRateType {
     id: string;
@@ -51,24 +52,29 @@ export default function TaxRatesPage() {
             redirect("/auth/vendorLogin");
         }
         
-        const fetchTaxRates = async () => {
+        const getTaxRates = async () => {
             setLoading(true);
             try {
-                // const res = await vendorApiClient.get('/finances/taxes/rates', {
-                //     headers: { Authorization: `Bearer ${token}` }
-                // });
-                // setTaxRates(res.data?.data || []);
+                const res = await fetchTaxRates(sortBy, date, token);
+                setTaxRates(res.data?.data || []);
             } catch (err) {
                 console.log("Error fetching Tax Rates:", err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchTaxRates();
-    }, [sortBy, token]);
+        getTaxRates();
+    }, [sortBy, date, token]);
 
+        const handleRoute=(id:string|null) => {
+        if(id) {
+            redirect(`/vendor/${vendorId}/finances/tax-rates/${id}`);
+            return;
+        }
+        redirect(`/vendor/${vendorId}/finances/tax-rates/new`);
+    }
     return (
-        <main className="w-full px-1">
+        <section className="w-full px-1">
             {/* Header */}
             <header className="flex justify-between items-center my-6">
                 <div className="flex items-center gap-2 text-gray-700">
@@ -85,8 +91,8 @@ export default function TaxRatesPage() {
                         <Download size={16} />
                         Export CSV
                     </button>
-                    {/* Optional: If vendors are allowed to create their own custom tax rates */}
-                    <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                    
+                    <button onClick={() => handleRoute(null)} className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         <Plus size={16} />
                         New Tax Rate
                     </button>
@@ -217,6 +223,6 @@ export default function TaxRatesPage() {
                     </tbody>
                 </table>
             </div>
-        </main>
+        </section>
     );
 }

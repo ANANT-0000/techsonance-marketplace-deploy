@@ -7,6 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
+import { fetchTaxProfiles } from "@/utils/vendorApiClient";
 
 
 interface TaxProfileType {
@@ -48,10 +49,8 @@ export default function TaxProfilesPage() {
         const fetchProfiles = async () => {
             setLoading(true);
             try {
-                // const res = await vendorApiClient.get('/finances/taxes/profiles', {
-                //     headers: { Authorization: `Bearer ${token}` }
-                // });
-                // setProfiles(res.data?.data || []);
+                const res = await fetchTaxProfiles(  sortBy,date,token!);
+                setProfiles(res.data?.data || []);
             } catch (err) {
                 console.log("Error fetching Tax Profiles:", err);
             } finally {
@@ -59,10 +58,15 @@ export default function TaxProfilesPage() {
             }
         };
         fetchProfiles();
-    }, [sortBy, token]);
-
+    }, [sortBy, date, token]);
+    const handleRoute=(id:string|null) => {
+        if(id) {
+            redirect(`/vendor/${vendorId}/finances/tax-profiles/${id}`);
+        }
+        redirect(`/vendor/${vendorId}/finances/tax-profiles/new`);
+    }
     return (
-        <main className="w-full px-1">
+        <section className="w-full px-1">
             <header className="flex justify-between items-center my-6">
                 <div className="flex items-center gap-2 text-gray-700">
                     <Layers size={22} className="text-blue-500" />
@@ -77,7 +81,7 @@ export default function TaxProfilesPage() {
                     <button className="flex items-center gap-2 font-semibold text-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         <Download size={16} /> Export
                     </button>
-                    <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                    <button onClick={() => handleRoute(null)} className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         <Plus size={16} /> New Profile
                     </button>
                 </div>
@@ -151,7 +155,7 @@ export default function TaxProfilesPage() {
                                     <td className="p-4"><span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-xs font-semibold">Active</span></td>
                                     <td className="p-4 text-sm text-gray-500 whitespace-nowrap">{new Date(item.created_at).toLocaleDateString("en-GB")}</td>
                                     <td className="p-4">
-                                        <button className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">Edit →</button>
+                                        <button onClick={() => handleRoute(item.id)} className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">Edit →</button>
                                     </td>
                                 </tr>
                             ))
@@ -159,6 +163,6 @@ export default function TaxProfilesPage() {
                     </tbody>
                 </table>
             </div>
-        </main>
+        </section>
     );
 }

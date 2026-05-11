@@ -119,7 +119,7 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
         list: [
           { title: "Product List", path: `/vendor/${vendorId}/products`, icon: "list" },
           { title: "Stock Update", path: `/vendor/${vendorId}/products/stock-update`, icon: "refresh-cw" },
-          { title: "Variant Stock Update", path: `/vendor/${vendorId}/products/variant-stock-update`, icon: "layers" },
+          // { title: "Variant Stock Update", path: `/vendor/${vendorId}/products/variant-stock-update`, icon: "layers" },
           { title: "Category Management", path: `/vendor/${vendorId}/products/categories`, icon: "layers" },
         ],
       },
@@ -127,6 +127,7 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
         section: 'Configuration',
         list: [
           { title: "Product Variants", path: `/vendor/${vendorId}/products/variants`, icon: "list-check" },
+          { title: "Warehouses", path: `/vendor/${vendorId}/products/warehouse`, icon: "map-pin" },
         ]
       },
       {
@@ -160,7 +161,7 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
       section: 'GST & Compliance',
       list: [
         { title: 'GST Registrations', path: `/vendor/${vendorId}/finances/gst`, icon: 'shield-check' },
-        { title: 'Add GST Number', path: `/vendor/${vendorId}/finances/gst/new`, icon: 'plus-circle' },
+        // { title: 'Add GST Number', path: `/vendor/${vendorId}/finances/gst/new`, icon: 'plus-circle' },
       ]
     },
     {

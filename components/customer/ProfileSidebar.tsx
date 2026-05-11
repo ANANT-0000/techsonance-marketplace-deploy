@@ -6,6 +6,7 @@ import { DynamicIcon, IconName } from 'lucide-react/dynamic';
 import type { RootState } from '@/lib/store';
 import { logOut } from '@/lib/features/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
+import { ChevronLeft } from 'lucide-react';
 
 const ProfileSidebarLink = [
     { name: 'Profile Overview', path: '/customerProfile', icon: 'user' },
@@ -99,7 +100,18 @@ export function ProfileSidebar() {
 
     // ── DESKTOP ──
     return (
-        <aside className="w-72 flex-shrink-0 rounded-xl p-6">
+        <>
+        <aside className="w-72 flex-shrink-0 rounded-xl px-6 ">
+<div className="flex items-center gap-3 my-4 sm:hidden">
+                <button
+                    onClick={() => router.back()}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                    aria-label="Go back"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+                <h1 className="font-bold text-xl text-gray-900">Back</h1>
+            </div>
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -182,5 +194,6 @@ export function ProfileSidebar() {
                 })}
             </motion.ul>
         </aside>
+        </>
     );
 }

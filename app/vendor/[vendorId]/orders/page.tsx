@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { searchImgDark } from "@/constants/common";
-import { ChevronDown, ChevronUp, Download, Package } from "lucide-react";
+import { ChevronDown, ChevronUp, Download,Printer, Package } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Pagination } from "@/components/common/Pagination";
-import { fetchVendorOrderList } from "@/utils/vendorApiClient";
+import { fetchBulkInvoiceUrls, fetchVendorOrderList } from "@/utils/vendorApiClient";
 import Link from "next/link";
 import { OrderStatus as OrderStatusType, OrderStatusEnum } from "@/utils/Types";
 import { redirect } from "next/navigation";
@@ -106,7 +106,8 @@ export default function OrdersPage() {
     const [orderStatus, setOrderStatus] = useState<OrderStatusType>('');
     const [sortBy, setSortBy] = useState<string>("desc");
     const [orders, setOrders] = useState<OrderType[]>([]);
-
+const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+    const [isDownloading, setIsDownloading] = useState(false);
     const handleDateChange = (selectedDate: Date | undefined) => {
         setDate(selectedDate);
         setIsOpen(false);
@@ -130,7 +131,63 @@ export default function OrdersPage() {
         getOrderList();
     }, [orderStatus, sortBy]);
 
+const toggleOrderSelection = (orderId: string) => {
+        setSelectedOrders(prev => 
+            prev.includes(orderId) ? prev.filter(id => id !== orderId) : [...prev, orderId]
+        );
+    };
 
+    const toggleAllOrders = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked && orders) {
+            setSelectedOrders(orders.map(o => o.id));
+        } else {
+            setSelectedOrders([]);
+        }
+    };
+
+    // --- THE DOWNLOAD LOOP ---
+    const handleBulkDownload = async () => {
+        if (selectedOrders.length === 0) return;
+        setIsDownloading(true);
+        
+        try {
+            // 1. Get the Cloudinary URLs from Backend
+            const res = await fetchBulkInvoiceUrls(selectedOrders, token as string);
+            console.log("Bulk Invoice URLs:", res);            const invoices = res.data;
+
+            if (!invoices || invoices.length === 0) {
+                alert("No generated invoices found for these orders yet.");
+                return;
+            }
+
+            // 2. Loop through the URLs and force download
+            for (const invoice of invoices) {
+                if (invoice.invoice_url) {
+                    // Fetching the blob forces a direct download rather than opening in a new tab
+                    const response = await fetch(invoice.invoice_url);
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Invoice_${invoice.invoice_number}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    
+                    // Small delay to prevent browser from blocking multiple rapid downloads
+                    await new Promise(resolve => setTimeout(resolve, 300)); 
+                }
+            }
+            
+            setSelectedOrders([]); // Clear selection on success
+        } catch (error) {
+            console.error("Error downloading invoices", error);
+            alert("Failed to download invoices.");
+        } finally {
+            setIsDownloading(false);
+        }
+    };
     return (
         <main className="w-full px-1">
             {/* Header */}
@@ -144,10 +201,22 @@ export default function OrdersPage() {
                         </span>
                     )}
                 </div>
-                <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
-                    <Download size={16} />
-                    Export CSV
-                </button>
+    <div className="flex gap-3">
+                    {/* SHOW DOWNLOAD BUTTON ONLY IF ORDERS ARE SELECTED */}
+                    {selectedOrders.length > 0 && (
+                        <button 
+                            onClick={handleBulkDownload}
+                            disabled={isDownloading}
+                            className="flex items-center gap-2 font-semibold text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm disabled:opacity-50"
+                        >
+                            <Printer size={16} />
+                            {isDownloading ? "Downloading..." : `Print Invoices (${selectedOrders.length})`}
+                        </button>
+                    )}
+                    <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                        <Download size={16} /> Export CSV
+                    </button>
+                </div>
             </header>
 
             {/* Filter Bar */}
@@ -215,7 +284,12 @@ export default function OrdersPage() {
                     <thead>
                         <tr className="bg-gray-50 border-b border-gray-200 text-left">
                             <th className="p-4 w-10">
-                                <input type="checkbox" className="rounded" />
+                               <input 
+                                    type="checkbox" 
+                                    className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer" 
+                                    checked={orders?.length > 0 && selectedOrders.length === orders.length}
+                                    onChange={toggleAllOrders}
+                                />
                             </th>
                             {orderTableHeader.map((header) => (
                                 <th key={header} className="p-4 text-xs Rent-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{header}</th>
@@ -234,7 +308,12 @@ export default function OrdersPage() {
                             orders && orders?.map((item) => (
                                 <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
                                     <td className="p-4">
-                                        <input type="checkbox" className="rounded" />
+                                    <input 
+                                        type="checkbox" 
+                                        className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer" 
+                                        checked={selectedOrders.includes(item.id)}
+                                        onChange={() => toggleOrderSelection(item.id)}
+                                    />
                                     </td>
 
                                     {/* ORDER ID */}

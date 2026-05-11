@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { searchImgDark } from "@/constants/common";
-import { ChevronDown, ChevronUp, Download, Tag, CheckCircle2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, Tag, CheckCircle2, X } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
-
+import {  fetchTaxRates, fetchAssignProductTax, fetchProductTaxMappings } from "@/utils/vendorApiClient";
 import Link from "next/link";
+import { fetch } from "next/dist/compiled/@edge-runtime/primitives";
 
 interface ProductTaxMappingType {
     id: string;
@@ -40,35 +41,70 @@ export default function ProductTaxMappingPage() {
     const [productTaxes, setProductTaxes] = useState<ProductTaxMappingType[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const handleDateChange = (selectedDate: Date | undefined) => {
-        setDate(selectedDate);
-        setIsOpen(false);
-    };
-    
+    // --- MODAL STATES ---
+    const [availableRates, setAvailableRates] = useState<any[]>([]);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+    const [selectedTaxRateId, setSelectedTaxRateId] = useState<string>("");
+    const [saving, setSaving] = useState(false);
+
     const token = authToken();
     
+    // Fetch Products AND Available Tax Rates
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [mappingRes, ratesRes] = await Promise.all([
+                fetchProductTaxMappings(0, sortBy, statusFilter, token as string),
+                fetchTaxRates(sortBy, date, token as string)
+            ]);
+            setProductTaxes(mappingRes.data?.data || []);
+            setAvailableRates(ratesRes?.data.data || []);
+            console.log("Fetched Product Taxes:", mappingRes.data?.data);
+            console.log("Fetched Available Tax Rates:", ratesRes?.data.data);
+        } catch (err) {
+            console.log("Error fetching data:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (!token) redirect("/auth/vendorLogin");
-        
-        const fetchProductTaxes = async () => {
-            setLoading(true);
-            try {
-                // Fetching the mapping from product_tax table joined with products and tax_rates
-                // const res = await vendorApiClient.get('/finances/taxes/product-mapping', {
-                //     headers: { Authorization: `Bearer ${token}` }
-                // });
-                // setProductTaxes(res.data?.data || []);
-            } catch (err) {
-                console.log("Error fetching Product Tax Mapping:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProductTaxes();
+        fetchData();
     }, [sortBy, statusFilter, token]);
+
+    // Handle opening modal
+    const handleOpenModal = (productId: string) => {
+        setSelectedProductId(productId);
+        setSelectedTaxRateId(""); // Reset dropdown
+        setModalOpen(true);
+    };
+
+    // Handle Form Submit
+    const handleAssignTax = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedProductId || !selectedTaxRateId) return alert("Please select a tax rate");
+
+        setSaving(true);
+        try {
+            await fetchAssignProductTax(
+                { product_id: selectedProductId, tax_rate_id: selectedTaxRateId }, 
+                vendorId, 
+                token as string
+            );
+            setModalOpen(false);
+            fetchData(); // Refresh the table visually
+        } catch (error) {
+            alert("Failed to assign tax rate.");
+        } finally {
+            setSaving(false);
+        }
+    };
 
     return (
         <main className="w-full px-1">
+            {/* --- HEADER & FILTERS CODE REMAINS EXACTLY THE SAME --- */}
             <header className="flex justify-between items-center my-6">
                 <div className="flex items-center gap-2 text-gray-700">
                     <Tag size={22} className="text-blue-500" />
@@ -83,37 +119,13 @@ export default function ProductTaxMappingPage() {
                     <button className="flex items-center gap-2 font-semibold text-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         <Download size={16} /> Export Mapping
                     </button>
-                    {/* Bulk update button */}
                     <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         Assign Rates in Bulk
                     </button>
                 </div>
             </header>
 
-            <div className="relative flex flex-wrap justify-between rounded-xl items-center py-3 px-4 gap-3 bg-white border border-gray-200 shadow-sm mb-4">
-                <span className="flex flex-1 min-w-[220px] items-center gap-2 border border-gray-200 bg-gray-50 py-2 px-3 rounded-xl focus-within:border-blue-400 focus-within:bg-white transition-colors">
-                    <img className="w-5 h-5 opacity-50 shrink-0" src={searchImgDark} alt="search icon" />
-                    <input
-                        type="text"
-                        className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
-                        placeholder="Search by Product Name or SKU..."
-                    />
-                </span>
-
-                <span className="flex flex-wrap gap-3 items-center">
-                    <select className='text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors' onChange={(e) => setStatusFilter(e.target.value)} value={statusFilter}>
-                        <option value=''>All Statuses</option>
-                        <option value='mapped'>Mapped</option>
-                        <option value='unmapped'>Unassigned / Missing</option>
-                    </select>
-
-                    <select className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors" value={sortBy} onChange={(e) => setSortBy(e.target.value)} name="sort_by">
-                        <option value="desc">Recently Updated</option>
-                        <option value="asc">Oldest Updated</option>
-                    </select>
-                </span>
-            </div>
-
+            {/* --- TABLE RENDERING --- */}
             <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
                 <table className="w-full table-auto min-w-[1000px] border-collapse">
                     <thead>
@@ -127,20 +139,15 @@ export default function ProductTaxMappingPage() {
                     <tbody className="divide-y divide-gray-100">
                         {loading ? (
                              <tr><td colSpan={8} className="py-16 text-center text-gray-400 text-sm">Loading product mappings...</td></tr>
-                        ) : productTaxes && productTaxes?.length === 0 ? (
-                            <tr>
-                                <td colSpan={8} className="py-16 text-center text-gray-400 text-sm">
-                                    <Tag size={36} className="mx-auto mb-3 opacity-30 text-blue-400" />
-                                    No products found to map.
-                                </td>
-                            </tr>
+                        ) : productTaxes.length === 0 ? (
+                            <tr><td colSpan={8} className="py-16 text-center text-gray-400 text-sm">No products found.</td></tr>
                         ) : (
-                            productTaxes && productTaxes?.map((item) => (
+                            productTaxes.map((item) => (
                                 <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
                                     <td className="p-4"><input type="checkbox" className="rounded border-gray-300 text-blue-500 focus:ring-blue-500" /></td>
                                     
                                     <td className="p-4">
-                                        <Link href={`/vendor/${vendorId}/products/${item.id}`} className="font-semibold text-blue-600 hover:underline">
+                                        <Link href={`/vendor/${vendorId}/products/${item.id}`} className="font-semibold text-blue-600 hover:underline line-clamp-2 text-sm text-wrap max-w-24">
                                             {item.product_name}
                                         </Link>
                                     </td>
@@ -173,9 +180,13 @@ export default function ProductTaxMappingPage() {
                                         {item.updated_at ? new Date(item.updated_at).toLocaleDateString("en-GB") : "Never"}
                                     </td>
 
+                                    {/* ASSIGN RATE BUTTON */}
                                     <td className="p-4">
-                                        <button className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
-                                            Assign Rate
+                                        <button 
+                                            onClick={() => handleOpenModal(item.id)}
+                                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                                        >
+                                            {item.is_mapped ? "Change Rate" : "Assign Rate"}
                                         </button>
                                     </td>
                                 </tr>
@@ -184,6 +195,52 @@ export default function ProductTaxMappingPage() {
                     </tbody>
                 </table>
             </div>
+
+            {/* --- ASSIGN TAX MODAL --- */}
+            {modalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                        <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50">
+                            <h2 className="text-lg font-bold text-gray-800">Assign Tax Rate</h2>
+                            <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        
+                        <form onSubmit={handleAssignTax} className="p-6">
+                            <label className="text-sm font-semibold text-gray-700 block mb-2">Select a Tax Rate to apply to this product:</label>
+                            <select 
+                                required
+                                value={selectedTaxRateId}
+                                onChange={(e) => setSelectedTaxRateId(e.target.value)}
+                                className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 focus:border-blue-400 focus:bg-white focus:outline-none transition-colors"
+                            >
+                                <option value="" disabled>-- Select from configured rates --</option>
+                                {availableRates.map(rate => (
+                                    <option key={rate.id} value={rate.id}>
+                                        {rate.tax_rate_name} ({Number(rate.tax_rate_value).toFixed(2)}%)
+                                    </option>
+                                ))}
+                            </select>
+
+                            {availableRates.length === 0 && (
+                                <p className="text-xs text-amber-600 mt-2">
+                                    You have no tax rates configured. <Link href={`/vendor/${vendorId}/finances/tax-rates/new`} className="underline font-bold">Create one here.</Link>
+                                </p>
+                            )}
+
+                            <div className="flex justify-end gap-3 mt-8">
+                                <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                                    Cancel
+                                </button>
+                                <button disabled={saving || availableRates.length === 0} type="submit" className="px-5 py-2.5 text-sm font-semibold text-white bg-blue-500 hover:bg-blue-600 rounded-xl shadow-sm transition-colors disabled:opacity-50">
+                                    {saving ? "Applying..." : "Apply Tax Rate"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }

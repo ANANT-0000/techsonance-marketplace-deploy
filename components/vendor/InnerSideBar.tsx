@@ -14,6 +14,7 @@ export const InnerSideBar = ({
 }) => {
     const path = usePathname()
     const [isClosed, setIsClosed] = useState(false)
+    const isClient = typeof window !== 'undefined'
 
     const links = getVendorInnerSidebarLinks(vendorId, selectedMenu)
     useEffect(() => {
@@ -23,7 +24,7 @@ export const InnerSideBar = ({
         const isMatch = allPaths.some((p) => p === path)
         if (!isMatch) setIsClosed(true)
     }, [path, links])
-
+    if (!isClient) return null
     return (
         <div
             className={`

@@ -21,7 +21,8 @@ export const vendorLogin = async (data: { email: string; password: string }, dis
         });
 
         const result = response.data;
-        console.log(result);
+        console.log("result", result);
+        console.log("response",response)
 
         const payload: { user: VendorUser; access_token: string; role: UserRole; refresh_token: string } = {
             user: result.data.user,
@@ -32,7 +33,7 @@ export const vendorLogin = async (data: { email: string; password: string }, dis
 
         return { user: payload, status: 200, message: "Login successful" };
     } catch (err: any) {
-        console.log(err);
+        console.log("Error:", err);
         const errorMessage = err.response?.data?.message || err.message || "Login failed";
         dispatch(loginFailure(errorMessage));
         return { status: err.response?.status || 400, message: errorMessage };

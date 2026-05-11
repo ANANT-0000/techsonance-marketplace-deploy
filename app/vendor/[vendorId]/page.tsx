@@ -7,8 +7,8 @@ import { VENDOR_DASHBOARD_STATS } from "@/constants/vendor";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatCurrency, formatNumber } from "@/lib/utils";
-import { TrendingUp, Clock, Package, ArrowUpRight } from "lucide-react";
-import { fetchVendorActiveProducts, fetchVendorOrderList, fetchVendorPendingOrders } from '@/utils/vendorApiClient';
+import { TrendingUp, Clock, Package, ArrowUpRight, Printer } from "lucide-react";
+import { fetchBulkInvoiceUrls, fetchVendorActiveProducts, fetchVendorOrderList, fetchVendorPendingOrders } from '@/utils/vendorApiClient';
 import { OrderStatus as OrderStatusType, OrderStatusEnum } from '@/utils/Types';
 import { redirect, useParams, useRouter } from 'next/navigation';
 import { authToken } from '@/utils/authToken';
@@ -114,6 +114,8 @@ export default function DashboardPage() {
     const [lowStock, setLowStock] = useState(VENDOR_DASHBOARD_STATS.lowStock)
     const [revenueGrowth, setRevenueGrowth] = useState(VENDOR_DASHBOARD_STATS.revenueGrowth)
     const router = useRouter()
+        const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+    const [isDownloading, setIsDownloading] = useState(false);
     const pageSize = 5;
     const [totalPages, setTotalPages] = useState(0);
     const startIndex = (count - 1) * pageSize;
@@ -163,7 +165,63 @@ export default function DashboardPage() {
         }
     }
 
+const toggleOrderSelection = (orderId: string) => {
+        setSelectedOrders(prev => 
+            prev.includes(orderId) ? prev.filter(id => id !== orderId) : [...prev, orderId]
+        );
+    };
 
+    const toggleAllOrders = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked && recentOrders) {
+            setSelectedOrders(recentOrders.map(o => o.id));
+        } else {
+            setSelectedOrders([]);
+        }
+    };
+
+  // --- THE DOWNLOAD LOOP ---
+    const handleBulkDownload = async () => {
+        if (selectedOrders.length === 0) return;
+        setIsDownloading(true);
+        
+        try {
+            // 1. Get the Cloudinary URLs from Backend
+            const res = await fetchBulkInvoiceUrls(selectedOrders, token as string);
+            console.log("Bulk Invoice URLs:", res);            const invoices = res.data;
+
+            if (!invoices || invoices.length === 0) {
+                alert("No generated invoices found for these orders yet.");
+                return;
+            }
+
+            // 2. Loop through the URLs and force download
+            for (const invoice of invoices) {
+                if (invoice.invoice_url) {
+                    // Fetching the blob forces a direct download rather than opening in a new tab
+                    const response = await fetch(invoice.invoice_url);
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Invoice_${invoice.invoice_number}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    
+                    // Small delay to prevent browser from blocking multiple rapid downloads
+                    await new Promise(resolve => setTimeout(resolve, 300)); 
+                }
+            }
+            
+            setSelectedOrders([]); // Clear selection on success
+        } catch (error) {
+            console.error("Error downloading invoices", error);
+            alert("Failed to download invoices.");
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     return (
         <>
@@ -226,6 +284,17 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
                         <h2 className="font-bold text-lg text-gray-800">Recent Orders</h2>
                         <span className='flex gap-4 items-center justify-between'>
+                                     {/* SHOW DOWNLOAD BUTTON ONLY IF ORDERS ARE SELECTED */}
+                    {selectedOrders.length > 0 && (
+                        <button 
+                            onClick={handleBulkDownload}
+                            disabled={isDownloading}
+                            className="flex items-center gap-2 font-semibold text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm disabled:opacity-50"
+                        >
+                            <Printer size={16} />
+                            {isDownloading ? "Downloading..." : `Print Invoices (${selectedOrders.length})`}
+                        </button>
+                    )}
                             <select name="" className='text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors' id="" onChange={(e) => handleOrderFilter(e.target.value as OrderStatusType)}>
                                 <option value="">Select Status</option>
                                 {
@@ -248,7 +317,12 @@ export default function DashboardPage() {
                             <thead>
                                 <tr className="bg-gray-50 border-b border-gray-200 text-left">
                                     <th className="p-4 w-10">
-                                        <input type="checkbox" className="rounded" />
+                                        <input 
+                                    type="checkbox" 
+                                    className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer" 
+                                    checked={recentOrders?.length > 0 && selectedOrders.length === recentOrders.length}
+                                    onChange={toggleAllOrders}
+                                />
                                     </th>
                                     {orderTableHeader.map((header) => (
                                         <th key={header} className="p-4 text-xs Rent-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{header}</th>
@@ -267,7 +341,12 @@ export default function DashboardPage() {
                                     recentOrders && recentOrders.map((item) => (
                                         <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
                                             <td className="p-4">
-                                                <input type="checkbox" className="rounded" />
+                                              <input 
+                                        type="checkbox" 
+                                        className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer" 
+                                        checked={selectedOrders.includes(item.id)}
+                                        onChange={() => toggleOrderSelection(item.id)}
+                                    />
                                             </td>
 
                                             {/* ORDER ID */}

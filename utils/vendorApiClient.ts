@@ -3,6 +3,11 @@ import { BASE_API_URL } from "@/constants";
 import { revalidatePath } from "next/cache";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { OrderStatus, ReturnStatus } from "./Types";
+
+// ==========================================
+// CATEGORY API ENDPOINTS
+// ==========================================
+
 export const fetchVendorsProductsCategory = async (vendorId: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
@@ -96,6 +101,10 @@ export const deleteVendorProductCategory = async (vendorId: string, categoryId: 
         throw error;
     }
 }
+// ==========================================
+// PRODUCT API ENDPOINTS
+// ==========================================
+
 export const createProduct = async (productData: FormData, vendorId: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
@@ -251,6 +260,9 @@ export const deleteProduct = async (productId: string, vendorId: string, token: 
         return { status: 500, statusText: 'Internal Server Error' + error };
     }
 }
+// ==========================================
+// PRODUCT VARIANT API ENDPOINTS
+// ==========================================
 
 export const createProductVariant = async (variantData: FormData, vendorId: string, productId: string, token: string) => {
     try {
@@ -360,7 +372,7 @@ export const fetchVariant = async (variantId: string, token: string) => {
             method: 'GET',
             headers: {
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
 
         });
@@ -374,6 +386,10 @@ export const fetchVariant = async (variantId: string, token: string) => {
         console.error('Error fetching variant data:', error);
     }
 }
+// ==========================================
+// ORDERS API ENDPOINTS
+// ==========================================
+
 export const fetchVendorPendingOrders = async (token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
@@ -381,7 +397,7 @@ export const fetchVendorPendingOrders = async (token: string) => {
             method: 'GET',
             headers: {
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
         if (response.status !== 200) {
@@ -447,7 +463,7 @@ export const fetchUpdateOrderStatus = async (orderId: string, status: string, to
             method: 'PATCH',
             headers: {
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status })
@@ -469,7 +485,7 @@ export const fetchAddTrackingUrl = async (orderId: string, trackingUrl: string, 
             method: 'POST',
             headers: {
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,    
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ orderId: orderId, trackingUrl: trackingUrl })
@@ -491,7 +507,7 @@ export const fetchUpdateTrackingUrl = async (orderId: string, trackingUrl: strin
             method: 'PATCH',
             headers: {
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,    
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ trackingUrl: trackingUrl })
@@ -505,6 +521,10 @@ export const fetchUpdateTrackingUrl = async (orderId: string, trackingUrl: strin
     }
 
 }
+// ==========================================
+// WAREHOUSE API ENDPOINTS
+// ==========================================
+
 export const fetchCreateWarehouseLocation = async (warehouseAddress: any, token: string) => {
     console.log(warehouseAddress)
     try {
@@ -514,7 +534,7 @@ export const fetchCreateWarehouseLocation = async (warehouseAddress: any, token:
             headers: {
                 'Content-Type': 'application/json',
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(warehouseAddress)
         });
@@ -533,7 +553,7 @@ export const fetchUpdateWarehouseLocation = async (locationId: string, warehouse
             headers: {
                 'Content-Type': 'application/json',
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(warehouseData)
         });
@@ -551,6 +571,7 @@ export const fetchVendorWarehouseLocations = async (token: string) => {
         const response = await fetch(`${BASE_API_URL}/v1/warehouse`, {
             method: 'GET',
             headers: {
+                'Authorization': `Bearer ${token}`,
                 'company-domain': companyDomain,
             }
         });
@@ -569,6 +590,7 @@ export const fetchVendorWarehouse = async (token: string) => {
             next: { revalidate: 3600 },
             headers: {
                 'company-domain': companyDomain,
+                'Authorization': `Bearer ${token}`,
             }
         });
         return await response.json();
@@ -585,6 +607,7 @@ export const fetchDeleteWarehouseLocation = async (locationId: string, token: st
             method: 'DELETE',
             headers: {
                 'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
             }
         });
         return await response.json();
@@ -602,6 +625,7 @@ export const fetchUpdateOrderItem = async (itemId: string, formData: any, token:
             headers: {
                 'Content-Type': 'application/json',
                 'company-domain': companyDomain,
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(formData)
         });
@@ -612,6 +636,10 @@ export const fetchUpdateOrderItem = async (itemId: string, formData: any, token:
     }
 }
 
+// ==========================================
+// PRODUCT API ENDPOINTS
+// ==========================================
+
 export const fetchGetVendorReturnRequests = async (token: string) => {
     try {
         const domain = await getCompanyDomain();
@@ -620,7 +648,7 @@ export const fetchGetVendorReturnRequests = async (token: string) => {
             cache: 'no-store',
             headers: {
                 'company-domain': domain,
-                // Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,    
             }
         });
         return await response.json();
@@ -634,7 +662,7 @@ export const fetchGetVendorReturnById = async (returnId: string, token: string) 
         const response = await fetch(`${BASE_API_URL}/v1/returns/vendor/${returnId}`, {
             headers: {
                 'company-domain': domain,
-                // Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,    
             }
         });
         return await response.json();
@@ -650,7 +678,7 @@ export const FetchUpdateReturnStatus = async (returnId: string, updates: { statu
             headers: {
                 'Content-Type': 'application/json',
                 'company-domain': domain,
-                // Authorization: `Bearer ${token}`,   
+                Authorization: `Bearer ${token}`,   
             },
             body: JSON.stringify(updates),
         });
@@ -672,7 +700,7 @@ export const fetchGetCompanyRefunds = async (token: string) => {
         const response = await fetch(`${BASE_API_URL}/v1/refunds`, {
             headers: {
                 'company-domain': domain,
-                // Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,    
             }
         });
         return await response.json();
@@ -712,3 +740,300 @@ export const FetchSuspendCustomer = async (customerId: string, token: string) =>
         throw error;
     }
 };
+// ==========================================
+// FINANCE & TAXATION API ENDPOINTS
+// ==========================================
+export const fetchBulkInvoiceUrls = async (orderIds: string[], token: string) => {
+    try {
+     const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/invoice/bulk-download`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ orderIds })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching bulk invoice URLs:', error);
+        throw error;
+    }
+}
+export const fetchGstRecords = async (statusFilter: string, sortBy: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/gst?status=${statusFilter}&sort_by=${sortBy}`, {
+            method: 'GET',
+            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching GST records:', error);
+        return { data: [] };
+    }
+}
+
+export const fetchCreateGstRecord = async (formData: any, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/gst`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error saving GST:', error);
+        throw error;
+    }
+}
+
+export const fetchTaxProfiles = async (sortBy: string, date: Date | undefined, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-profiles?sort_by=${sortBy}${date ? `&date=${date.toISOString()}` : ''}`, {
+            method: 'GET',
+            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+        });
+        return await response.json();
+    } catch (error) {
+        return { data: [] };
+    }
+}
+
+export const fetchTaxRates = async (sortBy: string, date: Date | undefined, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-rates?sort_by=${sortBy}${date ? `&date=${date.toISOString()}` : ''}`, {
+            method: 'GET',
+            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+        });
+        return await response.json();
+    } catch (error) {
+        return { data: [] };
+    }
+}
+// Add this below your existing finance API calls
+export const fetchAssignProductTax = async (data: { product_id: string, tax_rate_id: string }, vendorId: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/product-tax-mappings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) throw new Error("Failed to assign tax rate");
+        
+        
+        revalidatePath(`/vendor/${vendorId}/finances/product-taxes`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error assigning product tax:', error);
+        throw error;
+    }
+}
+export const fetchProductTaxMappings = async (offSet: number, sortBy: string, statusFilter: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/product-tax-mappings?offset=${offSet}&sort_by=${sortBy}&status=${statusFilter}`, {
+            method: 'GET',
+            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+        });
+        return await response.json();
+    } catch (error) {
+        return { data: [] };
+    }
+}
+
+export const fetchGstInvoices = async (sortBy: string, date: Date | undefined, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/gst-invoices?sort_by=${sortBy}${date ? `&date=${date.toISOString()}` : ''}`, {
+            method: 'GET',
+            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+        });
+        return await response.json();
+    } catch (error) {
+        return { data: [] };
+    }
+}
+// Add these below your existing finance fetch functions
+
+export const fetchCreateTaxProfile = async (formData: any, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-profiles`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData)
+        });
+        if (!response.ok) throw new Error("Failed to create profile");
+        return await response.json();
+    } catch (error) {
+        console.error('Error saving Tax Profile:', error);
+        throw error;
+    }
+}
+
+export const fetchCreateTaxRate = async (formData: any, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-rates`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData)
+        });
+        if (!response.ok) throw new Error("Failed to create tax rate");
+        return await response.json();
+    } catch (error) {
+        console.error('Error saving Tax Rate:', error);
+        throw error;
+    }
+}
+// ==========================================
+// FINANCE & TAXATION: GST REGISTRATIONS
+// ==========================================
+
+export const fetchSingleGstRecord = async (id: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/gst/${id}`, {
+            method: 'GET',
+            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching single GST record:', error);
+        return { data: null };
+    }
+}
+
+export const fetchUpdateGstRecord = async (id: string, data: any, vendorId: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/gst/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(data)
+        });
+        revalidatePath(`/vendor/${vendorId}/finances/gst`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating GST:', error);
+        throw error;
+    }
+}
+
+export const fetchDeleteGstRecord = async (id: string, vendorId: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/gst/${id}`, {
+            method: 'DELETE',
+            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+        });
+        revalidatePath(`/vendor/${vendorId}/finances/gst`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error deleting GST:', error);
+        throw error;
+    }
+}
+
+// ==========================================
+// FINANCE & TAXATION: TAX PROFILES
+// ==========================================
+
+export const fetchSingleTaxProfile = async (id: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-profiles/${id}`, {
+            method: 'GET',
+            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching single Tax Profile:', error);
+        return { data: null };
+    }
+}
+
+export const fetchUpdateTaxProfile = async (id: string, data: any, vendorId: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-profiles/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(data)
+        });
+        revalidatePath(`/vendor/${vendorId}/finances/tax-profiles`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating Tax Profile:', error);
+        throw error;
+    }
+}
+
+// ==========================================
+// FINANCE & TAXATION: TAX RATES & RULES
+// ==========================================
+
+export const fetchSingleTaxRate = async (id: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-rates/${id}`, {
+            method: 'GET',
+            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching single Tax Rate:', error);
+        return { data: null };
+    }
+}
+
+export const fetchUpdateTaxRate = async (id: string, data: any, vendorId: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-rates/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(data)
+        });
+        revalidatePath(`/vendor/${vendorId}/finances/tax-rates`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating Tax Rate:', error);
+        throw error;
+    }
+}

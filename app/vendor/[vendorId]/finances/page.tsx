@@ -83,7 +83,7 @@ export default function EarningsPage() {
     };
 
     return (
-        <main className="w-full px-1">
+        <section className="w-full px-1">
             {/* Header */}
             <header className="flex flex-wrap justify-between items-center my-6 gap-4">
                 <div className="flex items-center gap-2 text-gray-700">
@@ -256,6 +256,6 @@ export default function EarningsPage() {
             <span className="flex justify-end mt-4">
                 {/* <Pagination setCount={setCount} count={count} totalPages={totalPages ?? 0} style="relative right-0 w-54" /> */}
             </span>
-        </main>
+        </section>
     );
 }
