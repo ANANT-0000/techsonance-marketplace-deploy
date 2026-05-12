@@ -6,10 +6,8 @@ import { ChevronDown, ChevronUp, Download, Tag, CheckCircle2, X } from "lucide-r
 import { Calendar } from "@/components/ui/calendar";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
-import {  fetchTaxRates, fetchAssignProductTax, fetchProductTaxMappings } from "@/utils/vendorApiClient";
+import {  fetchTaxRates, fetchAssignProductTax, fetchProductTaxMappings, fetchBulkAssignProductTax } from "@/utils/vendorApiClient";
 import Link from "next/link";
-import { fetch } from "next/dist/compiled/@edge-runtime/primitives";
-
 interface ProductTaxMappingType {
     id: string;
     product_name: string;
@@ -46,8 +44,8 @@ export default function ProductTaxMappingPage() {
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [selectedTaxRateId, setSelectedTaxRateId] = useState<string>("");
+    const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
-
     const token = authToken();
     
     // Fetch Products AND Available Tax Rates
@@ -84,24 +82,47 @@ export default function ProductTaxMappingPage() {
     // Handle Form Submit
     const handleAssignTax = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedProductId || !selectedTaxRateId) return alert("Please select a tax rate");
-
-        setSaving(true);
         try {
+        if (selectedProductId && selectedTaxRateId){
+        setSaving(true);
             await fetchAssignProductTax(
                 { product_id: selectedProductId, tax_rate_id: selectedTaxRateId }, 
                 vendorId, 
                 token as string
-            );
+            );  
+    }else if (selectedProductIds.length > 0 && selectedTaxRateId) {
+        setSaving(true);
+        await fetchBulkAssignProductTax(
+            { product_ids: selectedProductIds, tax_rate_id: selectedTaxRateId }, 
+            vendorId, 
+            token as string
+        );
+    }
             setModalOpen(false);
-            fetchData(); // Refresh the table visually
-        } catch (error) {
-            alert("Failed to assign tax rate.");
+            fetchData(); 
+        } catch (err) {
+            console.log("Error assigning tax rate:", err);
         } finally {
             setSaving(false);
         }
     };
+const toggleProductSelection = (productId: string) => {
+        setSelectedProductIds(prev => 
+            prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
+        );
+    };
+const toggleAllProducts = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked && productTaxes) {
+            setSelectedProductIds(productTaxes.map(p => p.id));
+        } else {
+            setSelectedProductIds([]);
+        }
+    };
 
+const handleDateChange = (selectedDate: Date) => {
+        setDate(selectedDate);
+        setIsOpen(false);
+    }
     return (
         <main className="w-full px-1">
             {/* --- HEADER & FILTERS CODE REMAINS EXACTLY THE SAME --- */}
@@ -119,18 +140,84 @@ export default function ProductTaxMappingPage() {
                     <button className="flex items-center gap-2 font-semibold text-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         <Download size={16} /> Export Mapping
                     </button>
-                    <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                    <button className={ `flex items-center gap-2 font-semibold text-sm rounded-xl px-5 py-2.5 transition-colors shadow-sm ${selectedProductIds.length > 0 ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}` }
+                        onClick={() => setModalOpen(true)}
+                        disabled={selectedProductIds.length === 0}
+                    >
+                         <Tag size={16} />
                         Assign Rates in Bulk
                     </button>
                 </div>
             </header>
+      <div className="relative flex flex-wrap justify-between rounded-xl items-center py-3 px-4 gap-3 bg-white border border-gray-200 shadow-sm mb-4">
+                {/* Search */}
+                <span className="flex flex-1 min-w-[220px] items-center gap-2 border border-gray-200 bg-gray-50 py-2 px-3 rounded-xl focus-within:border-emerald-400 focus-within:bg-white transition-colors">
+                    <img className="w-5 h-5 opacity-50 shrink-0" src={searchImgDark} alt="search icon" />
+                    <input
+                        type="text"
+                        className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
+                        placeholder="Search by Transaction ID or Order Ref"
+                    />
+                </span>
 
+                {/* Filters */}
+                <span className="flex flex-wrap gap-3 items-center">
+                    <select className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-emerald-400 cursor-pointer transition-colors" name="status">
+                        <option value="all">All Mappings</option>
+                        <option value="cleared">Assigned</option>
+                        <option value="pending">Unassigned</option>
+                    </select>
+
+                    <select className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-emerald-400 cursor-pointer transition-colors" name="sort_by">
+                        <option value="date_newest">Newest First</option>
+                        <option value="date_oldest">Oldest First</option>
+                        <option value="amount_highest">Highest Amount</option>
+                    </select>
+
+                    {isOpen ? (
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center gap-2 text-sm border border-emerald-300 bg-emerald-50 text-emerald-600 rounded-xl px-3 py-2 font-medium transition-colors"
+                        >
+                            {date ? date.toDateString() : "Select Date"}
+                            <ChevronUp size={16} />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setIsOpen(true)}
+                            className="flex items-center gap-2 text-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
+                        >
+                            {date ? date.toDateString() : "Select Date"}
+                            <ChevronDown size={16} />
+                        </button>
+                    )}
+
+                    {isOpen && (
+                        <div className="absolute right-4 top-full mt-2 z-20 shadow-lg rounded-xl overflow-hidden border border-gray-200">
+                            {/* <Calendar
+                                mode="single"
+                                selected={date}
+                                onSelect={handleDateChange}
+                                className="rounded-xl bg-white"
+                                captionLayout="dropdown"
+                            /> */}
+                        </div>
+                    )}
+                </span>
+            </div>
             {/* --- TABLE RENDERING --- */}
             <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
                 <table className="w-full table-auto min-w-[1000px] border-collapse">
                     <thead>
                         <tr className="bg-gray-50 border-b border-gray-200 text-left">
-                            <th className="p-4 w-10"><input type="checkbox" className="rounded" /></th>
+                            <th className="p-4 w-10">
+                               <input 
+                                    type="checkbox" 
+                                    className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer" 
+                                    checked={productTaxes && selectedProductIds.length === productTaxes.length && productTaxes.length > 0}
+                                    onChange={toggleAllProducts}
+                                />
+                            </th>
                             {productTaxHeader.map((header) => (
                                 <th key={header} className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{header}</th>
                             ))}
@@ -144,8 +231,14 @@ export default function ProductTaxMappingPage() {
                         ) : (
                             productTaxes.map((item) => (
                                 <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
-                                    <td className="p-4"><input type="checkbox" className="rounded border-gray-300 text-blue-500 focus:ring-blue-500" /></td>
-                                    
+                                    <td className="p-4">
+                                            <input 
+                                        type="checkbox" 
+                                        className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer" 
+                                        checked={selectedProductIds.includes(item.id)}
+                                        onChange={() => toggleProductSelection(item.id)}
+                                    />
+                                    </td>
                                     <td className="p-4">
                                         <Link href={`/vendor/${vendorId}/products/${item.id}`} className="font-semibold text-blue-600 hover:underline line-clamp-2 text-sm text-wrap max-w-24">
                                             {item.product_name}

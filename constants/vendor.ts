@@ -190,7 +190,7 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
       list: [
         { title: 'Billing & Banking', path: `/vendor/${vendorId}/settings/billing`, icon: 'landmark' },
         { title: 'Tax & Compliance', path: `/vendor/${vendorId}/settings/compliance`, icon: 'file-check' },
-        { title: 'Documents', path: `/vendor/${vendorId}/settings/documents`, icon: 'folder-open' },
+        { title: 'Company Identity Configuration', path: `/vendor/${vendorId}/settings/companyIdentity`, icon: 'folder-open' },
       ]
     },
     {

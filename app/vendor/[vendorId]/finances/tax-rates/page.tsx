@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { searchImgDark } from "@/constants/common";
 import { ChevronDown, ChevronUp, Download, Percent, Plus } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import Link from "next/link";
+
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { fetchTaxRates } from "@/utils/vendorApiClient";
@@ -56,7 +56,7 @@ export default function TaxRatesPage() {
             setLoading(true);
             try {
                 const res = await fetchTaxRates(sortBy, date, token);
-                setTaxRates(res.data?.data || []);
+                setTaxRates(res.data|| []);
             } catch (err) {
                 console.log("Error fetching Tax Rates:", err);
             } finally {

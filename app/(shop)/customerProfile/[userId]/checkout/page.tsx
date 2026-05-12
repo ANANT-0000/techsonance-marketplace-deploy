@@ -1,19 +1,23 @@
 'use client';
 export const dynamic = 'force-dynamic';
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { formatCurrency } from "@/lib/utils";
 import { SelectedPaymentMethod } from "@/components/customer/SelectedPaymentMethod";
 import { BASE_API_URL, PAYMENT_METHODS_FIELDS } from "@/constants";
 import { fetchGetCartList } from "@/utils/customerApiClient";
-import { MapPin, CreditCard, CheckCircle2 } from "lucide-react";
+import { MapPin, CreditCard, CheckCircle2, Info, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { AddressSelector } from "@/components/customer/AddressSelector";
 import { fetchProductVariantDetails } from "@/utils/commonAPiClient";
 import { useCheckoutSession } from "@/hooks/UseCheckoutSession";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { fetchInitCheckout, fetchVerifyPayment } from "@/utils/customerApiClient-SA";
 import { authToken } from "@/utils/authToken";
+import { TaxBreakdown, TaxBreakdownPanel, TaxLoadingSkeleton } from "@/components/customer/TaxBreakdownPanel";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface VariantDetails {
   id: string;
   variant_name: string;
@@ -22,89 +26,78 @@ interface VariantDetails {
   status: string;
   stock_quantity: number;
 }
+
+
+// ─── Main Checkout Page ───────────────────────────────────────────────────────
+
 export default function CheckoutPage() {
   const { user } = useAppSelector((state) => state.auth);
   const params = useParams<{ userId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { clearSession } = useCheckoutSession(`/customerProfile/${params.userId}/cart`);
-  // --- Parse search params ---
-  // URLs:
-  //   /checkout?type=cart&id=abc123
-  //   /checkout?type=product&id=xyz789
+
   const checkoutType = searchParams.get('type') as 'cart' | 'product' | null;
-  console.log('checkoutType:', checkoutType);
   const id = searchParams.get('id');
-  console.log('id:', id);
-  // const isCartCheckout = checkoutType === 'cart';
   const isQuickBuy = checkoutType === 'product';
-  console.log("isQuickBuy", isQuickBuy)
-  // --- UI & Payment State ---
+
+  // ── UI State ──
   const [selectedPaymentMethodState, setSelectedPaymentMethodState] = useState<string>('UPI');
   const [couponCode, setCouponCode] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [logger, setLogger] = useState<string[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
-const token=authToken()
-  // --- Dynamic Order State ---
+  const token = authToken();
+
+  // ── Order Data ──
   const [orderData, setOrderData] = useState({
     title: 'Loading...',
     subtotal: 0,
     discount: 0,
-    delivery: 50,
+    delivery: 0,
     total: 0,
+    // For cart: store items to pass to tax endpoint
+    cartItems: [] as { variantId: string; quantity: number; price: number }[],
   });
   const [isLoadingOrder, setIsLoadingOrder] = useState(true);
-  console.log('effect fetching')
+
+  // ── Tax State ──
+  const [taxBreakdown, setTaxBreakdown] = useState<TaxBreakdown | null>(null);
+  const [isTaxLoading, setIsTaxLoading] = useState(false);
+  const [taxError, setTaxError] = useState<string | null>(null);
+  // Track which address we last fetched taxes for (to avoid redundant calls)
+  const [lastTaxAddressId, setLastTaxAddressId] = useState<string>("");
+
+  // ── Load order details ──
   useEffect(() => {
-    setLogger(prev => [...prev, `useEffect triggered with checkoutType=${checkoutType} and id=${id}`]);
     if (checkoutType === null || id === null || !token) return;
     if (!checkoutType || !id) {
       router.replace(`/customerProfile/${params.userId}/cart`);
+      return;
     }
 
     const loadCheckoutData = async () => {
-      setLogger(prev => [...prev, `Loading checkout data for type=${checkoutType} and id=${id}`]);
       setIsLoadingOrder(true);
       setCheckoutError(null);
-      const companyDomain = await getCompanyDomain();
       try {
-        console.log('fetching product variant isQuickBuy', isQuickBuy)
         if (isQuickBuy) {
-          setLogger(prev => [...prev, `Fetching product variant details for ID: ${id}`]);
-          // Fetch single product variant
-          const res: { data: VariantDetails | undefined; success: boolean; message?: string } = await fetchProductVariantDetails(id);
-          if (!res.data) {
-            throw new Error("No response from server");
-          }
-          const variantData: VariantDetails = res?.data;
-          const price = parseFloat(variantData?.price) || 0;
-
-          console.log("Actual Price:", price);
-
-          setLogger(prev => [
-            ...prev,
-            `Fetched product variant details: ${JSON.stringify(variantData)}`,
-            `Calculated price for quick buy: ${price}`
-          ]);
+          const res: { data: VariantDetails | undefined; success: boolean; message?: string } =
+            await fetchProductVariantDetails(id);
+          if (!res.data) throw new Error("No response from server");
+          const variantData = res.data;
+          const price = parseFloat(variantData.price) || 0;
           setOrderData({
             title: `${variantData.variant_name} (x1)`,
             subtotal: price,
             discount: 0,
-            delivery: 50,
-            total: price + 50,
+            delivery: 0,
+            total: price,
+            cartItems: [{ variantId: variantData.id, quantity: 1, price }],
           });
-          // setLogger(prev => [...prev, `Set order data for quick buy: ${JSON.stringify({ title: `${variantData.variant_name} (x1)`, subtotal: price, discount: 0, delivery: 50, total: price + 50 })}`]);
         } else {
-          // Fetch cart items
-          setLogger(prev => [...prev, `Fetching cart items for user: ${params.userId}`]);
           const res = await fetchGetCartList(params.userId, token);
           const cartItems = res?.data ?? [];
-
-          if (!res?.success || cartItems.length === 0) {
-            throw new Error("Your cart is empty");
-          }
+          if (!res?.success || cartItems.length === 0) throw new Error("Your cart is empty");
 
           const subtotal = cartItems.reduce(
             (acc: number, item: any) =>
@@ -112,32 +105,108 @@ const token=authToken()
             0
           );
 
+          const mappedItems = cartItems.map((item: any) => ({
+            variantId: item.product_variant_id,
+            quantity: item.quantity,
+            price: Number(item.productVariant.price),
+          }));
+
           setOrderData({
             title: `Cart (${cartItems.length} item${cartItems.length > 1 ? 's' : ''})`,
             subtotal,
             discount: 0,
-            delivery: 50,
-            total: subtotal + 50,
+            delivery: 0,
+            total: subtotal,
+            cartItems: mappedItems,
           });
         }
       } catch (error: any) {
-        console.error("Failed to load checkout data", error);
-        setLogger(prev => [...prev, `Failed to load checkout data: ${error.message}`]);
-        console.error("FULL ERROR:", error);
-        console.error("ERROR MESSAGE:", error?.message);
-        console.error("ERROR STACK:", error?.stack);
         setCheckoutError(error.message ?? "Failed to load order details.");
       } finally {
-        setLogger(prev => [...prev, `Finished loading checkout data for type=${checkoutType} and id=${id}`]);
-        console.log('Finished loading checkout data', { logger });
         setIsLoadingOrder(false);
       }
     };
 
     loadCheckoutData();
   }, [id, checkoutType, isQuickBuy, params.userId, token]);
-  console.log("orderData", orderData)
-  // --- Coupon ---
+
+  // ── Fetch Tax Breakdown when address changes ──
+  const fetchTaxBreakdown = useCallback(
+    async (addressId: string) => {
+      if (!addressId || !orderData.cartItems.length || addressId === lastTaxAddressId) return;
+
+      setIsTaxLoading(true);
+      setTaxError(null);
+      setLastTaxAddressId(addressId);
+
+      try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/calculate-order-taxes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'company-domain': companyDomain,
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            customerAddressId: addressId,
+            cartItems: orderData.cartItems,
+          }),
+        });
+
+        if (!response.ok) {
+          // Graceful degradation — don't block checkout if tax calc fails
+          console.warn('Tax calculation failed, proceeding without breakdown');
+          setTaxBreakdown(null);
+          setIsTaxLoading(false);
+          return;
+        }
+
+        const result = await response.json();
+        const data = result.data ?? result;
+
+        setTaxBreakdown({
+          subtotal: Number(data.subTotal ?? data.subtotal ?? orderData.subtotal),
+          totalCgst: Number(data.totalCgst ?? 0),
+          totalSgst: Number(data.totalSgst ?? 0),
+          totalIgst: Number(data.totalIgst ?? 0),
+          totalTax: Number(data.totalTax ?? 0),
+          grandTotal: Number(data.grandTotal ?? orderData.subtotal),
+          isIntraState: data.totalIgst === 0 || data.totalIgst === '0',
+          vendorState: data.vendorState,
+          customerState: data.customerState,
+        });
+
+        // Update displayed total to include taxes
+        setOrderData((prev) => ({
+          ...prev,
+          total: Number(data.grandTotal ?? prev.subtotal),
+        }));
+      } catch (err) {
+        console.warn('Tax fetch error (non-blocking):', err);
+        setTaxBreakdown(null);
+      } finally {
+        setIsTaxLoading(false);
+      }
+    },
+    [orderData.cartItems, orderData.subtotal, lastTaxAddressId, token]
+  );
+
+  // Trigger tax fetch when address is selected
+  useEffect(() => {
+    if (selectedAddressId && selectedAddressId !== lastTaxAddressId && !isLoadingOrder) {
+      fetchTaxBreakdown(selectedAddressId);
+    }
+  }, [selectedAddressId, isLoadingOrder]);
+
+  // Reset tax when address changes to a new one
+  useEffect(() => {
+    if (selectedAddressId && selectedAddressId !== lastTaxAddressId) {
+      setTaxBreakdown(null);
+    }
+  }, [selectedAddressId]);
+
+  // ── Coupon ──
   const handleCouponApply = async () => {
     const companyDomain = await getCompanyDomain();
     if (!couponCode.trim()) return;
@@ -155,8 +224,11 @@ const token=authToken()
         setOrderData((prev) => ({
           ...prev,
           discount: result.discountAmount,
-          total: prev.subtotal + prev.delivery - result.discountAmount,
+          total: prev.subtotal + prev.delivery - result.discountAmount + (taxBreakdown?.totalTax ?? 0),
         }));
+        // Invalidate tax so it refetches with new totals
+        setLastTaxAddressId("");
+        if (selectedAddressId) fetchTaxBreakdown(selectedAddressId);
       } else {
         alert("Invalid coupon code.");
       }
@@ -165,7 +237,14 @@ const token=authToken()
     }
   };
 
-  // --- Payment ---
+  // ── Compute displayed total ──
+  const displayedTotal =
+    orderData.subtotal +
+    orderData.delivery -
+    orderData.discount +
+    (taxBreakdown?.totalTax ?? 0);
+
+  // ── Payment ──
   const handlePayment = async () => {
     if (!selectedAddressId) {
       alert("Please select a delivery address.");
@@ -177,47 +256,39 @@ const token=authToken()
     setCheckoutError(null);
 
     try {
-      // Step A: Build payload — only send the relevant ID
       const initPayload = {
         paymentMethod: selectedPaymentMethodState,
         addressId: selectedAddressId,
         ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
       };
-      console.log("Initiating checkout with payload: ", initPayload)
-      setLogger(prev => [...prev, `Initiating checkout with payload: ${JSON.stringify(initPayload)}`]);
-      // Step B: Create a PENDING order on the backend
-      const initData = await fetchInitCheckout(user?.id || '', initPayload,token);
-      console.log("Received response from initiate endpoint: ", initData)
-      setLogger(prev => [...prev, `Received response from initiate endpoint: ${JSON.stringify(initData)}`]);
+
+      const initData = await fetchInitCheckout(user?.id || '', initPayload, token);
+
       if (!initData?.success) {
         setCheckoutError(initData?.message ?? "Failed to initiate order.");
         return;
       }
 
-      // Step C: Handle payment gateway redirect or simulate
       if (initData.data?.paymentUrl) {
         window.location.href = initData.data.paymentUrl;
         return;
       }
 
-      // Simulation fallback (remove in production)
       const userClickedSuccess = window.confirm(
-        `SIMULATION: Pay ₹${formatCurrency(orderData.total)}\n\nOK = Success | Cancel = Failure`
+        `SIMULATION: Pay ₹${formatCurrency(displayedTotal)}\n\nOK = Success | Cancel = Failure`
       );
-      setLogger(prev => [...prev, `User clicked success: ${userClickedSuccess}`]);
+
       const verifyData = await fetchVerifyPayment(user?.id || '', {
         orderId: initData.data.orderId,
         isSuccess: userClickedSuccess,
-        ...(isQuickBuy
-          ? { productVariantId: id }
-          : { cartId: id }),
-      }, token)
-      setLogger(prev => [...prev, `Received response from verify endpoint: ${JSON.stringify(verifyData)}`]);
+        ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
+      }, token);
+
       if (!verifyData?.success) {
         setCheckoutError(verifyData?.message ?? "Payment verification failed.");
         return;
       }
-      // Step E: Redirect based on outcome and clear session 
+
       clearSession();
 
       if (userClickedSuccess && verifyData.success) {
@@ -233,13 +304,12 @@ const token=authToken()
       setIsProcessing(false);
     }
   };
-  console.log('CheckoutContent rendered');
-  console.log('searchParams type:', searchParams.get('type'));
-  console.log('searchParams id:', searchParams.get('id'));
+
+  // ── Loading / Error states ──
   if (isLoadingOrder) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-gray-500 animate-pulse">Loading checkout...</p>
+        <p className="text-gray-500 animate-pulse">Loading checkout…</p>
       </div>
     );
   }
@@ -250,7 +320,7 @@ const token=authToken()
         <p className="text-red-500">{checkoutError}</p>
         <button
           onClick={() => router.back()}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium"
         >
           Go back
         </button>
@@ -259,28 +329,29 @@ const token=authToken()
   }
 
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-gray-500 animate-pulse">Loading...</p>
-      </div>
-    }>
-      <section className="max-w-6xl mx-auto lg:px-4 py-8 min-h-[60vh]"> 
-        <h1 className="text-2xl font-bold text-center mb-8">Secure Checkout</h1>
-
-        {/* Checkout type badge */}
-        <p className="text-center text-sm text-gray-500 mb-6">
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-gray-500 animate-pulse">Loading…</p>
+        </div>
+      }
+    >
+      <section className="max-w-6xl mx-auto lg:px-4 py-8 min-h-[60vh]">
+        <h1 className="text-2xl font-bold text-center mb-2">Secure Checkout</h1>
+        <p className="text-center text-sm text-gray-500 mb-8">
           {isQuickBuy ? '⚡ Quick Buy' : '🛒 Cart Checkout'}
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          {/* LEFT: Address + Payment */}
+          {/* ── LEFT: Address + Payment ── */}
           <div className="lg:space-y-6 space-y-4">
+            <AddressSelector
+              userId={user?.id || ''}
+              onSelect={setSelectedAddressId}
+              selectedAddressId={selectedAddressId}
+            />
 
-            {/* Address */}
-            <AddressSelector userId={user?.id || ''} onSelect={setSelectedAddressId} selectedAddressId={selectedAddressId} />
-
-            {/* Payment Methods */}
             <div className="border-2 border-gray-300 rounded-xl lg:p-6 p-4">
               <h2 className="flex items-center gap-2 text-lg font-semibold mb-4">
                 <CreditCard className="w-5 h-5" />
@@ -300,7 +371,7 @@ const token=authToken()
             </div>
           </div>
 
-          {/* RIGHT: Order Summary */}
+          {/* ── RIGHT: Order Summary ── */}
           <div>
             <div className="border-2 border-gray-300 rounded-xl lg:p-6 p-4 sticky top-4">
               <h2 className="text-xl font-bold mb-6">Order Summary</h2>
@@ -322,40 +393,80 @@ const token=authToken()
                 </button>
               </div>
 
-              {/* Line items */}
-              <div className="space-y-3 mb-6">
+              {/* Line Items */}
+              <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-gray-700">
                   <span className="line-clamp-1">{orderData.title}</span>
                   <span>₹{formatCurrency(orderData.subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-gray-700">
-                  <span>Delivery Fee</span>
-                  <span>₹{formatCurrency(orderData.delivery)}</span>
-                </div>
+
+                {orderData.delivery > 0 && (
+                  <div className="flex justify-between text-gray-700">
+                    <span>Delivery Fee</span>
+                    <span>₹{formatCurrency(orderData.delivery)}</span>
+                  </div>
+                )}
+
                 {orderData.discount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Discount</span>
                     <span>-₹{formatCurrency(orderData.discount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-gray-900 py-3 font-bold text-lg border-t-2">
-                  <span>Total</span>
-                  <span>₹{formatCurrency(orderData.total)}</span>
-                </div>
               </div>
 
-              {/* Inline error */}
+              {/* Tax Breakdown — the key new section */}
+              <div className="mb-4">
+                {isTaxLoading ? (
+                  <TaxLoadingSkeleton />
+                ) : (
+                  <TaxBreakdownPanel
+                    tax={taxBreakdown}
+                    deliveryFee={orderData.delivery}
+                    discount={orderData.discount}
+                  />
+                )}
+                {taxError && (
+                  <p className="text-xs text-amber-600 mt-1 px-1">{taxError}</p>
+                )}
+              </div>
+
+              {/* Grand Total */}
+              <div className="flex justify-between text-gray-900 py-3 font-bold text-lg border-t-2 mb-4">
+                <span>Total</span>
+                <span>₹{formatCurrency(displayedTotal)}</span>
+              </div>
+
+              {/* Tax note */}
+              {taxBreakdown && (
+                <p className="text-[11px] text-gray-400 mb-4 text-center">
+                  ✓ Inclusive of all applicable taxes
+                </p>
+              )}
+
+              {/* Inline Error */}
               {checkoutError && (
                 <p className="text-red-500 text-sm mb-4 text-center">{checkoutError}</p>
               )}
 
               <button
                 onClick={handlePayment}
-                disabled={isProcessing}
+                disabled={isProcessing || isTaxLoading}
                 className="w-full bg-blue-600 text-white font-semibold lg:py-3 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:bg-blue-400"
               >
-                {isProcessing ? 'Processing...' : `Pay ₹${formatCurrency(orderData.total)}`}
-                {!isProcessing && <span>→</span>}
+                {isProcessing ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Processing…
+                  </>
+                ) : isTaxLoading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Calculating taxes…
+                  </>
+                ) : (
+                  `Pay ₹${formatCurrency(displayedTotal)} →`
+                )}
               </button>
 
               <div className="text-center mt-4 text-sm text-gray-600">

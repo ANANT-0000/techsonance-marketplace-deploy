@@ -819,11 +819,46 @@ export const fetchTaxRates = async (sortBy: string, date: Date | undefined, toke
         return { data: [] };
     }
 }
+export const fetchTaxRateOptions= async ( token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-rate-options`, {
+            method: 'GET',
+            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+        });
+        return await response.json();
+    } catch (error) {
+        return { data: [] };
+    }
+}
 // Add this below your existing finance API calls
 export const fetchAssignProductTax = async (data: { product_id: string, tax_rate_id: string }, vendorId: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/finances/product-tax-mappings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) throw new Error("Failed to assign tax rate");
+        
+        
+        revalidatePath(`/vendor/${vendorId}/finances/product-taxes`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error assigning product tax:', error);
+        throw error;
+    }
+}
+export const fetchBulkAssignProductTax = async (data: { product_ids: string[], tax_rate_id: string }, vendorId: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/finances/product-tax-bulk-mappings`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1037,3 +1072,236 @@ export const fetchUpdateTaxRate = async (id: string, data: any, vendorId: string
         throw error;
     }
 }
+
+
+// ─── Company Branding ─────────────────────────────────────────────────────────
+
+export const fetchCompanyBranding = async (token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/company-identity/branding`, {
+    cache: 'no-store',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { data: null };
+  return res.json();
+};
+
+export const upsertCompanyBranding = async (payload: FormData, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/company-identity/branding`, {
+    method: 'POST',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+    body: payload, // multipart for logo uploads
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+// ─── Company Legal Profile ────────────────────────────────────────────────────
+
+export const fetchCompanyLegalProfile = async (token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/company-identity/legal-profile`, {
+    cache: 'no-store',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { data: null };
+  return res.json();
+};
+
+export const upsertCompanyLegalProfile = async (payload: any, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/company-identity/legal-profile`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'company-domain': domain,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+// ─── Company Compliance ───────────────────────────────────────────────────────
+
+export const fetchCompanyCompliance = async (token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/company-identity/compliance`, {
+    cache: 'no-store',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { data: [] };
+  return res.json();
+};
+
+export const upsertCompanyComplianceField = async (
+  payload: {
+    country_code: string;
+    field_key: string;
+    field_value: string;
+    is_active?: boolean;
+    valid_until?: string | null;
+  },
+  token: string,
+) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/company-identity/compliance`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'company-domain': domain,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+export const deleteCompanyComplianceField = async (fieldId: string, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/company-identity/compliance/${fieldId}`, {
+    method: 'DELETE',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+// ─── Company Document Config ──────────────────────────────────────────────────
+
+export const fetchCompanyDocumentConfig = async (token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/company-identity/document-config`, {
+    cache: 'no-store',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { data: null };
+  return res.json();
+};
+
+export const upsertCompanyDocumentConfig = async (payload: any, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/company-identity/document-config`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'company-domain': domain,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+// ─── Product Policies ─────────────────────────────────────────────────────────
+
+export const fetchProductPolicies = async (token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies`, {
+    cache: 'no-store',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { data: [] };
+  return res.json();
+};
+
+export const fetchProductPolicyById = async (id: string, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/${id}`, {
+    cache: 'no-store',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { data: null };
+  return res.json();
+};
+
+export const createProductPolicy = async (payload: any, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'company-domain': domain,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+export const updateProductPolicy = async (id: string, payload: any, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'company-domain': domain,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+export const deleteProductPolicy = async (id: string, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/${id}`, {
+    method: 'DELETE',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+// ─── Category Policy Assignments ─────────────────────────────────────────────
+
+export const fetchCategoryPolicies = async (categoryId: string, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/category/${categoryId}`, {
+    cache: 'no-store',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { data: [] };
+  return res.json();
+};
+
+export const assignPolicyToCategory = async (
+  payload: { category_id: string; policy_id: string; priority?: number },
+  token: string,
+) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/category-assign`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'company-domain': domain,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+export const removePolicyFromCategory = async (
+  categoryId: string,
+  policyId: string,
+  token: string,
+) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(
+    `${BASE_API_URL}/v1/product-policies/category/${categoryId}/policy/${policyId}`,
+    {
+      method: 'DELETE',
+      headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+    },
+  );
+  revalidatePath('/vendor');
+  return res.json();
+};

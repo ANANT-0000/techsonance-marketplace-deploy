@@ -1,10 +1,12 @@
 ﻿"use client"
 import { getVendorInnerSidebarLinks } from "@/constants"
+import { AnimatePresence } from "framer-motion";
 import { DynamicIcon, IconName } from "lucide-react/dynamic"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
-
+import { motion } from "framer-motion"
+import { is } from "zod/v4/locales/index.js";
 export const InnerSideBar = ({
     vendorId,
     selectedMenu,
@@ -26,6 +28,7 @@ export const InnerSideBar = ({
     }, [path, links])
     if (!isClient) return null
     return (
+         <AnimatePresence mode="wait">
         <div
             className={`
         relative flex flex-col bg-white border-r border-gray-200 h-screen
@@ -49,6 +52,10 @@ export const InnerSideBar = ({
                 </button>
             </div>
 
+         
+           
+          
+        
             <aside className="flex-1 py-3 space-y-6 w-full">
                 {links.map((section) => (
                     <div key={section.menu}>
@@ -63,7 +70,9 @@ export const InnerSideBar = ({
                                     {group.list?.map((item) => {
                                         const isActive = path === item.path
                                         return (
-                                            <li key={item.title}>
+                                             <motion.li            
+                                             key={item.title}
+                                             transition={{ duration: 0.18 }} initial={{ opacity: 0, y: 8 }}            animate={{ opacity: 1, y: 0 }}            exit={{ opacity: 0, y: -8 }}            >
                                                 <Link
                                                     href={item.path ?? "#"}
                                                     title={isClosed ? item.title : undefined}
@@ -87,7 +96,7 @@ export const InnerSideBar = ({
 
                                                     {/* Label — hidden when collapsed */}
                                                     {!isClosed && (
-                                                        <span className="truncate transition-opacity duration-200 ease-in-out">
+                                                        <span className="text-wrap transition-opacity duration-200 ease-in-out">
                                                             {item.title}
                                                         </span>
                                                     )}
@@ -104,7 +113,7 @@ export const InnerSideBar = ({
                                                         </span>
                                                     )}
                                                 </Link>
-                                            </li>
+                                            </motion.li>
                                         )
                                     })}
                                 </ul>
@@ -114,5 +123,6 @@ export const InnerSideBar = ({
                 ))}
             </aside>
         </div>
+            </AnimatePresence>
     )
 }

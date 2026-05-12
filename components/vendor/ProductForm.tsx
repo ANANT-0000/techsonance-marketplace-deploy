@@ -41,12 +41,14 @@ const PRODUCT_UPDATE_FORM_PAGE_LABELS = {
 export function ProductForm({
     categoryOptions,
     warehouseOptions,
+    taxRatesOptions,
     vendorId,
     existingData,
     productId,
 }: {
     categoryOptions: { value: string; label: string }[];
     warehouseOptions?: { value: string; label: string }[];
+    taxRatesOptions: { value: string; label: string }[];
     vendorId: string;
     existingData?: Partial<ProductFormInput | ProductFormOutput>;
     productId?: string;
@@ -78,6 +80,7 @@ export function ProductForm({
             category: "",
             status: ProductStatusEnum.INACTIVE,
             warehouseId: "",
+                taxRateId: "", 
         },
     });
     const productName = watch('productName');
@@ -516,7 +519,7 @@ export function ProductForm({
                         <DynamicIcon fallback={() => <p></p>} name="building-2" size={18} className="text-blue-500" />
                         <h2 className="text-base font-semibold text-slate-800">Product Category & Taxation (GST)</h2>
                     </div>
-                    <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
 
                         {/* Category */}
                         <div>
@@ -534,6 +537,24 @@ export function ProductForm({
                                 <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
                                     <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={12} />
                                     {errors.category.message}
+                                </p>
+                            )}
+                        </div>
+                        <div>
+                            <label className="form_label">Tax Rate <span className="text-red-400">*</span></label>
+                            <div className="relative">
+                                <select {...register("taxRateId")} className="form_input appearance-none pr-9">
+                                    <option value="" disabled>Select Tax Rate</option>
+                                    {taxRatesOptions.map((t, idx) => (
+                                        <option key={idx} value={t.value}>{t.label}</option>
+                                    ))}
+                                </select>
+                                <DynamicIcon fallback={() => <p></p>} name="chevron-down" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            </div>
+                            {errors.taxRateId && (
+                                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={12} />
+                                    {errors.taxRateId.message}
                                 </p>
                             )}
                         </div>
