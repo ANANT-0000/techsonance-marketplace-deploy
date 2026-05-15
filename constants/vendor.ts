@@ -181,7 +181,7 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
       section: 'General',
       list: [
         { title: 'Store Profile', path: `/vendor/${vendorId}/settings`, icon: 'store' },
-        { title: 'Locations & Warehouses', path: `/vendor/${vendorId}/settings/locations`, icon: 'map-pin' },
+        { title: 'Locations/Headquarters', path: `/vendor/${vendorId}/settings/locations`, icon: 'map-pin' },
         { title: 'Business Hours', path: `/vendor/${vendorId}/settings/business-hours`, icon: 'clock' },
       ]
     },
@@ -207,46 +207,11 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
 
 ].filter(section => section.menu.toLowerCase() === selectedMenu.toLowerCase());
 
-// ============================================================
-// VENDOR SETTINGS LINKS
-// ============================================================
-//used
-export const VENDOR_SETTINGS_LINKS: Link[] = [
-  {
-    section: "general",
-    list: [
-      { title: "Store Profile", path: null, icon: "profile" },
-      { title: "Locations & Warehouses", path: "locations", icon: "locations" },
-    ],
-  },
-  {
-    section: "organization",
-    list: [
-      { title: "Billing & Banking", path: "billing", icon: "billing" },
-    ],
-  },
-  {
-    section: "account",
-    list: [{ title: "Business Profile", path: "businessProfile", icon: "businessProfile" },
-    { title: "Security & Password", path: "security", icon: "usersRoles" },
-    ],
-  },
-];
 
 // ============================================================
 // VENDOR DASHBOARD — MOCK DATA
 // ============================================================
-
-export const VENDOR_DASHBOARD_STATS = {
-  totalRevenue: 120000,
-  revenueGrowth: 10,
-  pendingOrder: 15,
-  lowStock: 5,
-  activeOrders: 320,
-  totalProducts: 156,
-  completedOrders: 280,
-  averageOrderValue: 3750,
-};
+ 
 
 // ============================================================
 // VENDOR — RECENT ORDERS MOCK DATA

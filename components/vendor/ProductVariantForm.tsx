@@ -1,5 +1,5 @@
 ﻿'use client';
-import { FileOrImage, ProductImage, ProductStatusEnum, Product, VariantFormValues } from "@/utils/Types";
+import { FileOrProductImage, ProductImage, ProductStatusEnum, Product, VariantFormValues } from "@/utils/Types";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useRef, useCallback, useState } from "react";
@@ -69,8 +69,8 @@ export const ProductVariantForm = ({
     const { fields: attributeFields, append: appendAttribute, remove: removeAttribute } =
         useFieldArray({ control, name: "attributes" });
     const [deletedImgs, setDeletedImgs] = useState<string[]>([])
-    const [productFiles, setProductFiles] = useState<FileOrImage[]>([]);
-    const [featureFiles, setFeatureFiles] = useState<FileOrImage[]>([]);
+    const [productFiles, setProductFiles] = useState<FileOrProductImage[]>([]);
+    const [featureFiles, setFeatureFiles] = useState<FileOrProductImage[]>([]);
     const { getPreviewUrl, revokeAll, revokeOne } = usePreviewUrls();
     const variantName = watch('variantName');
     const attributes = watch('attributes');
@@ -108,8 +108,8 @@ export const ProductVariantForm = ({
             status: (existVariant.status as ProductStatusEnum) ?? ProductStatusEnum.INACTIVE,
         });
 
-        const initialProductFiles = (existVariant.variantMediaMain as FileOrImage[]) || [];
-        const initialFeatureFiles = (existVariant.variantMediaGallery as FileOrImage[]) || [];
+        const initialProductFiles = (existVariant.variantMediaMain as FileOrProductImage[]) || [];
+        const initialFeatureFiles = (existVariant.variantMediaGallery as FileOrProductImage[]) || [];
 
         setProductFiles(initialProductFiles);
         setFeatureFiles(initialFeatureFiles);
@@ -131,8 +131,8 @@ export const ProductVariantForm = ({
     const handleFileSelect = useCallback(
         (
             e: React.ChangeEvent<HTMLInputElement>,
-            currentFiles: FileOrImage[],
-            setFiles: React.Dispatch<React.SetStateAction<FileOrImage[]>>,
+            currentFiles: FileOrProductImage[],
+            setFiles: React.Dispatch<React.SetStateAction<FileOrProductImage[]>>,
             fieldName: keyof ProductVariantFormValuesType
         ) => {
             if (!e.target.files) return;
@@ -147,8 +147,8 @@ export const ProductVariantForm = ({
     const handleFileRemove = useCallback(
         (
             index: number,
-            currentFiles: FileOrImage[],
-            setFiles: React.Dispatch<React.SetStateAction<FileOrImage[]>>,
+            currentFiles: FileOrProductImage[],
+            setFiles: React.Dispatch<React.SetStateAction<FileOrProductImage[]>>,
             fieldName: keyof ProductVariantFormValuesType,
             id?: string
         ) => {
@@ -378,7 +378,7 @@ export const ProductVariantForm = ({
                                                 handleFileSelect(
                                                     e,
                                                     files,
-                                                    setFiles as React.Dispatch<React.SetStateAction<FileOrImage[]>>,
+                                                    setFiles as React.Dispatch<React.SetStateAction<FileOrProductImage[]>>,
                                                     fieldName
                                                 )
                                             }
@@ -407,7 +407,7 @@ export const ProductVariantForm = ({
                                                             handleFileRemove(
                                                                 i,
                                                                 files,
-                                                                setFiles as React.Dispatch<React.SetStateAction<FileOrImage[]>>,
+                                                                setFiles as React.Dispatch<React.SetStateAction<FileOrProductImage[]>>,
                                                                 fieldName,
                                                                 'id' in file ? file.id : ''
                                                             )

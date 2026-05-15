@@ -5,7 +5,7 @@ import { useAppSelector } from "@/hooks/reduxHooks";
 import { usePreviewUrls } from "@/lib/clientUtils";
 import { authToken } from "@/utils/authToken";
 import { generateSKU } from "@/utils/generateSku";
-import { FileOrImage, ProductImage, ProductStatusEnum, VendorUser } from "@/utils/Types";
+import { FileOrProductImage, ProductImage, ProductStatusEnum, VendorUser } from "@/utils/Types";
 import { ProductFormInput, ProductFormOutput, ProductFormValuesType, productSchema } from "@/utils/validation";
 import { createInventoryRecord, createProduct, fetchVendorWarehouse, fetchVendorWarehouseLocations, updateProduct } from "@/utils/vendorApiClient";
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod.js";
@@ -107,8 +107,8 @@ export function ProductForm({
     const { user } = useAppSelector((state) => state.auth);
     const router = useRouter();
 
-    const [productFiles, setProductFiles] = useState<FileOrImage[]>([]);
-    const [featureFiles, setFeatureFiles] = useState<FileOrImage[]>([]);
+    const [productFiles, setProductFiles] = useState<FileOrProductImage[]>([]);
+    const [featureFiles, setFeatureFiles] = useState<FileOrProductImage[]>([]);
     const [deletedImgs, setDeletedImgs] = useState<string[]>([]);
 
     const { getPreviewUrl, revokeAll, revokeOne } = usePreviewUrls();
@@ -147,8 +147,8 @@ export function ProductForm({
             warehouseId: existingData.warehouseId || "",
         });
 
-        const initialProductFiles = (existingData.productMedia as FileOrImage[]) || [];
-        const initialFeatureFiles = (existingData.featureMedia as FileOrImage[]) || [];
+        const initialProductFiles = (existingData.productMedia as FileOrProductImage[]) || [];
+        const initialFeatureFiles = (existingData.featureMedia as FileOrProductImage[]) || [];
 
         setProductFiles(initialProductFiles);
         setFeatureFiles(initialFeatureFiles);
@@ -163,8 +163,8 @@ export function ProductForm({
     const handleFileSelect = useCallback(
         (
             e: React.ChangeEvent<HTMLInputElement>,
-            currentFiles: FileOrImage[],
-            setFiles: React.Dispatch<React.SetStateAction<FileOrImage[]>>,
+            currentFiles: FileOrProductImage[],
+            setFiles: React.Dispatch<React.SetStateAction<FileOrProductImage[]>>,
             fieldName: keyof ProductFormValuesType
         ) => {
             if (!e.target.files) return;
@@ -179,8 +179,8 @@ export function ProductForm({
     const handleFileRemove = useCallback(
         (
             index: number,
-            currentFiles: FileOrImage[],
-            setFiles: React.Dispatch<React.SetStateAction<FileOrImage[]>>,
+            currentFiles: FileOrProductImage[],
+            setFiles: React.Dispatch<React.SetStateAction<FileOrProductImage[]>>,
             fieldName: keyof ProductFormValuesType,
             imgId?: string
         ) => {
@@ -464,7 +464,7 @@ export function ProductForm({
                                                 handleFileSelect(
                                                     e,
                                                     files,
-                                                    setFiles as React.Dispatch<React.SetStateAction<FileOrImage[]>>,
+                                                    setFiles as React.Dispatch<React.SetStateAction<FileOrProductImage[]>>,
                                                     fieldName
                                                 )
                                             }
@@ -477,7 +477,7 @@ export function ProductForm({
                                     {/* Preview list */}
                                     {files.length > 0 && (
                                         <ul className="flex flex-wrap gap-3 mt-4">
-                                            {files.map((file: FileOrImage, i: number) => (
+                                            {files.map((file: FileOrProductImage, i: number) => (
                                                 <li
                                                     key={i}
                                                     className="relative bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm w-20 h-20"
@@ -493,7 +493,7 @@ export function ProductForm({
                                                             handleFileRemove(
                                                                 i,
                                                                 files,
-                                                                setFiles as React.Dispatch<React.SetStateAction<FileOrImage[]>>,
+                                                                setFiles as React.Dispatch<React.SetStateAction<FileOrProductImage[]>>,
                                                                 fieldName,
                                                                 (file as { id?: string }).id ?? undefined
                                                             )

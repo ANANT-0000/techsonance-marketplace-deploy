@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 import { useState, useEffect, Suspense, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useAppSelector } from "@/hooks/reduxHooks";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { formatCurrency } from "@/lib/utils";
 import { SelectedPaymentMethod } from "@/components/customer/SelectedPaymentMethod";
 import { BASE_API_URL, PAYMENT_METHODS_FIELDS } from "@/constants";
@@ -15,6 +15,7 @@ import { getCompanyDomain } from "@/lib/get-domain";
 import { fetchInitCheckout, fetchVerifyPayment } from "@/utils/customerApiClient-SA";
 import { authToken } from "@/utils/authToken";
 import { TaxBreakdown, TaxBreakdownPanel, TaxLoadingSkeleton } from "@/components/customer/TaxBreakdownPanel";
+import { clearCart } from "@/lib/features/Cart";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,7 +37,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { clearSession } = useCheckoutSession(`/customerProfile/${params.userId}/cart`);
-
+  const dispatch = useAppDispatch();
   const checkoutType = searchParams.get('type') as 'cart' | 'product' | null;
   const id = searchParams.get('id');
   const isQuickBuy = checkoutType === 'product';
@@ -292,7 +293,7 @@ export default function CheckoutPage() {
       clearSession();
 
       if (userClickedSuccess && verifyData.success) {
-        router.push(`/customerProfile/${params.userId}/orders/${initData.data.orderId}`);
+        dispatch(clearCart());        router.push(`/customerProfile/${params.userId}/orders/${initData.data.orderId}`);
       } else {
         setCheckoutError("Payment failed. Your order has been cancelled.");
         router.push(`/customerProfile/${params.userId}/orders`);

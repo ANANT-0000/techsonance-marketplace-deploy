@@ -6,9 +6,8 @@ import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-
 import { fetchAddToCart, fetchRemoveFromCart } from "@/utils/customerApiClient";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { authToken } from "@/utils/authToken";
 
 interface AddToCartProps {
@@ -27,11 +26,16 @@ export interface CartItemResponse {
 
 export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     const dispatch = useAppDispatch();
-    const { items, loading } = useAppSelector((state: RootState) => state.cart);
+    const { items } = useAppSelector((state: RootState) => state.cart);
     const { user } = useAppSelector((state: RootState) => state.auth);
     const path = usePathname();
     const router = useRouter();
     const token = authToken();
+
+    // Track in-flight server sync so we don't stack requests
+    const syncingRef = useRef(false);
+    // Store the pre-optimistic snapshot for rollback
+    const rollbackRef = useRef<{ quantity: number; cartItemId?: string; cartId?: string } | null>(null);
 
     useEffect(() => {
         if (items.length === 0) {
@@ -46,60 +50,98 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     const containerBase = `flex items-center justify-center bg-brand-primary text-white rounded-lg shadow-md overflow-hidden transition-all duration-200`;
     const heightClass = isSmall ? "h-6" : "h-11";
 
-
-    const debounce = (func: () => void, delay = 300) => {
-        let timeoutId: ReturnType<typeof setTimeout>;
-        return () => {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(func, delay);
-        };
-    };
-
     const handleIncrement = async () => {
         if (!user?.id || !token) {
             router.push('/auth/customerLogin');
             return;
         }
+        if (syncingRef.current) return;
+
+        const prevQuantity = quantity;
+        const prevCartItemId = cartItem?.cartItemId;
+        const prevCartId = cartItem?.cartId;
+
+        // ── 1. Optimistic update — instant UI ────────────────────
+        const optimisticQuantity = prevQuantity + 1;
+        dispatch(addToCart({
+            cartId: cartItem?.cartId ?? '',
+            cartItemId: cartItem?.cartItemId ?? '',
+            productVariantId,
+            quantity: optimisticQuantity,
+        }));
+
+        // Open sidebar immediately (no waiting for server)
+        if (!path.includes("cart") && !path.includes("wishlist")) {
+            dispatch(toggleCartSidebar('open'));
+        }
+
+        // ── 2. Sync with server in background ────────────────────
+        syncingRef.current = true;
+        rollbackRef.current = { quantity: prevQuantity, cartItemId: prevCartItemId, cartId: prevCartId };
 
         try {
-            const newQuantity = quantity === 0 ? 1 : quantity + 1;
-            const response = await fetchAddToCart(productVariantId, newQuantity, user?.id, token);
-            const cartResponse: CartItemResponse = response.data;
+            const response = await fetchAddToCart(productVariantId, optimisticQuantity, user.id, token);
+            const cartResponse: CartItemResponse = response?.data;
 
+            if (!cartResponse?.cart_id) throw new Error('Invalid server response');
 
+            // Reconcile with real server data (cart IDs may be new for first add)
             dispatch(addToCart({
-                cartId: cartResponse?.cart_id,
-                cartItemId: cartResponse?.cart_item_id,
-                productVariantId: cartResponse?.product_variant_id,
-                quantity: cartResponse?.quantity,
+                cartId: cartResponse.cart_id,
+                cartItemId: cartResponse.cart_item_id,
+                productVariantId: cartResponse.product_variant_id,
+                quantity: cartResponse.quantity,
             }));
-
-            if (!path.includes("cart") && !path.includes("wishlist")) {
-                debounce(() => dispatch(toggleCartSidebar('open')), 300)();
-            }
         } catch (error) {
             console.error("Error adding to cart:", error);
+            // ── 3. Rollback to pre-click state ────────────────────
+            if (prevQuantity === 0) {
+                dispatch(removeFromCart({ productVariantId, quantity: 0 }));
+            } else {
+                dispatch(addToCart({
+                    cartId: prevCartId ?? '',
+                    cartItemId: prevCartItemId ?? '',
+                    productVariantId,
+                    quantity: prevQuantity,
+                }));
+            }
+        } finally {
+            syncingRef.current = false;
+            rollbackRef.current = null;
         }
     };
 
     const handleDecrement = async () => {
         if (!user?.id || !cartItem || !token) return;
+        if (syncingRef.current) return;
+
+        const prevQuantity = quantity;
+        const prevCartItemId = cartItem.cartItemId;
+        const prevCartId = cartItem.cartId;
+
+        // ── 1. Optimistic update — instant UI ────────────────────
+        if (prevQuantity <= 1) {
+            dispatch(removeFromCart({ productVariantId, quantity: 0 }));
+        } else {
+            dispatch(removeFromCart({ productVariantId, quantity: prevQuantity - 1 }));
+        }
+
+        // ── 2. Sync with server in background ────────────────────
+        syncingRef.current = true;
+        rollbackRef.current = { quantity: prevQuantity, cartItemId: prevCartItemId, cartId: prevCartId };
 
         try {
-            if (!token) {
-                console.error("Authentication token is missing");
-                return;
-            }
-
             const response = await fetchRemoveFromCart(
-                user?.id,
+                user.id,
                 cartItem.cartId,
                 cartItem.cartItemId,
                 token
             );
-            const cartResponse: CartItemResponse = response.data;
+            const cartResponse: CartItemResponse = response?.data;
 
-            // If quantity hit 0 → item deleted on server (success: true, no quantity)
+            if (!cartResponse) throw new Error('Invalid server response');
+
+            // Reconcile: server is source of truth on final quantity
             if (cartResponse.success && !cartResponse.quantity) {
                 dispatch(removeFromCart({ productVariantId, quantity: 0 }));
             } else {
@@ -107,6 +149,16 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
             }
         } catch (error) {
             console.error("Error removing from cart:", error);
+            // ── 3. Rollback ───────────────────────────────────────
+            dispatch(addToCart({
+                cartId: prevCartId,
+                cartItemId: prevCartItemId,
+                productVariantId,
+                quantity: prevQuantity,
+            }));
+        } finally {
+            syncingRef.current = false;
+            rollbackRef.current = null;
         }
     };
 
@@ -126,8 +178,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        disabled={loading ?? false}
-                        className="flex h-full w-full items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50"
+                        className="flex h-full w-full items-center justify-center gap-2 whitespace-nowrap"
                     >
                         <ShoppingCart size={isSmall ? 18 : 22} />
                     </motion.button>

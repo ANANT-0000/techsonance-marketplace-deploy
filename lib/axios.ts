@@ -15,8 +15,8 @@ const AxiosAPI = axios.create({
 // ==========================================
 // 1. REQUEST INTERCEPTOR (Outgoing)
 // ==========================================
-AxiosAPI.interceptors.request.use(
-    (config) => {
+let domainCache: string | null = null;
+AxiosAPI.interceptors.request.use(async (config) => {
         // Only access localStorage if we are on the client side (browser)
         if (typeof window !== 'undefined') {
             const token = localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -24,8 +24,10 @@ AxiosAPI.interceptors.request.use(
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
-        }
-        return config;
+             if (!domainCache){ domainCache = await getCompanyDomain();}
+  config.headers['company-domain'] = domainCache;
+}
+return config;
     },
     (error) => {
         return Promise.reject(error);

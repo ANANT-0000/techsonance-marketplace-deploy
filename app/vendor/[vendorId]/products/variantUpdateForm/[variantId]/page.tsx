@@ -100,7 +100,7 @@ export default function ProductVariantFormPage() {
             discountPercent: existVariant.product.discount_percent,
             stocks: existVariant.stock_quantity?.toString() || "0",
             sku: existVariant.sku,
-            // Map images from API into FileOrImage shape
+            // Map images from API into FileOrProductImage shape
             variantMediaMain: existVariant.images
                 .filter((img) => img.imgType === "main")
                 .map((img) => ({

@@ -28,7 +28,7 @@ const STEP_FIELDS: Record<number, (keyof VendorRegisterSchema)[]> = {
 export default function VendorRegisterPage() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [globalError, setGlobalError] = useState<string | null>(null);
-    const [formStep, setFormStep] = useState(0);
+    const [formStep, setFormStep] = useState(2);
     const totalSteps = Object.keys(RegistrationStages).length;
 
     const [countryCode, setCountryCode] = useState("");
@@ -47,7 +47,7 @@ export default function VendorRegisterPage() {
         watch,
         reset,
         formState: { errors, isSubmitting },
-    } = useForm<VendorRegisterSchema>({
+    } = useForm ({
         mode: "onChange",
         resolver: zodResolver(vendorRegisterSchema),
         defaultValues: {
@@ -58,6 +58,7 @@ export default function VendorRegisterPage() {
             store_owner_first_name: "",
             store_owner_last_name: "",
             category: "",
+          company_compliance: [{ field_key: "", field_value: "", is_active: false, valid_until: "" }],
             company_domain: "",
             company_structure: "",
             email: "",
@@ -89,18 +90,18 @@ export default function VendorRegisterPage() {
         });
 
         formData.append("vendor", JSON.stringify(data));
-
+        console.log("Submitting registration with data:", data);
         try {
-            const result = await vendorRegister(formData);
-            if (result?.status == 201) {
-                reset();
-                setFinancialFileMap([]);
-                setLegalFileMap([]);
-                setCountryCode("");
-                setShowSuccessModal(true);
-            } else {
-                setGlobalError(result?.message ?? "Registration failed. Please try again.");
-            }
+            // const result = await vendorRegister(formData);
+            // if (result?.status == 201) {
+            //     reset();
+            //     setFinancialFileMap([]);
+            //     setLegalFileMap([]);
+            //     setCountryCode("");
+            //     setShowSuccessModal(true);
+            // } else {
+            //     setGlobalError(result?.message ?? "Registration failed. Please try again.");
+            // }
         } catch {
             setGlobalError("Something went wrong. Please try again.");
         }

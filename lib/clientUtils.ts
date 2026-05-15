@@ -1,10 +1,10 @@
 ﻿"use client";
-import { FileOrImage, ProductImage } from "@/utils/Types";
+import { FileOrProductImage, ProductImage } from "@/utils/Types";
 import { useCallback, useRef } from "react";
 
 export function usePreviewUrls() {
     const urlCache = useRef<Map<File, string>>(new Map());
-    const getPreviewUrl = useCallback((file: FileOrImage): string => {
+    const getPreviewUrl = useCallback((file: FileOrProductImage): string => {
         if (!(file instanceof File)) {
 
             return (file as ProductImage).image_url;
@@ -24,7 +24,7 @@ export function usePreviewUrls() {
         urlCache.current.clear();
     }, []);
 
-    const revokeOne = useCallback((file: FileOrImage) => {
+    const revokeOne = useCallback((file: FileOrProductImage) => {
         if (!(file instanceof File)) return;
         const url = urlCache.current.get(file);
         if (url) {

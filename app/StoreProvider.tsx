@@ -8,7 +8,7 @@ import { loadWishlist } from '@/lib/features/Wishlist';
 
 export default function ReduxProviders({ children }: { children: React.ReactNode }) {
     const storeRef = useRef<AppStore | null>(null);
-
+const hasFetched = useRef(false);
     // 1. Initialize the store ONLY (No side effects here!)
     if (!storeRef.current) {
         storeRef.current = store();
@@ -16,10 +16,11 @@ export default function ReduxProviders({ children }: { children: React.ReactNode
 
     // 2. Hydrate local data safely after the component mounts on the client
     useEffect(() => {
-        if (storeRef.current) {
-            storeRef.current.dispatch(loadCart());
-            storeRef.current.dispatch(loadWishlist());
-        }
+       if (!hasFetched.current && storeRef.current) {
+    hasFetched.current = true;
+    storeRef.current.dispatch(loadCart());
+    storeRef.current.dispatch(loadWishlist());
+  }
     }, []);
 
     return (

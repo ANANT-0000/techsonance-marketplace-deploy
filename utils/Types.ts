@@ -490,8 +490,8 @@ export type ProductFeature = { title: string; description: string };
 //   discountPercent: string;
 //   stocks: string;
 //   sku: string;
-//   productMedia: FileOrImage[];
-//   featureMedia: FileOrImage[];
+//   productMedia: FileOrProductImage[];
+//   featureMedia: FileOrProductImage[];
 //   category: string;
 //   status: string;
 //   taxProfile: string;
@@ -622,7 +622,7 @@ export interface CountryCompliance {
 }
 
 
-export type FileOrImage = File | ProductImage;
+export type FileOrProductImage = File | ProductImage;
 
 export type VariantFormValues = {
   variantName: string;
@@ -631,8 +631,8 @@ export type VariantFormValues = {
   discountPercent: string;
   stocks: string;
   sku: string;
-  variantMediaMain: FileOrImage[];
-  variantMediaGallery: FileOrImage[];
+  variantMediaMain: FileOrProductImage[];
+  variantMediaGallery: FileOrProductImage[];
   status: string;
   productId: string;
   warehouseId?: string;

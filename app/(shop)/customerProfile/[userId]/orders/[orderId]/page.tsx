@@ -436,7 +436,10 @@ export default function OrderDetailsPage() {
     useEffect(() => {
         if (!orderId || !token) return;
         fetchOrderDetails(orderId, token)
-            .then((data) => setOrder(data.data))
+            .then((data) => {
+                setOrder(data.data);
+                console.log("order details", data);
+            })
             .catch((err) => console.error("Error fetching order details:", err));
     }, [orderId, token]);
     console.log("order",order)

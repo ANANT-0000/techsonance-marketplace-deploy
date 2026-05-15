@@ -4,10 +4,31 @@ export const passwordValidation = new RegExp(
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
 );
 export const passwordValidationSchema = z.string().regex(passwordValidation, "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character");
-const financialDetailsSchema = z.record(
-  z.string(),
-  z.string().optional()
-);
+const company_complianceSchema = z.array(
+    z.object({
+      field_key: z.string( "Field key is required" )
+        .trim()
+        .min(1, "Field key cannot be empty")
+        .max(100, "Field key is too long"),
+
+      field_value: z.string("Field value is required" )
+        .trim()
+        .min(1, "Field value cannot be empty")
+        .max(1000, "Field value is too long"),
+
+      is_active: z.boolean()
+        .optional()
+        .default(false),
+
+      valid_until: z.string()
+        .trim()
+        // Optional: Validates it's an actual date format. Remove if it's just a free-text string.
+        .datetime({ message: "Must be a valid ISO date string (e.g., 2026-12-31T23:59:59Z)" }) 
+        .optional()
+        .nullable()
+        .or(z.literal('')) // Allows an empty string "" to pass validation without failing
+    })
+  )
 
 export const vendorRegisterSchema = z.object({
   company_name: z.string().min(2, "Company name is required"),
@@ -27,7 +48,7 @@ export const vendorRegisterSchema = z.object({
   first_name: z.string().min(2, "First name is required"),
   last_name: z.string().min(2, "Last name is required"),
   email: z.email("Enter a valid email address"),
-  financial_details: financialDetailsSchema.optional(),
+  company_compliance: company_complianceSchema,
   password: z.string().regex(passwordValidation, "Password must contain at least one letter and one number and be at least 8 characters long"),
   confirm_password: z.string().regex(passwordValidation, "Password must contain at least one letter and one number and be at least 8 characters long"),
 }).refine((data) => data.password === data.confirm_password, {
@@ -410,3 +431,39 @@ export const locationSchema = z.object({
 });
 
 export type LocationFormData = z.infer<typeof locationSchema>;
+
+
+export const brandingSchema = z.object({
+  logo_url: z.string().optional(),
+  logo_dark_url: z.string().optional(),
+  watermark_url: z.string().optional(),
+  favicon_url: z.string().optional(),
+  primary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').default('#000000'),
+  secondary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').optional().or(z.literal('')),
+  accent_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').optional().or(z.literal('')),
+  font_family: z.string().min(1, 'Required').default('Inter'),
+});
+
+export const legalSchema = z.object({
+  legal_name: z.string().min(2, 'Required'),
+  trade_name: z.string().optional(),
+  country_code: z.string().length(2, 'Must be 2-letter ISO code'),
+  registered_address_id: z.string(),
+  support_email: z.email('Invalid email').optional().or(z.literal('')),
+  support_phone: z.string().optional(),
+  website_url: z.url('Invalid URL').optional().or(z.literal('')),
+});
+
+export const docConfigSchema = z.object({
+  invoice_number_prefix: z.string().min(1).max(10).default('INV'),
+  invoice_number_format: z.string().min(1).default('{PREFIX}-{YYYY}-{SEQ8}'),
+  invoice_sequence_reset: z.enum(['APRIL', 'CALENDAR']).default('APRIL'),
+  default_currency: z.string().length(3).default('INR'),
+  default_timezone: z.string().min(1).default('Asia/Kolkata'),
+  date_format: z.string().min(1).default('DD/MM/YYYY'),
+  signatory_name: z.string().optional(),
+  signatory_designation: z.string().optional(),
+  signatory_signature_url: z.string().optional(),
+  invoice_footer_text: z.string().optional(),
+  invoice_terms_and_conditions: z.string().optional(),
+});

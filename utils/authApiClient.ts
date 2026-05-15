@@ -5,7 +5,7 @@ import { ADMIN_AUTH_URL, CUSTOMER_AUTH_URL, CUSTOMER_BASE_URL, VENDOR_AUTH_URL, 
 import { CustomerRegisterSchemaType } from "./validation";
 import { getCompanyDomain } from "@/lib/get-domain";
 
-export const AxiosAPI = axios.create({
+const AxiosAPI = axios.create({
     baseURL: BASE_API_URL,
     headers: {
         'Content-Type': 'application/json',

@@ -1,8 +1,9 @@
 ﻿import { companyDomain } from '@/config';
-
+let cached: string | null = null;
 export const getCompanyDomain = async (): Promise<string> => {
     const isDev = process.env.NODE_ENV === 'development';
     let rawHost = '';
+  if (cached) return cached;
     if (typeof window === 'undefined') {
         const { headers } = await import('next/headers');
         const headersList = await headers();
@@ -16,5 +17,6 @@ export const getCompanyDomain = async (): Promise<string> => {
     if (isDev && rawHost === 'localhost') {
         return companyDomain;
     }
-    return rawHost
+    cached = rawHost;
+  return cached;
 };

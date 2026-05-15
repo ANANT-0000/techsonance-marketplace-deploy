@@ -2,6 +2,9 @@
 import { ADMIN_BASE_URL, BASE_API_URL } from "@/constants";
 import { authToken } from "./authToken";
 import { revalidatePath } from "next/cache";
+import AxiosAPI from "@/lib/axios";
+import { getCompanyDomain } from "@/lib/get-domain";
+
 
 export const fetchRoles = async( token: string)=> {
     const response = await fetch(`${BASE_API_URL}/v1/roles`, {
@@ -200,3 +203,99 @@ export const rejectVendor = async (vendorId: string, token: string) => {
     }
 };
 
+export const fetchTemplates = async (token: string) => {
+    try {
+        const domain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/template`, {
+            method: 'GET',
+            headers: {
+                'company-domain': domain,
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.json();
+    } catch (error) {
+        console.error("Error fetching templates:", error);
+        throw error;
+    }
+};
+
+/**
+ * Fetch a single template by ID
+ */
+export const fetchTemplateById = async (id: string, token: string) => {
+    try {
+        const domain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/template/${id}`, {
+            method: 'GET',
+            headers: {
+                'company-domain': domain,
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.json();
+    } catch (error) {
+        console.error(`Error fetching template ${id}:`, error);
+        throw error;
+    }
+};
+
+/**
+ * Create a new template with a PDF file
+ */
+export const fetchCreateTemplate = async (formData: FormData, token: string) => {
+    try {
+        const domain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/template`, {
+            method: 'POST',
+            headers: {
+                'company-domain': domain,
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        });
+        return response.json();
+    } catch (error) {
+        console.error("Error creating template:", error);
+        throw error;
+    }
+};
+ 
+export const fetchUpdateTemplate = async (id: string, formData: FormData, token: string) => {
+    try {
+        const domain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/template/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'company-domain': domain,
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        });
+        return response.json();
+    } catch (error) {
+        console.error("Error updating template:", error);
+        throw error;
+    }
+};
+
+   
+/**
+ * Delete a template
+ */
+export const  fetchDeleteTemplate = async (id: string, token: string) => {
+    try {
+           const domain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/template/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'company-domain': domain,
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.json();
+    } catch (error) {
+        console.error(`Error deleting template ${id}:`, error);
+        throw error;
+    }
+};

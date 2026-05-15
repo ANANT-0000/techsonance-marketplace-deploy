@@ -3,7 +3,6 @@
 import './index.css';
 import Navbar from "@/components/vendor/Navbar";
 import { Pagination } from "@/components/common/Pagination";
-import { VENDOR_DASHBOARD_STATS } from "@/constants/vendor";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatCurrency, formatNumber } from "@/lib/utils";
@@ -108,11 +107,11 @@ export default function DashboardPage() {
     const [count, setCount] = useState(1);
     const { vendorId } = useParams<{ vendorId: string }>();
     const [recentOrders, setRecentOrders] = useState<OrderType[]>([]);
-    const [totalRevenue, setTotalRevenue] = useState(VENDOR_DASHBOARD_STATS.totalRevenue)
+    const [totalRevenue, setTotalRevenue] = useState(0);
     const [pendingOrders, setPendingOrders] = useState(0)
     const [activeProducts, setActiveProducts] = useState(0)
-    const [lowStock, setLowStock] = useState(VENDOR_DASHBOARD_STATS.lowStock)
-    const [revenueGrowth, setRevenueGrowth] = useState(VENDOR_DASHBOARD_STATS.revenueGrowth)
+    const [lowStock, setLowStock] = useState(0)
+    const [revenueGrowth, setRevenueGrowth] = useState(0)
     const router = useRouter()
         const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
     const [isDownloading, setIsDownloading] = useState(false);
@@ -143,7 +142,7 @@ export default function DashboardPage() {
                 });
             await fetchVendorActiveProducts(token)
                 .then((res) => {
-                    setActiveProducts(res.data.length)
+                    setActiveProducts(res.data.length || 0);
                 })
                 .catch((err) => {
                     console.error("Error fetching vendor active products:", err);

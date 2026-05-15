@@ -22,12 +22,13 @@ const isClient = typeof window !== 'undefined';
 // };
 let cartSaveTimer: ReturnType<typeof setTimeout> | null = null;
 let wishlistSaveTimer: ReturnType<typeof setTimeout> | null = null;
+const CART_SAVE_ACTIONS = ['cart/addToCart', 'cart/removeFromCart', 'cart/clearCart'];
 const localStorageMiddleware = (store: any) => (next: any) => (action: any) => {
     try {
         const result = next(action);
         if (!isClient) return result;
 
-        if (action.type.startsWith('cart/')) {
+if (CART_SAVE_ACTIONS.includes(action.type)) {
             if (cartSaveTimer) clearTimeout(cartSaveTimer);
             cartSaveTimer = setTimeout(() => {
                 const cartState = store.getState().cart;
