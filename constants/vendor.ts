@@ -51,6 +51,7 @@ export const VENDOR_NAV_LINKS: NavLinkType[] = [
   { Dashboard: null, icon: 'layout-dashboard' },
   { Products: "products", icon: 'package' },
   { Orders: "orders", icon: 'shopping-cart' },
+  {'Config Documents': "configDocuments", icon: 'file-text'},
   { Analytics: "analytics", icon: 'chart-column-stacked' },
   { Finances: "finances", icon: 'hand-coins' },
   { Marketing: "marketing", icon: 'megaphone' },
@@ -173,6 +174,56 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
       ]
     }
   ]
+},
+{
+  menu: "Config Documents",
+  sections: [
+    {
+      section: "Policy Management",
+      list: [
+        { 
+          title: "Product Policies", 
+          path: `/vendor/${vendorId}/configDocuments`, 
+          icon: "shield-check" 
+        },
+        { 
+          title: "Assign Policies", 
+          path: `/vendor/${vendorId}/configDocuments/assign`, 
+          icon: "link" 
+        },
+      ],
+    },
+    // {
+    //   section: "Legal & Compliance",
+    //   list: [
+    //     { 
+    //       title: "Vendor Agreements", 
+    //       path: `/vendor/${vendorId}/settings/companyIdentity`, // Maps to existing legal/identity page
+    //       icon: "file-signature" 
+    //     },
+    //     { 
+    //       title: "Tax Profiles", 
+    //       path: `/vendor/${vendorId}/finances/tax-profiles`, 
+    //       icon: "file-text" 
+    //     },
+    //   ],
+    // },
+    {
+      section: "Financial Documents",
+      list: [
+        { 
+          title: "Invoices", 
+          path: `/vendor/${vendorId}/finances/invoices`, 
+          icon: "receipt" 
+        },
+        { 
+          title: "GST Reports", 
+          path: `/vendor/${vendorId}/finances/gst`, 
+          icon: "file-digit" 
+        },
+      ],
+    }
+  ],
 },
 {
   menu: 'Settings',

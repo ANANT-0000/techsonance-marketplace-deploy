@@ -467,3 +467,41 @@ export const docConfigSchema = z.object({
   invoice_footer_text: z.string().optional(),
   invoice_terms_and_conditions: z.string().optional(),
 });
+export const policyFormSchema = z.object({
+  policy_name: z.string()
+    .trim()
+    .min(3, "Policy name must be at least 3 characters")
+    .max(100, "Cannot exceed 100 characters")
+    .regex(/^[a-zA-Z0-9\s\-_]+$/, "Only letters, numbers, spaces, hyphens, and underscores"),
+  
+  policy_type: z.string()
+    .trim()
+    .min(1, "Please select a policy type"),  
+  duration_value: z.number()
+    .min(1, "Duration must be at least 1")
+    .max(36500, "Duration exceeds realistic limits")
+    .optional()
+    .or(z.nan().transform(() => undefined)), 
+  
+  duration_unit: z.string().optional(),
+  
+  coverage_description: z.string().trim().max(2000, "Cannot exceed 2000 characters").optional(),
+  exclusions: z.string().trim().max(2000, "Cannot exceed 2000 characters").optional(),
+  service_provider: z.string().trim().max(100, "Cannot exceed 100 characters").optional(),
+  
+  
+  claim_contact_email: z.literal('')
+    .or(z.string().trim().email("Please enter a valid email address"))
+    .optional(), 
+
+  claim_contact_phone: z.literal('')
+    .or(z.string().trim().regex(/^\+?[1-9]\d{1,14}$/, "Valid format: +1234567890"))
+    .optional(),
+    
+  claim_process_description: z.string().trim().max(2000, "Cannot exceed 2000 characters").optional(),
+  
+  generates_document: z.boolean({ message: "Required" }),
+  is_active: z.boolean({ message: "Required" }),
+});
+
+export type PolicyFormSchemaType = z.infer<typeof policyFormSchema>;

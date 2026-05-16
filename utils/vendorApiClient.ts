@@ -3,19 +3,18 @@ import { BASE_API_URL } from "@/constants";
 import { revalidatePath } from "next/cache";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { OrderStatus, ReturnStatus } from "./Types";
-import { ca, tr } from "zod/v4/locales/index.js";
 
 // ==========================================
 // CATEGORY API ENDPOINTS
 // ==========================================
 
-export const fetchVendorsProductsCategory = async (vendorId: string, token: string) => {
+export const fetchVendorsProductsCategory = async (token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/v1/categories/${vendorId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/categories`, {
             method: 'GET',
-            cache: 'force-cache',
-            next: { revalidate: 3600 },
+            // cache: 'force-cache',
+            // next: { revalidate: 360 },
             headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -35,7 +34,7 @@ export const createVendorProductCategory = async (vendorId: string, categoryData
     try {
         const companyDomain = await getCompanyDomain();
         console.log(categoryData);
-        const response = await fetch(`${BASE_API_URL}/v1/categories/${vendorId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/categories`, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -47,8 +46,7 @@ export const createVendorProductCategory = async (vendorId: string, categoryData
         if (response.status !== 201) {
             console.error('Failed to create product category');
         }
-        revalidatePath(`/vendor/${vendorId}`);
-        revalidatePath(`/vendor/${vendorId}/products/categories`);
+        // revalidatePath(`/vendor/${vendorId}/products/categories`);
         return await response.json();
     }
     catch (error) {
@@ -59,7 +57,7 @@ export const createVendorProductCategory = async (vendorId: string, categoryData
 export const updateVendorProductCategory = async (vendorId: string, categoryId: string, categoryData: { name: string; description?: string }, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/v1/categories/${vendorId}/${categoryId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/categories/${categoryId}`, {
             method: 'PATCH',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -84,7 +82,7 @@ export const deleteVendorProductCategory = async (vendorId: string, categoryId: 
         console.log('vendorId', vendorId);
         console.log('categoryId', categoryId);
 
-        const response = await fetch(`${BASE_API_URL}/v1/categories/${vendorId}/${categoryId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/categories/${categoryId}`, {
             method: 'DELETE',
             headers: {
                 // Authorization: `Bearer ${token}`,
@@ -110,10 +108,10 @@ export const createProduct = async (productData: FormData, vendorId: string, tok
     try {
         const companyDomain = await getCompanyDomain();
 
-        const response = await fetch(`${BASE_API_URL}/v1/products/${vendorId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/products/ `, {
             method: 'POST',
             headers: {
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
                 'company-domain': companyDomain,
             },
             body: productData
@@ -137,6 +135,7 @@ export const updateProduct = async (formData: FormData, vendorId: string, produc
             body: formData,
             headers: {
                 'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
             },
         });
         if (!response.ok) {
@@ -160,6 +159,8 @@ export const updateProductVariantStatus = async (productVariantId: string, vendo
             headers: {
                 'Content-Type': 'application/json',
                 'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+
             },
         });
         if (!response.ok) {
@@ -180,6 +181,27 @@ export const fetchVendorProducts = async (token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/products/all`, {
+            method: 'GET',
+            // cache: 'force-cache',
+            // next: { revalidate: 3600 },
+            headers: {
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+        }); console.log(response.status)
+        if (response.status !== 200) {
+            console.error('Failed to fetch products');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+    }
+}
+export const fetchVendorProductsOptions = async (token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/products/options`, {
             method: 'GET',
             // cache: 'force-cache',
             // next: { revalidate: 3600 },
@@ -227,8 +249,9 @@ export const fetchVendorOneProducts = async (id: string, token: string) => {
             cache: 'no-cache',
             // next: { revalidate: 3600 },
             headers: {
-                // Authorization: `Bearer ${token}`,
+           
                 'company-domain': companyDomain,
+                'Authorization': `Bearer ${token}`
             },
         });
         if (response.status !== 200) {
@@ -247,7 +270,7 @@ export const deleteProduct = async (productId: string, vendorId: string, token: 
             method: 'DELETE',
             headers: {
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,    
             },
         });
         if (!response.ok) {
@@ -331,7 +354,7 @@ export const fetchProductVariants = async (productId: string, token: string) => 
             next: { revalidate: 3600 },
             headers: {
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
         console.log(response)
@@ -353,7 +376,7 @@ export const deleteProductVariant = async (productId: string, variantId: string,
             method: 'DELETE',
             headers: {
                 'company-domain': companyDomain,
-                // Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,    
             },
         });
         if (!response.ok) {
@@ -1397,19 +1420,31 @@ export const assignPolicyToCategory = async (
   return res.json();
 };
 
-export const removePolicyFromCategory = async (
-  categoryId: string,
-  policyId: string,
+
+
+export const assignProductPolicyOverride = async (
+  payload: { product_id: string; policy_id: string; overrides_category?: boolean },
   token: string,
 ) => {
   const domain = await getCompanyDomain();
-  const res = await fetch(
-    `${BASE_API_URL}/v1/product-policies/category/${categoryId}/policy/${policyId}`,
-    {
-      method: 'DELETE',
-      headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/product-override`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'company-domain': domain,
+      Authorization: `Bearer ${token}`,
     },
-  );
+    body: JSON.stringify(payload),
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+export const removePolicyFromCategory = async (assignmentId: string, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/category-assign/${assignmentId}`, {
+    method: 'DELETE',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
   revalidatePath('/vendor');
   return res.json();
 };

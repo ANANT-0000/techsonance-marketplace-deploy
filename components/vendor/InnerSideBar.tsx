@@ -6,7 +6,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { is } from "zod/v4/locales/index.js";
 export const InnerSideBar = ({
     vendorId,
     selectedMenu,

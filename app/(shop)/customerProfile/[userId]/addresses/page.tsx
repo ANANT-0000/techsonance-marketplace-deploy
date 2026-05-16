@@ -12,8 +12,6 @@ import { AddressOperationEnum, Address } from "@/utils/Types";
 import { fetchDeleteUserAddress } from "@/utils/customerApiClient-SA";
 import { authToken } from "@/utils/authToken";
 import { ActionType, ConfirmationModal } from "@/components/common/ConfirmationModal";
-import { se } from "date-fns/locale";
-import { AxiosAPI } from "@/utils/authApiClient";
 
 export default function Addresses() {
     const user = useAppSelector((state: RootState) => state.auth.user);
