@@ -1392,16 +1392,6 @@ export const deleteProductPolicy = async (id: string, token: string) => {
 
 // ─── Category Policy Assignments ─────────────────────────────────────────────
 
-export const fetchCategoryPolicies = async (categoryId: string, token: string) => {
-  const domain = await getCompanyDomain();
-  const res = await fetch(`${BASE_API_URL}/v1/product-policies/category/${categoryId}`, {
-    cache: 'no-store',
-    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) return { data: [] };
-  return res.json();
-};
-
 export const assignPolicyToCategory = async (
   payload: { category_id: string; policy_id: string; priority?: number },
   token: string,
@@ -1422,7 +1412,7 @@ export const assignPolicyToCategory = async (
 
 
 
-export const assignProductPolicyOverride = async (
+export const fetchCreateAssignedProductPolicyOverride = async (
   payload: { product_id: string; policy_id: string; overrides_category?: boolean },
   token: string,
 ) => {
@@ -1439,9 +1429,96 @@ export const assignProductPolicyOverride = async (
   revalidatePath('/vendor');
   return res.json();
 };
+export const fetchAssignedProductPolicyOverride = async (
+  payload: { product_id: string; policy_id: string; overrides_category?: boolean },
+  token: string,
+) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/product-override`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'company-domain': domain,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+export const fetchCategoryPolicies = async (categoryId: string, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/category/${categoryId}`, {
+    cache: 'no-store',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { data: [] };
+  return res.json();
+};
+
+export const assignPolicyToCategories = async (
+  payload: { category_id: string; policy_id: string; priority?: number },
+  token: string,
+) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/category-assign`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'company-domain': domain,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
 export const removePolicyFromCategory = async (assignmentId: string, token: string) => {
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/category-assign/${assignmentId}`, {
+    method: 'DELETE',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+
+// ─── Product Policy Overrides ────────────────────────────────────────────────
+
+export const fetchProductPolicyOverrides = async (productId: string, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/product-override/${productId}`, {
+    cache: 'no-store',
+    headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { data: [] };
+  return res.json();
+};
+
+export const fetchCreateAssignedProductPolicyOverride = async (
+  payload: { product_id: string; policy_id: string; overrides_category?: boolean },
+  token: string,
+) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/product-override`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'company-domain': domain,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  revalidatePath('/vendor');
+  return res.json();
+};
+
+export const removeProductPolicyOverride = async (overrideId: string, token: string) => {
+  const domain = await getCompanyDomain();
+  const res = await fetch(`${BASE_API_URL}/v1/product-policies/product-override/${overrideId}`, {
     method: 'DELETE',
     headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
   });
