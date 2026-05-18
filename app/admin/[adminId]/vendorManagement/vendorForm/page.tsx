@@ -37,7 +37,7 @@ export default function VendorFormPage() {
         watch,
         reset,
         formState: { errors, isSubmitting },
-    } = useForm<VendorRegisterSchema>({
+    } = useForm ({
         resolver: zodResolver(vendorRegisterSchema),
         mode: "onChange",
         defaultValues: {

@@ -13,7 +13,7 @@ const getWarehouseOptions = async (token: string, vendorId: string, setWarehouse
     });
 }
 const getCategoryOptions = async (token: string, vendorId: string, setCategoryOptions: any) => {
-    await fetchVendorsProductsCategory(vendorId, token).then((res) => {
+    await fetchVendorsProductsCategory( token).then((res) => {
         setCategoryOptions(res.data.map((c: any) => ({ value: c.id, label: c.name })));
     }).catch((error) => {
         console.error("Error fetching category options:", error);

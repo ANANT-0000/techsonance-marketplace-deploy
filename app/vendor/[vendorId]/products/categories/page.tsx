@@ -6,7 +6,7 @@ import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const getCategoryOptions = async (token: string, vendorId: string, setCategoryOptions: any) => {
-    await fetchVendorsProductsCategory(vendorId, token).then((res) => {
+    await fetchVendorsProductsCategory(token).then((res) => {
         setCategoryOptions(res.data.map((c: any) => ({ id: c.id, name: c.name, description: c.description })));
     }).catch((error) => {
         console.error("Error fetching category options:", error);

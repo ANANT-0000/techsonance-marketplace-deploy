@@ -32,9 +32,9 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     const router = useRouter();
     const token = authToken();
 
-    // Track in-flight server sync so we don't stack requests
+     
     const syncingRef = useRef(false);
-    // Store the pre-optimistic snapshot for rollback
+     
     const rollbackRef = useRef<{ quantity: number; cartItemId?: string; cartId?: string } | null>(null);
 
     useEffect(() => {

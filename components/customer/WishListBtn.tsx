@@ -1,130 +1,152 @@
 'use client';
-import { Heart } from 'lucide-react'
+import { Heart } from 'lucide-react';
 import { addToWishlist, removeFromWishlist } from '@/lib/features/Wishlist';
-import { useMediaQuery } from 'react-responsive'
+import { useMediaQuery } from 'react-responsive';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { fetchAddWishList, fetchDeleteWishList } from '@/utils/customerApiClient';
 import { RootState } from '@/lib/store';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { authToken } from '@/utils/authToken';
-export function WishListBtn({ productVariantId
-  , styles, iconSize }: {
-    productVariantId
-    ?: string, styles?: string, iconSize?: number
-  }) {
-  const dispatch = useAppDispatch();
-  const { wishItems } = useAppSelector((state: RootState) => state.wishlist)
-  const { user, role } = useAppSelector((state: RootState) => state.auth)
-  const [isPending, setIsPending] = useState(false);
-  const existingWishlistItem = wishItems.some(
-    (item) => item.product_variant_id === productVariantId
-  );
 
-  console.log("existingWishlistItem", existingWishlistItem);
-  console.log(wishItems)
-  if (existingWishlistItem) {
-    console.log("This item was added on: ", existingWishlistItem);
-  }
+export function WishListBtn({
+    productVariantId,
+    styles,
+    iconSize,
+}: {
+    productVariantId?: string;
+    styles?: string;
+    iconSize?: number;
+}) {
+    const dispatch = useAppDispatch();
+    const { wishItems } = useAppSelector((state: RootState) => state.wishlist);
+    const { user } = useAppSelector((state: RootState) => state.auth);
+    const router = useRouter();
+    const token = authToken();
 
-  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
-  const iconSizeValue = iconSize || (isMobile ? 28 : 32);
-  const router = useRouter();
-  const token = authToken();
-  console.log("productVariantId", productVariantId);
-  const handleAddToWishlist = async (variantId: string) => {
-    if (isPending || !variantId) return;
-    if (!user?.id||!token) {
-      router.push('/auth/customerLogin');
-      return;
-    }
+    const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+    const iconSizeValue = iconSize ?? (isMobile ? 28 : 32);
 
-    setIsPending(true);
+    // Prevent stacking concurrent requests for the same item
+    const syncingRef = useRef(false);
 
-    try {
-      if (existingWishlistItem) {
-        // ── REMOVE PATH ──────────────────────────────────────────
-        const itemToRemove = wishItems.find(
-          item => item.product_variant_id === variantId
-        );
-        if (!itemToRemove) return;
-        dispatch(removeFromWishlist(itemToRemove.id));
+    const existingItem = wishItems.find(
+        (item) => item.product_variant_id === productVariantId,
+    );
+    const isWishlisted = !!existingItem;
 
-        const response = await fetchDeleteWishList(variantId, user.id, token);
+    const handleToggle = async () => {
+        if (syncingRef.current || !productVariantId) return;
 
-        if (!response?.success) {
-          dispatch(addToWishlist({
-            id: itemToRemove.id,
-            wishlist_id: itemToRemove.wishlist_id,
-            product_variant_id: itemToRemove.product_variant_id,
-            created_at: itemToRemove.created_at,
-            updated_at: itemToRemove.updated_at,
-          }));
+        if (!user?.id || !token) {
+            router.push('/auth/customerLogin');
+            return;
         }
 
-      } else {
-        // ── ADD PATH ─────────────────────────────────────────────
-        const response = await fetchAddWishList(variantId, user.id, token);
+        syncingRef.current = true;
 
-        if (!response?.success || !response?.data) {
-          console.error('Add to wishlist failed:', response?.message);
-          return;
+        // ── REMOVE ──────────────────────────────────────────────────────────
+        if (isWishlisted && existingItem) {
+            // 1. Optimistic remove — instant UI
+            dispatch(removeFromWishlist(existingItem.id));
+
+            try {
+                const response = await fetchDeleteWishList(productVariantId, user.id, token);
+
+                if (!response?.success) {
+                    // 2a. Server rejected — roll back
+                    dispatch(addToWishlist({
+                        id: existingItem.id,
+                        wishlist_id: existingItem.wishlist_id,
+                        product_variant_id: existingItem.product_variant_id,
+                        created_at: existingItem.created_at,
+                        updated_at: existingItem.updated_at,
+                    }));
+                }
+                // 2b. Server confirmed — already removed, nothing to do
+            } catch {
+                // 3. Network error — roll back
+                dispatch(addToWishlist({
+                    id: existingItem.id,
+                    wishlist_id: existingItem.wishlist_id,
+                    product_variant_id: existingItem.product_variant_id,
+                    created_at: existingItem.created_at,
+                    updated_at: existingItem.updated_at,
+                }));
+            } finally {
+                syncingRef.current = false;
+            }
+
+            return;
         }
 
-        const item = response.data;
-        console.log("wishlist btn item", item)
-        const wishItem = {
-          id: item.id,
-          wishlist_id: item.wishlist_id,
-          product_variant_id: item.product_variant_id,
-          created_at: item.created_at,
-          updated_at: item.updated_at,
+        // ── ADD ──────────────────────────────────────────────────────────────
+        // 1. Optimistic add with a temporary placeholder ID
+        const tempId = `temp_${productVariantId}_${Date.now()}`;
+        const tempItem = {
+            id: tempId,
+            wishlist_id: '',
+            product_variant_id: productVariantId,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
         };
-        console.log("wishItem", wishItem)
-        dispatch(addToWishlist(wishItem));
-      }
+        dispatch(addToWishlist(tempItem));
 
-    } catch (err) {
-      console.error('Wishlist operation failed:', err);
-    } finally {
-      setIsPending(false);
-    }
-  };
-  return (
-    <>
-      <motion.button
-        onClick={() => handleAddToWishlist(productVariantId ?? '')}
-        disabled={isPending}
-        style={{ pointerEvents: isPending ? 'none' : 'auto' }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        className={`rounded-full transition-colors duration-300 flex items-center justify-center mt-4
-        lg:px-2 px-1 lg:py-2 py-1
-        ${styles} 
-        ${existingWishlistItem
-            ? 'bg-pink-100 text-pink-500'
-            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-          }
-      `}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={existingWishlistItem ? "active" : "inactive"}
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.7, opacity: 0 }}
-            transition={{ duration: 0.15 }}
-          >
-            <Heart
-              size={iconSizeValue}
-              color={existingWishlistItem ? "#ec4899" : "currentColor"}
-              fill={existingWishlistItem ? "#ec4899" : "none"}
-            />
-          </motion.div>
-        </AnimatePresence>
-      </motion.button>
-    </>
-  )
+        try {
+            const response = await fetchAddWishList(productVariantId, user.id, token);
+
+            if (!response?.success || !response?.data) {
+                // 2a. Server rejected — roll back by removing the temp item
+                dispatch(removeFromWishlist(tempId));
+            } else {
+                // 2b. Server confirmed — replace temp item with real server data
+                dispatch(removeFromWishlist(tempId));
+                dispatch(addToWishlist({
+                    id: response.data.id,
+                    wishlist_id: response.data.wishlist_id,
+                    product_variant_id: response.data.product_variant_id,
+                    created_at: response.data.created_at,
+                    updated_at: response.data.updated_at,
+                }));
+            }
+        } catch {
+            // 3. Network error — roll back
+            dispatch(removeFromWishlist(tempId));
+        } finally {
+            syncingRef.current = false;
+        }
+    };
+
+    return (
+        <motion.button
+            onClick={handleToggle}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+            className={`rounded-full transition-colors duration-300 flex items-center justify-center mt-4
+                lg:px-2 px-1 lg:py-2 py-1
+                ${styles}
+                ${isWishlisted
+                    ? 'bg-pink-100 text-pink-500'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                }`}
+        >
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={isWishlisted ? 'active' : 'inactive'}
+                    initial={{ scale: 0.7, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.7, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                >
+                    <Heart
+                        size={iconSizeValue}
+                        color={isWishlisted ? '#ec4899' : 'currentColor'}
+                        fill={isWishlisted ? '#ec4899' : 'none'}
+                    />
+                </motion.div>
+            </AnimatePresence>
+        </motion.button>
+    );
 }

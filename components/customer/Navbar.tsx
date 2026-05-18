@@ -84,11 +84,11 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: 
                 })}
             </ul>
             <span className="flex gap-4">
-                <div className="border-2    border-black/40 rounded-full flex items-center px-5   gap-2   ">
+                {/* <div className="border-2    border-black/40 rounded-full flex items-center px-5   gap-2   ">
                     <input type="text" name="search" id="" placeholder="Search..." className="focus:outline-none text-lg  w-30 py-1" /> <button className="focus:outline-none">
                         <img src={searchImg} alt="" className="h-4 w-4" />
                     </button>
-                </div>
+                </div> */}
                 {path === '/customerRegister' || path === '/customerLogin' || path.includes('/customerProfile') ? null :
                     <div className="  flex gap-6 items-center ">
                         {showUserContent ?
