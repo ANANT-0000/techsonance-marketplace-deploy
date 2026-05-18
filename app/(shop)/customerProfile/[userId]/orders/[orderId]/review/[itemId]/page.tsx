@@ -1,41 +1,84 @@
 ﻿"use client";
-
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Star, AlertCircle } from "lucide-react";
-import { fetchOrderDetails } from "@/utils/customerApiClient";
-import { formatCurrency } from "@/lib/utils";
+import { fetchExistingReviews, fetchOrderDetails, fetchSubmitReview } from "@/utils/customerApiClient";
 import { authToken } from "@/utils/authToken";
 
+interface ProductImage {
+  image_url: string;
+}
+interface ProductVariant {
+  id: string;
+  variant_name: string;
+  price: string; 
+  images: ProductImage[];
+}
+interface ReviewOrderItem {
+  id: string;
+  quantity: number;
+  order_status: "delivered" | "processing" | "pending" | "cancelled"; 
+  price: string;
+  variant: ProductVariant;
+  return_request: null; 
+  cancelledRecord: null; 
+  invoice: null; 
+}
+ 
 export default function WriteReviewPage() {
-    const { orderId, itemId } = useParams<{ orderId: string; itemId: string }>();
+    const { orderId, itemId, userId } = useParams<{ orderId: string; itemId: string; userId: string }>();
     const router = useRouter();
     
-    const [targetItem, setTargetItem] = useState<any>(null);
+    const [targetItem, setTargetItem] = useState<ReviewOrderItem | null>(null);
     const [rating, setRating] = useState<number>(0);
     const [hoverRating, setHoverRating] = useState<number>(0);
     const [reviewText, setReviewText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
     const token = authToken();
-    // Fetch the product details to display at the top
-    useEffect(() => {
-        if (!orderId || !token) return;
-        const getOrder = async () => {
-            const res = await fetchOrderDetails(orderId, token);
-            if (res?.data) {
-                const specificItem = res.data.items.find(
-                    (i: any) => i.productVariant.id === itemId
-                );
-                setTargetItem(specificItem);
-            }
-        };
-        getOrder();
-    }, [orderId, itemId, token]);
 
+   useEffect(() => {
+    if (!orderId || !token || !userId) return; 
+
+    const fetchOrderAndReview = async () => {
+ 
+        const orderRes = await fetchOrderDetails(orderId, token);
+        console.log("Order Res", orderRes);
+        
+        if (orderRes?.data) {
+            const specificItem = orderRes.data.items.find(
+                (i: ReviewOrderItem) => i.id === itemId 
+            );
+            
+ 
+            setTargetItem(specificItem);
+
+    
+            if (specificItem?.variant?.id) {
+                const reviewRes = await fetchExistingReviews(specificItem.variant.id, userId, token);
+                console.log("Review Res", reviewRes);
+                
+                if (reviewRes?.data) {
+                    setRating(reviewRes.data.rating);
+                    setReviewText(reviewRes.data.review);
+                }
+            }
+        }
+    };
+
+    fetchOrderAndReview();
+}, [orderId, itemId, token, userId]);  
+ 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+        const formData= new FormData();
+        const payload={
+            product_variant_id: targetItem?.variant.id,
+            rating: rating.toString(),
+            review: reviewText
+        }
+        formData.append('reviewData', JSON.stringify(payload));
+ 
         // Basic Validation
         if (rating === 0) {
             setError("Please select a star rating.");
@@ -50,19 +93,10 @@ export default function WriteReviewPage() {
         setError("");
 
         try {
-            // NOTE: You will need to add fetchSubmitReview to your customerApiClient.ts
-            // await fetchSubmitReview({
-            //     variantId: itemId,
-            //     rating: rating,
-            //     review: reviewText
-            // });
-
-            console.log("Submitting review:", { itemId, rating, reviewText });
+            console.log("Submitting review:", payload);
             
-            // Simulating API network delay
-            await new Promise((resolve) => setTimeout(resolve, 1200));
-
-            alert("Thank you! Your review has been submitted successfully.");
+            const res=await fetchSubmitReview(formData,userId, token!);     
+            console.log("Review submission response:", res);       
             router.back();
             
         } catch (err) {
@@ -71,7 +105,7 @@ export default function WriteReviewPage() {
             setIsSubmitting(false);
         }
     };
-
+    console.log('targetItem', targetItem);
     if (!targetItem) return <div className="p-8 text-center text-gray-500">Loading item details...</div>;
 
     return (
@@ -86,13 +120,14 @@ export default function WriteReviewPage() {
             {/* Product Summary Card */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-6">
                 <div className="flex gap-4 items-center">
+                    {/* Mapped correctly to targetItem.variant based on the provided JSON */}
                     <img 
-                        src={targetItem.productVariant.images[0]?.image_url} 
-                        alt={targetItem.productVariant.variant_name}
+                        src={targetItem.variant.images[0]?.image_url} 
+                        alt={targetItem.variant.variant_name}
                         className="w-20 h-20 object-contain bg-[#f7f7f7] rounded-lg mix-blend-multiply"
                     />
                     <div>
-                        <p className="font-semibold text-gray-900 text-lg">{targetItem.productVariant.variant_name}</p>
+                        <p className="font-semibold text-gray-900 text-lg">{targetItem.variant.variant_name}</p>
                         <p className="text-gray-500 text-sm mt-1">Purchased in this order</p>
                     </div>
                 </div>
@@ -155,7 +190,7 @@ export default function WriteReviewPage() {
                         className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-gray-50/50"
                     ></textarea>
                     <p className="text-xs text-gray-400 mt-2 text-right">
-                        {reviewText.length} characters
+                        {reviewText && reviewText.length} characters
                     </p>
                 </div>
 

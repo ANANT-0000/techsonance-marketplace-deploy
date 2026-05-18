@@ -3,8 +3,8 @@ import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { assignPolicyToCategory, assignProductPolicyOverride, deleteProductPolicy, fetchProductPolicies, fetchVendorOneProducts, fetchVendorProductsOptions, fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
+ 
+import { assignPolicyToCategory, deleteProductPolicy, fetchCreateAssignedProductPolicyOverride, fetchProductPolicies, fetchVendorOneProducts, fetchVendorProductsOptions, fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
 import { authToken } from "@/utils/authToken";
 import { set } from "date-fns";
 import fa from "zod/v4/locales/fa.cjs";
@@ -84,7 +84,7 @@ const onSubmit = async (data: AssignPolicySchema) => {
                 { category_id: data.target_id, policy_id        : data.policy_id, priority: data.priority ?? 1 },
                 token!,
               )
-            : await assignProductPolicyOverride(
+            : await fetchCreateAssignedProductPolicyOverride(
                 { product_id: data.target_id, policy_id: data.policy_id, overrides_category: data.overrides_category ?? true },
                 token!,
               );

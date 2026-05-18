@@ -1,5 +1,5 @@
 ﻿"use client"
-import { fetchVendorOneProducts, fetchVendorsProductsCategory, fetchVendorWarehouse } from "@/utils/vendorApiClient";
+import { fetchTaxRateOptions, fetchVendorOneProducts, fetchVendorsProductsCategory, fetchVendorWarehouse } from "@/utils/vendorApiClient";
 import { ProductForm } from "@/components/vendor/ProductForm";
 import { Inventory, ProductResponseType, ProductStatusEnum } from "@/utils/Types";
 import { ProductFormInput, ProductFormOutput, ProductFormValuesType } from "@/utils/validation";
@@ -59,8 +59,8 @@ interface ProductVariant {
     inventory: Inventory;
     warehouse_id: string;
 }
-const getCategoryOptions = async (setCategoryOptions: (categoryOptions: { value: string; label: string; }[]) => void, vendorId: string, token: string) => {
-    await fetchVendorsProductsCategory(vendorId, token).then((res) => {
+const getCategoryOptions = async (setCategoryOptions: (categoryOptions: { value: string; label: string; }[]) => void,  token: string) => {
+    await fetchVendorsProductsCategory( token).then((res) => {
         setCategoryOptions(res.data.map((c: any) => ({ value: c.id, label: c.name })));
     }).catch((error) => {
         console.error("Error fetching category options:", error);
@@ -77,7 +77,7 @@ const getExitingProduct = async (setGetExitingProduct: (getExitingProduct: Produ
     }) : null;
 }
 
-const getwarehouseOptions = async (setWarehouseOptions: (warehouseOptions: { value: string; label: string; }[]) => void, token: string) => {
+const getWarehouseOptions = async (setWarehouseOptions: (warehouseOptions: { value: string; label: string; }[]) => void, token: string) => {
     await fetchVendorWarehouse(token).then((res) => {
         setWarehouseOptions(res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name })));
     }).catch((error) => {
@@ -85,10 +85,18 @@ const getwarehouseOptions = async (setWarehouseOptions: (warehouseOptions: { val
         return [];
     });
 }
+const getTaxRatesOptions=async(token: string, setTaxRatesOptions: any) => {
+    fetchTaxRateOptions(token).then((res) => {
+        setTaxRatesOptions(res.data.map((t: any) => ({ value: t.id, label: t.tax_rate_name })));
+    }).catch((error) => {
+        console.error("Error fetching tax rates options:", error);
+    });
+}
 export default function ProductUpdateFormPage() {
     const { vendorId, id } = useParams<{ vendorId: string, id: string }>();
     const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string; }[]>([]);
     const [warehouseOptions, setWarehouseOptions] = useState<{ value: string; label: string; }[]>([]);
+    const [taxRatesOptions, setTaxRatesOptions] = useState<{ value: string; label: string; }[]>([]);
     const [exitingProduct, setGetExitingProduct] = useState<ProductVariant | null>(null);
     const token = authToken();
     if (!token) {
@@ -96,8 +104,9 @@ export default function ProductUpdateFormPage() {
     }
     useEffect(() => {
         getExitingProduct(setGetExitingProduct, id, token);
-        getCategoryOptions(setCategoryOptions, vendorId, token);
-        getwarehouseOptions(setWarehouseOptions, token);
+        getCategoryOptions(setCategoryOptions, token);
+        getWarehouseOptions(setWarehouseOptions, token);
+        getTaxRatesOptions(token, setTaxRatesOptions);
     }, [token, id]);
     console.log("exitingProduct",exitingProduct)
     const exitingData: Partial<ProductFormInput | ProductFormOutput | {}> = exitingProduct ? {
@@ -135,7 +144,7 @@ export default function ProductUpdateFormPage() {
     return (
         <main className="min-h-screen  py-8 w-full">
             <div className=" mx-auto">
-                <ProductForm categoryOptions={categoryOptions} warehouseOptions={warehouseOptions} vendorId={vendorId} existingData={exitingData} productId={id} />
+                <ProductForm  categoryOptions={categoryOptions} warehouseOptions={warehouseOptions} taxRatesOptions={taxRatesOptions} vendorId={vendorId} existingData={exitingData} productId={id} />
             </div>
         </main>
     );

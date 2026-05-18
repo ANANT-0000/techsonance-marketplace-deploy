@@ -181,9 +181,8 @@ export default function ProductPage() {
             </section>
             <section className='mt-20'>
                 <h2 className='text-2xl font-bold text-gray-900 mb-8'>Customer Reviews</h2>
-                {
-                    product?.variants[0]?.reviews &&
-                    <ProductReview product={product} />
+                { product && product.id &&
+                    <ProductReview productId={product.id } />
                 }
             </section>
             <section className='mt-20'>

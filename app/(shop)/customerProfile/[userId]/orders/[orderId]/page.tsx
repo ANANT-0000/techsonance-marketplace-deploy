@@ -24,6 +24,7 @@ import { fetchOrderDetails } from "@/utils/customerApiClient";
 import { useRouter } from "next/navigation";
 import { OrderStatus } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
+import { BASE_API_URL } from "@/constants";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -294,9 +295,10 @@ interface OrderItemRowProps {
     onCancel: (id: string) => void;
     onReturnReplace: (id: string) => void;
     onWriteReview: (id: string) => void;
+    handleDownload: (url: string, filename: string) => void;
 }
 
-function OrderItemRow({ item, isSingleItem, onCancel, onReturnReplace, onWriteReview }: OrderItemRowProps) {
+function OrderItemRow({ item, isSingleItem, onCancel, onReturnReplace, onWriteReview ,handleDownload}: OrderItemRowProps) {
     const status = item.order_status.toLowerCase();
 
     const isCancelled = status === "cancelled";
@@ -330,19 +332,36 @@ function OrderItemRow({ item, isSingleItem, onCancel, onReturnReplace, onWriteRe
                 </div>
 
                 {/* Details */}
+
                 <div className="flex-grow flex flex-col justify-between gap-3">
                     <div>
                         <Link
                             href={`/shopping/${item.variant.id}`}
                             className="font-bold text-gray-900 text-sm sm:text-base hover:text-blue-600 line-clamp-2 transition-colors"
-                        >
+                            >
                             {item.variant.variant_name}
                         </Link>
+                <div className="flex justify-between w-full">
+                    <span >
                         <p className="text-gray-500 text-sm mt-1">Qty: {item.quantity}</p>
                         <p className="text-gray-900 font-semibold mt-0.5">
                             ₹{formatCurrency(Number(item.price))}
                         </p>
+   </span>
+                           {/* { item.invoice && item?.invoice?.invoice_url && (
+                                     <button 
+      onClick={() => handleDownload(
+         item.invoice.invoice_url,
+        item.invoice.invoice_number ?? "invoice.pdf"
+      )}
+                                        className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-1 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
+                                    >
+                                        <Download size={16} /> Download Invoice
+                                    </button>
+                                )} */}
+                            </div>
                     </div>
+                  
 
                     {/* ── Per-item tracker (only shown when there are multiple items OR single non-cancelled) */}
                     {!isCancelled && !isPastDelivery && (
@@ -458,6 +477,7 @@ export default function OrderDetailsPage() {
     const paymentStatus = order?.payment?.payment_status ?? "";
     console.log('paymentStatus', order?.payment.payment_status
 )
+
 const handleDownload = async (url: string, filename: string) => {
   try {
     const response = await fetch(url);
@@ -474,7 +494,38 @@ const handleDownload = async (url: string, filename: string) => {
   } catch (error) {
     console.error('Download failed:', error);
   }
+};const processMultipleDownloads = async (urls: string[]) => {
+  if (!urls || urls.length === 0) return;
+
+  for (let i = 0; i < urls.length; i++) {
+    const url = urls[i];
+    const extractedFilename = url.substring(url.lastIndexOf('/') + 1);
+    
+    await handleDownload(url, extractedFilename);
+    await new Promise(resolve => setTimeout(resolve, 300)); 
+  }
 };
+ const handleOrderWarrantiesDownload = async (orderId: string) => {
+  try {
+    // Replace this URL with your actual server endpoint
+    const response = await fetch(`${BASE_API_URL}/v1/orders/warranty/${orderId}`); 
+    const result = await response.json();
+
+    // Check if the response matches your expected format
+    if (result.success && result.data && result.data.length > 0) {
+      // Trigger the downloads with the array of URLs
+      await processMultipleDownloads(result.data);
+    } else {
+      console.warn('No warranties found or request failed:', result.message);
+      // Optional: Show a UI toast/alert here letting the user know no files were found
+    }
+  } catch (error) {
+    console.error('Failed to fetch warranty URLs from server:', error);
+    // Optional: Show an error toast/alert to the user here
+  }
+};
+
+
     return (
         <div className="min-h-screen pb-12 font-sans rounded-2xl">
             <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -531,6 +582,7 @@ const handleDownload = async (url: string, filename: string) => {
                                     onCancel={handleCancelItem}
                                     onReturnReplace={handleReturnReplace}
                                     onWriteReview={handleWriteReview}
+                                    handleDownload={handleDownload}
                                 />
                             ))}
                         </motion.div>
@@ -638,7 +690,7 @@ const handleDownload = async (url: string, filename: string) => {
                                         <Download size={16} /> Download Invoice
                                     </button>
                                 )}
-                                <button className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+                                <button onClick={()=>handleOrderWarrantiesDownload(orderId)} className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer">
                                     <FileText size={16} /> Request Warranty Slip
                                 </button>
                             </div>

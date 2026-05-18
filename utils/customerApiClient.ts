@@ -414,3 +414,70 @@ export const fetchUserReturns = async (userId: string, token: string) => {
         console.log('Error fetching user returns:', error);
     }
 };
+export const fetchSubmitReview = async (reviewData:FormData, userId: string, token: string) => {
+    const companyDomain = await getCompanyDomain();
+    try {
+        const response = await fetch(`${BASE_API_URL}/v1/product-review/${userId}`, {
+            method: 'POST',
+            headers: {
+                "company-domain": companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+            body: reviewData,
+        });
+        if (response.status !== 200 && response.status !== 201) {
+            console.log('Failed to submit review');
+        }
+        return await response.json();
+    }
+    catch (error) {
+        console.log('Error submitting review:', error);
+    }
+}
+export const fetchReviews = async (productId: string) => {
+    try {
+        const response = await fetch(`${BASE_API_URL}/v1/product-review/product/${productId}`, {    
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "company-domain": await getCompanyDomain(),
+            },
+        });
+        if (response.status !== 200) {
+            console.log('Failed to fetch reviews');
+            return {
+                data:[]
+            };
+        }   
+        return await response.json();
+    } catch (error) {   
+        console.log('Error fetching reviews:', error);  
+        return {
+            data: []
+        };
+    }
+}
+export const fetchExistingReviews = async (variantId: string,userId: string,token: string) => {
+    try {
+        const response = await fetch(`${BASE_API_URL}/v1/product-review/existing/${variantId}/${userId}`, {    
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "company-domain": await getCompanyDomain(),
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        if (response.status !== 200) {
+            console.log('Failed to fetch reviews');
+            return {
+                data:[]
+            };
+        }   
+        return await response.json();
+    } catch (error) {   
+        console.log('Error fetching reviews:', error);  
+        return {
+            data: []
+        };
+    }
+}

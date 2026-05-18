@@ -11,9 +11,9 @@ import { authToken } from "@/utils/authToken";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export const PRODUCT_TABLE_HEAD = ["PRODUCT", "VARIANT", "SKU", "STOCK", "PRICE", "ACTION"];
+export const PRODUCT_TABLE_HEAD = ["PRODUCT", "CATEGORY", "VARIANT", "SKU", "STOCK", "PRICE", "ACTION"];
  const getCategoryOptions=async(setCategoryOptions: (options: { value: string; label: string }[]) => void, vendorId: string, token: string) =>{
-    await fetchVendorsProductsCategory(vendorId, token ?? '')
+    await fetchVendorsProductsCategory( token ?? '')
         .then((res) => {
             const categories = res?.data || [];
             setCategoryOptions(categories.map((cat: any) => ({ value: cat.id, label: cat.name })));
@@ -176,7 +176,13 @@ export default  function Products({ params }: { params: Promise<{ vendorId: stri
                                                 </span>
                                             </div>
                                         </TableCell>
-
+<TableCell>
+                                            <span className="text-sm text-gray-500">
+                                                {item.category?.name || (
+                                                    <span className="text-gray-300">—</span>
+                                                )}
+                                            </span>
+</TableCell>
                                         {/* Variant */}
                                         <TableCell className="px-4 py-3">
                                             {item.variants && item.variants.length > 0 ? (

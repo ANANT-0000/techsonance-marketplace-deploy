@@ -1410,25 +1410,7 @@ export const assignPolicyToCategory = async (
   return res.json();
 };
 
-
-
-export const fetchCreateAssignedProductPolicyOverride = async (
-  payload: { product_id: string; policy_id: string; overrides_category?: boolean },
-  token: string,
-) => {
-  const domain = await getCompanyDomain();
-  const res = await fetch(`${BASE_API_URL}/v1/product-policies/product-override`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'company-domain': domain,
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
-  revalidatePath('/vendor');
-  return res.json();
-};
+ 
 export const fetchAssignedProductPolicyOverride = async (
   payload: { product_id: string; policy_id: string; overrides_category?: boolean },
   token: string,
@@ -1524,4 +1506,36 @@ export const removeProductPolicyOverride = async (overrideId: string, token: str
   });
   revalidatePath('/vendor');
   return res.json();
+};
+
+// ─── Policy Coverage Aggregation ──────────────────────────────────────────────
+
+export const fetchPolicyCoverageOverview = async (token: string) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(`${BASE_API_URL}/v1/product-policies/coverage/overview`, {
+      cache: 'no-store', 
+      headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return { data: [] };
+    return res.json();
+  } catch (error) {
+    console.error('Error fetching policy coverage overview:', error);
+    return { data: [] };
+  }
+};
+
+export const fetchPolicyCoverageDetails = async (policyId: string, token: string) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(`${BASE_API_URL}/v1/product-policies/coverage/${policyId}`, {
+      cache: 'no-store',
+      headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return { data: null };
+    return res.json();
+  } catch (error) {
+    console.error(`Error fetching coverage details for policy ${policyId}:`, error);
+    return { data: null };
+  }
 };

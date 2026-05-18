@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { AddToCart } from "./AddToCart";
 import { BuyBtn } from "./BuyBtn";
 import { WishListBtn } from "./WishListBtn";
@@ -14,6 +14,17 @@ import type { RootState } from "@/lib/store";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { BuyBtnMode, Product} from "@/utils/Types";
 import { formatCurrency } from "@/lib/utils";
+import { fetchProduct, fetchProductVendorProducts } from "@/utils/commonAPiClient";
+
+const loadProducts = async () => {
+    try {
+        const response = await fetchProductVendorProducts();
+        return response;
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        return { data: [] };
+    }
+};
 
 export function ShoppingList({
     products, styles
@@ -39,8 +50,12 @@ export function ShoppingList({
             }
         )
     }
+    useEffect(() => {
+
+    }, []);
+            handleScroll();
     console.log("firstIndex, lastIndex", firstIndex, lastIndex);
-    const productsToShow: Product[] = products
+    const productsToShow: Product[] = products.slice(firstIndex, lastIndex + 1);
     console.log("productsToShow", productsToShow);
     return (
         <>

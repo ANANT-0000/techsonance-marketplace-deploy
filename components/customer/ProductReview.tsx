@@ -1,7 +1,7 @@
-﻿import React from 'react';
-import { motion } from "framer-motion"; // Note: changed motion/react to framer-motion as it's the standard import
+﻿import React, { useEffect, useState } from 'react';
+import { motion } from "framer-motion";
 import { Star, MessageSquareQuote } from "lucide-react";
-import { Product, Review } from '@/utils/Types';
+import { fetchReviews } from '@/utils/customerApiClient';
 
 const StarRating = ({ rating, size = 12 }: { rating: number; size?: number }) => (
     <div className="flex items-center gap-0.5">
@@ -16,13 +16,23 @@ const StarRating = ({ rating, size = 12 }: { rating: number; size?: number }) =>
     </div>
 );
 
-export const ProductReview = ({ product }: { product: Product }) => {
-    const reviews: Review[] = product?.variants?.[0]?.reviews || [];
+export const ProductReview = ({ productId }: { productId: string }) => {
+    // Added proper typing or fallback to any[] if Review type isn't updated yet
+    const [reviews, setReviews] = useState<any[]>([]); 
+
+    useEffect(() => {
+        const getReviews = async () => {
+            const res = await fetchReviews(productId);
+            if (res?.data) {
+                setReviews(res.data);
+            }
+        }
+        getReviews();
+    }, [productId]); // Added productId to dependency array
 
     const averageRating = reviews.length > 0
         ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
         : 0;
-
 
     if (reviews.length === 0) {
         return (
@@ -35,7 +45,6 @@ export const ProductReview = ({ product }: { product: Product }) => {
 
     return (
         <div className="space-y-6">
-
             <div className="flex items-center gap-4 mb-8">
                 <div className="text-4xl font-bold text-gray-900">{averageRating}</div>
                 <div>
@@ -43,7 +52,6 @@ export const ProductReview = ({ product }: { product: Product }) => {
                     <p className="text-sm text-gray-500 mt-1">Based on {reviews.length} reviews</p>
                 </div>
             </div>
-
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {reviews.map((review, idx) => (
@@ -57,7 +65,11 @@ export const ProductReview = ({ product }: { product: Product }) => {
                     >
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                {/* <h3 className="font-bold text-gray-900 capitalize">{review.userName}</h3> */}
+                                {/* MAPPED USER NAME HERE */}
+                                <h3 className="font-bold text-gray-900 capitalize">
+                                    {review.user?.first_name} {review.user?.last_name}
+                                </h3>
+                                
                                 <div className="mt-1">
                                     <StarRating rating={review.rating} />
                                 </div>

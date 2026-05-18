@@ -191,6 +191,11 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
           path: `/vendor/${vendorId}/configDocuments/assign`, 
           icon: "link" 
         },
+        { 
+          title: "Coverage Policies", 
+          path: `/vendor/${vendorId}/configDocuments/coverage`, 
+          icon: "layers" 
+        },
       ],
     },
     // {

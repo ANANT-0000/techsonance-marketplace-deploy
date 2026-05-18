@@ -307,6 +307,16 @@ export interface Review {
   product_variant_id: string;
   user_id: string;
 }
+export interface Category{
+  id:  string;
+    name:  string;
+    description:  string;
+    parent_id: string | null;
+    created_at: string;
+    updated_at: string;
+    company_id: string;
+  
+}
 // used in vendor product list and product details page
 export interface Product {
   id: string;
@@ -321,6 +331,7 @@ export interface Product {
   vendor_id: string;
   category_id: string;
   variants: Variant[];
+  category: Category;
 }
 
 export interface Vendor {
