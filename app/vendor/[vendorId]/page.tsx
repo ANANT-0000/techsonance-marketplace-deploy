@@ -7,11 +7,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { TrendingUp, Clock, Package, ArrowUpRight, Printer } from "lucide-react";
-import { fetchBulkInvoiceUrls, fetchVendorActiveProducts, fetchVendorOrderList, fetchVendorPendingOrders } from '@/utils/vendorApiClient';
+import { fetchBulkInvoiceUrls, fetchLowStockAlerts, fetchTopProducts, fetchVendorActiveProducts, fetchVendorOrderList, fetchVendorPendingOrders } from '@/utils/vendorApiClient';
 import { OrderStatus as OrderStatusType, OrderStatusEnum } from '@/utils/Types';
 import { redirect, useParams, useRouter } from 'next/navigation';
 import { authToken } from '@/utils/authToken';
-
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { fetchRevenueAnalytics } from '@/utils/vendorApiClient';
+import AxiosAPI from '@/lib/axios';
 
 interface OrderAddressType {
     name: string;
@@ -101,7 +103,12 @@ const getPaymentBadge = (method: string, status: string) => {
         </span>
     );
 };
-
+export const exportAnalyticsCsv = async (token: string) => {
+    return await AxiosAPI.get(`/v1/orders/analytics/export`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob', // Critical for file downloads
+    });
+};
 
 export default function DashboardPage() {
     const [count, setCount] = useState(1);
@@ -110,7 +117,10 @@ export default function DashboardPage() {
     const [totalRevenue, setTotalRevenue] = useState(0);
     const [pendingOrders, setPendingOrders] = useState(0)
     const [activeProducts, setActiveProducts] = useState(0)
+    const [isExporting, setIsExporting] = useState(false);
     const [lowStock, setLowStock] = useState(0)
+    const [topProducts, setTopProducts] = useState<any[]>([]);
+    const [chartData, setChartData] = useState([]);
     const [revenueGrowth, setRevenueGrowth] = useState(0)
     const router = useRouter()
         const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
@@ -121,36 +131,65 @@ export default function DashboardPage() {
     const endIndex = startIndex + pageSize;
     const token = authToken();
 
-    useEffect(() => {
-        if (!token) {
-            redirect("/auth/vendorLogin")
-        }
-        const loadData = async () => {
-            await fetchVendorOrderList(0, pageSize, OrderStatusEnum.PROCESSING)
-                .then((res) => {
-                    setRecentOrders(res.data);
-                })
-                .catch((err) => {
-                    console.error("Error fetching vendor orders list:", err);
-                });
-            await fetchVendorPendingOrders(token)
-                .then((res) => {
-                    setPendingOrders(res.data ? res.data.length : 0);
-                })
-                .catch((err) => {
-                    console.error("Error fetching vendor pending orders:", err);
-                });
-            await fetchVendorActiveProducts(token)
-                .then((res) => {
-                    setActiveProducts(res.data.length || 0);
-                })
-                .catch((err) => {
-                    console.error("Error fetching vendor active products:", err);
-                });
-        };
-        loadData();
-    }, []);
+useEffect(() => {
+    if (!token) {
+        redirect("/auth/vendorLogin")
+    }
+    const loadData = async () => {
+        // FIX: token is the 3rd arg, status is 4th
+        await fetchVendorOrderList(0, pageSize, token, OrderStatusEnum.PROCESSING)
+            .then((res) => {
+                
+                setRecentOrders(res.data);
+            })
+            .catch((err) => {
+                console.error("Error fetching vendor orders list:", err);
+            });
 
+        await fetchVendorPendingOrders(token)
+            .then((res) => {
+                setPendingOrders(res.data ? res.data.length : 0);
+            })
+            .catch((err) => {
+                console.error("Error fetching vendor pending orders:", err);
+            });
+
+        await fetchVendorActiveProducts(token)
+            .then((res) => {
+                setActiveProducts(res.data ? res.data.length : 0);
+            })
+            .catch((err) => {
+                console.error("Error fetching vendor active products:", err);
+            });
+
+        await fetchLowStockAlerts(token)
+            .then((res) => {
+                console.log('res low stock',res)
+                setLowStock(res && res.data.length ? res.data.length : 0);
+            })
+            .catch((err) => {
+                console.error("Error fetching vendor low stock alerts:", err);
+            });
+
+        await fetchRevenueAnalytics(token, 30)
+            .then((res) => {
+                console.log("res chart data", res);
+                setChartData(res.data.chartData ?? []);
+                setTotalRevenue(res.data.totalRevenue ?? 0);
+            })
+            .catch((err) => console.error("Error fetching analytics:", err));
+
+        await fetchTopProducts(token)
+            .then((res) => {
+                setTopProducts(res.data ?? []);
+            })
+            .catch((err) => {
+                console.error("Error fetching top products:", err);
+            });
+            
+    };
+    loadData();
+}, []);
     const handleOrderFilter = async (orderStatus: OrderStatusType) => {
         if (token) {
 
@@ -221,6 +260,40 @@ const toggleOrderSelection = (orderId: string) => {
             setIsDownloading(false);
         }
     };
+    const handleExport = async () => {
+    if (!token) return;
+    setIsExporting(true);
+    
+    try {
+        const response = await exportAnalyticsCsv(token as string);
+        
+        // 1. Create a blob from the response
+        const blob = new Blob([response.data], { type: 'text/csv' });
+        
+        // 2. Create a temporary URL for the blob
+        const url = window.URL.createObjectURL(blob);
+        
+        // 3. Create a temporary <a> tag to trigger the download
+        const link = document.createElement('a');
+        link.href = url;
+        
+        // Dynamically name the file with the current date
+        const dateStr = new Date().toISOString().split('T')[0];
+        link.setAttribute('download', `store_analytics_${dateStr}.csv`);
+        
+        // 4. Append, click, and cleanup
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+    } catch (error) {
+        console.error("Failed to export analytics:", error);
+        // Optional: Trigger a toast notification here to inform the user
+    } finally {
+        setIsExporting(false);
+    }
+};
 
     return (
         <>
@@ -242,9 +315,9 @@ const toggleOrderSelection = (orderId: string) => {
                                 {revenueGrowth}% vs last month
                             </span>
                         </div>
-                        <span className="bg-emerald-50 p-3 rounded-xl">
+                        {/* <span className="bg-emerald-50 p-3 rounded-xl">
                             <TrendingUp size={20} className="text-emerald-500" />
-                        </span>
+                        </span> */}
                     </div>
 
                     {/* Pending Orders */}
@@ -277,13 +350,95 @@ const toggleOrderSelection = (orderId: string) => {
                         </span>
                     </div>
                 </div>
-
+{/* Revenue Chart Section */}
+<div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 my-6">
+    <div className="flex justify-between items-center mb-6">
+        <div>
+            <h2 className="font-bold text-lg text-gray-800">Revenue Overview</h2>
+            <p className="text-xs text-gray-500">Last 30 Days</p>
+        </div>
+    </div>
+    <div className="h-[300px] w-full">
+        { chartData && chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                    <XAxis 
+                        dataKey="date" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{fontSize: 12, fill: '#9ca3af'}} 
+                        dy={10}
+                    />
+                    <YAxis 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{fontSize: 12, fill: '#9ca3af'}}
+                        tickFormatter={(value) => `₹${value}`}
+                    />
+                    <Tooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                        formatter={(value: number) => [`₹${value}`, 'Revenue']}
+                    />
+                    <Area 
+                        type="monotone" 
+                        dataKey="revenue" 
+                        stroke="#8b5cf6" 
+                        strokeWidth={3}
+                        fillOpacity={1} 
+                        fill="url(#colorRevenue)" 
+                    />
+                </AreaChart>
+            </ResponsiveContainer>
+        ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                Not enough data to display chart.
+            </div>
+        )}
+    </div>
+</div>
+{/* Top Selling Products Section */}
+<div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 my-6">
+    <div className="flex justify-between items-center mb-6">
+        <h2 className="font-bold text-lg text-gray-800">Top Performing Products</h2>
+    </div>
+    
+    <div className="space-y-4">
+        {topProducts && topProducts.length > 0 ? topProducts.map((product, idx) => (
+            <div key={product.variant_id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">
+                        #{idx + 1}
+                    </div>
+                    <div>
+                        <p className="font-semibold text-gray-800 text-sm">{product.variant_name}</p>
+                        <p className="text-xs text-gray-500">SKU: {product.sku}</p>
+                    </div>
+                </div>
+                <div className="text-right">
+                    <p className="font-bold text-gray-800">₹{product.revenue.toLocaleString()}</p>
+                    <p className="text-xs text-emerald-600 font-medium">{product.total_sold} units sold</p>
+                </div>
+            </div>
+        )) : (
+            <div className="text-center py-6 text-gray-400 text-sm">
+                No sales data available yet.
+            </div>
+        )}
+    </div>
+</div>
                 {/* Recent Orders Table */}
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden my-6">
                     <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
                         <h2 className="font-bold text-lg text-gray-800">Recent Orders</h2>
                         <span className='flex gap-4 items-center justify-between'>
-                                     {/* SHOW DOWNLOAD BUTTON ONLY IF ORDERS ARE SELECTED */}
+                                    
                     {selectedOrders.length > 0 && (
                         <button 
                             onClick={handleBulkDownload}

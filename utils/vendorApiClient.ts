@@ -324,6 +324,22 @@ export const createInventoryRecord = async (
     });
     return response.json();
 };
+export const fetchLowStockAlerts = async (token: string) => {
+    const companyDomain = await getCompanyDomain();
+try{
+     const res = await fetch(`${BASE_API_URL}/v1/inventory/alerts/low-stock`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'company-domain': companyDomain,
+        },
+
+    });
+    return res.json();
+} catch (error) {
+    console.error('Error fetching low stock alerts:', error);
+    return { status: 500, statusText: 'Internal Server Error' + error };
+};
+}
 export const updateProductVariant = async (
     formData: FormData,
     vendorId: string,
@@ -1538,4 +1554,35 @@ export const fetchPolicyCoverageDetails = async (policyId: string, token: string
     console.error(`Error fetching coverage details for policy ${policyId}:`, error);
     return { data: null };
   }
+};
+
+export const fetchRevenueAnalytics = async (token: string, days: number = 30) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+    const res= await fetch(`${BASE_API_URL}/v1/orders/analytics/revenue?days=${days}`, {
+        headers: { Authorization: `Bearer ${token}`,
+            'company-domain': companyDomain,
+         }
+    });
+    // if (!res.ok) return { data: null };
+    return res.json();
+    } catch (error) {
+        console.error('Error fetching revenue analytics:', error);
+        return { data: null };
+    }
+};
+export const fetchTopProducts = async (token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+    const res = await fetch(`${BASE_API_URL}/v1/orders/analytics/top-products`, {
+        headers: { Authorization: `Bearer ${token}`,
+            'company-domain': companyDomain,
+         }
+    });
+    return res.json();
+
+    } catch (error) {
+        console.error('Error fetching top products:', error);
+        return { data: [] };
+    }
 };

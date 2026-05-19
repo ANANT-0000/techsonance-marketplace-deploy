@@ -19,10 +19,13 @@ export default function Navbar({ title }: { title: string }) {
         first_name: '',
         last_name: ''
     });
-
+const [isMounted, setIsMounted] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const { user } = useAppSelector((state: any) => state.auth);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
     const isVendor = user?.role === 'vendor';
     useEffect(() => {
         if (isVendor) {
@@ -55,30 +58,44 @@ export default function Navbar({ title }: { title: string }) {
         dispatch(logOut());
         router.push('/auth/vendorLogin');
     };
-
+if (!isMounted) {
+        return (
+            <nav className="w-full py-3 px-4 border-b border-gray-200 bg-white flex justify-between items-center h-[60px]">
+               {title && <h1 className="text-xl font-semibold text-gray-800">{title}</h1>}
+               {/* Empty placeholder for the right side to keep layout stable */}
+            </nav>
+        );
+    }
     return (
-        <nav className="w-full py-3 px-4 border-b border-gray-200 bg-white flex justify-between items-center">
-
+       <nav className="w-full py-3 px-4 border-b border-gray-200 bg-white flex justify-between items-center">
             {title && <h1 className="text-xl font-semibold text-gray-800">{title}</h1>}
-
 
             <div className="relative ml-auto" ref={dropdownRef}>
                 <button
                     onClick={() => setIsDropdownOpen((prev) => !prev)}
                     className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                    <div className="text-right hidden sm:block">
-                        <p className="text-sm font-semibold text-gray-800 leading-tight">{vendorDetails.first_name} {vendorDetails.last_name}</p>
-                        <p className="text-xs text-gray-500 leading-tight">{vendorDetails.companyEmail}</p>
-                    </div>
-                    <div className="relative">
+                   
+                    <span className="text-right hidden sm:block">
+                     
+                        <span className="block text-sm font-semibold text-gray-800 leading-tight">
+                            {vendorDetails.first_name} {vendorDetails.last_name}
+                        </span>
+                        <span className="block text-xs text-gray-500 leading-tight">
+                            {vendorDetails.companyEmail}
+                        </span>
+                    </span>
+                    
+                   
+                    <span className="relative block">
                         <img
                             src={userIcon}
                             alt="Profile"
                             className="w-9 h-9 rounded-full object-cover border-2 border-gray-200"
                         />
                         <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 border-2 border-white rounded-full" />
-                    </div>
+                    </span>
+                    
                     <ChevronDown
                         size={14}
                         className={`text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
