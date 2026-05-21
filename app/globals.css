@@ -204,3 +204,35 @@ select:-webkit-autofill {
         -moz-osx-font-smoothing: grayscale;
     }
 }
+
+/* Fix for html-to-image / html2canvas color parsing crashes */
+.pdf-export-mode {
+    width: 1100px !important;
+    height: auto !important;
+    overflow: visible !important;
+    background-color: white !important;
+}
+
+.pdf-export-mode .recharts-responsive-container {
+    min-height: 350px !important;
+}
+
+/* Force standard HEX colors during export to bypass lab() or oklch() parsing errors */
+.pdf-export-mode,
+.pdf-export-mode * {
+    /* If Shadcn text colors are crashing it, force standard hex equivalents temporarily */
+    --background: #ffffff !important;
+    --foreground: #020817 !important;
+    --muted: #f1f5f9 !important;
+    --muted-foreground: #64748b !important;
+    --border: #e2e8f0 !important;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

@@ -5,11 +5,11 @@ import { useEffect, useState } from 'react';
 import { useAppSelector } from '@/hooks/reduxHooks';
 import { useRouter } from 'next/navigation';
 import { checkAddressExistence } from '@/utils/customerApiClient';
-import { BuyBtnMode } from '@/utils/Types';
+import { BuyBtnMode, Coupon } from '@/utils/Types';
 import { createCheckoutSession } from '@/hooks/UseCheckoutSession';
 import { authToken } from '@/utils/authToken';
 
-export function BuyBtn({ id, styles, mode }: { id?: string, styles?: string, mode?: BuyBtnMode }) {
+export function BuyBtn({ id, styles, mode, selectedCoupon }: { id?: string, styles?: string, mode?: BuyBtnMode ,selectedCoupon?: Coupon | null}) {
   const { user } = useAppSelector((state: RootState) => state.auth);
     const token = authToken();
   const [isMounted, setIsMounted] = useState(false);
@@ -18,6 +18,7 @@ export function BuyBtn({ id, styles, mode }: { id?: string, styles?: string, mod
   useEffect(() => {
     setIsMounted(true);
   }, []);
+console.log("selectedCoupon",selectedCoupon)
   const userId = user?.id ? user.id : '';
   const handleBuyClick = async () => {
     console.log(userId)
@@ -33,9 +34,9 @@ export function BuyBtn({ id, styles, mode }: { id?: string, styles?: string, mod
     }
     createCheckoutSession();
     if (id && mode === BuyBtnMode.CART) {
-      router.push(`/customerProfile/${userId}/checkout?type=cart&id=${id}`); // Example: /customerProfile/123/checkout?type=cart&id=789
+      router.push(`/customerProfile/${userId}/checkout?type=cart&id=${id}&couponId=${selectedCoupon?.id ?? ''}`); // Example: /customerProfile/123/checkout?type=cart&id=789
     } else if (id && mode === BuyBtnMode.QUICK_BUY) {
-      router.push(`/customerProfile/${userId}/checkout?type=product&id=${id}`); // Example: /customerProfile/123/checkout?type=product&id=456
+      router.push(`/customerProfile/${userId}/checkout?type=product&id=${id}&couponId=${selectedCoupon?.id ?? ''}`); // Example: /customerProfile/123/checkout?type=product&id=456
     };
   }
   return (

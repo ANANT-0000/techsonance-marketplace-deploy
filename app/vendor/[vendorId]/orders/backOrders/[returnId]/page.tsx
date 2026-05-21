@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { redirect, useParams, useRouter } from 'next/navigation';
 import { fetchGetVendorReturnById, FetchUpdateReturnStatus } from '@/utils/vendorApiClient';
-import { toast } from 'react-hot-toast';
+import { toast, Toaster } from 'react-hot-toast';
 import { LoaderSpinner } from '@/components/common/LoaderSpinner';
 import { ReturnStatus } from '@/utils/Types';
 import {
@@ -513,6 +513,8 @@ export default function BackOrderDetailPage() {
                     </div>
                 </div>
             </div>
+                        <Toaster />
+            
         </>
     );
 }

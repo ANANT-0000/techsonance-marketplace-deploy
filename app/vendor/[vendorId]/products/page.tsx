@@ -55,7 +55,7 @@ export default  function Products({ params }: { params: Promise<{ vendorId: stri
     const totalPages = Math.ceil(productList.length / pageSize);
     const startIndex = (count - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    const currentData: typeof productList = productList.slice(startIndex, endIndex);
+    // const currentData: typeof productList = productList.slice(startIndex, endIndex);
 
     return (
         <main className="w-full px-1">
@@ -142,7 +142,7 @@ export default  function Products({ params }: { params: Promise<{ vendorId: stri
                     </TableHeader>
 
                     <TableBody className="divide-y divide-gray-100">
-                        {productList.length === 0 ? (
+                        {productList && productList.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={8} className="py-16 text-center text-gray-400 text-sm">
                                     <Package size={36} className="mx-auto mb-3 opacity-30" />
@@ -150,7 +150,7 @@ export default  function Products({ params }: { params: Promise<{ vendorId: stri
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            productList.map((item: Product, index: number) => {
+                         productList && Array.isArray(productList) && productList.map((item: Product, index: number) => {
                                 const firstVariant = item.variants?.[0];
                                 const stockQty = firstVariant?.inventory?.stock_quantity;
                                 const isLowStock = stockQty !== undefined && stockQty < 20;

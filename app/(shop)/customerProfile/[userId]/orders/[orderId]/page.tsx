@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { OrderStatus } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
 import { BASE_API_URL } from "@/constants";
+import toast, { Toaster } from "react-hot-toast";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -515,9 +516,10 @@ const handleDownload = async (url: string, filename: string) => {
     if (result.success && result.data && result.data.length > 0) {
       // Trigger the downloads with the array of URLs
       await processMultipleDownloads(result.data);
+      toast.success('Warranty documents downloaded successfully!');
     } else {
       console.warn('No warranties found or request failed:', result.message);
-      // Optional: Show a UI toast/alert here letting the user know no files were found
+      toast.error('No warranties found or request failed.');
     }
   } catch (error) {
     console.error('Failed to fetch warranty URLs from server:', error);
@@ -734,6 +736,7 @@ const handleDownload = async (url: string, filename: string) => {
                     </div>
                 </div>
             </div>
+            <Toaster />
         </div>
     );
 }

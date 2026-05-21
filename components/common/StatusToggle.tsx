@@ -4,7 +4,7 @@ import { useState } from "react";
 import { updateProductVariantStatus } from "@/utils/vendorApiClient"; // adjust import to your actual API util
 import { ProductVariantStatus } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 interface StatusToggleProps {
     productVariantId: string;
@@ -124,6 +124,8 @@ export function StatusToggle({ productVariantId, vendorId, initialStatus }: Stat
                     </div>
                 </div>
             )}
+                        <Toaster />
+            
         </>
     );
 }

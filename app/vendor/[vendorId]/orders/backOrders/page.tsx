@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchGetVendorReturnRequests } from '@/utils/vendorApiClient';
-import { toast } from 'react-hot-toast';
+import { toast, Toaster } from 'react-hot-toast';
 import { LoaderSpinner } from '@/components/common/LoaderSpinner';
 import { searchImgDark } from '@/constants/common';
 import { ChevronDown, ChevronUp, Download, RotateCcw } from 'lucide-react';
@@ -358,6 +358,8 @@ export default function BackOrdersListPage() {
                     </table>
                 </div>
             </div>
+                        <Toaster />
+            
         </main>
     );
 }

@@ -74,7 +74,7 @@ const loadWishlistFromLocalOrServer = async (): Promise<Omit<WishlistState, 'loa
         if (customerId && companyDomain && token) {
             const response = await fetchCustomerWishlist(customerId, token);
 
-            if (response && 'ok' in response && response.ok && response.data) {
+          if (response && response.success && response.data && response.data.length > 0) {
                 const serverData: WishlistServerResponse[] = response.data;
 
                 if (serverData.length > 0) {

@@ -16,6 +16,8 @@ import { fetchInitCheckout, fetchVerifyPayment } from "@/utils/customerApiClient
 import { authToken } from "@/utils/authToken";
 import { TaxBreakdown, TaxBreakdownPanel, TaxLoadingSkeleton } from "@/components/customer/TaxBreakdownPanel";
 import { clearCart } from "@/lib/features/Cart";
+import { Coupon } from "@/utils/Types";
+import AxiosAPI from "@/lib/axios";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -39,9 +41,10 @@ export default function CheckoutPage() {
   const { clearSession } = useCheckoutSession(`/customerProfile/${params.userId}/cart`);
   const dispatch = useAppDispatch();
   const checkoutType = searchParams.get('type') as 'cart' | 'product' | null;
+  const couponId = searchParams.get('couponId');
   const id = searchParams.get('id');
   const isQuickBuy = checkoutType === 'product';
-
+  console.log("couponId",couponId);
   // ── UI State ──
   const [selectedPaymentMethodState, setSelectedPaymentMethodState] = useState<string>('UPI');
   const [couponCode, setCouponCode] = useState<string>('');
@@ -49,7 +52,7 @@ export default function CheckoutPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
   const token = authToken();
-
+  const [couponApplied, setCouponApplied] = useState<Coupon | null>(null);
   // ── Order Data ──
   const [orderData, setOrderData] = useState({
     title: 'Loading...',
@@ -81,6 +84,17 @@ export default function CheckoutPage() {
       setIsLoadingOrder(true);
       setCheckoutError(null);
       try {
+        if (couponId) {
+          await AxiosAPI.get(`/v1/coupons/${couponId}`)
+            .then((res) => {
+              if (res.data?.success && res.data?.data) {
+                setCouponApplied(res.data.data);
+              } else {  
+                console.warn("Failed to fetch coupon details:", res.data?.message);
+              } 
+            })
+            .catch((err) => {              console.error("Error fetching coupon details:", err);            });
+        }
         if (isQuickBuy) {
           const res: { data: VariantDetails | undefined; success: boolean; message?: string } =
             await fetchProductVariantDetails(id);

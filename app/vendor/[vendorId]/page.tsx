@@ -6,7 +6,7 @@ import { Pagination } from "@/components/common/Pagination";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatCurrency, formatNumber } from "@/lib/utils";
-import { TrendingUp, Clock, Package, ArrowUpRight, Printer } from "lucide-react";
+import { TrendingUp, Clock, Package, ArrowUpRight, Printer, FileText } from "lucide-react";
 import { fetchBulkInvoiceUrls, fetchLowStockAlerts, fetchTopProducts, fetchVendorActiveProducts, fetchVendorOrderList, fetchVendorPendingOrders } from '@/utils/vendorApiClient';
 import { OrderStatus as OrderStatusType, OrderStatusEnum } from '@/utils/Types';
 import { redirect, useParams, useRouter } from 'next/navigation';
@@ -14,6 +14,7 @@ import { authToken } from '@/utils/authToken';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { fetchRevenueAnalytics } from '@/utils/vendorApiClient';
 import AxiosAPI from '@/lib/axios';
+import { exportDashboardToPDF } from '@/lib/exportPdf';
 
 interface OrderAddressType {
     name: string;
@@ -294,12 +295,29 @@ const toggleOrderSelection = (orderId: string) => {
         setIsExporting(false);
     }
 };
+const [isExportingPdf, setIsExportingPdf] = useState(false);
 
+    const handlePdfExport = async () => {
+        setIsExportingPdf(true);
+        // Pass the ID of the div we want to capture
+        const success = await exportDashboardToPDF('analytics-report-container', `Store_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+        setIsExportingPdf(false);
+    };
     return (
         <>
-            <Navbar title="Dashboard" />
+            {/* <Navbar title="Dashboard" /> */}
             <main className="px-1">
-
+<div className='w-full flex '>
+    <button
+                            onClick={handlePdfExport}
+                            disabled={isExportingPdf}
+                            className="py-2.5 px-4 bg-red-50 border border-red-100 text-red-600 font-semibold rounded-xl shadow-sm hover:bg-red-100 transition-all flex items-center gap-2 disabled:opacity-50"
+                        >
+                            <FileText size={18} /> 
+                            {isExportingPdf ? "Generating..." : "Export PDF"}
+                        </button>
+</div>
+<span id='analytics-report-container'>
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
 
@@ -571,6 +589,7 @@ const toggleOrderSelection = (orderId: string) => {
                 {/* Pagination */}
                 <span className="flex justify-end mt-2 mb-6">
                     <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" />
+                </span>
                 </span>
             </main>
         </>

@@ -3,7 +3,7 @@ import { authToken } from "@/utils/authToken";
 import { createVendorProductCategory, deleteVendorProductCategory, } from "@/utils/vendorApiClient";
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 export default function CategoryManager({ categories, vendorId, setCheckChange }: any) {
     console.log(categories);
     const router = useRouter()
@@ -119,6 +119,9 @@ export default function CategoryManager({ categories, vendorId, setCheckChange }
                     </table>
                 </div>
             </div>
+                        <Toaster
+                        />
+            
         </div>
     );
 }

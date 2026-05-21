@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, AlertCircle, UploadCloud, X } from "lucide-react";
 import { fetchOrderItemDetails, fetchReturnReplaceItem } from "@/utils/customerApiClient";
 import { formatCurrency } from "@/lib/utils";
-import { toast } from 'react-hot-toast';
+import { toast, Toaster } from 'react-hot-toast';
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { authToken } from "@/utils/authToken";
@@ -277,6 +277,7 @@ export default function ReturnReplacePage() {
                     </button>
                 </div>
             </form>
+            <Toaster />
         </div>
     );
 }
