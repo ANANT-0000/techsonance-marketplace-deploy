@@ -1,6 +1,6 @@
 ﻿import AxiosAPI from '@/lib/axios';
 import { authToken } from '@/utils/authToken';
-import { CouponDiscountTypeEum } from '@/utils/Types';
+import { Coupon, CouponDiscountTypeEum } from '@/utils/Types';
 import { couponSchema } from '@/utils/validation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, X } from 'lucide-react';
@@ -36,9 +36,10 @@ interface CouponModelProps {
     setIsModalOpen: (val: boolean) => void;
     id?: string | null;
     onSuccess?: () => void;
+    setCoupons: React.Dispatch<React.SetStateAction<Coupon[]>>;
 }
 
-export const CouponModel = ({ setIsModalOpen, isModalOpen, id, onSuccess }: CouponModelProps) => {
+export const CouponModel = ({ setIsModalOpen, isModalOpen, id, onSuccess, setCoupons }: CouponModelProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
     const token = authToken();
@@ -151,10 +152,17 @@ export const CouponModel = ({ setIsModalOpen, isModalOpen, id, onSuccess }: Coup
             };
 
             if (isEditMode) {
-                await updateExistingCoupon(id as string, payload, token as string);
+               const response = await updateExistingCoupon(id as string, payload, token as string);
+                if(response.status === 200){
+                     setCoupons((prevCoupons) => prevCoupons.map(coupon => coupon.id === id ? response.data.data : coupon));
+                }
                 toast.success("Coupon updated successfully!");
             } else {
-                await createNewCoupon(payload, token as string);
+                const response = await createNewCoupon(payload, token as string);
+                if(response.status === 201){
+                        setCoupons((prevCoupons) => [...prevCoupons, response.data.data]);
+
+                }
                 toast.success("Coupon created successfully!");
             }
             

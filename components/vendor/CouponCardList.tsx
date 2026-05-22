@@ -15,7 +15,7 @@ export const CouponCardList = ({ coupons, isLoading, onEdit }: CouponCardListPro
         if (!dateString) return "N/A";
         return new Date(dateString).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
     };
-const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
 useEffect(() => {
     const container = scrollContainerRef.current;
@@ -59,7 +59,7 @@ useEffect(() => {
   ref={scrollContainerRef} 
   className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar"
 >
-                    {coupons.map((coupon) => {
+                    { coupons && coupons.map((coupon) => {
                         const isExpired = new Date(coupon.valid_to) < new Date();
                         const isActive = coupon.is_active !== false && !isExpired;
                         const isAutoApplied = coupon.is_auto_applied === true;

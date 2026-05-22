@@ -238,6 +238,7 @@ const OrderSummary = ({
                 <BuyBtn
                     mode={BuyBtnMode.CART}
                     id={cartList[0]?.cart_id}
+                    selectedCoupon={selectedCoupon}
                     styles="w-full py-3 lg:py-4 text-base lg:text-lg rounded-xl shadow-md mt-1"
                 />
 

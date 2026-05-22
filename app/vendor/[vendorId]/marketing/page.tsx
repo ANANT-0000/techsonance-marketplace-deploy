@@ -8,6 +8,7 @@ import AxiosAPI from "@/lib/axios";
 import { CouponModel } from "@/components/vendor/CouponModel";
 import { Plus, Target, AlertTriangle, ShoppingCart, TrendingUp, Download, Loader2, Tag, Calendar, Clock, Zap, Users } from "lucide-react";
 import { CouponCardList } from "@/components/vendor/CouponCardList";
+import { Coupon } from "@/utils/Types";
 // --- Interfaces ---
 interface OverallMetrics {
     totalCarts: number;
@@ -60,7 +61,7 @@ export default function MarketingPage() {
     // Analytics & Data State
     const [overallMetrics, setOverallMetrics] = useState<OverallMetrics | null>(null);
     const [productConversions, setProductConversions] = useState<ProductConversion[]>([]);
-    const [coupons, setCoupons] = useState<any[]>([]);
+    const [coupons, setCoupons] = useState<Coupon[]>([]);
     
     const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
     const [isLoadingCoupons, setIsLoadingCoupons] = useState(true);
@@ -82,7 +83,7 @@ export default function MarketingPage() {
         }
     }, [token]);
 
-    const loadCoupons = useCallback(async () => {
+    const loadCoupons = async () => {
         if (!token) return;
         try {
             const res = await fetchCoupons(token as string);
@@ -93,17 +94,22 @@ export default function MarketingPage() {
         } finally {
             setIsLoadingCoupons(false);
         }
-    }, [token]);
-
-    // Initial Fetch
+    };
     useEffect(() => {
         if (!token) {
             router.push("/auth/vendorLogin");
             return;
         }
         loadMetrics();
+    }, [token, router, loadMetrics]);
+    
+    useEffect(() => {
+        if (!token) {
+            router.push("/auth/vendorLogin");
+            return;
+        }
         loadCoupons();
-    }, [token, router, loadMetrics, loadCoupons]);
+    }, [token,isModalOpen]);
 
     // Pagination for Reviews
     const [count, setCount] = useState(1);
@@ -311,6 +317,7 @@ export default function MarketingPage() {
                     isModalOpen={isModalOpen} 
                     setIsModalOpen={setIsModalOpen} 
                     id={couponId} 
+                    setCoupons={setCoupons}
                     onSuccess={loadCoupons} 
                 />
             )}
