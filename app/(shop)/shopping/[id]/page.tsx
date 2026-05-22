@@ -17,6 +17,8 @@ import { useMediaQuery } from 'react-responsive';
 import AxiosAPI from '@/lib/axios';
 import { authToken } from '@/utils/authToken';
 import toast, { Toaster } from 'react-hot-toast';
+import { useAppSelector } from '@/hooks/reduxHooks';
+import { RootState } from '@/lib/store';
 const brandOffer = [
     { id: '1', title: '1 year warranty', icon: 'shopping-bag' },
     { id: '2', title: 'Free delivery', icon: 'truck' },
@@ -36,6 +38,7 @@ export default function ProductPage() {
     const [isCouponModalOpen, setCouponModalOpen] = useState(false);
 const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
 const isMobile = useMediaQuery({maxWidth: '1024px'});
+const {user} = useAppSelector((state:RootState) => state.auth);
 const route=useRouter();
 const token = authToken();
     console.log("product id", id)
@@ -79,6 +82,7 @@ const token = authToken();
      setSelectedCoupon(coupon);
      setCouponModalOpen(false);
      const res=await AxiosAPI.post('/v1/coupon/validate', { 
+        userId: user?.id,
      code: coupon.code, 
      cartTotal: basePrice, 
      productIdsInCart:[product?.id] }, {

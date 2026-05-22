@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef } from 'react';
-import { Loader2, Tag, Calendar, Clock, Zap, Users, ShoppingCart } from "lucide-react";
+import { Loader2, Tag, Calendar, Clock, Zap, Users, ShoppingCart, Calculator } from "lucide-react";
 import { Coupon } from '@/utils/Types';
 
 export interface CouponCardListProps {
@@ -148,6 +148,13 @@ useEffect(() => {
                                                             <span><strong className="text-gray-700">{coupon.max_uses}</strong> total</span>
                                                         </div>
                                                     )}
+                                                     {coupon.total_used !== undefined && (
+                                                        <div className="flex items-center gap-1.5 text-gray-500">
+                                                           <Calculator size={13} />
+                                                            <span><strong className="text-gray-700">{coupon.total_used}</strong> used</span>
+                                                        </div> 
+                                                    )}
+                                                 
                                                 </div>
                                             )}
                                         </div>

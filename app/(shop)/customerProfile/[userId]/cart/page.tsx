@@ -310,6 +310,7 @@ const handleCouponSelect =async (coupon: Coupon) => {
     setSelectedCoupon(coupon);
     setCouponModalOpen(false);
     const res=await AxiosAPI.post('/v1/coupon/validate', { 
+    userId: userId,
     code: coupon.code, 
     cartTotal: totalPrice, 
     productIdsInCart: enrichedCartList.map(item => item.productVariant.product_id) }, {
