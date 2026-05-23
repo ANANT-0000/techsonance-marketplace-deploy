@@ -554,19 +554,8 @@ export interface UserReview {
   actions: { can_reply: boolean; can_report: boolean };
 }
 
-export interface Coupon {
-  id: number;
-  code: string;
-  discount_type: CouponDiscountTypeEum;
-  value: number;
-  currency?: string;
-  status: CouponStatusEnum;
-  conditions: {
-    min_purchase_amount?: number;
-    customer_segment?: 'ALL' | 'NEW_CUSTOMERS';
-    expiry_text: string;
-  };
-}export interface GstInvoice {
+
+export interface GstInvoice {
   id: number;
   date: string;
   invoice_no: string;

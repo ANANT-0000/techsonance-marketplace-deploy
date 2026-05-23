@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CUSTOMER_TICKET_DATA } from "@/constants/vendor";
-import { ticketSchema, TicketFormData } from "@/utils/validation";
+import { TicketFormData, ticketSchema } from "@/utils/validation";
 
 export default function CustomerCarePage() {
     const {

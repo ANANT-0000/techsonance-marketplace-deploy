@@ -495,3 +495,21 @@ export const policyFormSchema = z.object({
 });
 
 export type PolicyFormSchemaType = z.infer<typeof policyFormSchema>;
+
+export const ticketSchema = z.object({
+  subject: z.string().min(3, "Subject must be at least 3 characters").max(150, "Subject is too long"),
+  description: z.string().min(10, "Description must be at least 10 characters").max(2000, "Description is too long"),
+  priority: z.enum(["High", "Medium", "Low"]),
+  attachment: z
+    .any()
+    .nullable()
+    .refine(
+      (val) => {
+        if (val === null || val === undefined) return true;
+        return typeof val === "object" && "name" in val && "size" in val;
+      },
+      { message: "Invalid file" }
+    ),
+});
+
+export type TicketFormData = z.infer<typeof ticketSchema>;
