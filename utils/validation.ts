@@ -1,5 +1,5 @@
 ﻿import * as z from 'zod'
-import { CouponDiscountTypeEum, ProductStatusEnum } from './Types';
+import { ProductStatusEnum, PromotionType } from './Types';
 export const passwordValidation = new RegExp(
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
 );
@@ -289,7 +289,7 @@ export const couponSchema = z.object({
     .min(3, { message: "Description must be at least 3 characters" })
     .max(100, { message: "Description cannot exceed 100 characters" }),
 
-  discount_type: z.enum(CouponDiscountTypeEum, {
+  discount_type: z.enum(PromotionType, {
     message: "Please select a valid discount type" }),
 
   value: z
@@ -312,7 +312,7 @@ export const couponSchema = z.object({
   applicable_product_ids: z.array(z.string()).optional(),
 })
 .superRefine((data, ctx) => {
-  if (data.discount_type === CouponDiscountTypeEum.PERCENTAGE && data.value > 100) {
+  if (data.discount_type === PromotionType.PERCENTAGE && data.value > 100) {
     ctx.addIssue({
       code: "custom",
       message: "Percentage discounts cannot exceed 100%",

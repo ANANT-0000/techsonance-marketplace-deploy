@@ -148,18 +148,56 @@ export enum ChangelogAction {
 }
 export interface Coupon {
   id: string;
-  name: string;
-  description: string;
-  coupon_code: string;
-  status: PromotionStatus;
-  discount_config: { type: string; value: number; cap?: number };
+  code: string;                        // was coupon_code
+  description: string | null;
+  is_active: boolean;                  // replaces status: PromotionStatus
+  created_at: string;
+  discount_type: string;               // 'percentage' | 'fixed_cart' (from findAll mapper)
+  discount_value: number;
+  max_discount_amount: number | null;  // cap from discount_config
   valid_from: string;
   valid_to: string;
-  total_used: number;
-  max_uses_total: number | null;
+  max_uses: number | null;             // was max_uses_total
+  max_uses_per_user: number | null;
+  is_auto_applied?: boolean;           // returned by findAll (from CouponCardList usage)
+  total_used?: number;                 // optional — returned only in some endpoints
+  min_order_amount?: number | null;    // returned by findOne via promotion_rules
 }
 
 
+export interface RuleConfig_MinCartValue   { amount: number }
+export interface RuleConfig_MinQty         { qty: number }
+export interface RuleConfig_CustomerSegment{ segment_id: string }
+export interface RuleConfig_FirstOrderOnly {}   // no extra fields
+export interface RuleConfig_ProductInCart  { product_id: string }
+export interface RuleConfig_NewCustomer    { registered_within_days: number }
+export interface RuleConfig_DateRange      { days_of_week: number[] }  // 0=Sun … 6=Sat
+export interface RuleConfig_MaxUsesPerUser { max: number }
+ 
+/** Discriminated union — rule_type narrows the exact rule_config shape */
+export type PromotionRuleDto =
+  | { rule_type: PromotionRuleType.MIN_CART_VALUE;    rule_config: RuleConfig_MinCartValue;    negate?: boolean }
+  | { rule_type: PromotionRuleType.MIN_QTY;           rule_config: RuleConfig_MinQty;          negate?: boolean }
+  | { rule_type: PromotionRuleType.CUSTOMER_SEGMENT;  rule_config: RuleConfig_CustomerSegment; negate?: boolean }
+  | { rule_type: PromotionRuleType.FIRST_ORDER_ONLY;  rule_config: RuleConfig_FirstOrderOnly;  negate?: boolean }
+  | { rule_type: PromotionRuleType.PRODUCT_IN_CART;   rule_config: RuleConfig_ProductInCart;   negate?: boolean }
+  | { rule_type: PromotionRuleType.NEW_CUSTOMER;      rule_config: RuleConfig_NewCustomer;     negate?: boolean }
+  | { rule_type: PromotionRuleType.DATE_RANGE;        rule_config: RuleConfig_DateRange;       negate?: boolean }
+  | { rule_type: PromotionRuleType.MAX_USES_PER_USER; rule_config: RuleConfig_MaxUsesPerUser;  negate?: boolean }
+ 
+/** What the UI form holds per rule row before submitting */
+export interface PromotionRuleFormRow {
+  rule_type: PromotionRuleType
+  // Each rule_config field stored flat so react-hook-form can bind them
+  amount?: number                    // MIN_CART_VALUE
+  qty?: number                       // MIN_QTY
+  segment_id?: string                // CUSTOMER_SEGMENT
+  product_id?: string                // PRODUCT_IN_CART
+  registered_within_days?: number    // NEW_CUSTOMER
+  days_of_week?: number[]            // DATE_RANGE
+  max?: number                       // MAX_USES_PER_USER
+  negate: boolean
+}
 export interface VendorUser {
   company_id: string;
   vendor_id: string | null;
