@@ -152,7 +152,7 @@ export default function MarketingPage() {
     };
 
     return (
-        <div className="relative min-h-screen bg-slate-50">
+        <div className="w-full relative min-h-screen ">
             {/* Main Content Dashboard */}
             <main className="mx-auto px-4 pb-10">
                 <header className="flex justify-between items-center py-6">
@@ -317,6 +317,7 @@ export default function MarketingPage() {
                     isModalOpen={isModalOpen} 
                     setIsModalOpen={setIsModalOpen} 
                     id={couponId} 
+                    vendorId={vendorId}
                     setCoupons={setCoupons}
                     onSuccess={loadCoupons} 
                 />

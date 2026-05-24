@@ -72,32 +72,93 @@ export enum BuyBtnMode {
   CART = 'cart',
   QUICK_BUY = 'quick-buy',
 }
+export enum PromotionType {
+  PERCENTAGE = 'percentage',
+  FIXED_AMOUNT = 'fixed_amount',
+  BUY_X_GET_Y = 'buy_x_get_y',
+  BOGO = 'bogo',
+  FREE_SHIPPING = 'free_shipping',
+  TIERED_DISCOUNT = 'tiered_discount',
+  BUNDLE_DEAL = 'bundle_deal',
+}
 
-export enum CouponDiscountTypeEum {
-  PERCENTAGE = "percentage",
-  FIXED_CART = "fixed_cart",
-  FIXED_PRODUCT = "fixed_product",
-  FREE_SHIPPING = "free_shipping",
+export enum PromotionStatus {
+  DRAFT = 'DRAFT',
+  PENDING_REVIEW = 'PENDING_REVIEW',
+  ACTIVE = 'ACTIVE',
+  PAUSED = 'PAUSED',
+  SCHEDULED = 'SCHEDULED',
+  REJECTED = 'REJECTED',
+  EXPIRED = 'EXPIRED',
+}
+
+export enum PromotionTargetType {
+  ALL_PRODUCTS = 'all_products',
+  CATEGORY = 'category',
+  PRODUCT = 'product',
+  VENDOR = 'vendor',
+  PRODUCT_VARIANT = 'product_variant',
+}
+
+export enum PromotionRuleType {
+  MIN_CART_VALUE = 'min_cart_value',
+  MIN_QTY = 'min_qty',
+  CUSTOMER_SEGMENT = 'customer_segment',
+  FIRST_ORDER_ONLY = 'first_order_only',
+  PRODUCT_IN_CART = 'product_in_cart',
+  NEW_CUSTOMER = 'new_customer',
+  DATE_RANGE = 'date_range',
+  MAX_USES_PER_USER = 'max_uses_per_user',
+}
+
+export enum BannerPlacement {
+  HOMEPAGE_HERO = 'homepage_hero',
+  HOMEPAGE_SECONDARY = 'homepage_secondary',
+  CATEGORY_TOP = 'category_top',
+  PRODUCT_PAGE = 'product_page',
+  CART_SIDEBAR = 'cart_sidebar',
+  CHECKOUT_TOP = 'checkout_top',
+  MY_OFFERS_PAGE = 'my_offers_page',
+}
+
+export enum PromoEventType {
+  VIEWED = 'viewed',
+  CLICKED = 'clicked',
+  APPLIED = 'applied',
+  REDEEMED = 'redeemed',
+  REMOVED = 'removed',
+  DISMISSED = 'dismissed',
+}
+
+export enum SegmentCriteriaOperator {
+  AND = 'AND',
+  OR = 'OR',
+}
+
+export enum ChangelogAction {
+  CREATED = 'created',
+  UPDATED = 'updated',
+  SUBMITTED = 'submitted',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  PAUSED = 'paused',
+  RESUMED = 'resumed',
+  EXPIRED = 'expired',
+  DELETED = 'deleted',
 }
 export interface Coupon {
   id: string;
-  company_id: string;
-  code: string;  
+  name: string;
   description: string;
-  discount_type: CouponDiscountTypeEum;
-  discount_value: string; // stored as string, e.g. "100.00"
-  min_order_amount: string;
-  max_discount_amount: string;
-  max_uses: number;
-  max_uses_per_user: number;
+  coupon_code: string;
+  status: PromotionStatus;
+  discount_config: { type: string; value: number; cap?: number };
+  valid_from: string;
+  valid_to: string;
   total_used: number;
-  is_auto_applied: boolean;
-  is_active: boolean;
-  valid_from: string;   // ISO date string
-  valid_to: string;     // ISO date string
-  created_at: string;   // ISO timestamp
-  updated_at: string;   // ISO timestamp
+  max_uses_total: number | null;
 }
+
 
 export interface VendorUser {
   company_id: string;
@@ -434,9 +495,6 @@ export enum VendorApplicationStatusEnum {
   ACCEPTED = 'accepted'
 }
  
-export enum CouponStatusEnum {
-  ACTIVE = 'active', EXPIRED = 'expired', INACTIVE = 'inactive'
-}
 export interface VendorApplicationType {
   business_profile: {
     business_name: string;

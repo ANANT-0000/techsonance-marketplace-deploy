@@ -176,6 +176,37 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
   ]
 },
 {
+      menu: 'Marketing',
+      sections: [
+        {
+          section: 'Marketing Overview',
+          list: [
+            { title: 'Dashboard', path: `/vendor/${vendorId}/marketing`, icon: 'layout-dashboard' },
+          ]
+        },
+        {
+          section: 'Promotions',
+          list: [
+            { title: 'Campaigns', path: `/vendor/${vendorId}/marketing/campaigns`, icon: 'megaphone' },
+            { title: 'Coupons', path: `/vendor/${vendorId}/marketing/coupons`, icon: 'tag' },
+          ]
+        },
+        {
+          section: 'Engagement',
+          list: [
+            { title: 'Notifications', path: `/vendor/${vendorId}/marketing/notifications`, icon: 'bell' },
+            { title: 'Customer Reviews', path: `/vendor/${vendorId}/marketing/reviews`, icon: 'message-square' },
+          ]
+        },
+        {
+          section: 'Analytics',
+          list: [
+            { title: 'Performance', path: `/vendor/${vendorId}/marketing/analytics`, icon: 'bar-chart-3' },
+          ]
+        }
+      ]
+    },
+{
   menu: "Config Documents",
   sections: [
     {

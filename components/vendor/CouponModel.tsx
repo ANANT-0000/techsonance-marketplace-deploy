@@ -1,6 +1,6 @@
 ﻿import AxiosAPI from '@/lib/axios';
 import { authToken } from '@/utils/authToken';
-import { Coupon, CouponDiscountTypeEum } from '@/utils/Types';
+import { Coupon, PromotionType,   } from '@/utils/Types';
 import { couponSchema } from '@/utils/validation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, X } from 'lucide-react';
@@ -9,14 +9,14 @@ import { useForm } from 'react-hook-form';
 import toast, { Toaster } from 'react-hot-toast';
 
 // --- API Methods ---
-const createNewCoupon = async (data: any, token: string) => {
-    return await AxiosAPI.post(`/v1/coupon`, data, {
+const createNewCoupon = async (data: any, vendorId: string, token: string) => {
+    return await AxiosAPI.post(`/v1/coupon/${vendorId}`, data, {
         headers: { Authorization: `Bearer ${token}` }
     });
 };
 
-const updateExistingCoupon = async (id: string, data: any, token: string) => {
-    return await AxiosAPI.patch(`/v1/coupon/${id}`, data, {
+const updateExistingCoupon = async (id: string, data: any, vendorId: string, token: string) => {
+    return await AxiosAPI.patch(`/v1/coupon/${id}/${vendorId}`, data, {
         headers: { Authorization: `Bearer ${token}` }
     });
 };
@@ -36,10 +36,11 @@ interface CouponModelProps {
     setIsModalOpen: (val: boolean) => void;
     id?: string | null;
     onSuccess?: () => void;
+    vendorId?: string;
     setCoupons: React.Dispatch<React.SetStateAction<Coupon[]>>;
 }
 
-export const CouponModel = ({ setIsModalOpen, isModalOpen, id, onSuccess, setCoupons }: CouponModelProps) => {
+export const CouponModel = ({ setIsModalOpen, isModalOpen, id, onSuccess, vendorId, setCoupons }: CouponModelProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
     const token = authToken();
@@ -55,7 +56,7 @@ export const CouponModel = ({ setIsModalOpen, isModalOpen, id, onSuccess, setCou
     } = useForm({
         resolver: zodResolver(couponSchema),
         defaultValues: {
-            discount_type: CouponDiscountTypeEum.PERCENTAGE,
+            discount_type: PromotionType.PERCENTAGE,
             code: "",
             description: "",
             value: 0,
@@ -91,7 +92,7 @@ export const CouponModel = ({ setIsModalOpen, isModalOpen, id, onSuccess, setCou
                     const couponData = res.data.data; 
 
                     reset({
-                        discount_type: couponData.discount_type || CouponDiscountTypeEum.PERCENTAGE,
+                        discount_type: couponData.discount_type || PromotionType.PERCENTAGE,
                         code: couponData.code || "",
                         description: couponData.description || "",
                         value: Number(couponData.discount_value || 0),
@@ -114,7 +115,7 @@ export const CouponModel = ({ setIsModalOpen, isModalOpen, id, onSuccess, setCou
           loadProductOptions();
         } else if (!id && isModalOpen) {
             reset({
-                discount_type: CouponDiscountTypeEum.PERCENTAGE,
+                discount_type: PromotionType.PERCENTAGE,
                 code: "",
                 description: "",
                 value: 0,
@@ -132,51 +133,68 @@ export const CouponModel = ({ setIsModalOpen, isModalOpen, id, onSuccess, setCou
         }
     }, [id, isModalOpen, reset, token]);
 
-    const onSubmit = async (data: any) => {
-        setIsSubmitting(true);
-        try {
-            const payload = {
-                code: data.code,
-                description: data.description,
-                discount_type: data.discount_type,
-                discount_value: String(data.value),
-                valid_from: new Date(data.valid_from).toISOString(),
-                valid_to: new Date(data.valid_to).toISOString(),
-                min_order_amount: data.min_order_amount ? String(data.min_order_amount) : undefined,
-                max_discount_amount: data.max_discount_amount ? String(data.max_discount_amount) : undefined,
-                max_uses: data.max_uses ? Number(data.max_uses) : undefined,
-                max_uses_per_user: data.max_uses_per_user ? Number(data.max_uses_per_user) : undefined,
-                is_auto_applied: data.is_auto_applied,
-                is_active: data.is_active,
-                applicable_product_ids: data.applicable_product_ids || [],
-            };
-
-            if (isEditMode) {
-               const response = await updateExistingCoupon(id as string, payload, token as string);
-                if(response.status === 200){
-                     setCoupons((prevCoupons) => prevCoupons.map(coupon => coupon.id === id ? response.data.data : coupon));
-                }
-                toast.success("Coupon updated successfully!");
-            } else {
-                const response = await createNewCoupon(payload, token as string);
-                if(response.status === 201){
-                        setCoupons((prevCoupons) => [...prevCoupons, response.data.data]);
-
-                }
-                toast.success("Coupon created successfully!");
-            }
+const onSubmit = async (data: any) => {
+    setIsSubmitting(true);
+    try {
+        // Map the form data EXACTLY to what the NestJS create service expects
+        const payload = {
+            code: data.code.toUpperCase(), // Ensure uppercase
+            description: data.description || "",
             
-            setIsModalOpen(false);
-            if (onSuccess) onSuccess();
-            reset();
-        } catch (error) {
-            console.error(`Failed to ${isEditMode ? 'update' : 'create'} coupon:`, error);
-            toast.error(`Failed to ${isEditMode ? 'update' : 'create'} coupon.`);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+            // Map the UI discount types to the backend expectations
+            // Note: If you want to keep 'fixed_cart'/'fixed_product', you must update the backend service logic.
+            // For now, mapping both fixed types to 'fixed_amount' for safety based on backend code.
+            discount_type: data.discount_type === 'percentage' 
+                           ? 'percentage' 
+                           : data.discount_type === 'free_shipping' 
+                           ? 'free_shipping' 
+                           : 'fixed_amount', 
 
+            discount_value: String(data.value), // Backend expects string to parse to Number
+
+            // Advanced Limits mapping
+            max_discount_amount: data.max_discount_amount ? String(data.max_discount_amount) : undefined,
+            min_order_amount: data.min_order_amount ? String(data.min_order_amount) : undefined,
+            
+            max_uses: data.max_uses ? Number(data.max_uses) : undefined,
+            max_uses_per_user: data.max_uses_per_user ? Number(data.max_uses_per_user) : 1, // Default to 1 per backend
+            
+            // Status mapping
+            is_auto_applied: !!data.is_auto_applied,
+            is_active: !!data.is_active,
+
+            // Date mapping (Ensure proper ISO string)
+            valid_from: new Date(data.valid_from).toISOString(),
+            valid_to: new Date(data.valid_to).toISOString(),
+
+            // Array mapping
+            applicable_product_ids: data.applicable_product_ids || [],
+        };
+
+        if (isEditMode) {
+            const response = await updateExistingCoupon(id as string, payload, vendorId as string, token as string);
+            if(response.status === 200){
+                 setCoupons((prevCoupons) => prevCoupons.map(coupon => coupon.id === id ? response.data.data : coupon));
+            }
+            toast.success("Coupon updated successfully!");
+        } else {
+            const response = await createNewCoupon(payload, vendorId as string, token as string);
+            if(response.status === 201){
+                setCoupons((prevCoupons) => [...prevCoupons, response.data.data]);
+            }
+            toast.success("Coupon created successfully!");
+        }
+        
+        setIsModalOpen(false);
+        if (onSuccess) onSuccess();
+        reset();
+    } catch (error) {
+        console.error(`Failed to ${isEditMode ? 'update' : 'create'} coupon:`, error);
+        toast.error(`Failed to ${isEditMode ? 'update' : 'create'} coupon.`);
+    } finally {
+        setIsSubmitting(false);
+    }
+};
     // Close modal on outside click
     useEffect(() => {
         const handler = (e: MouseEvent) => {
@@ -219,16 +237,20 @@ export const CouponModel = ({ setIsModalOpen, isModalOpen, id, onSuccess, setCou
 
                     {/* Value & Type */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-semibold text-gray-700">Discount Type *</label>
-                            <select {...register("discount_type")} className="border border-gray-300 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-100 bg-white">
-                                <option value="percentage">Percentage (%)</option>
-                                <option value="fixed_cart">Fixed Cart Amount</option>
-                                <option value="fixed_product">Fixed Product Amount</option>
-                                <option value="free_shipping">Free Shipping</option>
-                            </select>
-                            {errors.discount_type && <p className="text-xs text-red-500">{errors.discount_type.message?.toString()}</p>}
-                        </div>
+                       <div className="flex flex-col gap-1.5">
+    <label className="text-sm font-semibold text-gray-700">Discount Type *</label>
+    <select 
+        {...register("discount_type")} 
+        className="border border-gray-300 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-100 bg-white"
+    >
+        <option value={PromotionType.PERCENTAGE}>Percentage (%)</option>
+        <option value={PromotionType.FIXED_AMOUNT}>Fixed Cart Amount</option>
+        <option value={PromotionType.TIERED_DISCOUNT}>Tiered Discount</option>
+        <option value={PromotionType.FREE_SHIPPING}>Free Shipping</option>
+        <option value={PromotionType.BOGO}>Buy 1 Get 1 Free</option>
+    </select>
+    {errors.discount_type && <p className="text-xs text-red-500">{errors.discount_type.message?.toString()}</p>}
+</div>
                         <div className="flex flex-col gap-1.5">
                             <label className="text-sm font-semibold text-gray-700">Value *</label>
                             <input type="number" step="0.01" {...register("value", { valueAsNumber: true })} className={`border ${errors.value ? 'border-red-500' : 'border-gray-300'} rounded-xl p-2.5 text-sm`} placeholder="0.00" />
@@ -302,10 +324,10 @@ export const CouponModel = ({ setIsModalOpen, isModalOpen, id, onSuccess, setCou
             // Get current array (default to empty if undefined)
             const currentIds = watch("applicable_product_ids") || [];
             
-            // Prevent duplicates
-            if (!currentIds.includes(selectedId)) {
-                setValue("applicable_product_ids", [...currentIds, selectedId], { shouldDirty: true });
-            }
+            // // Prevent duplicates
+            // if (!currentIds.includes(selectedId)) {
+            //     setValue("applicable_product_ids", [...currentIds, selectedId], { shouldDirty: true });
+            // }
             e.target.value = "";
         }}
     >
