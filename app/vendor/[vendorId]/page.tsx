@@ -307,7 +307,7 @@ const [isExportingPdf, setIsExportingPdf] = useState(false);
         <>
             {/* <Navbar title="Dashboard" /> */}
             <main className="px-1">
-<div className='w-full flex '>
+{/* <div className='w-full flex '>
     <button
                             onClick={handlePdfExport}
                             disabled={isExportingPdf}
@@ -316,7 +316,7 @@ const [isExportingPdf, setIsExportingPdf] = useState(false);
                             <FileText size={18} /> 
                             {isExportingPdf ? "Generating..." : "Export PDF"}
                         </button>
-</div>
+</div> */}
 <span id='analytics-report-container'>
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">

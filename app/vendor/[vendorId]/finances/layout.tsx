@@ -7,7 +7,7 @@ export default  function FinancesLayout({ children }: { children: React.ReactNod
     const {vendorId} = useParams<{ vendorId: string }>();
     return (
         <main className='flex gap-6'>
-            <InnerSideBar vendorId={vendorId} selectedMenu="Marketing" />
+            <InnerSideBar vendorId={vendorId} selectedMenu="Finances" />
             {children}
         </main>
     )

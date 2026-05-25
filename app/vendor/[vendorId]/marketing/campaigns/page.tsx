@@ -52,10 +52,10 @@ export default function CampaignsPage() {
   );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 w-full mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Campaigns & Offers</h1>
+          <h1 className="text-2xl font-bold text-gray-900 light:text-white">Campaigns & Offers</h1>
           <p className="text-sm text-gray-500 mt-1">Manage your marketing promotions, discounts, and custom offers.</p>
         </div>
         <Button
@@ -67,13 +67,13 @@ export default function CampaignsPage() {
         </Button>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6">
+      <div className="bg-white light:bg-gray-800 rounded-lg shadow-sm border border-gray-100 light:border-gray-700 p-4 mb-6">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text"
             placeholder="Search campaigns..."
-            className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-gray-900 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border rounded-md light:bg-gray-900 light:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -85,9 +85,9 @@ export default function CampaignsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCampaigns.map((campaign) => (
-            <div key={campaign.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push(`/vendor/${vendorId}/marketing/campaigns/campaignForm/${campaign.id}`)}>
+            <div key={campaign.id} className="bg-white light:bg-gray-800 rounded-xl shadow-sm border border-gray-100 light:border-gray-700 p-5 hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push(`/vendor/${vendorId}/marketing/campaigns/campaignForm/${campaign.id}`)}>
               <div className="flex justify-between items-start mb-4">
-                <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+                <div className="p-2 bg-blue-50 light:bg-blue-900/30 rounded-lg text-blue-600 light:text-blue-400">
                   <Tag size={20} />
                 </div>
                 <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
@@ -98,15 +98,15 @@ export default function CampaignsPage() {
                   {campaign.status}
                 </span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{campaign.name}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 light:text-white mb-1">{campaign.name}</h3>
               <p className="text-sm text-gray-500 mb-4 line-clamp-2">{campaign.description}</p>
               
-              <div className="space-y-2 border-t border-gray-100 dark:border-gray-700 pt-4">
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+              <div className="space-y-2 border-t border-gray-100 light:border-gray-700 pt-4">
+                <div className="flex items-center text-sm text-gray-600 light:text-gray-400">
                   <Calendar size={16} className="mr-2" />
                   <span>{new Date(campaign.valid_from).toLocaleDateString()} - {new Date(campaign.valid_to).toLocaleDateString()}</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center text-sm text-gray-600 light:text-gray-400">
                   <Activity size={16} className="mr-2" />
                   <span>{campaign.total_used} redemptions</span>
                 </div>

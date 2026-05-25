@@ -9,6 +9,8 @@ import { CouponModel } from "@/components/vendor/CouponModel";
 import { Plus, Target, AlertTriangle, ShoppingCart, TrendingUp, Download, Loader2, Tag, Calendar, Clock, Zap, Users } from "lucide-react";
 import { CouponCardList } from "@/components/vendor/CouponCardList";
 import { Coupon } from "@/utils/Types";
+import { RootState } from "@/lib/store";
+import { useAppSelector } from "@/hooks/reduxHooks";
 // --- Interfaces ---
 interface OverallMetrics {
     totalCarts: number;
@@ -52,7 +54,8 @@ export const fetchCoupons = async (token: string) => {
 export default function MarketingPage() {
     const params = useParams();
     const router = useRouter();
-    const vendorId = params?.vendorId as string;
+    const {user}=useAppSelector((state:RootState) => state.auth);
+const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ? user.id : '';
     
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -317,7 +320,7 @@ export default function MarketingPage() {
                     isModalOpen={isModalOpen} 
                     setIsModalOpen={setIsModalOpen} 
                     id={couponId} 
-                    vendorId={vendorId}
+                    userId={userId}
                     setCoupons={setCoupons}
                     onSuccess={loadCoupons} 
                 />

@@ -146,22 +146,31 @@ export enum ChangelogAction {
   EXPIRED = 'expired',
   DELETED = 'deleted',
 }
+
+// ─── Updated Coupon interface (add rules field for findOne response) ───────────
+ 
 export interface Coupon {
   id: string;
-  code: string;                        // was coupon_code
+  code: string;
   description: string | null;
-  is_active: boolean;                  // replaces status: PromotionStatus
+  is_active: boolean;
   created_at: string;
-  discount_type: string;               // 'percentage' | 'fixed_cart' (from findAll mapper)
+  discount_type: string;
   discount_value: number;
-  max_discount_amount: number | null;  // cap from discount_config
+  max_discount_amount: number | null;
   valid_from: string;
   valid_to: string;
-  max_uses: number | null;             // was max_uses_total
+  max_uses: number | null;
   max_uses_per_user: number | null;
-  is_auto_applied?: boolean;           // returned by findAll (from CouponCardList usage)
-  total_used?: number;                 // optional — returned only in some endpoints
-  min_order_amount?: number | null;    // returned by findOne via promotion_rules
+  is_auto_applied?: boolean;
+  total_used?: number;
+  min_order_amount?: number | null;
+  // NEW: rules returned by findOne so the edit form can repopulate them
+  rules?: Array<{
+    rule_type: PromotionRuleType;
+    rule_config: Record<string, unknown>;
+    negate: boolean;
+  }>;
 }
 
 
@@ -201,6 +210,7 @@ export interface PromotionRuleFormRow {
 export interface VendorUser {
   company_id: string;
   vendor_id: string | null;
+  user_id: string;
   id: string;
   role: string;
   email: string;
