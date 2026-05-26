@@ -157,7 +157,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
     return (
         <div className="w-full relative min-h-screen ">
             {/* Main Content Dashboard */}
-            <main className="mx-auto px-4 pb-10">
+            <section className="mx-auto px-4 pb-10">
                 <header className="flex justify-between items-center py-6">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800">Marketing & Analytics</h1>
@@ -310,7 +310,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                         <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative" />
                     </span>
                 </div>
-            </main>
+            </section>
 
            
     

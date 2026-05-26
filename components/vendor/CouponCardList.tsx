@@ -76,7 +76,7 @@ useEffect(() => {
                                             <h3 className="text-xl font-black text-gray-800 tracking-tight uppercase border-b-2 border-dashed border-gray-200 inline-block pb-1 truncate w-full">
                                                 {coupon.code}
                                             </h3>
-                                            <p className="text-xs text-gray-500 font-medium mt-1.5 line-clamp-1" title={coupon.description}>
+                                            <p className="text-xs text-gray-500 font-medium mt-1.5 line-clamp-1"  >
                                                 {coupon.description}
                                             </p>
                                         </div>

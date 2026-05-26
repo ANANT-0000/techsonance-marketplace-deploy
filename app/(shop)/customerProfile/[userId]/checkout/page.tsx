@@ -461,7 +461,7 @@ export default function CheckoutPage() {
       };
 
       const initData = await fetchInitCheckout(user?.id || '', initPayload, token);
-      if (!initData?.success) {
+      if (!initData?.success && initData?.status ===500 ) {
         setCheckoutError(initData?.message ?? "Failed to initiate order.");
         return;
       }
@@ -483,7 +483,7 @@ export default function CheckoutPage() {
         ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
       }, token);
 
-      if (!verifyData?.success) {
+      if (!verifyData?.success  ) {
         setCheckoutError(verifyData?.message ?? "Payment verification failed.");
         return;
       }

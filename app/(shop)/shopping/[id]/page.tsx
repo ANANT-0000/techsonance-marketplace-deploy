@@ -19,6 +19,7 @@ import { authToken } from '@/utils/authToken';
 import toast, { Toaster } from 'react-hot-toast';
 import { useAppSelector } from '@/hooks/reduxHooks';
 import { RootState } from '@/lib/store';
+import { AxiosError, AxiosResponse } from 'axios';
 const brandOffer = [
     { id: '1', title: '1 year warranty', icon: 'shopping-bag' },
     { id: '2', title: 'Free delivery', icon: 'truck' },
@@ -79,22 +80,32 @@ const token = authToken();
         : 0;
          
  const handleCouponSelect =async (coupon: Coupon) => {
-     setSelectedCoupon(coupon);
-     setCouponModalOpen(false);
-     const res=await AxiosAPI.post('/v1/coupon/validate', { 
+
+
+      await AxiosAPI.post('/v1/coupon/validate', { 
         userId: user?.id,
      code: coupon.code, 
      cartTotal: basePrice, 
      productIdsInCart:[product?.id] }, {
          headers: { Authorization: `Bearer ${token}` }
- });
- if(res.data.success!==true || res.status !==201){
-toast.error(res.data.message || "Failed to validate coupon");
- }else{
-toast.success("Coupon applied successfully");
- }
- console.log("Coupon validation response:", res.data);
- }
+ }).then((res:AxiosResponse) => {    
+    console.log("Coupon validation response:", res.data);
+    if(res.data.success!==true || res.status !==201){
+        console.log("Coupon validation failed:", res.data);
+        toast.error(res.data.message || "Failed to validate coupon");
+        setTimeout(() => {            
+            setCouponModalOpen(false);        
+        }, 1500);
+    }else{
+        toast.success("Coupon applied successfully");
+        setSelectedCoupon(coupon);
+        setCouponModalOpen(false);
+    }
+}).catch((err:AxiosError) => {    
+    toast.error(err.response?.data.error || "Failed to validate coupon");
+    console.log("Coupon validation error:", err.response?.data);
+}) 
+}
         const basePrice = Number(activeVariant?.price) || 0;
 const productDiscountPercent = Number(product?.discount_percent) || 0;
 const originalMRP = productDiscountPercent > 0 
@@ -137,6 +148,7 @@ const handleCouponModalOpen = () => {
 }
     return (
         <main className='xl:pt-10 pb-8 xl:px-32 lg:px-8 md:px-4 px-2 py-1 overflow-x-hidden'>
+               <Toaster />
             <section className="flex flex-col lg:flex-row justify-evenly gap-12">
             <div className='flex flex-col-reverse lg:flex-row gap-4 w-full lg:w-1/2'>
 
@@ -424,7 +436,7 @@ const handleCouponModalOpen = () => {
                 {/* <ProductList products={product?.variants || []} /> */}
             </section>
             <AvailableCouponsModal isOpen={isCouponModalOpen} onClose={() => setCouponModalOpen(false)} onSelect={handleCouponSelect} productId={product?.id} />
-                <Toaster />
+             
         </main >
     );
 }

@@ -1,5 +1,5 @@
 ﻿import * as z from 'zod'
-import { ProductStatusEnum, PromotionType } from './Types';
+import { BannerPlacement, ProductStatusEnum, PromotionType } from './Types';
 export const passwordValidation = new RegExp(
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
 );
@@ -480,9 +480,7 @@ export const policyFormSchema = z.object({
   service_provider: z.string().trim().max(100, "Cannot exceed 100 characters").optional(),
   
   
-  claim_contact_email: z.literal('')
-    .or(z.string().trim().email("Please enter a valid email address"))
-    .optional(), 
+  claim_contact_email: z.email("Please enter a valid email address").optional(), 
 
   claim_contact_phone: z.literal('')
     .or(z.string().trim().regex(/^\+?[1-9]\d{1,14}$/, "Valid format: +1234567890"))
@@ -513,3 +511,28 @@ export const ticketSchema = z.object({
 });
 
 export type TicketFormData = z.infer<typeof ticketSchema>;
+
+
+export const bannerSchema = z.object({
+  placement: z.enum(BannerPlacement, { message: "Please select a valid placement" }),
+  
+  image_alt_text: z.string().max(200).optional().or(z.literal("")),
+  headline: z.string().min(3).max(150).optional().or(z.literal("")),
+  sub_headline: z.string().max(250).optional().or(z.literal("")),
+  cta_label: z.string().min(2).max(50).optional().or(z.literal("")),
+  cta_url: z.string().optional().or(z.literal("")),  
+valid_from: z.string().optional().or(z.literal("")),
+  valid_to: z.string().optional().or(z.literal("")),
+   
+  display_order: z.coerce.number().int().min(0).optional(),
+  
+  promotion_id: z.string().optional().or(z.literal("")),
+  is_active: z.boolean().default(true),
+ 
+  image_url: z.any().optional(),
+  image_url_mobile: z.any().optional(),
+  remove_image_url: z.any().optional(),
+  remove_image_url_mobile: z.any().optional(),
+});
+
+export type BannerFormValues = z.infer<typeof bannerSchema>;

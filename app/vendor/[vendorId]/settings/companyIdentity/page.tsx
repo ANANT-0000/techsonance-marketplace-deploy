@@ -20,7 +20,7 @@ import { DocumentConfigTab } from '@/components/vendor/DocumentConfigTab';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Tab = 'branding' | 'legal' | 'compliance' | 'documents';
+type Tab = 'branding' | 'legal' | 'documents';
 
 
 
@@ -31,7 +31,6 @@ type Tab = 'branding' | 'legal' | 'compliance' | 'documents';
 const TABS: { id: Tab; label: string; icon: React.ReactNode; description: string }[] = [
   { id: 'branding', label: 'Branding', icon: <Palette size={16} />, description: 'Logos, colors & typography for PDFs and emails' },
   { id: 'legal', label: 'Legal Profile', icon: <Building2 size={16} />, description: 'Legal name, trade name and contact details' },
-  { id: 'compliance', label: 'Compliance', icon: <ShieldCheck size={16} />, description: 'Country-specific tax IDs (GSTIN, PAN, EIN…)' },
   { id: 'documents', label: 'Documents', icon: <FileText size={16} />, description: 'Invoice numbering, signatory and terms' },
 ];
 
@@ -94,7 +93,6 @@ export default function CompanyIdentityPage() {
           >
             {activeTab === 'branding' && <BrandingTab token={token} />}
             {activeTab === 'legal' && <LegalProfileTab token={token} />}
-            {activeTab === 'compliance' && <ComplianceTab token={token} />}
             {activeTab === 'documents' && <DocumentConfigTab token={token} />}
           </motion.div>
         </AnimatePresence>

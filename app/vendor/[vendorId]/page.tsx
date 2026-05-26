@@ -1,7 +1,6 @@
 'use client';
 // @ts-ignore
 import './index.css';
-import Navbar from "@/components/vendor/Navbar";
 import { Pagination } from "@/components/common/Pagination";
 import { useEffect, useState } from "react";
 import Link from "next/link";
