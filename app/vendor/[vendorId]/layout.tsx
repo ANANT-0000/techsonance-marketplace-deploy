@@ -10,6 +10,7 @@ import { RootState } from "@/lib/store";
 import { UserRole } from "@/constants";
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import Navbar from '@/components/vendor/Navbar';
+import AxiosAPI from '@/lib/axios';
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
     const { vendorId } = useParams();
     const isSidebarOpen = useAppSelector((state) => state.sidebar.isSidebarOpen);
@@ -23,6 +24,17 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
             router.replace(`/`);
         }
     }, [])
+    // Axios interceptor in lib/axios.ts
+AxiosAPI.interceptors.response.use(
+  res => res,
+  err => {
+    if (err.response?.status === 402) {
+      // Subscription expired — redirect to upgrade
+      window.location.href = `/vendor/${vendorId}/settings/billing?reason=expired`;
+    }
+    return Promise.reject(err);
+  }
+);
     return (
         <>
             <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={`/vendor/${vendorId}`} />
