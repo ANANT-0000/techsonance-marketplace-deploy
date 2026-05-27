@@ -1,5 +1,6 @@
 ﻿import * as z from 'zod'
 import { BannerPlacement, ProductStatusEnum, PromotionType } from './Types';
+import { fi } from 'date-fns/locale';
 export const passwordValidation = new RegExp(
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
 );
@@ -16,14 +17,18 @@ const company_complianceSchema = z.array(
         .min(1, "Field value cannot be empty")
         .max(1000, "Field value is too long"),
 
+      field_details: z.array(
+        z.object({
+          sub_field_key: z.string().min(1, "Sub-field key is required").max(100, "Sub-field key is too long"),
+          sub_field_value: z.string().min(1, "Sub-field value is required").max(1000, "Sub-field value is too long")
+        })
+      ),
       is_active: z.boolean()
         .optional()
         .default(false),
 
       valid_until: z.string()
         .trim()
-        // Optional: Validates it's an actual date format. Remove if it's just a free-text string.
-        .datetime({ error: "Must be a valid ISO date string (e.g., 2026-12-31T23:59:59Z)" }) 
         .optional()
         .nullable()
         .or(z.literal('')) // Allows an empty string "" to pass validation without failing

@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/common/Button";
 import { vendorRegisterSchema, VendorRegisterSchema } from "@/utils/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { vendorRegister } from "@/utils/authApiClient";
 
 const STEP_FIELDS: Record<number, (keyof VendorRegisterSchema)[]> = {
     0: ["company_name", "store_owner_first_name", "store_owner_last_name", "country_code", "phone_number", "category", "company_structure"],
@@ -57,7 +58,9 @@ export default function VendorRegisterPage() {
             store_owner_first_name: "",
             store_owner_last_name: "",
             category: "",
-          company_compliance: [{ field_key: "", field_value: "", is_active: false, valid_until: "" }],
+          company_compliance: [{ field_key: "", field_value: "", is_active: false, valid_until: "", field_details:[
+                { sub_field_key: "", sub_field_value: "" }
+          ]}],
             company_domain: "",
             company_structure: "",
             email: "",
@@ -91,16 +94,16 @@ export default function VendorRegisterPage() {
         formData.append("vendor", JSON.stringify(data));
         console.log("Submitting registration with data:", data);
         try {
-            // const result = await vendorRegister(formData);
-            // if (result?.status == 201) {
-            //     reset();
-            //     setFinancialFileMap([]);
-            //     setLegalFileMap([]);
-            //     setCountryCode("");
-            //     setShowSuccessModal(true);
-            // } else {
-            //     setGlobalError(result?.message ?? "Registration failed. Please try again.");
-            // }
+            const result = await vendorRegister(formData);
+            if (result?.status == 201) {
+                reset();
+                setFinancialFileMap([]);
+                setLegalFileMap([]);
+                setCountryCode("");
+                setShowSuccessModal(true);
+            } else {
+                setGlobalError(result?.message ?? "Registration failed. Please try again.");
+            }
         } catch {
             setGlobalError("Something went wrong. Please try again.");
         }
