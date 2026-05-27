@@ -3,7 +3,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { COUNTRIES } from "@/constants/common";
-import { vendorRegister } from "@/utils/authApiClient";
 import { RegistrationSuccessModal } from "@/components/common/RegistrationSuccessModal";
 import FinancialCompliance from "@/components/vendor/FinancialCompliance";
 import { DocUploadInput } from "@/components/vendor/DocUploadInput";

@@ -1,5 +1,16 @@
 'use client';
-import { useState } from "react";
+import AxiosAPI from "@/lib/axios";
+import { useEffect, useState } from "react";
+
+const fetchVendorProfile = async() => {
+  try {
+    const res= await AxiosAPI.get('/v1/company/profile');
+    return res.data.data;
+  } catch (error) {
+    console.error('Error fetching vendor profile:', error);
+    return null;
+  }
+};
 
 export default function VendorProfilePage() {
   const [bandImg, setBandImg] = useState<File | null>(null);
@@ -10,6 +21,13 @@ export default function VendorProfilePage() {
   const saveChanges = () => {
     console.log(formData, bandImg)
   }
+  useEffect(() => {
+    const loadProfile = async () => {
+      const profileData = await fetchVendorProfile();
+      console.log("profileData",profileData)
+    };
+    loadProfile();
+  }, [])
   return (
     <>
 

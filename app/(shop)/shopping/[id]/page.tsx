@@ -101,7 +101,8 @@ const token = authToken();
         setSelectedCoupon(coupon);
         setCouponModalOpen(false);
     }
-}).catch((err:AxiosError) => {    
+}).catch((err:AxiosError) => { 
+    // @ts-ignore   
     toast.error(err.response?.data.error || "Failed to validate coupon");
     console.log("Coupon validation error:", err.response?.data);
 }) 

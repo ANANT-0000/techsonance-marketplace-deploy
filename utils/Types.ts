@@ -812,3 +812,42 @@ export type ProductResponseType = {
   tax_profile: string,
 
 };
+// USED
+export interface ComplianceFieldPayload {
+  country_code: string;
+  field_key: string;
+  field_value: string;
+  is_active?: boolean;
+  valid_until?: string | null;
+}
+ 
+export interface ComplianceDocumentPayload {
+  label?: string;
+}
+ 
+export interface CompanyComplianceField {
+  id: string;
+  company_id: string;
+  country_code: string;
+  field_key: string;
+  field_value: string;
+  is_active: boolean;
+  valid_until: string | null;
+  document_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+ 
+export interface ComplianceDocument {
+  id: string;
+  compliance_field_id: string;
+  company_id: string;
+  document_url: string;
+  file_name: string;
+  mime_type: string;
+  file_size_bytes: number | null;
+  label: string | null;
+  status: 'pending_review' | 'verified' | 'rejected' | 'expired';
+  rejection_reason: string | null;
+  created_at: string;
+}

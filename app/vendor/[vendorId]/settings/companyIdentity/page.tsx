@@ -14,7 +14,6 @@ import { authToken } from '@/utils/authToken';
 
 import { BrandingTab } from '@/components/vendor/BrandingTab';
 import { LegalProfileTab } from '@/components/vendor/LegalProfileTab';
-import { ComplianceTab } from '@/components/vendor/ComplianceTab';
 import { DocumentConfigTab } from '@/components/vendor/DocumentConfigTab';
 
 

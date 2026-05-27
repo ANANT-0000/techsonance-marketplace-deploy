@@ -2,7 +2,7 @@
 import { BASE_API_URL } from "@/constants";
 import { revalidatePath } from "next/cache";
 import { getCompanyDomain } from "@/lib/get-domain";
-import { OrderStatus, ReturnStatus } from "./Types";
+import { CompanyComplianceField, ComplianceDocument, ComplianceField, ComplianceFieldPayload, OrderStatus, ReturnStatus } from "./Types";
 
 // ==========================================
 // CATEGORY API ENDPOINTS
@@ -1586,3 +1586,80 @@ export const fetchTopProducts = async (token: string) => {
         return { data: [] };
     }
 };
+
+
+export const fetchAllComplianceRegistrations = async (
+  token: string,
+): Promise<{ success: boolean; data: ComplianceField[] }> => {
+  try {
+    const domain = await getCompanyDomain();
+    const res = await fetch(`${BASE_API_URL}/v1/compliance-registration`, {
+      cache: "no-store",
+      headers: {
+        "company-domain": domain,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) return { success: false, data: [] };
+    return res.json();
+  } catch {
+    return { success: false, data: [] };
+  }
+};
+ 
+
+export const registerComplianceField = async (
+  payload: ComplianceFieldPayload,
+  token: string,
+): Promise<{ success: boolean; data?: CompanyComplianceField; message?: string }> => {
+  try {
+    const domain = await getCompanyDomain();
+    const res = await fetch(`${BASE_API_URL}/v1/compliance`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "company-domain": domain,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/vendor");
+    return res.json();
+  } catch (err) {
+    return { success: false, message: "Failed to register compliance field" };
+  }
+};
+ 
+// ─── POST: upload a proof document ───────────────────────────────────────────
+ 
+export const uploadComplianceProofDocument = async (
+  fieldId: string,
+  file: File,
+  label: string | undefined,
+  token: string,
+): Promise<{ success: boolean; data?: ComplianceDocument; message?: string }> => {
+  try {
+    const domain = await getCompanyDomain();
+    const formData = new FormData();
+    formData.append("proof_document", file);
+    formData.append("compliance_field_id", fieldId);
+    if (label) formData.append("label", label);
+ 
+    const res = await fetch(
+      `${BASE_API_URL}/v1/compliance/field/${fieldId}/documents`,
+      {
+        method: "POST",
+        headers: {
+          "company-domain": domain,
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      },
+    );
+    revalidatePath("/vendor");
+    return res.json();
+  } catch {
+    return { success: false, message: "Failed to upload document" };
+  }
+};
+ 

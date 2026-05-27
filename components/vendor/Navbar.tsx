@@ -6,7 +6,8 @@ import { LogOut, Building2, Mail, ChevronDown } from 'lucide-react';
 import { logOut } from '@/lib/features/auth/authSlice';
 import { useRouter } from 'next/navigation';
 
-export default function Navbar({ title }: { title: string }) {
+// export default function Navbar({ title }: { title: string }) {
+export default function Navbar() {
     const dispatch = useAppDispatch();
     const router = useRouter();
 
@@ -32,7 +33,7 @@ export default function Navbar({ title }: { title: string }) {
 
     const handleLogout = () => {
         dispatch(logOut());
-        router.push('/auth/vendorLogin');
+        router.push('/auth');
     };
 
     const isVendor = user?.role === 'vendor';
@@ -44,13 +45,14 @@ export default function Navbar({ title }: { title: string }) {
         last_name: isVendor ? user?.last_name || '' : '',
     };
  
+   
     return (
         <nav className="w-full py-3 px-4 border-b border-gray-200 bg-white flex justify-between items-center min-h-[60px]">
             
             {/* Left Side */}
-            <div>
+            {/* <div>
                 {title && <h1 className="text-xl font-semibold text-gray-800">{title}</h1>}
-            </div>
+            </div> */}
 
             {/* Right Side */}
             <div className="relative ml-auto" ref={dropdownRef}>

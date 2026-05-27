@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { RootState } from "@/lib/store";
 import { UserRole } from "@/constants";
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
+import Navbar from '@/components/vendor/Navbar';
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
     const { vendorId } = useParams();
     const isSidebarOpen = useAppSelector((state) => state.sidebar.isSidebarOpen);
@@ -27,6 +28,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
             <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={`/vendor/${vendorId}`} />
             <main className={`vendor_dashboard mr-6 ${isSidebarOpen ? 'ml-50' : 'ml-24'}`}>
                 <ProtectedRoute allowedRoles={[UserRole.Vendor, UserRole.Admin]} loginPath="/auth/vendorLogin">
+                <Navbar />
                     {children}
                 </ProtectedRoute>
             </main>
