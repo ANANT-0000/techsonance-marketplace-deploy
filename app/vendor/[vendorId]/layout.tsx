@@ -38,7 +38,7 @@ AxiosAPI.interceptors.response.use(
     return (
         <>
             <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={`/vendor/${vendorId}`} />
-            <main className={`vendor_dashboard mr-6 ${isSidebarOpen ? 'ml-50' : 'ml-24'}`}>
+            <main className={`vendor_dashboard mr-6 ${isSidebarOpen ? 'ml-57' : 'ml-24'}`}>
                 <ProtectedRoute allowedRoles={[UserRole.Vendor, UserRole.Admin]} loginPath="/auth/vendorLogin">
                 <Navbar />
                     {children}

@@ -1,60 +1,90 @@
-﻿
-import { BASE_API_URL } from "@/constants/constants";
-import { authToken } from "@/utils/authToken";
-import { useEffect, useState } from "react";
-import { en } from "zod/v4/locales";
+﻿'use client';
+import { useEffect, useState } from 'react';
+import { Clock, AlertTriangle, Lock, X } from 'lucide-react';
+import { BASE_API_URL } from '@/constants';
+import { authToken } from '@/utils/authToken';
+import { getCompanyDomain } from '@/lib/get-domain';
 
-enum SubscriptionStatusEnum {
-    TRIAL = 'trial',
-    ACTIVE = 'active',
-    EXPIRED = 'expired',
-    CANCELLED = 'cancelled',
-    GRACE_PERIOD = 'grace_period'
-}
-export interface SubscriptionStatus {
-  id: string;
-  company_id: string;
-  status: SubscriptionStatusEnum;
-  plan_name: string;
-  plan_display_name: string;
-  capabilities: Record<string, unknown>;
+interface SubscriptionStatus {
+  show_banner: boolean;
   days_remaining: number | null;
-  trial_ends_at: Date | null;
-  is_trial: boolean;
-  is_expired: boolean;
-  is_active: boolean;
-  in_grace_period: boolean;
-  show_banner: boolean; // true when trial has ≤ 10 days left
   banner_urgency: 'info' | 'warning' | 'danger';
+  in_grace_period: boolean;
+  is_expired: boolean;
 }
-export function TrialBanner({ vendorId }: { vendorId: string }) {
-  const [sub, setSub] = useState< SubscriptionStatus|null>(null);
+
+const CONFIG = {
+  info:    { bg: 'bg-blue-50',   text: 'text-blue-800',  border: 'border-blue-200',  Icon: Clock         },
+  warning: { bg: 'bg-amber-50',  text: 'text-amber-800', border: 'border-amber-200', Icon: AlertTriangle },
+  danger:  { bg: 'bg-red-50',    text: 'text-red-800',   border: 'border-red-200',   Icon: Lock          },
+};
+
+function getBannerMessage(status: SubscriptionStatus): string {
+  if (status.in_grace_period) {
+    return 'Your trial expired. You have a 3-day grace period remaining.';
+  }
+  const d = status.days_remaining ?? 0;
+  if (d <= 0) return 'Your trial has ended.';
+  return `Your free trial ends in ${d} day${d !== 1 ? 's' : ''}.`;
+}
+
+interface Props {
+  vendorId: string;
+}
+
+export function TrialBanner({ vendorId }: Props) {
+  const [status, setStatus] = useState<SubscriptionStatus | null>(null);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     const token = authToken();
     if (!token) return;
-    fetch(`${BASE_API_URL}/v1/subscription/status`, {
-      headers: { Authorization: `Bearer ${token}`, 'company-domain': window.location.hostname },
-    })
-    .then(r => r.json())
-    .then(r => setSub(r.data));
+
+    (async () => {
+      const domain = await getCompanyDomain();
+      try {
+        const res = await fetch(`${BASE_API_URL}/v1/subscription/status`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'company-domain': domain,
+          },
+        });
+        const json = await res.json();
+        setStatus(json.data ?? null);
+      } catch {
+        // silently skip — banner is non-critical
+      }
+    })();
   }, []);
 
-  if (!sub?.show_banner) return null; // renders nothing when not needed
+  if (!status?.show_banner || dismissed) return null;
 
-  const urgency =sub.days_remaining && (sub.days_remaining <= 3 ? 'red' : sub.days_remaining <= 7 ? 'amber' : 'blue');
+  const { bg, text, border, Icon } = CONFIG[status.banner_urgency];
 
   return (
-    <div className={`w-full text-sm font-medium text-center py-2 px-4
-      ${urgency === 'red' ? 'bg-red-50 text-red-700 border-b border-red-200' :
-        urgency === 'amber' ? 'bg-amber-50 text-amber-700 border-b border-amber-200' :
-        'bg-blue-50 text-blue-700 border-b border-blue-200'}`}>
-      {sub.days_remaining === 0
-        ? `Your trial has expired. `
-        : `Trial ends in ${sub.days_remaining} day${sub.days_remaining !== 1 ? 's' : ''}. `}
-      <a href={`/vendor/${vendorId}/settings/billing`} className="underline font-semibold">
-        Upgrade now →
-      </a>
+    <div className={`flex items-center justify-between gap-3 px-4 py-2.5 text-sm border-b ${bg} ${text} ${border}`}>
+      <div className="flex items-center gap-2">
+        <Icon size={14} className="shrink-0" />
+        <span>
+          {getBannerMessage(status)}{' '}
+          <a 
+            href={`/vendor/${vendorId}/settings/billing`}
+            className="font-semibold underline underline-offset-2">
+            {status.in_grace_period ? 'Upgrade to restore access' : 'Upgrade now'} →
+          </a>
+        </span>
+      </div>
+
+      {/* Only allow dismissal on info urgency — warning/danger stay visible */}
+      {status.banner_urgency === 'info' && (
+        <button
+          onClick={() => setDismissed(true)}
+          className="p-0.5 rounded opacity-60 hover:opacity-100 transition-opacity"
+          aria-label="Dismiss banner"
+        >
+          <X size={14} />
+        </button>
+      )}
     </div>
   );
 }

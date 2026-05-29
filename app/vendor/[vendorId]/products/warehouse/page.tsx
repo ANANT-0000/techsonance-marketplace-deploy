@@ -174,7 +174,7 @@ export default function LocationsPage() {
     }, [closedLocationForm]);
 
     return (
-        <main className="ml-72 mt-6 relative">
+        <main className="mt-1 h-screen relative w-full">
             <AnimatePresence>
                 {closedLocationForm && (
                     <motion.section
@@ -247,8 +247,8 @@ export default function LocationsPage() {
                 )}
             </AnimatePresence>
 
-            <section className="p-6 bg-white rounded-lg border border-gray-200 shadow-sm mx-auto">
-                <div className="flex justify-between items-center mb-6 border-b pb-4">
+            <section className="w-full p-6 bg-white rounded-lg border border-gray-200 shadow-sm mx-auto">
+                <div className="w-full flex justify-between items-center mb-6 border-b pb-4">
                     <h1 className="text-2xl font-bold text-gray-800">Pickup Locations</h1>
                     <motion.button
                         whileHover={{ scale: 1.02 }}

@@ -1,66 +1,111 @@
 ﻿import * as z from 'zod'
 import { BannerPlacement, ProductStatusEnum, PromotionType } from './Types';
-import { fi } from 'date-fns/locale';
+import { COMPLIANCE_REGEX } from '@/app/auth/vendorRegister/page';
 export const passwordValidation = new RegExp(
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
 );
 export const passwordValidationSchema = z.string().regex(passwordValidation, "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character");
-const company_complianceSchema = z.array(
-    z.object({
-      field_key: z.string( "Field key is required" )
-        .trim()
-        .min(1, "Field key cannot be empty")
-        .max(100, "Field key is too long"),
 
-      field_value: z.string("Field value is required" )
-        .trim()
-        .min(1, "Field value cannot be empty")
-        .max(1000, "Field value is too long"),
-
-      field_details: z.array(
-        z.object({
-          sub_field_key: z.string().min(1, "Sub-field key is required").max(100, "Sub-field key is too long"),
-          sub_field_value: z.string().min(1, "Sub-field value is required").max(1000, "Sub-field value is too long")
-        })
-      ),
-      is_active: z.boolean()
-        .optional()
-        .default(false),
-
-      valid_until: z.string()
-        .trim()
-        .optional()
-        .nullable()
-        .or(z.literal('')) // Allows an empty string "" to pass validation without failing
-    })
-  )
-
+// ─── Single compliance entry ──────────────────────────────────────────────────
+const complianceEntrySchema = z.object({
+  field_key: z.string().min(1),
+  field_value: z.string(), // validated at step level, not schema level (dynamic)
+  is_active: z.boolean().optional().default(true),
+  valid_until: z.string().optional(),
+});
+ 
+// ─── Main schema ─────────────────────────────────────────────────────────────
 export const vendorRegisterSchema = z.object({
-  company_name: z.string().min(2, "Company name is required"),
-  store_owner_first_name: z.string().min(2, "Owner first name is required"),
-  store_owner_last_name: z.string().min(2, "Owner last name is required"),
-  country_code: z.string().min(1, "Country code is required"),
+  // Step 0 — Organization
+  company_name: z
+    .string()
+    .min(2, "Company name must be at least 2 characters")
+    .max(100, "Company name too long"),
+  store_owner_first_name: z
+    .string()
+    .min(2, "First name must be at least 2 characters")
+    .max(50, "First name too long")
+    .regex(/^[A-Za-z\s'-]+$/, "First name can only contain letters"),
+  store_owner_last_name: z
+    .string()
+    .min(2, "Last name must be at least 2 characters")
+    .max(50, "Last name too long")
+    .regex(/^[A-Za-z\s'-]+$/, "Last name can only contain letters"),
+  email: z
+    .email("Enter a valid email address")
+    .max(254, "Email too long"),
+  country_code: z.string().min(1, "Please select a country code"),
   phone_number: z
     .string()
-    .min(1, "Phone number is required")
-    .regex(/^[0-9\-]+$/, "Please use format 123-456-7890"),
-  category: z.string().min(1, "Category is required"),
-  company_structure: z.string().min(1, "Company structure is required"),
+    .min(7, "Phone number too short")
+    .max(15, "Phone number too long")
+    .regex(
+      /^[0-9\-\s\+\(\)]+$/,
+      "Enter a valid phone number (digits, spaces, hyphens, +, parentheses)",
+    ),
+  category: z.string().min(1, "Please select a business category"),
+  company_structure: z.string().min(1, "Please select a company structure"),
+ 
+  // Step 1 — Domain
   company_domain: z
     .string()
-    .min(3, "Domain is too short")
-    .regex(/^[a-z0-9-]+$/, "Domain can only contain lowercase letters, numbers, and hyphens"),
-  first_name: z.string().min(2, "First name is required"),
-  last_name: z.string().min(2, "Last name is required"),
-  email: z.email("Enter a valid email address"),
-  company_compliance: company_complianceSchema,
-  password: z.string().regex(passwordValidation, "Password must contain at least one letter and one number and be at least 8 characters long"),
-  confirm_password: z.string().regex(passwordValidation, "Password must contain at least one letter and one number and be at least 8 characters long"),
-}).refine((data) => data.password === data.confirm_password, {
-  error: "Passwords do not match",
-  path: ["confirm_password"],
+    .min(3, "Domain must be at least 3 characters")
+    .max(63, "Domain too long (max 63 chars)")
+    .regex(
+      /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/,
+      "Domain: lowercase letters and numbers only, no leading/trailing hyphens",
+    ),
+ 
+  // Step 2 — Compliance (array; individual field_value regex validated at step level)
+  company_compliance: z.array(complianceEntrySchema).default([]),
 });
+ 
 export type VendorRegisterSchema = z.infer<typeof vendorRegisterSchema>;
+ 
+// ─── Step-level compliance validator (called in nextStep for step 2) ──────────
+// Returns a map of field_key → error message string (empty = valid)
+export function validateComplianceFields(
+  fields: { value: string; label: string; required: boolean }[],
+  complianceValues: Record<string, string>, // { gstin: "27AAP...", pan: "ABCDE..." }
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+ 
+  for (const field of fields) {
+    const val = (complianceValues[field.value] ?? "").trim();
+ 
+    if (field.required && !val) {
+      errors[field.value] = `${field.label} is required`;
+      continue;
+    }
+ 
+    if (val && COMPLIANCE_REGEX[field.value]) {
+      const { pattern, message } = COMPLIANCE_REGEX[field.value];
+      if (!pattern.test(val)) {
+        errors[field.value] = message;
+      }
+    }
+  }
+ 
+  return errors;
+}
+ 
+// ─── Document upload validator (called in nextStep for step 2 & step 3) ───────
+// Returns list of missing required document labels
+export function validateRequiredDocuments(
+  fields: { value: string; label: string; required: boolean }[],
+  fileMap: { file: File | null; type: string; index: number }[],
+): string[] {
+  const missing: string[] = [];
+  fields.forEach((field, index) => {
+    if (!field.required) return;
+    const entry = fileMap.find((f) => f.index === index);
+    if (!entry?.file) {
+      missing.push(field.label);
+    }
+  });
+  return missing;
+}
+ 
 
 export const loginSchema = z.object({
   email: z.email({ error: "Invalid email address" }),

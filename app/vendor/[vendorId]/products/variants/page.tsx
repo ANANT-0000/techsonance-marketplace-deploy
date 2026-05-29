@@ -2,13 +2,14 @@
 import { useEffect, useState } from "react";
 import { Pagination } from "@/components/common/Pagination";
 import { searchImgDark } from "@/constants/common";
-import { AlertTriangle, Package, RefreshCw, XCircle, CheckCircle, Edit2, X } from "lucide-react";
+import { AlertTriangle, Package, RefreshCw, XCircle, CheckCircle, Edit2, X, Table } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { BASE_API_URL } from "@/constants";
 import { companyDomain } from "@/config";
 import { Address } from "@/utils/Types";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { authToken } from "@/utils/authToken";
+import { TableRowSkeleton } from "@/components/common/skeletons/TableRowSkeleton";
 
 interface InventoryLocation {
     inventory_id: string;
@@ -267,18 +268,10 @@ export default function InventoryPage() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                Array.from({ length: 5 }).map((_, i) => (
-                                    <tr key={i} className="animate-pulse border-b border-gray-100">
-                                        {Array.from({ length: 7 }).map((__, j) => (
-                                            <td key={j} className="p-4">
-                                                <div className="h-4 bg-gray-200 rounded w-24" />
-                                            </td>
-                                        ))}
-                                    </tr>
-                                ))
+                        <TableRowSkeleton columns={8} rows={5} />
                             ) : currentData.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="p-12 text-center text-gray-400">
+                                    <td colSpan={8} className="p-12 text-center text-gray-400">
                                         <Package size={40} className="mx-auto mb-3 opacity-30" />
                                         No inventory items found.
                                     </td>

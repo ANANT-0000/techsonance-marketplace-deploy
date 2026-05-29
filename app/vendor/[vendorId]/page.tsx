@@ -14,6 +14,9 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { fetchRevenueAnalytics } from '@/utils/vendorApiClient';
 import AxiosAPI from '@/lib/axios';
 import { exportDashboardToPDF } from '@/lib/exportPdf';
+import { ListSkeleton, MetricsSkeleton, TableRowSkeleton } from '@/components/common/skeletons';
+import { set } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface OrderAddressType {
     name: string;
@@ -114,6 +117,13 @@ export default function DashboardPage() {
     const [count, setCount] = useState(1);
     const { vendorId } = useParams<{ vendorId: string }>();
     const [recentOrders, setRecentOrders] = useState<OrderType[]>([]);
+    const [loadingRecentOrders, setLoadingRecentOrders] = useState(false);
+    const [loadingData, setLoadingData] = useState(true);
+     const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const offset = (currentPage - 1) * itemsPerPage;
+    const [totalRecentOrders, setTotalRecentOrders] = useState(0);
     const [totalRevenue, setTotalRevenue] = useState(0);
     const [pendingOrders, setPendingOrders] = useState(0)
     const [activeProducts, setActiveProducts] = useState(0)
@@ -125,77 +135,65 @@ export default function DashboardPage() {
     const router = useRouter()
         const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
     const [isDownloading, setIsDownloading] = useState(false);
-    const pageSize = 5;
-    const [totalPages, setTotalPages] = useState(0);
-    const startIndex = (count - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const token = authToken();
 
-useEffect(() => {
-    if (!token) {
-        redirect("/auth/vendorLogin")
-    }
-    const loadData = async () => {
-        // FIX: token is the 3rd arg, status is 4th
-        await fetchVendorOrderList(0, pageSize, token, OrderStatusEnum.PROCESSING)
+    const token = authToken();
+// Granular Loading States
+    const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
+    const [isLoadingChart, setIsLoadingChart] = useState(true);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+    const [isLoadingRecentOrders, setIsLoadingRecentOrders] = useState(true);
+    const loadData = async (token:string) => {
+        setLoadingRecentOrders(true);
+        await fetchVendorOrderList(offset, itemsPerPage, token, OrderStatusEnum.PROCESSING)
             .then((res) => {
-                
-                setRecentOrders(res.data);
+                setRecentOrders(res.data.orders);
+                setTotalRecentOrders(res.data.totalCount);
+                setTotalPages(Math.ceil(res.data.totalCount / itemsPerPage));
+                setLoadingRecentOrders(false);
             })
             .catch((err) => {
                 console.error("Error fetching vendor orders list:", err);
             });
+       setIsLoadingMetrics(true);
+        Promise.all([
+            fetchVendorPendingOrders(token),
+            fetchVendorActiveProducts(token),
+            fetchLowStockAlerts(token)
+        ]).then(([pending, active, stock]) => {
+            setPendingOrders(pending.data?.length || 0);
+            setActiveProducts(active.data?.length || 0);
+            setLowStock(stock.data?.length || 0);
+            setIsLoadingMetrics(false);
+        }).catch(console.error);
 
-        await fetchVendorPendingOrders(token)
-            .then((res) => {
-                setPendingOrders(res.data ? res.data.length : 0);
-            })
-            .catch((err) => {
-                console.error("Error fetching vendor pending orders:", err);
-            });
+        // 2. Fetch Chart Data
+        setIsLoadingChart(true);
+        fetchRevenueAnalytics(token, 30).then((res) => {
+            setChartData(res.data?.chartData || []);
+            setTotalRevenue(res.data?.totalRevenue || 0);
+            setIsLoadingChart(false);
+        }).catch(console.error);
 
-        await fetchVendorActiveProducts(token)
-            .then((res) => {
-                setActiveProducts(res.data ? res.data.length : 0);
-            })
-            .catch((err) => {
-                console.error("Error fetching vendor active products:", err);
-            });
-
-        await fetchLowStockAlerts(token)
-            .then((res) => {
-                console.log('res low stock',res)
-                setLowStock(res && res.data.length ? res.data.length : 0);
-            })
-            .catch((err) => {
-                console.error("Error fetching vendor low stock alerts:", err);
-            });
-
-        await fetchRevenueAnalytics(token, 30)
-            .then((res) => {
-                console.log("res chart data", res);
-                setChartData(res.data.chartData ?? []);
-                setTotalRevenue(res.data.totalRevenue ?? 0);
-            })
-            .catch((err) => console.error("Error fetching analytics:", err));
-
-        await fetchTopProducts(token)
-            .then((res) => {
-                setTopProducts(res.data ?? []);
-            })
-            .catch((err) => {
-                console.error("Error fetching top products:", err);
-            });
-            
+        // 3. Fetch Top Products
+        setIsLoadingProducts(true);
+        fetchTopProducts(token).then((res) => {
+            setTopProducts(res.data || []);
+            setIsLoadingProducts(false);
+        }).catch(console.error);
     };
-    loadData();
+useEffect(() => {
+    if (!token) {
+        redirect("/auth/vendorLogin")
+    }
+    loadData(token);
 }, []);
     const handleOrderFilter = async (orderStatus: OrderStatusType) => {
         if (token) {
 
-            await fetchVendorOrderList(0, pageSize, token, orderStatus)
+            await fetchVendorOrderList(offset, itemsPerPage, token, orderStatus)
                 .then((res) => {
-                    setRecentOrders(res.data);
+                    setRecentOrders(res.data.orders);
+                    setTotalRecentOrders(res.data.totalCount);
                 })
                 .catch((err) => {
                     console.error("Error fetching vendor orders list:", err);
@@ -260,66 +258,16 @@ const toggleOrderSelection = (orderId: string) => {
             setIsDownloading(false);
         }
     };
-    const handleExport = async () => {
-    if (!token) return;
-    setIsExporting(true);
-    
-    try {
-        const response = await exportAnalyticsCsv(token as string);
-        
-        // 1. Create a blob from the response
-        const blob = new Blob([response.data], { type: 'text/csv' });
-        
-        // 2. Create a temporary URL for the blob
-        const url = window.URL.createObjectURL(blob);
-        
-        // 3. Create a temporary <a> tag to trigger the download
-        const link = document.createElement('a');
-        link.href = url;
-        
-        // Dynamically name the file with the current date
-        const dateStr = new Date().toISOString().split('T')[0];
-        link.setAttribute('download', `store_analytics_${dateStr}.csv`);
-        
-        // 4. Append, click, and cleanup
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode?.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        
-    } catch (error) {
-        console.error("Failed to export analytics:", error);
-        // Optional: Trigger a toast notification here to inform the user
-    } finally {
-        setIsExporting(false);
-    }
-};
-const [isExportingPdf, setIsExportingPdf] = useState(false);
-
-    const handlePdfExport = async () => {
-        setIsExportingPdf(true);
-        // Pass the ID of the div we want to capture
-        const success = await exportDashboardToPDF('analytics-report-container', `Store_Report_${new Date().toISOString().split('T')[0]}.pdf`);
-        setIsExportingPdf(false);
-    };
     return (
         <>
             {/* <Navbar title="Dashboard" /> */}
             <main className="px-1">
-{/* <div className='w-full flex '>
-    <button
-                            onClick={handlePdfExport}
-                            disabled={isExportingPdf}
-                            className="py-2.5 px-4 bg-red-50 border border-red-100 text-red-600 font-semibold rounded-xl shadow-sm hover:bg-red-100 transition-all flex items-center gap-2 disabled:opacity-50"
-                        >
-                            <FileText size={18} /> 
-                            {isExportingPdf ? "Generating..." : "Export PDF"}
-                        </button>
-</div> */}
 <span id='analytics-report-container'>
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
-
+{isLoadingMetrics ? (
+    <MetricsSkeleton count={3} style='my-6 flex justify-between ' subStyle='bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow' />) :
+ (
+     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
                     {/* Total Revenue */}
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
                         <div className="flex flex-col gap-1">
@@ -367,6 +315,8 @@ const [isExportingPdf, setIsExportingPdf] = useState(false);
                         </span>
                     </div>
                 </div>
+ )
+}
 {/* Revenue Chart Section */}
 <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 my-6">
     <div className="flex justify-between items-center mb-6">
@@ -375,8 +325,11 @@ const [isExportingPdf, setIsExportingPdf] = useState(false);
             <p className="text-xs text-gray-500">Last 30 Days</p>
         </div>
     </div>
-    <div className="h-[300px] w-full">
-        { chartData && chartData.length > 0 ? (
+        {isLoadingChart? 
+            <Skeleton className="h-64 w-full" />
+                 : 
+  chartData && chartData.length > 0 ? (     
+<div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <defs>
@@ -413,12 +366,13 @@ const [isExportingPdf, setIsExportingPdf] = useState(false);
                     />
                 </AreaChart>
             </ResponsiveContainer>
+                </div>
         ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
                 Not enough data to display chart.
             </div>
         )}
-    </div>
+        
 </div>
 {/* Top Selling Products Section */}
 <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 my-6">
@@ -427,7 +381,27 @@ const [isExportingPdf, setIsExportingPdf] = useState(false);
     </div>
     
     <div className="space-y-4">
-        {topProducts && topProducts.length > 0 ? topProducts.map((product, idx) => (
+        { isLoadingProducts ? (<div>
+        {Array.from({ length: 2 }).map((_, idx) => (
+            <div key={idx} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
+                <div className="flex items-center gap-4">
+                    <Skeleton className="h-10 w-10 bg-purple-100 text-purple-600 rounded-full" />
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-20" />
+                    </div>
+                </div>
+                <div className="text-right space-y-2">
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-3 w-20" />
+                </div>
+                </div>
+        ))
+            
+        }         
+        </div>
+        ) : 
+        topProducts && topProducts.length > 0 ? topProducts.map((product, idx) => (
             <div key={product.variant_id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-4">
                     <div className="h-10 w-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">
@@ -501,7 +475,10 @@ const [isExportingPdf, setIsExportingPdf] = useState(false);
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {recentOrders && recentOrders.length === 0 ? (
+                                {loadingRecentOrders ? (
+                                    
+                                    <TableRowSkeleton columns={9} rows={5}/> 
+                                ) : recentOrders && recentOrders.length === 0 ? (
                                     <tr>
                                         <td colSpan={10} className="py-16 text-center text-gray-400 text-sm">
                                             <Package size={36} className="mx-auto mb-3 opacity-30" />
@@ -509,7 +486,7 @@ const [isExportingPdf, setIsExportingPdf] = useState(false);
                                         </td>
                                     </tr>
                                 ) : (
-                                    recentOrders && recentOrders.map((item) => (
+                                    Array.isArray(recentOrders) && recentOrders.map((item) => (
                                         <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
                                             <td className="p-4">
                                               <input 
@@ -587,7 +564,7 @@ const [isExportingPdf, setIsExportingPdf] = useState(false);
 
                 {/* Pagination */}
                 <span className="flex justify-end mt-2 mb-6">
-                    <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" />
+                    <Pagination setCount={setCurrentPage} count={currentPage} totalPages={totalPages} style="relative right-0 w-54" />
                 </span>
                 </span>
             </main>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { searchImgDark } from "@/constants/common";
 import { ChevronDown, ChevronUp, Download, Percent, Plus } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-
+import { TableRowSkeleton } from "@/components/common/skeletons";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { fetchTaxRates } from "@/utils/vendorApiClient";
@@ -87,11 +87,11 @@ export default function TaxRatesPage() {
                     )}
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 font-semibold text-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                    {/* <button className="flex items-center gap-2 font-semibold text-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         <Download size={16} />
                         Export CSV
                     </button>
-                    
+                     */}
                     <button onClick={() => handleRoute(null)} className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         <Plus size={16} />
                         New Tax Rate
@@ -163,9 +163,7 @@ export default function TaxRatesPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {loading ? (
-                             <tr>
-                                 <td colSpan={10} className="py-16 text-center text-gray-400 text-sm">Loading tax rates...</td>
-                             </tr>
+                            <TableRowSkeleton columns={7} rows={5} />
                         ) : taxRates && taxRates?.length === 0 ? (
                             <tr>
                                 <td colSpan={10} className="py-16 text-center text-gray-400 text-sm">

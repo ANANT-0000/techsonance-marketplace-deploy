@@ -5,6 +5,8 @@ export const ORGANIZATION_DETAIL_FIELDS = [
     { id: "company_name", label: "Company Name", placeholder: "Enter your company name", type: "text" },
     { id: "store_owner_first_name", label: "First Name", placeholder: "Enter your first name", type: "text" },
     { id: "store_owner_last_name", label: "Last Name", placeholder: "Enter your last name", type: "text" },
+    { id: "email", label: "Email", placeholder: "Enter your email", type: "email" },
+
     {
         id: "phone_number", label: "Business Phone Number", groupField: [
             { id: "country_code", type: "select", options: COUNTRY_CODES, styles: "rounded-r-none" },
@@ -17,21 +19,48 @@ export const ORGANIZATION_DETAIL_FIELDS = [
 ];
 
 export const BUSINESS_ADMIN_ACCOUNT_FIELDS = [
-    { id: "first_name", label: "Admin First Name", placeholder: "Enter your first name", type: "text" },
-    { id: "last_name", label: "Admin Last Name", placeholder: "Enter your last name", type: "text" },
     { id: "email", label: "Admin Email", placeholder: "Enter your email", type: "email" },
     { id: "password", label: "Password", placeholder: "Enter your password", type: "password" },
     { id: "confirm_password", label: "Confirm Password", placeholder: "Confirm your password", type: "password" },
 ];
 
+// export enum RegistrationStages {
+//     Organization = "organization",
+//     Instance = "instance",
+//     Compliance = "compliance",
+//     AdminAccount = "admin_account",
+//     Documents = "documents",
+// }
 export enum RegistrationStages {
-    Organization = "organization",
-    Instance = "instance",
-    Compliance = "compliance",
-    AdminAccount = "admin_account",
-    Documents = "documents",
+  Organization  = "organization",
+  Instance      = "instance",
+  Compliance    = "compliance",
+  Documents     = "documents",
 }
 
+export const PLAN_FEATURES: Record<string, { label: string; included: boolean }[]> = {
+  starter: [
+    { label: "50 products",          included: true  },
+    { label: "200 orders / month",   included: true  },
+    { label: "Basic promotions",     included: true  },
+    { label: "Custom domain",        included: false },
+    { label: "Priority support",     included: false },
+  ],
+  pro: [
+    { label: "5,000 products",       included: true  },
+    { label: "Unlimited orders",     included: true  },
+    { label: "Full promotions",      included: true  },
+    { label: "Custom domain",        included: true  },
+    { label: "Priority support",     included: false },
+  ],
+  enterprise: [
+    { label: "Unlimited products",   included: true  },
+    { label: "Unlimited orders",     included: true  },
+    { label: "Full promotions",      included: true  },
+    { label: "Custom domain",        included: true  },
+    { label: "Priority support",     included: true  },
+  ],
+};
 export const CUSTOMER_REGISTRATION_FIELDS = [
     { id: "first_name", label: "First name", type: "text", placeholder: "Enter your first name", required: true },
     { id: "last_name", label: "Last name", type: "text", placeholder: "Enter your last name", required: true },

@@ -11,7 +11,7 @@ interface PaginationProps {
     onPageChange?: () => void;
 }
 
-export function Pagination({ setCount, count, totalPages, style, onPageChange }: PaginationProps) {
+export function Pagination({ setCount, count,  totalPages, style, onPageChange }: PaginationProps) {
 
     const handlePrev = () => {
         if (count > 1) {

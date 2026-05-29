@@ -108,7 +108,7 @@ export const createProduct = async (productData: FormData, vendorId: string, tok
     try {
         const companyDomain = await getCompanyDomain();
 
-        const response = await fetch(`${BASE_API_URL}/v1/products/ `, {
+        const response = await fetch(`${BASE_API_URL}/v1/products/${vendorId}`, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -177,10 +177,10 @@ export const updateProductVariantStatus = async (productVariantId: string, vendo
         return { status: 500, statusText: 'Internal Server Error' + error };
     }
 }
-export const fetchVendorProducts = async (token: string) => {
+export const fetchVendorProducts = async (offset: number, limit: number, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/v1/products/all`, {
+        const response = await fetch(`${BASE_API_URL}/v1/products/all?offset=${offset}&limit=${limit}`, {
             method: 'GET',
             // cache: 'force-cache',
             // next: { revalidate: 3600 },

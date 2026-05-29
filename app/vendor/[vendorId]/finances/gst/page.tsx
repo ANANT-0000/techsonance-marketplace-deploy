@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { searchImgDark } from "@/constants/common";
 import { ChevronDown, ChevronUp, Download, ReceiptText, Plus } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { TableRowSkeleton } from "@/components/common/skeletons";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { fetchGstRecords } from "@/utils/vendorApiClient";
+import { Pagination } from "@/components/common/Pagination";
 
 
 interface GstRecordType {
@@ -41,6 +43,10 @@ export default function GstListingPage() {
     const [statusFilter, setStatusFilter] = useState<string>('');
     const [sortBy, setSortBy] = useState<string>("desc");
     const [gstRecords, setGstRecords] = useState<GstRecordType[]>([]);
+      const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const offset = (currentPage - 1) * itemsPerPage;
     const [loading, setLoading] = useState(true);
 
     const handleDateChange = (selectedDate: Date | undefined) => {
@@ -60,6 +66,9 @@ export default function GstListingPage() {
             try {
                 const res = await fetchGstRecords(statusFilter, sortBy, token!);
                 setGstRecords(res.data?.data || []);
+                if (res.data) {
+                    setTotalPages(Math.ceil(res.data.totalCount / itemsPerPage));
+                }
             } catch (err) {
                 console.log("Error fetching GST records:", err);
             } finally {
@@ -83,10 +92,10 @@ export default function GstListingPage() {
                     )}
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 font-semibold text-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                    {/* <button className="flex items-center gap-2 font-semibold text-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         <Download size={16} />
                         Export CSV
-                    </button>
+                    </button> */}
                     <Link href={`/vendor/${vendorId}/finances/gst/new`} className="flex items-center gap-2 font-semibold text-sm bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         <Plus size={16} />
                         Add GST Number
@@ -166,11 +175,7 @@ export default function GstListingPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {loading ? (
-                             <tr>
-                                 <td colSpan={10} className="py-16 text-center text-gray-400 text-sm">
-                                     Loading GST records...
-                                 </td>
-                             </tr>
+                            <TableRowSkeleton columns={7} rows={5} />
                         ) : gstRecords && gstRecords?.length === 0 ? (
                             <tr>
                                 <td colSpan={10} className="py-16 text-center text-gray-400 text-sm">
@@ -224,7 +229,7 @@ export default function GstListingPage() {
                 </table>
             </div>
             <span className="flex justify-end mt-4">
-                {/* <Pagination setCount={setCount} count={count} totalPages={totalPages ?? 0} style="relative right-0 w-54" /> */}
+                <Pagination setCount={setCurrentPage} count={currentPage} totalPages={totalPages ?? 0} style="relative right-0 w-54" />
             </span>
         </main>
     );

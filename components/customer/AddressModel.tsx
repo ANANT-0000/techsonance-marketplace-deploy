@@ -6,19 +6,20 @@ import { ADDRESS_FIELDS } from "@/constants/dynamicFields";
 import { AddressForEnum, AddressOperationEnum, Address, User } from "@/utils/Types";
 import { fetchCreateUserAddress, fetchUpdateUserAddress } from "@/utils/customerApiClient-SA";
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AddressSchema } from "@/utils/validation";
 import { authToken } from "@/utils/authToken";
 
 
 
-export const AddressModal = ({ user, addressId, addressList, operation, onClose }: {
+export const AddressModal = ({ user, addressId, addressList, operation, onClose, onSuccess }: {
     user: Partial<User>,
     addressId?: string,
-    addressList: Address[],
+    addressList?: Address[],
     operation: AddressOperationEnum,
     onClose: () => void
+    onSuccess?: Dispatch<SetStateAction<boolean>>
 }) => {
     console.log("Existing Address id in Modal", addressId);
     const [fetchError, setFetchError] = useState<{
@@ -28,7 +29,7 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose 
         message: null,
         success: null
     });
-    const existingAddress = addressList.find((addr) => {
+    const existingAddress = addressList?.find((addr) => {
         const isMatch = addr.id === addressId;
         if (!isMatch) {
             console.log(`No match: ${addr.id} (type: ${typeof addr.id}) vs ${addressId} (type: ${typeof addressId})`);
@@ -115,6 +116,8 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose 
                     message: result?.message || 'Failed to create address',
                     success: result?.success || false
                 });
+            } else {
+                onSuccess && onSuccess(true);
             }
         }
         handleFadeClose();
@@ -200,3 +203,4 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose 
         </div>
     );
 };
+

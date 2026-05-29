@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { searchImgDark } from "@/constants/common";
 import { ChevronDown, ChevronUp, Download, Layers, Plus } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { TableRowSkeleton } from "@/components/common/skeletons";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
@@ -133,7 +134,7 @@ export default function TaxProfilesPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {loading ? (
-                             <tr><td colSpan={6} className="py-16 text-center text-gray-400 text-sm">Loading tax profiles...</td></tr>
+                             <TableRowSkeleton columns={6} rows={5} />
                         ) : profiles && profiles?.length === 0 ? (
                             <tr>
                                 <td colSpan={6} className="py-16 text-center text-gray-400 text-sm">

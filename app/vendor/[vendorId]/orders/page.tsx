@@ -5,6 +5,7 @@ import { searchImgDark } from "@/constants/common";
 import { ChevronDown, ChevronUp, Download,Printer, Package } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Pagination } from "@/components/common/Pagination";
+import { TableRowSkeleton } from "@/components/common/skeletons";
 import { fetchBulkInvoiceUrls, fetchVendorOrderList } from "@/utils/vendorApiClient";
 import Link from "next/link";
 import { OrderStatus as OrderStatusType, OrderStatusEnum } from "@/utils/Types";
@@ -102,11 +103,16 @@ const getPaymentBadge = (method: string, status: string) => {
 
 export default function OrdersPage() {
     const [date, setDate] = useState<Date | undefined>(new Date());
+    const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [orderStatus, setOrderStatus] = useState<OrderStatusType>('');
     const [sortBy, setSortBy] = useState<string>("desc");
     const [orders, setOrders] = useState<OrderType[]>([]);
 const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const offset = (currentPage - 1) * itemsPerPage;
     const [isDownloading, setIsDownloading] = useState(false);
     const handleDateChange = (selectedDate: Date | undefined) => {
         setDate(selectedDate);
@@ -118,18 +124,22 @@ const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
             redirect("/auth/vendorLogin")
         }
         const getOrderList = async () => {
-            
-            await fetchVendorOrderList(0, 10, token, orderStatus, sortBy)
+            setLoading(true);
+            await fetchVendorOrderList(offset, itemsPerPage, token, orderStatus, sortBy)
                 .then((res) => {
                     console.log("Vendor Orders List:", res);
-                    setOrders(res.data || []);
+                    setOrders(res.data.orders || []);
+                    setTotalPages(res.data.totalCount / itemsPerPage || 1);
                 })
                 .catch((err) => {
                     console.log("Error fetching vendor orders list:", err);
+                })
+                .finally(() => {
+                    setLoading(false);
                 });
         };
         getOrderList();
-    }, [orderStatus, sortBy]);
+    }, [orderStatus, sortBy, offset]);
 
 const toggleOrderSelection = (orderId: string) => {
         setSelectedOrders(prev => 
@@ -213,9 +223,9 @@ const toggleOrderSelection = (orderId: string) => {
                             {isDownloading ? "Downloading..." : `Print Invoices (${selectedOrders.length})`}
                         </button>
                     )}
-                    <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                    {/* <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         <Download size={16} /> Export CSV
-                    </button>
+                    </button> */}
                 </div>
             </header>
 
@@ -297,7 +307,9 @@ const toggleOrderSelection = (orderId: string) => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                        {orders && orders?.length === 0 ? (
+                        {loading ? (
+                            <TableRowSkeleton columns={9} rows={5} />
+                        ) : orders && orders?.length === 0 ? (
                             <tr>
                                 <td colSpan={10} className="py-16 text-center text-gray-400 text-sm">
                                     <Package size={36} className="mx-auto mb-3 opacity-30" />
@@ -380,7 +392,7 @@ const toggleOrderSelection = (orderId: string) => {
                 </table>
             </div>
             <span className="flex justify-end mt-4">
-                {/* <Pagination setCount={setCount} count={count} totalPages={totalPages ?? 0} style="relative right-0 w-54" /> */}
+                <Pagination setCount={setCurrentPage} count={currentPage} totalPages={totalPages} style="relative right-0 w-54" />
             </span>
         </main>
     );

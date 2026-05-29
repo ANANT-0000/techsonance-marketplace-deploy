@@ -25,18 +25,12 @@ console.log("selectedCoupon",selectedCoupon)
     if (!user || !userId ||!token) {
       return router.push('/auth/customerLogin');
     }
-    const checkAddress = await checkAddressExistence(userId, token);
-    console.log("checkAddress count:", checkAddress.count);
-
-    if (!checkAddress.hasAddresses || checkAddress.count === 0) {
-      console.log('user does not have address');
-      return router.push(`/customerProfile/${userId}/addresses`);
-    }
+  
     createCheckoutSession();
     if (id && mode === BuyBtnMode.CART) {
-      router.push(`/customerProfile/${userId}/checkout?type=cart&id=${id}&couponId=${selectedCoupon?.id ?? ''}`); // Example: /customerProfile/123/checkout?type=cart&id=789
+      router.push(`/customerProfile/${userId}/checkout?type=cart&id=${id}${selectedCoupon?.id ? '&couponId=' + selectedCoupon?.id : ''}`); // Example: /customerProfile/123/checkout?type=cart&id=789
     } else if (id && mode === BuyBtnMode.QUICK_BUY) {
-      router.push(`/customerProfile/${userId}/checkout?type=product&id=${id}&couponId=${selectedCoupon?.id ?? ''}`); // Example: /customerProfile/123/checkout?type=product&id=456
+      router.push(`/customerProfile/${userId}/checkout?type=product&id=${id}${selectedCoupon?.id ? '&couponId=' + selectedCoupon?.id : ''}`); // Example: /customerProfile/123/checkout?type=product&id=456
     };
   }
   return (

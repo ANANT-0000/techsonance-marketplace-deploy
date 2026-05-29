@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { searchImgDark } from "@/constants/common";
 import { ChevronDown, ChevronUp, Download, Tag, CheckCircle2, X } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { TableRowSkeleton } from "@/components/common/skeletons";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import {  fetchTaxRates, fetchAssignProductTax, fetchProductTaxMappings, fetchBulkAssignProductTax } from "@/utils/vendorApiClient";
@@ -225,7 +226,7 @@ const handleDateChange = (selectedDate: Date) => {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {loading ? (
-                             <tr><td colSpan={8} className="py-16 text-center text-gray-400 text-sm">Loading product mappings...</td></tr>
+                             <TableRowSkeleton columns={8} rows={5} />
                         ) : productTaxes.length === 0 ? (
                             <tr><td colSpan={8} className="py-16 text-center text-gray-400 text-sm">No products found.</td></tr>
                         ) : (

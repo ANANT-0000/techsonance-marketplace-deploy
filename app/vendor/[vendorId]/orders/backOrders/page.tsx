@@ -139,7 +139,7 @@ export default function BackOrdersListPage() {
         return <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-xs font-semibold capitalize">{type}</span>;
     };
 
-    const filteredReturns = returns.filter((req) => {
+    const filteredReturns =returns && returns.filter((req) => {
         const fullName = `${req.user?.first_name ?? ''} ${req.user?.last_name ?? ''}`.toLowerCase();
         const email = req.user?.email?.toLowerCase() ?? '';
         const query = searchQuery.toLowerCase();
@@ -165,10 +165,10 @@ export default function BackOrdersListPage() {
                         </span>
                     )}
                 </div>
-                <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                {/* <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                     <Download size={16} />
                     Export CSV
-                </button>
+                </button> */}
             </header>
 
             {/* Filter Bar */}

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Pagination } from "@/components/common/Pagination";
 import { authToken } from "@/utils/authToken";
-import { REVIEW_DATA } from "@/constants/vendor";
+import { MetricsSkeleton, TableRowSkeleton } from "@/components/common/skeletons";
 import AxiosAPI from "@/lib/axios";
 import { CouponModel } from "@/components/vendor/CouponModel";
 import { Plus, Target, AlertTriangle, ShoppingCart, TrendingUp, Download, Loader2, Tag, Calendar, Clock, Zap, Users } from "lucide-react";
@@ -117,7 +117,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
     // Pagination for Reviews
     const [count, setCount] = useState(1);
     const pageSize = 5;
-    const totalPages = Math.ceil(REVIEW_DATA.length / pageSize);
+    // const totalPages = Math.ceil(REVIEW_DATA.length / pageSize);
     const startIndex = (count - 1) * pageSize;
 
     const handleExport = async () => {
@@ -184,51 +184,55 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                 </header>
 
                 {/* Overviews Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-                        <div className="flex justify-between items-start mb-2">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Store Conversion</span>
-                            <span className="bg-emerald-50 text-emerald-600 p-2 rounded-lg"><Target size={18} /></span>
+                {isLoadingMetrics ? (
+                    <MetricsSkeleton count={4} />
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                            <div className="flex justify-between items-start mb-2">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Store Conversion</span>
+                                <span className="bg-emerald-50 text-emerald-600 p-2 rounded-lg"><Target size={18} /></span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-800">
+                                {`${overallMetrics?.conversionRate || 0}%`}
+                            </h3>
+                            <p className="text-xs text-gray-500 mt-1 font-medium">Orders / Total Carts</p>
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-800">
-                            {isLoadingMetrics ? "..." : `${overallMetrics?.conversionRate || 0}%`}
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-1 font-medium">Orders / Total Carts</p>
-                    </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-                        <div className="flex justify-between items-start mb-2">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Abandonment Rate</span>
-                            <span className="bg-red-50 text-red-600 p-2 rounded-lg"><AlertTriangle size={18} /></span>
+                        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                            <div className="flex justify-between items-start mb-2">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Abandonment Rate</span>
+                                <span className="bg-red-50 text-red-600 p-2 rounded-lg"><AlertTriangle size={18} /></span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-800">
+                                {`${overallMetrics?.abandonmentRate || 0}%`}
+                            </h3>
+                            <p className="text-xs text-red-500 mt-1 font-medium">Missed checkout opportunities</p>
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-800">
-                            {isLoadingMetrics ? "..." : `${overallMetrics?.abandonmentRate || 0}%`}
-                        </h3>
-                        <p className="text-xs text-red-500 mt-1 font-medium">Missed checkout opportunities</p>
-                    </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-                        <div className="flex justify-between items-start mb-2">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Carts</span>
-                            <span className="bg-blue-50 text-blue-600 p-2 rounded-lg"><ShoppingCart size={18} /></span>
+                        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                            <div className="flex justify-between items-start mb-2">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Carts</span>
+                                <span className="bg-blue-50 text-blue-600 p-2 rounded-lg"><ShoppingCart size={18} /></span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-800">
+                                {overallMetrics?.totalCarts || 0}
+                            </h3>
+                            <p className="text-xs text-gray-500 mt-1 font-medium">Total intent to buy</p>
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-800">
-                            {isLoadingMetrics ? "..." : overallMetrics?.totalCarts || 0}
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-1 font-medium">Total intent to buy</p>
-                    </div>
 
-                    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-                        <div className="flex justify-between items-start mb-2">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Completed Orders</span>
-                            <span className="bg-purple-50 text-purple-600 p-2 rounded-lg"><TrendingUp size={18} /></span>
+                        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                            <div className="flex justify-between items-start mb-2">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Completed Orders</span>
+                                <span className="bg-purple-50 text-purple-600 p-2 rounded-lg"><TrendingUp size={18} /></span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-800">
+                                {overallMetrics?.totalOrders || 0}
+                            </h3>
+                            <p className="text-xs text-gray-500 mt-1 font-medium">Successfully processed</p>
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-800">
-                            {isLoadingMetrics ? "..." : overallMetrics?.totalOrders || 0}
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-1 font-medium">Successfully processed</p>
                     </div>
-                </div>
+                )}
 
                 {/* --- HORIZONTAL COUPON LISTING --- */}
                <CouponCardList 
@@ -254,12 +258,9 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                                     <th className="p-4 text-center">Purchased</th>
                                     <th className="p-4">Conversion Rate</th>
                                 </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {isLoadingMetrics ? (
-                                    <tr>
-                                        <td colSpan={5} className="p-8 text-center text-gray-400 text-sm">Loading analytics data...</td>
-                                    </tr>
+                                </thead>
+                            <tbody className="divide-y divide-gray-100">                                {isLoadingMetrics ? (
+                          <MetricsSkeleton count={4} />
                                 ) : productConversions?.length === 0 ? (
                                     <tr>
                                         <td colSpan={5} className="p-8 text-center text-gray-400 text-sm">No conversion data available yet.</td>
@@ -307,7 +308,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                          Review mapping logic here...
                     </div>
                     <span className="flex justify-end p-4 border-t border-gray-100">
-                        <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative" />
+                        {/* <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative" /> */}
                     </span>
                 </div>
             </section>

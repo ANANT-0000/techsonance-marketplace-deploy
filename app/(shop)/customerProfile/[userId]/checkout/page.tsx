@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { formatCurrency } from "@/lib/utils";
 import { SelectedPaymentMethod } from "@/components/customer/SelectedPaymentMethod";
 import { PAYMENT_METHODS_FIELDS } from "@/constants";
-import { fetchGetCartList } from "@/utils/customerApiClient";
+import { checkAddressExistence, fetchGetCartList } from "@/utils/customerApiClient";
 import { AddToCart } from "@/components/customer/AddToCart";
 import {
   CreditCard, Loader2, Tag, CheckCircle2, X, AlertCircle,
@@ -19,10 +19,12 @@ import { fetchInitCheckout, fetchVerifyPayment } from "@/utils/customerApiClient
 import { authToken } from "@/utils/authToken";
 import { TaxBreakdown, TaxBreakdownPanel, TaxLoadingSkeleton } from "@/components/customer/TaxBreakdownPanel";
 import { clearCart } from "@/lib/features/Cart";
-import { Coupon, Variant } from "@/utils/Types";
+import { AddressOperationEnum, Coupon, Variant } from "@/utils/Types";
 import AxiosAPI from "@/lib/axios";
 import { motion, AnimatePresence } from "motion/react";
 import toast, { Toaster } from "react-hot-toast";
+import { AddressModal } from "@/components/customer/AddressModel";
+import { set } from "zod";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -231,9 +233,15 @@ export default function CheckoutPage() {
   const params = useParams<{ userId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isAddressAdded,setIsAddressAdded] = useState(false);
   const { clearSession } = useCheckoutSession(`/customerProfile/${params.userId}/cart`);
   const dispatch = useAppDispatch();
-
+      const [isModalOpen, setModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState<AddressOperationEnum>(AddressOperationEnum.ADD);
+    const openAdd = () => {
+        setModalMode(AddressOperationEnum.ADD);
+        setModalOpen(true);
+    };
   const checkoutType = searchParams.get('type') as 'cart' | 'product' | null;
   const couponId = searchParams.get('couponId');
   const id = searchParams.get('id');
@@ -243,7 +251,7 @@ export default function CheckoutPage() {
   const [selectedPaymentMethodState, setSelectedPaymentMethodState] = useState<string>('UPI');
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const [selectedAddressId, setSelectedAddressId] = useState<string|null>(null);
   const token = authToken();
 
   // ── Item Display State ────────────────────────────────────────────────────
@@ -301,7 +309,13 @@ export default function CheckoutPage() {
               if (res.data?.data) setCouponApplied(res.data.data);
             })
             .catch(() => toast.error("Couldn't restore coupon. Apply it manually."));
-        }
+        }  const checkAddress = await checkAddressExistence(user?.id!, token);
+            console.log("checkAddress count:", checkAddress.count);
+        
+            if (!checkAddress.hasAddresses || checkAddress.count === 0) {             setSelectedAddressId(null);
+              console.log('user does not have address');
+              
+            }
 
         if (isQuickBuy) {
           const res = await fetchProductVariantDetails(id);
@@ -475,22 +489,23 @@ export default function CheckoutPage() {
         `SIMULATION: Pay ₹${formatCurrency(displayedTotal)}\n\nOK = Success | Cancel = Failure`
       );
 
-      const verifyData = await fetchVerifyPayment(user?.id || '', {
+      const result = await fetchVerifyPayment(user?.id || '', {
         discountApplied: couponDiscount,
-        couponId: couponApplied?.id,
+        promotionId: couponApplied?.id,
         orderId: initData.data.orderId,
         isSuccess: userClickedSuccess,
         ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
       }, token);
 
-      if (!verifyData?.success  ) {
-        setCheckoutError(verifyData?.message ?? "Payment verification failed.");
+      console.log("verify result",result)
+      if (!result?.data.success  ) {
+        setCheckoutError(result?.message ?? "Payment verification failed.");
         return;
       }
 
       clearSession();
 
-      if (userClickedSuccess && verifyData.success) {
+      if (userClickedSuccess && result.data.success) {
         dispatch(clearCart());
         router.push(`/customerProfile/${params.userId}/orders/${initData.data.orderId}`);
       } else {
@@ -570,6 +585,8 @@ export default function CheckoutPage() {
               userId={user?.id || ''}
               onSelect={setSelectedAddressId}
               selectedAddressId={selectedAddressId}
+              addNewAddress={openAdd}
+              loadingAddresses={isAddressAdded}
             />
 
             {/* Payment method */}
@@ -743,7 +760,7 @@ export default function CheckoutPage() {
 
               <button
                 onClick={handlePayment}
-                disabled={isProcessing || isTaxLoading ||(couponApplied && couponDiscount === 0)? true : false}
+                disabled={selectedAddressId === null || isProcessing || isTaxLoading || (couponApplied && couponDiscount === 0) ? true : false}
                 className="w-full bg-blue-600 text-white font-semibold lg:py-3.5 py-2.5 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:bg-blue-400 text-sm lg:text-base"
               >
                 {isProcessing ? (
@@ -762,6 +779,16 @@ export default function CheckoutPage() {
           </div>
         </div>
       </section>
+        <AnimatePresence>
+                      {isModalOpen && user?.id && (
+                          <AddressModal
+                              user={user}
+                              operation={modalMode}
+                              onClose={() => setModalOpen(false)}
+                              onSuccess={setIsAddressAdded}
+                          />
+                      )}
+                  </AnimatePresence>
     </Suspense>
   );
 }

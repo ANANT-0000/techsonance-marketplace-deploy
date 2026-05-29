@@ -6,13 +6,23 @@ import { fetchVendorProducts, fetchVendorsProductsCategory } from "@/utils/vendo
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DeleteBtn } from "@/components/vendor/DeleteBtn";
 import { DynamicIcon } from "lucide-react/dynamic";
+import { TableRowSkeleton } from "@/components/common/skeletons";
 import { Product } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+interface ProductsPageProps {
+    setIsLoadingProducts: (loading: boolean) => void;
+    setProducts: (products:Product[]) => void;
+     setTotalPages: (total: number) => void;
+     itemsPerPage: number;
+      token: string;
+}
+
 export const PRODUCT_TABLE_HEAD = ["PRODUCT", "CATEGORY", "VARIANT", "SKU", "STOCK", "PRICE", "ACTION"];
- const getCategoryOptions=async(setCategoryOptions: (options: { value: string; label: string }[]) => void, vendorId: string, token: string) =>{
+ const getCategoryOptions=async(setIsLoadingCategory: (loading: boolean) => void,setCategoryOptions: (options: { value: string; label: string }[]) => void, vendorId: string, token: string) =>{
+        setIsLoadingCategory(true);
     await fetchVendorsProductsCategory( token ?? '')
         .then((res) => {
             const categories = res?.data || [];
@@ -21,41 +31,58 @@ export const PRODUCT_TABLE_HEAD = ["PRODUCT", "CATEGORY", "VARIANT", "SKU", "STO
         .catch((error) => {
             console.error("Error fetching category options:", error);
             setCategoryOptions([]);
+        })
+        .finally(() => {
+            setIsLoadingCategory(false);
         });
     };
-    const getProducts =async(setProducts: (products: Product[]) => void, token: string) =>{ 
-        await fetchVendorProducts(token ?? '')
-        .then((res) => { console.log('resssss', res); setProducts(res?.data || []);  })
-        .catch((error) => {
-            console.error("Error fetching products:", error);
-            setProducts([]);
-            return [];
-        });
-    };
-export default  function Products({ params }: { params: Promise<{ vendorId: string }> }) {
+export default  function Products() {
     const { vendorId } = useParams<{ vendorId: string }>();
 
     const token = authToken();
    
     const [productList, setProductList] = useState<Product[]>([]);
     const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
+// Granular Loading States
+const [totalProducts, setTotalProducts] = useState(0);
+   const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const offset = (currentPage - 1) * itemsPerPage;
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+ 
+    const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+    const loadProduct=async ()=>    {
+            setIsLoadingProducts(true);
+      const response=  await fetchVendorProducts(offset,itemsPerPage,token ?? '');
+      if (response.status !== 200) {
+        console.error("Error fetching products:", response.statusText);
+        setProductList([]);
+        setTotalProducts(0);
+        setTotalPages(1);
+        setIsLoadingProducts(false);
+        return;
+    }
+      const products=response?.data.data || [];
+      setProductList(products);
+      setTotalProducts(response?.data.total_products || 0);
+      setTotalPages(Math.ceil((response?.data.total_products || 0) / itemsPerPage));
+      setIsLoadingProducts(false);
+    }
     useEffect(() => {   
          setTimeout(() => {
         if (!token) {
             redirect("/auth/vendorLogin")
         }
     }, 1500)
+ 
+        loadProduct();
       //@ts-ignore
-            getProducts(setProductList, token);
-      //@ts-ignore
-            getCategoryOptions(setCategoryOptions, vendorId, token);
+            getCategoryOptions(setIsLoadingCategories, setCategoryOptions, vendorId, token);
+  
     }, [token]);
-    let count = 1;
-    const pageSize = 5;
-    const totalPages = Math.ceil(productList.length / pageSize);
-    const startIndex = (count - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    // const currentData: typeof productList = productList.slice(startIndex, endIndex);
+ 
+ 
 
     return (
         <main className="w-full px-1">
@@ -78,10 +105,10 @@ export default  function Products({ params }: { params: Promise<{ vendorId: stri
                         <Plus size={16} />
                         Add Product
                     </Link>
-                    <button className="flex items-center gap-2 rounded-xl bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 transition-colors shadow-sm">
+                    {/* <button className="flex items-center gap-2 rounded-xl bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 transition-colors shadow-sm">
                         <Download size={16} />
                         Export CSV
-                    </button>
+                    </button> */}
                 </div>
             </div>
 
@@ -142,14 +169,10 @@ export default  function Products({ params }: { params: Promise<{ vendorId: stri
                     </TableHeader>
 
                     <TableBody className="divide-y divide-gray-100">
-                        {productList && productList.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={8} className="py-16 text-center text-gray-400 text-sm">
-                                    <Package size={36} className="mx-auto mb-3 opacity-30" />
-                                    No products found.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
+                        {isLoadingProducts ? (
+                            <TableRowSkeleton columns={8} rows={5} />
+                        ) : productList && productList.length > 0 ? (
+                
                          productList && Array.isArray(productList) && productList.map((item: Product, index: number) => {
                                 const firstVariant = item.variants?.[0];
                                 const stockQty = firstVariant?.inventory?.stock_quantity;
@@ -256,14 +279,20 @@ export default  function Products({ params }: { params: Promise<{ vendorId: stri
                                     </TableRow>
                                 );
                             })
-                        )}
+                        ):            <TableRow>
+                                <TableCell colSpan={8} className="py-16 text-center text-gray-400 text-sm">
+                                    <Package size={36} className="mx-auto mb-3 opacity-30" />
+                                    No products found.
+                                </TableCell>
+                            </TableRow>
+                    }
                     </TableBody>
                 </Table>
             </div>
 
             {/* Pagination */}
             <span className="flex justify-end mt-4 mb-6">
-                {/* <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" /> */}
+                <Pagination setCount={setCurrentPage} count={currentPage} totalPages={totalPages} style="relative right-0 w-54" />
             </span>
         </main>
     );

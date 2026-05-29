@@ -84,11 +84,10 @@ export default function VendorManagementPage() {
     const { theme } = useAppSelector((state) => state.adminTheme);
     const [count, setCount] = useState(1);
     const [sort, setSort] = useState<string>('desc');
-    const pageSize = 5;
-    const totalPages = Math.ceil(VENDOR_LIST.length / pageSize);
-    // Note: You'll likely want to update this pagination to use the fetched `companies` array later
-    const startIndex = (count - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
+      const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const offset = (currentPage - 1) * itemsPerPage;
 
     const [vendorRequests, setVendorRequests] = useState(0);
     const [companies, setCompanies] = useState<Vendor[]>([]);
@@ -102,13 +101,14 @@ export default function VendorManagementPage() {
 
         AxiosAPI.get(`/v1/admin/vendors`, {
             params: {
-                offset: (count - 1) * 10,
-                limit: 10,
+                offset: offset,
+                limit: itemsPerPage,
                 status: status,
                 sort: sort
             }
         }).then((res) => {
             setCompanies(res.data.data)
+            setTotalPages(res.data.totalCount / itemsPerPage || 1);
         }).catch((err) => console.log(err))
     }, [count, status, sort]);
 
@@ -266,7 +266,7 @@ export default function VendorManagementPage() {
                 </div>
 
                 <span className="flex justify-end mt-4">
-                    <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" />
+                    <Pagination setCount={setCurrentPage} count={currentPage} totalPages={totalPages} style="relative right-0 w-54" />
                 </span>
             </main>
         </>

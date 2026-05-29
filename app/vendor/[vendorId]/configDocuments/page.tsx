@@ -37,7 +37,11 @@ export default function PoliciesPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState("");
-    const [count, setCount] = useState(1);
+       const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const offset = (currentPage - 1) * itemsPerPage;
+
     const [activeView, setActiveView] = useState<'list' | 'grid'>('list');
     const token = authToken();
 
@@ -56,6 +60,9 @@ export default function PoliciesPage() {
         setError(null);
         const res = await fetchProductPolicies(token!);
         setPolicies(res.data ?? []);
+            if (res.data) {
+            setTotalPages(Math.ceil(res.data.length / itemsPerPage));
+            }
         if (!res.data) {
             setError(res.error ?? 'Failed to load policies.');
         }
@@ -320,7 +327,7 @@ export default function PoliciesPage() {
                 )}
 
                 <span className="flex justify-end mt-4">
-                    <Pagination setCount={setCount} count={count} totalPages={1} style="relative right-0 w-54" />
+                    <Pagination setCount={setCurrentPage} count={currentPage} totalPages={totalPages} style="relative right-0 w-54" />
                 </span>
             </main>
 

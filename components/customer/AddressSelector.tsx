@@ -17,10 +17,14 @@ export function AddressSelector({
     userId,
     selectedAddressId,
     onSelect,
+    addNewAddress,
+    loadingAddresses
 }: {
     userId: string;
-    selectedAddressId: string;
-    onSelect: Dispatch<SetStateAction<string>>;
+    selectedAddressId: string | null;
+    onSelect: Dispatch<SetStateAction<string | null>>;
+    addNewAddress: () => void;
+    loadingAddresses?: boolean;
 }) {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +41,8 @@ export function AddressSelector({
             setIsLoading(false);
         };
         fetchAddresses();
-    }, [userId]);
+    }, [userId, loadingAddresses]);
+
     useEffect(() => {
         console.log("Fetched addresses:", addresses);
         addresses.find(addr => {
@@ -60,10 +65,10 @@ export function AddressSelector({
                     </div>
                     <h2 className="text-[15px] font-medium text-gray-900">Delivery address</h2>
                 </div>
-                <Link href={`/customerProfile/${userId}/addresses`} className="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-md hover:bg-blue-100 transition-colors">
+                <button onClick={addNewAddress}  className="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-md hover:bg-blue-100 transition-colors">
                     <Plus className="w-3 h-3" />
                     Add new
-                </Link>
+                </button>
             </div>
 
             {/* Loading */}
@@ -89,7 +94,7 @@ export function AddressSelector({
             {/* Address list */}
             {!isLoading && addresses.length > 0 && (
                 <div className="space-y-2 max-h-72 overflow-y-auto pr-0.5">
-                    {addresses.map((addr) => {
+                    {addresses && addresses.map((addr) => {
                         const isSelected = selectedAddressId === addr.id;
                         const badgeStyle = BADGE_STYLES[addr.address_type?.toLowerCase()] ?? BADGE_STYLES.other;
 

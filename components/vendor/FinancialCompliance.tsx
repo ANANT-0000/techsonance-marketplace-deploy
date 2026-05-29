@@ -1,88 +1,172 @@
-﻿import { COUNTRIES } from "@/constants";
-import { UseFormRegister, FieldErrors } from "react-hook-form";
-import { VendorRegisterSchema } from "@/utils/validation";
+﻿"use client";
 
-type Props = {
-    country_code: string;
-    style?: string;
-    register: UseFormRegister<any>;
-    errors: FieldErrors<VendorRegisterSchema>;
-};
+import { useEffect, useState } from "react";
+import { AlertCircle, CheckCircle2, Info, ShieldCheck } from "lucide-react";
+import { COMPLIANCE_REGEX } from "@/app/auth/vendorRegister/page";
 
-export default function FinancialCompliance({ country_code, style, register, errors }: Props) {
-    const fields = COUNTRIES.find((c) => c.country_code === country_code)?.fields ?? [];
+export interface ComplianceField {
+  value: string;
+  label: string;
+  placeholder: string;
+  required: boolean;
+  helperText?: string;
+}
 
-    if (fields.length === 0) return null;
+interface FinancialComplianceProps {
+  country_code: string;
+  fields: ComplianceField[];
+  // Controlled: parent owns the values map { field_key: field_value }
+  values: Record<string, string>;
+  onChange: (key: string, val: string) => void;
+  // External errors pushed from step-level validation
+  externalErrors?: Record<string, string>;
+}
 
+function getValidationState(
+  fieldKey: string,
+  value: string,
+  required: boolean,
+): "idle" | "valid" | "invalid" | "empty-required" {
+  const trimmed = value.trim();
+  if (!trimmed) return required ? "empty-required" : "idle";
+  const rule = COMPLIANCE_REGEX[fieldKey];
+  if (!rule) return "valid"; // no regex = free text (e.g. DPO name basic)
+  return rule.pattern.test(trimmed) ? "valid" : "invalid";
+}
+
+export default function FinancialCompliance({
+  country_code,
+  fields,
+  values,
+  onChange,
+  externalErrors = {},
+}: FinancialComplianceProps) {
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // Reset touched state when country changes
+  useEffect(() => {
+    setTouched({});
+  }, [country_code]);
+
+  if (!country_code || fields.length === 0) {
     return (
-        <section className={(style ?? "") + " my-4"}>
-            {fields.map((field, index) => (
-                <div key={field.value} className="mb-6 py-2 px-4 border border-gray-100 bg-gray-50 rounded-xl">
-                    {/* Hidden input for field_key */}
-                    <input
-                        type="hidden"
-                        value={field.value} 
-                        {...register(`company_compliance.${index}.field_key` as any)}
-                    />
-                    <div>
-                        <label
-                            htmlFor={`value_${index}`}
-                            className="block mb-1.5 text-sm font-semibold text-slate-700"
-                        >
-                            {field.label}
-                            {field.required && <span className="text-red-500 ml-0.5">*</span>}
-                        </label>
-                        <input
-                            id={`value_${index}`}
-                            type="text"
-                            placeholder={field.placeholder}
-                            className="my-1 border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white focus:border-blue-500 outline-none transition text-sm text-slate-800 placeholder:text-slate-400"
-                            {...register(`company_compliance.${index}.field_value` as any, {
-                                required: field.required ? `${field.label} is required` : false,
-                            })}
-                        />
-                        {field.helperText && (
-                            <p className="text-xs text-slate-500 mt-1">{field.helperText}</p>
-                        )}
-                        {errors.company_compliance?.[index]?.field_value && (
-                            <p className="text-red-500 text-xs mt-1">
-                                {errors.company_compliance[index]?.field_value?.message as string}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Metadata: Is Active Checkbox & Valid Until Date */}
-                    <div className="flex flex-wrap justify-between items-center gap-6 mt-2 pt-0 border-t border-gray-200">
-                        {/* Is Active Checkbox */}
-                        <label className="flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer transition-all"
-                                {...register(`company_compliance.${index}.is_active` as any)}
-                            />
-                            <span className="ml-2 text-sm font-medium text-slate-700">
-                                Mark as Active
-                            </span>
-                        </label>
-
-                        {/* Valid Until Date Picker */}
-                        <div className="flex items-center gap-2">
-                            <label 
-                                htmlFor={`date_${index}`} 
-                                className="text-sm font-medium text-slate-700"
-                            >
-                                Valid Until:
-                            </label>
-                            <input
-                                id={`date_${index}`}
-                                type="date"
-                                className="border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white focus:border-blue-500 outline-none transition text-sm text-slate-800"
-                                {...register(`company_compliance.${index}.valid_until` as any)}
-                            />
-                        </div>
-                    </div>
-                </div>
-            ))}
-        </section>
+      <div className="mt-4 flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-400 text-sm">
+        <Info size={16} className="shrink-0" />
+        Select a country above to load the required compliance fields.
+      </div>
     );
+  }
+
+  const requiredCount = fields.filter((f) => f.required).length;
+
+  return (
+    <div className="mt-5 space-y-4">
+      {/* Section header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={17} className="text-blue-500" />
+          <h3 className="font-semibold text-gray-800 text-sm">
+            Financial & Tax Compliance
+          </h3>
+        </div>
+        <span className="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1 rounded-full font-medium">
+          {requiredCount} required
+        </span>
+      </div>
+
+      <div className="space-y-3">
+        {fields.map((field) => {
+          const val = values[field.value] ?? "";
+          const isTouched = touched[field.value];
+          const extError = externalErrors[field.value];
+          const state = getValidationState(field.value, val, field.required);
+          const rule = COMPLIANCE_REGEX[field.value];
+
+          // Show error if: externally pushed OR (touched and not valid)
+          const showError =
+            extError ||
+            (isTouched && state === "invalid") ||
+            (isTouched && state === "empty-required");
+
+          const errorMsg =
+            extError ||
+            (state === "empty-required"
+              ? `${field.label} is required`
+              : rule?.message ?? "");
+
+          return (
+            <div key={field.value} className="group">
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                {field.label}
+                {field.required && (
+                  <span className="text-red-500 text-sm leading-none">*</span>
+                )}
+                {!field.required && (
+                  <span className="text-[10px] text-gray-400 font-normal normal-case tracking-normal ml-1 bg-gray-100 px-1.5 py-0.5 rounded">
+                    optional
+                  </span>
+                )}
+              </label>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  value={val}
+                  placeholder={field.placeholder}
+                  onChange={(e) => {
+                    onChange(field.value, e.target.value.toUpperCase());
+                  }}
+                  onBlur={() =>
+                    setTouched((prev) => ({ ...prev, [field.value]: true }))
+                  }
+                  className={[
+                    "w-full px-4 py-2.5 pr-10 rounded-xl border text-sm font-mono transition-all outline-none",
+                    "bg-white placeholder:font-sans placeholder:text-gray-400",
+                    showError
+                      ? "border-red-300 bg-red-50 focus:border-red-400 focus:ring-2 focus:ring-red-100"
+                      : isTouched && state === "valid"
+                        ? "border-emerald-300 bg-emerald-50/30 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                        : "border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100",
+                  ].join(" ")}
+                />
+
+                {/* Inline status icon */}
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  {isTouched && state === "valid" && (
+                    <CheckCircle2 size={16} className="text-emerald-500" />
+                  )}
+                  {showError && (
+                    <AlertCircle size={16} className="text-red-400" />
+                  )}
+                </span>
+              </div>
+
+              {/* Error message */}
+              {showError && (
+                <p className="mt-1.5 text-xs text-red-600 flex items-start gap-1">
+                  <AlertCircle size={12} className="mt-0.5 shrink-0" />
+                  {errorMsg}
+                </p>
+              )}
+
+              {/* Helper text (shown when not erroring) */}
+              {!showError && field.helperText && (
+                <p className="mt-1.5 text-xs text-gray-400 flex items-start gap-1">
+                  <Info size={11} className="mt-0.5 shrink-0 text-gray-400" />
+                  {field.helperText}
+                </p>
+              )}
+
+              {/* Format hint when typing (not yet touched) */}
+              {!isTouched && rule && val.length > 0 && (
+                <p className="mt-1 text-xs text-blue-500">
+                  Format check will run on blur
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }

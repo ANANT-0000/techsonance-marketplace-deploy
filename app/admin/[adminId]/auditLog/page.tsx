@@ -13,18 +13,15 @@ export default function AuditLogPage() {
     const [isOpen, setIsOpen] = useState(false);
     const [logs] = useState([]);
     const { theme } = useAppSelector((state: any) => state.adminTheme);
-    const [count, setCount] = useState(1);
+      const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const offset = (currentPage - 1) * itemsPerPage;
 
     const handleDateChange = (selectedDate: Date | undefined) => {
         setDate(selectedDate);
         setIsOpen(false);
     };
-
-    const pageSize = 5;
-    const totalPages = Math.ceil(logs.length / pageSize);
-    const startIndex = (count - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const currentData = logs.slice(startIndex, endIndex);
 
     return (
         <>
@@ -95,7 +92,7 @@ export default function AuditLogPage() {
                     </table>
                 </div>
                 <span className="flex justify-end">
-                    <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative right-0 w-54" />
+                    <Pagination setCount={setCurrentPage} count={currentPage} totalPages={totalPages} style="relative right-0 w-54" />
                 </span>
             </main>
         </>

@@ -91,10 +91,10 @@ export default function VendorCustomersPage() {
                         </span>
                     )}
                 </div>
-                <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                {/* <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                     <Download size={16} />
                     Export CSV
-                </button>
+                </button> */}
             </header>
 
             {/* Filter Bar */}
