@@ -4,14 +4,14 @@ import { ActiveInstanceType, AuditLogEntryType, SupportTicketType, VendorApplica
 // ============================================================
 
 export const ADMIN_NAV_LINKS: NavLinkType[] = [
-  { 'Dashboard': null, icon: "layout-dashboard" },
-  { "Role Management": "role", icon: "user" },
-  { 'Vendor': "vendorManagement", icon: "building" },
-  { 'Analytics': "auditLog", icon: "chart-column-stacked" },
-  { "Support Tickets": "supportTickets", icon: "headset" },
-  { 'Settings': "settings", icon: "settings" },
+  { Dashboard:         null,              icon: "layout-dashboard",    section: "Main"    },
+  { "Role Management": "role",            icon: "user-cog",            section: "Main"    },
+  { Vendor:            "vendorManagement",icon: "building",            section: "Main"    },
+  { Analytics:         "auditLog",        icon: "chart-column-stacked",section: "Main"    },
+  { "Support Tickets": "supportTickets",  icon: "headset",             section: "Support" },
+  { Settings:          "settings",        icon: "settings",            divider: true      },
 ];
-
+ 
 // ============================================================
 // ADMIN DASHBOARD — MOCK DATA
 // ============================================================

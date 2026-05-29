@@ -62,17 +62,18 @@ export const VendorDocumentTypes: { label: string; value: string , required: boo
 // ============================================================
 //used
 export const VENDOR_NAV_LINKS: NavLinkType[] = [
-  { Dashboard: null, icon: 'layout-dashboard' },
-  { Products: "products", icon: 'package' },
-  { Orders: "orders", icon: 'shopping-cart' },
-  {'Config Documents': "configDocuments", icon: 'file-text'},
-  { Analytics: "analytics", icon: 'chart-column-stacked' },
-  { Finances: "finances", icon: 'hand-coins' },
-  { Marketing: "marketing", icon: 'megaphone' },
-  // { "Customer Management": "customers", icon: 'users' },
-  // { "Support Tickets": "supportTickets", icon: 'headset' },
-  { Settings: "settings", icon: 'settings' },
+  { Dashboard:        null,              icon: "layout-dashboard",    section: "Main"              },
+  { Products:         "products",        icon: "package",             section: "Main"              },
+  { Orders:           "orders",          icon: "shopping-cart",       section: "Main"              },
+  { Analytics:        "analytics",       icon: "chart-column-stacked",section: "Main"              },
+  { Finances:         "finances",        icon: "hand-coins",          section: "Finance & Growth"  },
+  { Marketing:        "marketing",       icon: "megaphone",           section: "Finance & Growth"  },
+  { "Config Documents":"configDocuments",icon: "file-text",           section: "Documents"         },
+  { Settings:         "settings",        icon: "settings",            divider: true                },
 ];
+ 
+ 
+
 // Define reusable types
 interface SidebarLink {
   title: string;

@@ -4,7 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { DynamicIcon, IconName } from "lucide-react/dynamic"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 export const InnerSideBar = ({
     vendorId,
@@ -19,7 +19,22 @@ export const InnerSideBar = ({
     useEffect(() => {
         setIsMounted(true)
     }, [])
-    
+     const [hovered, setHovered]     = useState(false);
+  const leaveTimer                = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const expanded = isClosed
+   || hovered;
+
+  const handleMouseEnter = useCallback(() => {
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    setHovered(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    // Small delay so accidental quick mouse-outs don't flicker
+    leaveTimer.current = setTimeout(() => setHovered(false), 120);
+  }, []);
+  
     const links = getVendorInnerSidebarLinks(vendorId, selectedMenu)
     useEffect(() => {
         const allPaths = links.flatMap((s) =>
@@ -38,11 +53,13 @@ export const InnerSideBar = ({
     return (
          <AnimatePresence mode="wait">
         <div
+              onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
             className={`
         relative flex flex-col bg-white border-r border-gray-200 h-screen
         overflow-y-auto overflow-x-hidden
         transition-all duration-300 ease-in-out
-        ${isClosed ? "w-20" : "min-w-44 w-64"}
+        ${!expanded ? "w-20" : "min-w-44 w-64"}
       `}
         >
             <div className="sticky top-0 z-10 flex items-center justify-end bg-white border-b border-gray-100 px-3 py-3 w-full">
@@ -54,9 +71,9 @@ export const InnerSideBar = ({
                 <button
                     onClick={() => setIsClosed((v) => !v)}
                     className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                    aria-label={isClosed ? "Expand sidebar" : "Collapse sidebar"}
+                    aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
                 >
-                    <DynamicIcon name={isClosed ? "panel-left-open" : "panel-left-close"} size={24} />
+                    <DynamicIcon name={!expanded ? "panel-left-open" : "panel-left-close"} size={24} />
                 </button>
             </div>
 
@@ -103,14 +120,14 @@ export const InnerSideBar = ({
                                                     </span>
 
                                                     {/* Label — hidden when collapsed */}
-                                                    {!isClosed && (
+                                                    {expanded && (
                                                         <span className="text-wrap transition-opacity duration-200 ease-in-out">
                                                             {item.title}
                                                         </span>
                                                     )}
 
                                                     {/* Tooltip on hover when collapsed */}
-                                                    {isClosed && (
+                                                    {!expanded && (
                                                         <span className="
                               pointer-events-none absolute left-full ml-2 z-50
                               whitespace-nowrap rounded-md bg-gray-900 text-white

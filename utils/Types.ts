@@ -603,9 +603,11 @@ export interface VendorApplication {
   documents: VendorDocument[];
 }
 export interface NavLinkType {
-  [ key: string ]: string | null;
+  [label: string]: string | null | boolean | undefined;
+  icon?: string;
+  section?: string;
+  divider?: boolean;
 }
-
 export interface FooterLinkType {
   title: string;
   url: string;

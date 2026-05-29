@@ -114,17 +114,6 @@ const COMPANY_STRUCTURES = [
   "NGO / Non-Profit",
   "Other",
 ];
-
-const COUNTRY_DIAL_CODES = [
-  { code: "+91", flag: "🇮🇳", name: "India" },
-  { code: "+880", flag: "🇧🇩", name: "Bangladesh" },
-  { code: "+94", flag: "🇱🇰", name: "Sri Lanka" },
-  { code: "+1", flag: "🇺🇸", name: "United States" },
-  { code: "+44", flag: "🇬🇧", name: "United Kingdom" },
-  { code: "+61", flag: "🇦🇺", name: "Australia" },
-  { code: "+971", flag: "🇦🇪", name: "UAE" },
-];
-
 // ─── Step metadata ────────────────────────────────────────────────────────────
 const STEPS = [
   { id: 0, label: "Organization", icon: Building2 },
@@ -283,7 +272,7 @@ function StepIndicator({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function VendorRegisterPage() {
-  const [formStep, setFormStep] = useState(3);
+  const [formStep, setFormStep] = useState(2);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -319,10 +308,6 @@ export default function VendorRegisterPage() {
       store_owner_first_name: "",
       store_owner_last_name: "",
       category: "",
-      company_compliance: [{
-        field_key: "",
-        field_value: "",
-      }],
       company_domain: "",
       company_structure: "",
       email: "",
@@ -333,6 +318,9 @@ export default function VendorRegisterPage() {
   const currentCountryFields =
     COUNTRIES.find((c) => c.country_code === countryCode)?.fields ?? [];
     console.log("Current form errors:", errors);
+// Add to nextStep, after setFormStep:
+console.log("financialFileMap after step advance:", financialFileMap);
+console.log("legalFileMap after step advance:", legalFileMap);
   // ── Navigation ──────────────────────────────────────────────────────────────
   const nextStep = useCallback(async () => {
     setGlobalError(null);
@@ -382,7 +370,7 @@ export default function VendorRegisterPage() {
     setGlobalError(null);
     setFormStep((prev) => Math.max(prev - 1, 0));
   };
-
+console.log("Current form stage "+ formStep);
   // ── Submit ──────────────────────────────────────────────────────────────────
   const onSubmit: SubmitHandler<VendorRegisterSchema> = async (data: VendorRegisterSchema) => {
     setGlobalError(null);
@@ -723,11 +711,14 @@ export default function VendorRegisterPage() {
                       className={inputCls}
                       value={countryCode}
                       onChange={(e) => {
-                        setCountryCode(e.target.value);
-                        setComplianceValues({});
-                        setComplianceErrors({});
-                        setMissingFinancialDocs([]);
-                        setFinancialFileMap([]);
+                        const selectedCode = e.target.value;
+                        if (selectedCode) {
+                          setComplianceValues({});
+                          setComplianceErrors({});
+                          setMissingFinancialDocs([]);
+                          setFinancialFileMap([]);
+                        }
+                        setCountryCode(selectedCode);
                       }}
                     >
                       <option value="" disabled>

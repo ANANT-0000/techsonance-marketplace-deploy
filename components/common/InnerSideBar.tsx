@@ -2,6 +2,7 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useCallback, useRef, useState } from "react";
 
 export interface Link {
     section: string;
@@ -19,9 +20,27 @@ export function InnerSideBar({ path, links, isOpen, isNotOpen }: { path: string,
     const handleRouter = () => {
         router.push(path)
     }
+     const [hovered, setHovered]     = useState(false);
+      const leaveTimer                = useRef<ReturnType<typeof setTimeout> | null>(null);
+    
+      const expanded = isSidebarOpen || hovered;
+    
+      const handleMouseEnter = useCallback(() => {
+        if (leaveTimer.current) clearTimeout(leaveTimer.current);
+        setHovered(true);
+      }, []);
+    
+      const handleMouseLeave = useCallback(() => {
+        // Small delay so accidental quick mouse-outs don't flicker
+        leaveTimer.current = setTimeout(() => setHovered(false), 120);
+      }, []);
     return (
         <>
-            <aside className={`inner_sidebar fixed top-20 left-0 h-full max-w-74  bg-white border-r-2  border-t-2  border-gray-300 p-4 ${style}`}       >
+            <aside
+                  onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+            
+            className={`inner_sidebar fixed top-20 left-0 h-full max-w-74  bg-white border-r-2  border-t-2  border-gray-300 p-4 ${style}`}       >
                 {
                     links.map((section, index) => (
                         <div key={index} className="mb-6 pr-4">
