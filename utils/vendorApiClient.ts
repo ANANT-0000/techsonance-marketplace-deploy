@@ -871,10 +871,14 @@ export const fetchBulkInvoiceUrls = async (orderIds: string[], token: string) =>
         return { data: [], message: 'Error fetching bulk invoice URLs' };
     }
 }
-export const fetchGstRecords = async (statusFilter: string, sortBy: string, token: string) => {
+export const fetchGstRecords = async (offset: number, limit: number, search: string, statusFilter: string, sortBy: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/v1/finances/gst?status=${statusFilter}&sort_by=${sortBy}`, {
+        let url = `${BASE_API_URL}/v1/finances/gst?sort_by=${sortBy}&offset=${offset}&limit=${limit}`;
+        if (statusFilter) url += `&status=${statusFilter}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+
+        const response = await fetch(url, {
             method: 'GET',
             headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
         });
