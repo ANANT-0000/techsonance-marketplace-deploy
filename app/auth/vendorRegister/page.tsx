@@ -6,9 +6,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Building2,
-  Globe2,
-  ShieldCheck,
-  FileArchive,
   CheckCircle2,
   ChevronRight,
   ChevronLeft,
@@ -27,12 +24,12 @@ import {
  
 } from "@/utils/validation";
 import { COUNTRIES, COUNTRY_CODES } from "@/constants/common";
-import { VendorDocumentTypes } from "@/constants";
+import { BUSINESS_CATEGORIES, COMPANY_STRUCTURES, STEP_RHF_FIELDS, STEPS, VendorDocumentTypes } from "@/constants";
 import { vendorRegister } from "@/utils/authApiClient";
 
 import FinancialCompliance from "@/components/vendor/FinancialCompliance";
 import { DocUploadInput, FileEntry } from "@/components/vendor/DocUploadInput";
-import { VendorRegisterFormData } from "@/utils/Types";
+import { RegistrationSuccessModal } from "@/components/common/RegistrationSuccessModal";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -89,55 +86,6 @@ export const COMPLIANCE_REGEX: Record<
       "Invalid VAT number. Format: 9 digits followed by V or X (e.g. 123456789V)",
   },
 };
-const BUSINESS_CATEGORIES = [
-  "Fashion & Apparel",
-  "Electronics & Gadgets",
-  "Food & Beverages",
-  "Health & Wellness",
-  "Home & Living",
-  "Beauty & Personal Care",
-  "Sports & Outdoors",
-  "Books & Stationery",
-  "Toys & Games",
-  "Automotive",
-  "Industrial & B2B",
-  "Other",
-];
-
-const COMPANY_STRUCTURES = [
-  "Sole Proprietorship",
-  "Partnership Firm",
-  "Limited Liability Partnership (LLP)",
-  "Private Limited Company (Pvt. Ltd.)",
-  "Public Limited Company",
-  "One Person Company (OPC)",
-  "NGO / Non-Profit",
-  "Other",
-];
-// ─── Step metadata ────────────────────────────────────────────────────────────
-const STEPS = [
-  { id: 0, label: "Organization", icon: Building2 },
-  { id: 1, label: "Domain", icon: Globe2 },
-  { id: 2, label: "Compliance", icon: ShieldCheck },
-  { id: 3, label: "Documents", icon: FileArchive },
-];
-
-// Fields validated per step by react-hook-form
-const STEP_RHF_FIELDS: Record<number, (keyof VendorRegisterSchema)[]> = {
-  0: [
-    "company_name",
-    "store_owner_first_name",
-    "store_owner_last_name",
-    "email",
-    "country_code",
-    "phone_number",
-    "category",
-    "company_structure",
-  ],
-  1: ["company_domain"],
-  2: [],
-  3: [],
-};
 
 // ─── Shared input style ───────────────────────────────────────────────────────
 const inputCls =
@@ -145,69 +93,6 @@ const inputCls =
 const labelCls =
   "block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5";
 const errorCls = "mt-1.5 text-xs text-red-600 flex items-center gap-1";
-
-// ─── SuccessModal ─────────────────────────────────────────────────────────────
-function SuccessModal({ onClose }: { onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-300">
-        <div className="h-1.5 bg-gradient-to-r from-blue-500 to-emerald-400 w-full" />
-        <div className="p-8 flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-5 ring-4 ring-emerald-100">
-            <CheckCircle2 className="w-11 h-11 text-emerald-500" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Registration Submitted!
-          </h2>
-          <p className="text-gray-500 text-sm mb-7 text-balance">
-            Your business application is now under review by our team. We'll
-            send your login credentials once approved.
-          </p>
-          <div className="w-full space-y-3 mb-6">
-            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 text-left">
-              <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-100">
-                <Clock className="w-5 h-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                  Estimated Review Time
-                </p>
-                <p className="text-sm font-semibold text-gray-700">
-                  2 – 4 Business Days
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 text-left">
-              <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-100">
-                <Mail className="w-5 h-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                  Credentials Delivery
-                </p>
-                <p className="text-sm font-semibold text-gray-700">
-                  Sent to your registered email
-                </p>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-2xl transition-colors text-sm"
-          >
-            Back to Home <ArrowRight size={16} />
-          </button>
-          <p className="text-xs text-gray-400 mt-4">
-            Need help?{" "}
-            <a href="mailto:support@platform.com" className="underline">
-              support@platform.com
-            </a>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── StepIndicator ────────────────────────────────────────────────────────────
 function StepIndicator({
@@ -446,7 +331,7 @@ console.log("Current form stage "+ formStep);
   return (
     <>
       {showSuccess && (
-        <SuccessModal onClose={() => setShowSuccess(false)} />
+        <RegistrationSuccessModal isOpen={showSuccess} onClose={() => setShowSuccess(false)} />
       )}
 
       <main className="min-h-screen shadow-2xl py-10 px-4">

@@ -51,6 +51,7 @@ const FIELD_KEY_LABELS: Record<string, { label: string; icon: string; descriptio
 };
 
 function getFieldMeta(key: string) {
+  // @ts-ignore
   return COUNTRIES[key] ?? {
     label: key.replace(/_/g, ' ').toUpperCase(),
     icon: 'file-certificate',

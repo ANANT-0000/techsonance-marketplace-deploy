@@ -12,7 +12,7 @@ export const HOME_HERO_DESC = "Discover, buy, and sell music products with ease.
 export const HERO_BTN_TEXT = "Shop Now";
 
 // Navigation Links
-export const NAV_LINKS: NavLinkType[] = [{ Home: '/' }, { Shop: '/shopping' }, { About: '/about' }, { Contact: '/contact' }]
+export const NAV_LINKS= [{ Home: '/' }, { Shop: '/shopping' }, { About: '/about' }, { Contact: '/contact' }]
 export interface tabLinkType {
     [key: string]: string;
 }

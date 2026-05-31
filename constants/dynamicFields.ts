@@ -1,6 +1,55 @@
-﻿import { id, pl } from "date-fns/locale";
+﻿
+import { Building2, FileArchive, Globe2, ShieldCheck } from "lucide-react";
 import { BusinessStructure, categoryOptions, COUNTRY_CODES } from "./common";
+import { VendorRegisterSchema } from "@/utils/validation";
+export const STEPS = [
+  { id: 0, label: "Organization", icon: Building2 },
+  { id: 1, label: "Domain", icon: Globe2 },
+  { id: 2, label: "Compliance", icon: ShieldCheck },
+  { id: 3, label: "Documents", icon: FileArchive },
+];
 
+// Fields validated per step by react-hook-form
+export const STEP_RHF_FIELDS: Record<number, (keyof VendorRegisterSchema)[]> = {
+  0: [
+    "company_name",
+    "store_owner_first_name",
+    "store_owner_last_name",
+    "email",
+    "country_code",
+    "phone_number",
+    "category",
+    "company_structure",
+  ],
+  1: ["company_domain"],
+  2: [],
+  3: [],
+};
+export const BUSINESS_CATEGORIES = [
+  "Fashion & Apparel",
+  "Electronics & Gadgets",
+  "Food & Beverages",
+  "Health & Wellness",
+  "Home & Living",
+  "Beauty & Personal Care",
+  "Sports & Outdoors",
+  "Books & Stationery",
+  "Toys & Games",
+  "Automotive",
+  "Industrial & B2B",
+  "Other",
+];
+
+export const COMPANY_STRUCTURES = [
+  "Sole Proprietorship",
+  "Partnership Firm",
+  "Limited Liability Partnership (LLP)",
+  "Private Limited Company (Pvt. Ltd.)",
+  "Public Limited Company",
+  "One Person Company (OPC)",
+  "NGO / Non-Profit",
+  "Other",
+];
 export const ORGANIZATION_DETAIL_FIELDS = [
     { id: "company_name", label: "Company Name", placeholder: "Enter your company name", type: "text" },
     { id: "store_owner_first_name", label: "First Name", placeholder: "Enter your first name", type: "text" },

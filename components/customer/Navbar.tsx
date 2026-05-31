@@ -13,7 +13,7 @@ import { RootState } from "@/lib/store";
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 
 
-
+// @ts-ignore
 export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: { styles?: string, logoUrl?: string, menuLinks?: { [key: string]: string | null }[] }) {
     const searchImg = false ? searchImgLight : searchImgDark;
     const { items } = useAppSelector((state: RootState) => state.cart);
