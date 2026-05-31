@@ -48,7 +48,8 @@ export default function GstListingPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const offset = (currentPage - 1) * itemsPerPage;
     const [loading, setLoading] = useState(true);
-
+    const [search, setSearch] = useState<string>("");
+    const [debouncedSearch, setDebouncedSearch] = useState<string>("");
     const handleDateChange = (selectedDate: Date | undefined) => {
         setDate(selectedDate);
         setIsOpen(false);
@@ -64,7 +65,7 @@ export default function GstListingPage() {
         const getGstRecords = async () => {
             setLoading(true);
             try {
-                const res = await fetchGstRecords(statusFilter, sortBy, token!);
+                const res = await fetchGstRecords(  statusFilter, sortBy, token!);
                 setGstRecords(res.data?.data || []);
                 if (res.data) {
                     setTotalPages(Math.ceil(res.data.totalCount / itemsPerPage));
@@ -76,7 +77,8 @@ export default function GstListingPage() {
             }
         };
         getGstRecords();
-    }, [statusFilter, sortBy, token]);
+        }, [statusFilter, sortBy, token,  
+    ]);
 
     return (
         <main className="w-full px-1">

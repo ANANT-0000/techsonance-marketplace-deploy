@@ -121,7 +121,7 @@ export const handleRemovePermission = async (adminId: string, roleId: string, pe
 };
 export const fetchApplications = async( token: string)=> {
     try {
-        const response = await fetch(`${ADMIN_BASE_URL}/vendor-applications`, {
+        const response = await fetch(`${BASE_API_URL}/v1/admin/vendor-applications`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -167,7 +167,7 @@ export const handleAssignPermission = async (adminId: string, roleId: string, pe
 export const approveVendor = async (vendorId: string, token: string) => {
     try {
         console.log(vendorId);
-        const response = await fetch(`${ADMIN_BASE_URL}/approve-vendor/${vendorId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/admin/approve-vendor/${vendorId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ export const approveVendor = async (vendorId: string, token: string) => {
 
 export const rejectVendor = async (vendorId: string, token: string) => {
     try {
-        const response = await fetch(`${ADMIN_BASE_URL}/reject-vendor/${vendorId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/admin/reject-vendor/${vendorId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',

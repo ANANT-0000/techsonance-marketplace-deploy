@@ -1,9 +1,8 @@
 ﻿"use server"
-import { BASE_API_URL } from "@/constants";
+import { BASE_API_URL} from "@/constants";
 import { revalidatePath } from "next/cache";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { CompanyComplianceField, ComplianceDocument, ComplianceField, ComplianceFieldPayload, OrderStatus, ReturnStatus } from "./Types";
-
 // ==========================================
 // CATEGORY API ENDPOINTS
 // ==========================================
@@ -45,13 +44,14 @@ export const createVendorProductCategory = async (vendorId: string, categoryData
         });
         if (response.status !== 201) {
             console.error('Failed to create product category');
+            return { data: {}, message: 'Failed to create product category' };
         }
         // revalidatePath(`/vendor/${vendorId}/products/categories`);
         return await response.json();
     }
     catch (error) {
         console.error('Error creating product category:', error);
-        throw error;
+         return { data: {}, message: 'Error creating product category' };
     }
 }
 export const updateVendorProductCategory = async (vendorId: string, categoryId: string, categoryData: { name: string; description?: string }, token: string) => {
@@ -66,15 +66,12 @@ export const updateVendorProductCategory = async (vendorId: string, categoryId: 
             },
             body: JSON.stringify({ category: categoryData }),
         });
-        if (response.status !== 200) {
-            throw new Error('Failed to update product category');
-        }
         revalidatePath(`/vendor/${vendorId}/products/categories`);
         return await response.json();
     }
     catch (error) {
         console.error('Error updating product category:', error);
-        throw error;
+        return { data: {}, message: 'Error updating product category' };
     }
 }
 export const deleteVendorProductCategory = async (vendorId: string, categoryId: string, token: string) => {
@@ -190,12 +187,12 @@ export const fetchVendorProducts = async (offset: number, limit: number, token: 
             },
         }); console.log(response.status)
         if (response.status !== 200) {
-            console.error('Failed to fetch products');
+            console.log('Failed to fetch products');
         }
         return await response.json();
     } catch (error) {
-        console.error('Error fetching products:', error);
-        throw error;
+        console.log('Error fetching products:', error);
+        return { data: [], message: 'Error fetching products' };
     }
 }
 export const fetchVendorProductsOptions = async (token: string) => {
@@ -216,7 +213,7 @@ export const fetchVendorProductsOptions = async (token: string) => {
         return await response.json();
     } catch (error) {
         console.error('Error fetching products:', error);
-        throw error;
+        return { data: [], message: 'Error fetching products' };
     }
 }
 export const fetchVendorActiveProducts = async (token: string) => {
@@ -238,7 +235,7 @@ export const fetchVendorActiveProducts = async (token: string) => {
         return await response.json();
     } catch (error) {
         console.error('Error fetching products:', error);
-        throw error;
+        return { data: [], message: 'Error fetching products' };
     }
 }
 export const fetchVendorOneProducts = async (id: string, token: string) => {
@@ -260,7 +257,7 @@ export const fetchVendorOneProducts = async (id: string, token: string) => {
         return await response.json();
     } catch (error) {
         console.error('Error fetching products:', error);
-        return { status: 500, statusText: 'Internal Server Error' + error };
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 export const deleteProduct = async (productId: string, vendorId: string, token: string) => {
@@ -299,7 +296,6 @@ export const createProductVariant = async (variantData: FormData, vendorId: stri
                 'company-domain': companyDomain,
             }
         });
-        if (!response.ok) throw new Error("Failed to create variant");
         const res = await response.json();
         revalidatePath(`/vendor/${vendorId}/products/variants`);
         revalidatePath(`/vendor/${vendorId}/products/${productId}/productVariants`);
@@ -307,7 +303,7 @@ export const createProductVariant = async (variantData: FormData, vendorId: stri
         return res;
     } catch (error) {
         console.error("Error creating product variant:", error);
-        return { status: 500, statusText: 'Internal Server Error' + error };
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 
 }
@@ -337,7 +333,7 @@ try{
     return res.json();
 } catch (error) {
     console.error('Error fetching low stock alerts:', error);
-    return { status: 500, statusText: 'Internal Server Error' + error };
+    return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
 };
 }
 export const updateProductVariant = async (
@@ -347,18 +343,27 @@ export const updateProductVariant = async (
     variantId: string
     , token: string) => {
     try {
+        const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/product-variant/${variantId}`, {
             method: "PATCH",
             body: formData,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'company-domain': companyDomain,
+            }
         });
 
-        if (!response.ok) throw new Error(`Failed to update variant: ${response.statusText}`);
+        if (!response.ok){
+            console.error('Failed to update product variant');
+        }
 
         const res = await response.json();
+        console.log(`[updateProducrtVarint] reponse`,res)
         revalidatePath(`/vendor/${vendorId}/products/${productId}/variants`);
-        return { status: 200, data: res };
+        return res;
     } catch (error) {
         console.error("Error updating product variant:", error);
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 };
 export const fetchProductVariants = async (productId: string, token: string) => {
@@ -403,6 +408,7 @@ export const deleteProductVariant = async (productId: string, variantId: string,
         return await response.json();
     } catch (error) {
         console.error('Error deleting product variant:', error);
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 export const fetchVariant = async (variantId: string, token: string) => {
@@ -424,6 +430,7 @@ export const fetchVariant = async (variantId: string, token: string) => {
         return await response.json();
     } catch (error) {
         console.error('Error fetching variant data:', error);
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 // ==========================================
@@ -536,6 +543,7 @@ export const fetchAddTrackingUrl = async (orderId: string, trackingUrl: string, 
         return await response.json();
     } catch (error) {
         console.error('Error adding tracking URL:', error);
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 
 }
@@ -558,8 +566,8 @@ export const fetchUpdateTrackingUrl = async (orderId: string, trackingUrl: strin
         return await response.json();
     } catch (error) {
         console.error('Error updating tracking URL:', error);
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
-
 }
 // ==========================================
 // WAREHOUSE API ENDPOINTS
@@ -582,7 +590,7 @@ export const fetchCreateWarehouseLocation = async (warehouseAddress: any, token:
         return await response.json();
     } catch (error) {
         console.error('Error creating warehouse location:', error);
-        return { message: 'Error creating warehouse location', success: false };
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 export const fetchUpdateWarehouseLocation = async (locationId: string, warehouseData: any, token: string) => {
@@ -602,7 +610,7 @@ export const fetchUpdateWarehouseLocation = async (locationId: string, warehouse
     }
     catch (error) {
         console.error('Error updating warehouse location:', error);
-        return { message: 'Error updating warehouse location', success: false };
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 export const fetchVendorWarehouseLocations = async (token: string) => {
@@ -653,7 +661,7 @@ export const fetchDeleteWarehouseLocation = async (locationId: string, token: st
         return await response.json();
     } catch (error) {
         console.error('Error deleting warehouse location:', error);
-        return { message: 'Error deleting warehouse location', success: false };
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 
@@ -675,7 +683,7 @@ export const fetchCreateCompanyLocation = async (addressData: any, token: string
         return await response.json();
     } catch (error) {
         console.error('Error creating company location:', error);
-        return { message: 'Error creating company location', success: false };
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 export const fetchUpdateCompanyLocation = async (locationId: string, addressData: any, token: string) => {
@@ -695,7 +703,7 @@ export const fetchUpdateCompanyLocation = async (locationId: string, addressData
     }
     catch (error) {
         console.error('Error updating company location:', error);
-        return { message: 'Error updating company location', success: false };
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 export const fetchGetCompanyLocations = async (token: string) => {
@@ -729,7 +737,7 @@ export const fetchUpdateOrderItem = async (itemId: string, formData: any, token:
         return await response.json();
     } catch (error) {
         console.error('Error updating order item:', error);
-        return { message: 'Error updating order item', success: false };
+        return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 }
 
@@ -750,7 +758,8 @@ export const fetchGetVendorReturnRequests = async (token: string) => {
         });
         return await response.json();
     } catch (error) {
-        throw error;
+        console.error('Error fetching return requests:', error);
+        return { data: [], message: 'Error fetching return requests' };
     }
 };
 export const fetchGetVendorReturnById = async (returnId: string, token: string) => {
@@ -764,7 +773,8 @@ export const fetchGetVendorReturnById = async (returnId: string, token: string) 
         });
         return await response.json();
     } catch (error) {
-        throw error;
+        console.error('Error fetching return request:', error);
+        return { data: {}, message: 'Error fetching return request' };
     }
 };
 export const FetchUpdateReturnStatus = async (returnId: string, updates: { status: ReturnStatus, store_owner_note?: string, tracking_id?: string }, token: string) => {
@@ -802,7 +812,8 @@ export const fetchGetCompanyRefunds = async (token: string) => {
         });
         return await response.json();
     } catch (error) {
-        throw error;
+        console.error('Error fetching company refunds:', error);
+        return { data: [], message: 'Error fetching company refunds' };
     }
 };
 export const fetchCompanyCustomers = async (offset: number, limit: number, status: string, sortBy: string, token: string) => {
@@ -818,7 +829,8 @@ export const fetchCompanyCustomers = async (offset: number, limit: number, statu
         });
         return await response.json();
     } catch (error) {
-        throw error;
+        console.error('Error fetching company customers:', error);
+        return { data: [], message: 'Error fetching company customers' };
     }
 };
 export const FetchSuspendCustomer = async (customerId: string, token: string) => {
@@ -834,7 +846,8 @@ export const FetchSuspendCustomer = async (customerId: string, token: string) =>
 
         return await response.json();
     } catch (error) {
-        throw error;
+        console.error('Error suspending customer:', error);
+        return { data: {}, message: 'Error suspending customer' };
     }
 };
 // ==========================================
@@ -855,7 +868,7 @@ export const fetchBulkInvoiceUrls = async (orderIds: string[], token: string) =>
         return await response.json();
     } catch (error) {
         console.error('Error fetching bulk invoice URLs:', error);
-        throw error;
+        return { data: [], message: 'Error fetching bulk invoice URLs' };
     }
 }
 export const fetchGstRecords = async (statusFilter: string, sortBy: string, token: string) => {
@@ -887,7 +900,7 @@ export const fetchCreateGstRecord = async (formData: any, token: string) => {
         return await response.json();
     } catch (error) {
         console.error('Error saving GST:', error);
-        throw error;
+        return { data: {}, message: 'Error saving GST' };
     }
 }
 
@@ -900,6 +913,7 @@ export const fetchTaxProfiles = async (sortBy: string, date: Date | undefined, t
         });
         return await response.json();
     } catch (error) {
+        console.error('Error fetching tax profiles:', error);
         return { data: [] };
     }
 }
@@ -913,6 +927,7 @@ export const fetchTaxRates = async (sortBy: string, date: Date | undefined, toke
         });
         return await response.json();
     } catch (error) {
+        console.error('Error fetching tax rates:', error);
         return { data: [] };
     }
 }
@@ -941,15 +956,11 @@ export const fetchAssignProductTax = async (data: { product_id: string, tax_rate
             },
             body: JSON.stringify(data)
         });
-        
-        if (!response.ok) throw new Error("Failed to assign tax rate");
-        
-        
-        revalidatePath(`/vendor/${vendorId}/finances/product-taxes`);
+               revalidatePath(`/vendor/${vendorId}/finances/product-taxes`);
         return await response.json();
     } catch (error) {
         console.error('Error assigning product tax:', error);
-        throw error;
+        return { data: {}, message: 'Error assigning product tax' };
     }
 }
 export const fetchBulkAssignProductTax = async (data: { product_ids: string[], tax_rate_id: string }, vendorId: string, token: string) => {
@@ -965,14 +976,13 @@ export const fetchBulkAssignProductTax = async (data: { product_ids: string[], t
             body: JSON.stringify(data)
         });
         
-        if (!response.ok) throw new Error("Failed to assign tax rate");
         
         
         revalidatePath(`/vendor/${vendorId}/finances/product-taxes`);
         return await response.json();
     } catch (error) {
         console.error('Error assigning product tax:', error);
-        throw error;
+        return { data: {}, message: 'Error assigning product tax' };
     }
 }
 export const fetchProductTaxMappings = async (offSet: number, sortBy: string, statusFilter: string, token: string) => {
@@ -984,20 +994,20 @@ export const fetchProductTaxMappings = async (offSet: number, sortBy: string, st
         });
         return await response.json();
     } catch (error) {
-        return { data: [] };
+        return { data: [], message: 'Error fetching product tax mappings' };
     }
 }
 
-export const fetchGstInvoices = async (sortBy: string, date: Date | undefined, token: string) => {
+export const fetchGstInvoices = async (offset: number, limit: number, search: string, sortBy: string, date: Date | undefined, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/v1/finances/gst-invoices?sort_by=${sortBy}${date ? `&date=${date.toISOString()}` : ''}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/finances/gst-invoices?offset=${offset}&limit=${limit}&search=${search}&sort_by=${sortBy}${date ? `&date=${date.toISOString()}` : ''}`, {
             method: 'GET',
             headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
         });
         return await response.json();
     } catch (error) {
-        return { data: [] };
+        return { data: [], message: 'Error fetching GST invoices' };
     }
 }
 // Add these below your existing finance fetch functions
@@ -1014,11 +1024,11 @@ export const fetchCreateTaxProfile = async (formData: any, token: string) => {
             },
             body: JSON.stringify(formData)
         });
-        if (!response.ok) throw new Error("Failed to create profile");
+ 
         return await response.json();
     } catch (error) {
         console.error('Error saving Tax Profile:', error);
-        throw error;
+        return { data: {}, message: 'Error saving Tax Profile' };
     }
 }
 
@@ -1034,11 +1044,11 @@ export const fetchCreateTaxRate = async (formData: any, token: string) => {
             },
             body: JSON.stringify(formData)
         });
-        if (!response.ok) throw new Error("Failed to create tax rate");
+ 
         return await response.json();
     } catch (error) {
         console.error('Error saving Tax Rate:', error);
-        throw error;
+        return { data: {}, message: 'Error saving Tax Rate' };
     }
 }
 // ==========================================
@@ -1075,7 +1085,7 @@ export const fetchUpdateGstRecord = async (id: string, data: any, vendorId: stri
         return await response.json();
     } catch (error) {
         console.error('Error updating GST:', error);
-        throw error;
+        return { data: {}, message: 'Error updating GST' };
     }
 }
 
@@ -1090,7 +1100,7 @@ export const fetchDeleteGstRecord = async (id: string, vendorId: string, token: 
         return await response.json();
     } catch (error) {
         console.error('Error deleting GST:', error);
-        throw error;
+        return { data: {}, message: 'Error deleting GST' };
     }
 }
 
@@ -1128,7 +1138,7 @@ export const fetchUpdateTaxProfile = async (id: string, data: any, vendorId: str
         return await response.json();
     } catch (error) {
         console.error('Error updating Tax Profile:', error);
-        throw error;
+        return { data: {}, message: 'Error updating Tax Profile' };
     }
 }
 
@@ -1166,7 +1176,7 @@ export const fetchUpdateTaxRate = async (id: string, data: any, vendorId: string
         return await response.json();
     } catch (error) {
         console.error('Error updating Tax Rate:', error);
-        throw error;
+        return { data: {}, message: 'Error updating Tax Rate' };
     }
 }
 
@@ -1185,7 +1195,7 @@ export const fetchCompanyBranding = async (token: string) => {
   return res.json();
     } catch (error) {   
         console.error('Error fetching company branding:', error);
-        return { data: null };
+        return { data: null, message: 'Error fetching company branding' } 
     }
 };
 
@@ -1201,7 +1211,7 @@ export const upsertCompanyBranding = async (payload: FormData, token: string) =>
   return res.json();
     } catch (error) {
         console.error('Error upserting company branding:', error);
-        return { success: false, message: 'Error upserting company branding' };
+        return { data: [], success: false, message: 'Error upserting company branding' };
     }
 };
 
@@ -1242,16 +1252,17 @@ export const upsertCompanyLegalProfile = async (payload: any, token: string) => 
 }
 catch (error) {
         console.error('Error upserting company legal profile:', error);
-        return { success: false, message: 'Error upserting company legal profile' };
+        return { data: {}, success: false, message: 'Error upserting company legal profile' };
     }   
 };
 
 // ─── Company Compliance ───────────────────────────────────────────────────────
 
 export const fetchCompanyCompliance = async (token: string) => {
-  const domain = await getCompanyDomain();
+//   const domain = await getCompanyDomain();
+const domain ='2775df85-bc70-4167-b817-00264122c4dc'
   try {
-  const res = await fetch(`${BASE_API_URL}/v1/company-identity/compliance`, {
+  const res = await fetch(`${BASE_API_URL}/v1/compliance`, {
     cache: 'no-store',
     headers: { 'company-domain': domain, Authorization: `Bearer ${token}` },
   });
@@ -1287,7 +1298,7 @@ export const upsertCompanyComplianceField = async (
   revalidatePath('/vendor');
   return res.json();
 }catch (error) {        console.error('Error upserting company compliance field:', error);
-        return { success: false, message: 'Error upserting company compliance field' };
+        return { data: {}, success: false, message: 'Error upserting company compliance field' };
     }
 }
 
@@ -1302,7 +1313,7 @@ export const deleteCompanyComplianceField = async (fieldId: string, token: strin
     return res.json();
   } catch (error) {
     console.error('Error deleting company compliance field:', error);
-    return { success: false, message: 'Error deleting company compliance field' };
+    return { data: {}, success: false, message: 'Error deleting company compliance field' };
   }
 }
 
@@ -1340,13 +1351,14 @@ export const upsertCompanyDocumentConfig = async (payload: FormData, token: stri
   return res.json();
 }catch (error) {
         console.error('Error upserting company document config:', error);
-        return { success: false, message: 'Error upserting company document config' };
+        return { data: {}, success: false, message: 'Error upserting company document config' };
     }
 }
 
 // ─── Product Policies ─────────────────────────────────────────────────────────
 
 export const fetchProductPolicies = async (token: string) => {
+    try{
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies`, {
     cache: 'no-store',
@@ -1354,6 +1366,10 @@ export const fetchProductPolicies = async (token: string) => {
   });
   if (!res.ok) return { data: [] };
   return res.json();
+}catch (error) {
+        console.error('Error fetching product policies:', error);
+        return { data: [] };
+    }
 };
 
 export const fetchProductPolicyById = async (id: string, token: string) => {
@@ -1382,6 +1398,7 @@ export const createProductPolicy = async (payload: any, token: string) => {
 };
 
 export const updateProductPolicy = async (id: string, payload: any, token: string) => {
+    try {
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/${id}`, {
     method: 'PATCH',
@@ -1394,9 +1411,14 @@ export const updateProductPolicy = async (id: string, payload: any, token: strin
   });
   revalidatePath('/vendor');
   return res.json();
+}catch (error) {
+        console.error('Error updating product policy:', error);
+        return { data: {}, success: false, message: 'Error updating product policy' };
+    }
 };
 
 export const deleteProductPolicy = async (id: string, token: string) => {
+    try {
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/${id}`, {
     method: 'DELETE',
@@ -1404,6 +1426,10 @@ export const deleteProductPolicy = async (id: string, token: string) => {
   });
   revalidatePath('/vendor');
   return res.json();
+}catch (error) {
+        console.error('Error deleting product policy:', error);
+        return { data: {}, success: false, message: 'Error deleting product policy' };
+    }
 };
 
 // ─── Category Policy Assignments ─────────────────────────────────────────────
@@ -1412,6 +1438,7 @@ export const assignPolicyToCategory = async (
   payload: { category_id: string; policy_id: string; priority?: number },
   token: string,
 ) => {
+    try {
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/category-assign`, {
     method: 'POST',
@@ -1424,6 +1451,10 @@ export const assignPolicyToCategory = async (
   });
   revalidatePath('/vendor');
   return res.json();
+}catch (error) {
+        console.error('Error assigning policy to category:', error);    
+        return { data: {}, success: false, message: 'Error assigning policy to category' };
+     }
 };
 
  
@@ -1431,6 +1462,7 @@ export const fetchAssignedProductPolicyOverride = async (
   payload: { product_id: string; policy_id: string; overrides_category?: boolean },
   token: string,
 ) => {
+    try {
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/product-override`, {
     method: 'POST',
@@ -1443,9 +1475,14 @@ export const fetchAssignedProductPolicyOverride = async (
   });
   revalidatePath('/vendor');
   return res.json();
+}catch (error) {
+        console.error('Error fetching assigned product policy override:', error);
+        return { data: {}, success: false, message: 'Error fetching assigned product policy override' };
+     }
 };
 
 export const fetchCategoryPolicies = async (categoryId: string, token: string) => {
+    try {
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/category/${categoryId}`, {
     cache: 'no-store',
@@ -1453,12 +1490,18 @@ export const fetchCategoryPolicies = async (categoryId: string, token: string) =
   });
   if (!res.ok) return { data: [] };
   return res.json();
+}catch (error) {
+
+        console.error('Error fetching category policies:', error);
+        return { data: [] };
+        }
 };
 
 export const assignPolicyToCategories = async (
   payload: { category_id: string; policy_id: string; priority?: number },
   token: string,
 ) => {
+    try {
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/category-assign`, {
     method: 'POST',
@@ -1471,9 +1514,15 @@ export const assignPolicyToCategories = async (
   });
   revalidatePath('/vendor');
   return res.json();
+}catch (error) {
+
+        console.error('Error assigning policy to categories:', error);
+        return { data: {}, success: false, message: 'Error assigning policy to categories' };
+        }
 };
 
 export const removePolicyFromCategory = async (assignmentId: string, token: string) => {
+    try{
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/category-assign/${assignmentId}`, {
     method: 'DELETE',
@@ -1481,12 +1530,17 @@ export const removePolicyFromCategory = async (assignmentId: string, token: stri
   });
   revalidatePath('/vendor');
   return res.json();
+}catch (error) {
+        console.error('Error removing policy from category:', error);
+        return { data: {}, success: false, message: 'Error removing policy from category' };
+     }
 };
 
 
 // ─── Product Policy Overrides ────────────────────────────────────────────────
 
 export const fetchProductPolicyOverrides = async (productId: string, token: string) => {
+    try{
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/product-override/${productId}`, {
     cache: 'no-store',
@@ -1494,12 +1548,17 @@ export const fetchProductPolicyOverrides = async (productId: string, token: stri
   });
   if (!res.ok) return { data: [] };
   return res.json();
+}catch (error) {
+        console.error('Error fetching product policy overrides:', error);
+        return { data: [] };
+     }
 };
 
 export const fetchCreateAssignedProductPolicyOverride = async (
   payload: { product_id: string; policy_id: string; overrides_category?: boolean },
   token: string,
 ) => {
+    try {
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/product-override`, {
     method: 'POST',
@@ -1512,9 +1571,14 @@ export const fetchCreateAssignedProductPolicyOverride = async (
   });
   revalidatePath('/vendor');
   return res.json();
+}catch (error) {
+        console.error('Error creating assigned product policy override:', error);
+        return { data: {}, success: false, message: 'Error creating assigned product policy override' };
+     }
 };
 
 export const removeProductPolicyOverride = async (overrideId: string, token: string) => {
+    try{
   const domain = await getCompanyDomain();
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/product-override/${overrideId}`, {
     method: 'DELETE',
@@ -1522,6 +1586,10 @@ export const removeProductPolicyOverride = async (overrideId: string, token: str
   });
   revalidatePath('/vendor');
   return res.json();
+}catch (error) {
+        console.error('Error removing product policy override:', error);
+        return { data: {}, success: false, message: 'Error removing product policy override' };
+     }  
 };
 
 // ─── Policy Coverage Aggregation ──────────────────────────────────────────────
@@ -1637,7 +1705,7 @@ export const uploadComplianceProofDocument = async (
   file: File,
   label: string | undefined,
   token: string,
-): Promise<{ success: boolean; data?: ComplianceDocument; message?: string }> => {
+): Promise<{ success: boolean; status: string; data?: ComplianceDocument | null; message?: string } > => {
   try {
     const domain = await getCompanyDomain();
     const formData = new FormData();
@@ -1658,8 +1726,43 @@ export const uploadComplianceProofDocument = async (
     );
     revalidatePath("/vendor");
     return res.json();
-  } catch {
-    return { success: false, message: "Failed to upload document" };
+  } catch(error:any) {
+    return {data: null,status:error.status, success: false, message: "Failed to upload document" };
   }
 };
- 
+
+export const fetchStockManagerVariants = async (token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/product-variant/stock-manager`, {
+            method: 'GET',
+            headers: {
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            }
+        });
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        return { data: [], message: 'Error fetching stock manager variants' };
+    }
+}
+export const quickUpdateStock = async (productVariantId: string, quantity: number, vendorId: string, token: string) => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/inventory/${productVariantId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ quantity }) // The backend expects 'quantity'
+        });
+        revalidatePath(`/vendor/${vendorId}/products`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating stock:', error);
+        return { data: {}, message: 'Error updating stock' };
+    }
+}

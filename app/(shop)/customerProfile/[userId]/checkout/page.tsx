@@ -3,14 +3,14 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { formatCurrency } from "@/lib/utils";
+import { calculateCouponDiscount, formatCurrency, getMinOrderAmount } from "@/lib/utils";
 import { SelectedPaymentMethod } from "@/components/customer/SelectedPaymentMethod";
 import { PAYMENT_METHODS_FIELDS } from "@/constants";
 import { checkAddressExistence, fetchGetCartList } from "@/utils/customerApiClient";
 import { AddToCart } from "@/components/customer/AddToCart";
 import {
   CreditCard, Loader2, Tag, CheckCircle2, X, AlertCircle,
-  Plus, Minus, ShoppingBag, Package
+ 
 } from "lucide-react";
 import { AddressSelector } from "@/components/customer/AddressSelector";
 import { fetchProductVariantDetails } from "@/utils/commonAPiClient";
@@ -19,214 +19,13 @@ import { fetchInitCheckout, fetchVerifyPayment } from "@/utils/customerApiClient
 import { authToken } from "@/utils/authToken";
 import { TaxBreakdown, TaxBreakdownPanel, TaxLoadingSkeleton } from "@/components/customer/TaxBreakdownPanel";
 import { clearCart } from "@/lib/features/Cart";
-import { AddressOperationEnum, Coupon, Variant } from "@/utils/Types";
+import { AddressOperationEnum, AppliedPromotion,  CartItemDisplay,   VariantDetails } from "@/utils/Types";
 import AxiosAPI from "@/lib/axios";
 import { motion, AnimatePresence } from "motion/react";
 import toast, { Toaster } from "react-hot-toast";
 import { AddressModal } from "@/components/customer/AddressModel";
-import { set } from "zod";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface VariantDetails {
-  id: string;
-  variant_name: string;
-  sku: string;
-  price: string;
-  status: string;
-  stock_quantity: number;
-  images?: { image_url: string }[] | string;
-  product_id?: string;
-}
-
-interface CartItemDisplay {
-  id: string;
-  cart_id: string;
-  product_variant_id: string;
-  quantity: number;
-  productVariant: Variant;
-}
-
-// ─── Coupon Calculation ───────────────────────────────────────────────────────
-
-function calculateCouponDiscount(coupon: Coupon | null, subtotal: number): number {
-  if (!coupon) return 0;
-  const discountValue = Number(coupon.discount_value ?? 0);
-  const minOrderAmount = Number(coupon.min_order_amount ?? 0);
-  const maxDiscountAmount = coupon.max_discount_amount ? Number(coupon.max_discount_amount) : null;
-
-  if (minOrderAmount > 0 && subtotal < minOrderAmount) return 0;
-
-  const type = (coupon.discount_type ?? '').toLowerCase();
-  if (type === 'percentage') {
-    const raw = Math.floor((subtotal * discountValue) / 100);
-    return maxDiscountAmount !== null ? Math.min(raw, maxDiscountAmount) : raw;
-  }
-  return Math.min(discountValue, subtotal);
-}
-
-// ─── Cart Item Row (uses AddToCart for live qty sync) ────────────────────────
-
-function CartItemRow({ item }: { item: CartItemDisplay }) {
-  const { items } = useAppSelector((s) => s.cart);
-  const liveQty = items.find(i => i.productVariantId === item.product_variant_id)?.quantity ?? item.quantity;
-  const subtotal = Number(item.productVariant.price) * liveQty;
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-3 shadow-sm"
-    >
-      <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-gray-50">
-        <img
-          src={item.productVariant.images[0]?.image_url ?? "/placeholder.png"}
-          alt={item.productVariant.variant_name}
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-snug">
-          {item.productVariant.variant_name}
-        </p>
-        <p className="text-xs text-brand-primary font-bold mt-0.5">
-          ₹{formatCurrency(Number(item.productVariant.price))} each
-        </p>
-      </div>
-
-      <div className="flex flex-col items-end gap-1 shrink-0">
-        {/* Live qty control — syncs with cart Redux state */}
-        <AddToCart
-          productVariantId={item.product_variant_id}
-          styles="small w-20"
-        />
-        <p className="text-[10px] text-gray-400">
-          ₹{formatCurrency(subtotal)}
-        </p>
-      </div>
-    </motion.div>
-  );
-}
-
-// ─── Quick Buy Item Row (local qty, never touches cart) ───────────────────────
-
-function QuickBuyItemRow({
-  variant,
-  qty,
-  onQtyChange,
-}: {
-  variant: VariantDetails;
-  qty: number;
-  onQtyChange: (n: number) => void;
-}) {
-  const subtotal = Number(variant.price) * qty;
-  const maxStock = variant.stock_quantity ?? 99;
-console.log("  variant details in quick buy row", variant);
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-3 shadow-sm"
-    >
-      {variant?.images && (
-        <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-gray-50">
-          <img src={typeof variant.images === 'string' && variant.images  ? variant.images : 'https://imgs.search.brave.com/pnBIeHCYZeyfGKnruwbCQdsNxNOBpZP893nGmlSNntk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9wbGFj/ZWhvbGQubmV0L3By/b2R1Y3QtZGlhbG9n/LnBuZw'} 
-            alt={variant.variant_name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-snug">
-          {variant.variant_name}
-        </p>
-        <p className="text-xs text-brand-primary font-bold mt-0.5">
-          ₹{formatCurrency(Number(variant.price))} each
-        </p>
-      </div>
-
-      <div className="flex flex-col items-end gap-1 shrink-0">
-        {/* Local qty control — isolated from cart */}
-        <div className="flex items-center bg-brand-primary rounded-lg overflow-hidden h-6">
-          <button
-            onClick={() => onQtyChange(Math.max(1, qty - 1))}
-            className="px-2 h-full text-white hover:bg-black/10 transition-colors flex items-center"
-          >
-            <Minus size={12} />
-          </button>
-          <span className="px-2 text-xs font-bold text-white min-w-[20px] text-center">
-            {qty}
-          </span>
-          <button
-            onClick={() => onQtyChange(Math.min(maxStock, qty + 1))}
-            className="px-2 h-full text-white hover:bg-black/10 transition-colors flex items-center"
-          >
-            <Plus size={12} />
-          </button>
-        </div>
-        <p className="text-[10px] text-gray-400">
-          ₹{formatCurrency(subtotal)}
-        </p>
-        {qty >= maxStock && (
-          <p className="text-[9px] text-amber-500">Max stock</p>
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
-// ─── Item List Panel ──────────────────────────────────────────────────────────
-
-function ItemListPanel({
-  isQuickBuy,
-  cartItems,
-  quickBuyVariant,
-  quickBuyQty,
-  onQuickBuyQtyChange,
-}: {
-  isQuickBuy: boolean;
-  cartItems: CartItemDisplay[];
-  quickBuyVariant: VariantDetails | null;
-  quickBuyQty: number;
-  onQuickBuyQtyChange: (n: number) => void;
-}) {
-  return (
-    <div className="border-2 border-gray-200 rounded-xl p-4 lg:p-5 space-y-3">
-      <h2 className="flex items-center gap-2 text-base font-bold text-gray-800 mb-1">
-        <ShoppingBag size={16} className="text-gray-500" />
-        {isQuickBuy ? 'Your Item' : `Cart Items (${cartItems.length})`}
-      </h2>
-
-      {isQuickBuy ? (
-        quickBuyVariant ? (
-          <QuickBuyItemRow
-            variant={quickBuyVariant}
-            qty={quickBuyQty}
-            onQtyChange={onQuickBuyQtyChange}
-          />
-        ) : (
-          <p className="text-sm text-gray-400 text-center py-4">Loading item…</p>
-        )
-      ) : (
-        <AnimatePresence>
-          {cartItems.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-4">Your cart is empty.</p>
-          ) : (
-            cartItems.map(item => (
-              <CartItemRow key={item.id} item={item} />
-            ))
-          )}
-        </AnimatePresence>
-      )}
-    </div>
-  );
-}
-
-// ─── Main Checkout Page ───────────────────────────────────────────────────────
-
+import { ItemListPanel } from "@/components/customer/ItemListPanel";
+ 
 export default function CheckoutPage() {
   const { user } = useAppSelector((state) => state.auth);
   const { items: reduxCartItems } = useAppSelector((s) => s.cart);
@@ -263,7 +62,7 @@ export default function CheckoutPage() {
 
   // ── Coupon State ──────────────────────────────────────────────────────────
   const [couponCode, setCouponCode] = useState<string>('');
-  const [couponApplied, setCouponApplied] = useState<Coupon | null>(null);
+  const [couponApplied, setCouponApplied] = useState<AppliedPromotion | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [isCouponValidating, setIsCouponValidating] = useState(false);
 
@@ -434,7 +233,7 @@ export default function CheckoutPage() {
         if (minOrder > 0 && subtotal < minOrder) {
           setCouponError(`Add ₹${formatCurrency(minOrder - subtotal)} more to use this coupon.`);
         } else {
-          setCouponApplied(data as Coupon);
+          setCouponApplied(data as AppliedPromotion);
           setCouponCode('');
           toast.success("Coupon applied!");
         }
@@ -471,12 +270,18 @@ export default function CheckoutPage() {
       const initPayload = {
         paymentMethod: selectedPaymentMethodState,
         addressId: selectedAddressId,
-        ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
+        promotionId: couponApplied?.promotion_id,
+        ...(isQuickBuy ? { productVariantId: id ,qty:quickBuyQty} : { cartId: id }),
       };
 
       const initData = await fetchInitCheckout(user?.id || '', initPayload, token);
       if (!initData?.success && initData?.status ===500 ) {
         setCheckoutError(initData?.message ?? "Failed to initiate order.");
+        return;
+      }
+      if(initData?.status === 400){
+        setCheckoutError(initData?.message ?? "Invalid request. Please check your order details.");
+        toast.error(initData?.message ?? "Invalid request. Please check your order details.");
         return;
       }
 
@@ -491,7 +296,7 @@ export default function CheckoutPage() {
 
       const result = await fetchVerifyPayment(user?.id || '', {
         discountApplied: couponDiscount,
-        promotionId: couponApplied?.id,
+        promotionId: couponApplied?.promotion_id,
         orderId: initData.data.orderId,
         isSuccess: userClickedSuccess,
         ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
@@ -559,6 +364,7 @@ export default function CheckoutPage() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><p className="text-gray-500 animate-pulse">Loading…</p></div>}>
+      <>
       <Toaster />
       <section className="max-w-6xl mx-auto lg:px-4 py-8 min-h-[60vh]">
         <h1 className="text-2xl font-bold text-center mb-1">Secure Checkout</h1>
@@ -709,20 +515,15 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {couponApplied && couponDiscount > 0 && (
-                  <div className="flex justify-between text-sm text-emerald-600">
-                    <span>Coupon ({couponApplied.code})</span>
-                    <span>−₹{formatCurrency(couponDiscount)}</span>
-                  </div>
-                )}
-
-                {couponApplied && couponDiscount === 0 && (
-                  <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-                    <AlertCircle size={12} className="shrink-0" />
-                    Min. order ₹{formatCurrency(Number(couponApplied.min_order_amount))} required.
-                  </div>
-                )}
-              </div>
+               {couponApplied && couponDiscount === 0 && (() => {
+  const minOrder = getMinOrderAmount(couponApplied);
+  return minOrder !== null ? (
+    <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+      <AlertCircle size={12} className="shrink-0" />
+      Min. order ₹{formatCurrency(minOrder)} required.
+    </div>
+  ) : null;
+})()}
 
               {/* Tax breakdown */}
               <div>
@@ -778,6 +579,7 @@ export default function CheckoutPage() {
             </div>
           </div>
         </div>
+        </div>
       </section>
         <AnimatePresence>
                       {isModalOpen && user?.id && (
@@ -789,6 +591,7 @@ export default function CheckoutPage() {
                           />
                       )}
                   </AnimatePresence>
+              </>
     </Suspense>
   );
 }

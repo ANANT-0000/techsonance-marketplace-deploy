@@ -94,23 +94,24 @@ export const ADDRESS_FIELDS: {
     type: string;
     placeholder?: string;
     required?: boolean;
-    options?: string[];
+    options?: any[];
 }[] = [
     { id: "address_for", label: "Address Type", type: "select", options: ["home", "work", "other"], placeholder: "Select address type", required: true },
     { id: 'name', label: 'Recipient Name', type: 'text', placeholder: "Enter recipient's name", required: true },
     { id: "phone", label: "Phone", type: "text", placeholder: "Enter contact number for this address", required: true },
     { id: "address_line_1", label: "Address Line 1", type: "text", placeholder: "Enter street address", required: true },
     { id: "address_line_2", label: "Address Line 2", type: "text", placeholder: "Enter apartment, suite, etc.", required: false },
-
     { id: "street", label: "Street", type: "text", placeholder: "Enter street name", required: true },
-    { id: "city", label: "City", type: "text", placeholder: "Enter city", required: true },
-    { id: "state", label: "State", type: "text", placeholder: "Enter state", required: true },
-    { id: "postal_code", label: "Postal Code", type: "text", placeholder: "Enter postal code", required: true },
-    { id: "country", label: "Country", type: "text", placeholder: "Enter country", required: true },
+    { id: "country", label: "Country", type: "select", options: [], placeholder: "Enter country", required: true },
+    { id: "state", label: "State", type: "select", options: [], placeholder: "Enter state", required: true },
+    { id: "city", label: "City", type: "select", options: [], placeholder: "Enter city", required: true },
+    { id: "postal_code", label: "Postal Code", type: "text", placeholder: "Enter postal code", required: true }, // Changed to text
     { id: "landmark", label: "Landmark", type: "text", placeholder: "Enter nearby landmark", required: true },
     { id: "is_default", label: "Set as default address", type: "checkbox" }
-
 ] as const;
+
+
+
 export const WAREHOUSE_ADDRESS_FIELDS: {
     id: string;
     label: string;
@@ -124,16 +125,15 @@ export const WAREHOUSE_ADDRESS_FIELDS: {
     { id: "phone", label: "Contact Number", type: "text", placeholder: "Enter contact number for this warehouse", required: true },
     { id: "address_line_1", label: "Address Line 1", type: "text", placeholder: "Enter street address", required: true },
     { id: "address_line_2", label: "Address Line 2", type: "text", placeholder: "Enter apartment, suite, etc.", required: false },
-
     { id: "street", label: "Street", type: "text", placeholder: "Enter street name", required: true },
-    { id: "city", label: "City", type: "text", placeholder: "Enter city", required: true },
-    { id: "state", label: "State", type: "text", placeholder: "Enter state", required: true },
+    { id: "country", label: "Country", type: "select", options: [], placeholder: "Enter country", required: true },
+    { id: "state", label: "State", type: "select", options: [], placeholder: "Enter state", required: true },
+    { id: "city", label: "City", type: "select", options: [], placeholder: "Enter city", required: true },
     { id: "postal_code", label: "Postal Code", type: "text", placeholder: "Enter postal code", required: true },
-    { id: "country", label: "Country", type: "text", placeholder: "Enter country", required: true },
     { id: "landmark", label: "Landmark", type: "text", placeholder: "Enter nearby landmark", required: true },
     { id: "is_default", label: "Set as default warehouse", type: "checkbox" }
-
 ] as const;
+
 export const PAYMENT_METHODS_FIELDS = [
     { id: 'UPI', label: 'UPI', placeholder: 'Enter your UPI ID', type: 'text', description: 'We will redirect you to your UPI app to complete the payment.' },
     { id: 'CreditCard', label: 'Credit or Debit Card', placeholder: 'Card Number', type: 'text', description: 'We accept all major credit and debit cards. Your card details are processed securely.' },

@@ -127,6 +127,7 @@ const [totalTransactions, setTotalTransactions] = useState<number>(0);
  
   // filters
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"asc" | "desc">("desc");
   const [date, setDate] = useState<Date | undefined>(undefined);
@@ -143,7 +144,7 @@ const token = authToken()
     setError(null);
     try {
     
-      const response = await AxiosAPI.get(`/v1/finances/earnings?search=${search??""}&offset=${offset??0}&status=${statusFilter??""}&date=${date?.toISOString()??""}&sortby=${sortby??""}`, {
+      const response = await AxiosAPI.get(`/v1/finances/earnings?search=${debouncedSearch??""}&offset=${offset??0}&limit=${itemsPerPage}&status=${statusFilter??""}&date=${date?.toISOString()??""}&sortby=${sortby??""}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -174,18 +175,18 @@ earnings
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vendorId, token, offset, statusFilter, date, sortBy, search]);
 
-  const searchDebounce = useMemo(() => {
-    return setTimeout(() => {
-      if (token) fetchEarnings(search, offset, statusFilter, date, sortBy, token);
-    }, 500);
-    }, [search, offset, statusFilter, date, sortBy, token]);
+   useEffect(() => {
+        const debounceTimer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setCurrentPage(1); // Reset to first page on new search
+        }, 500); // 500ms delay
+
+        return () => clearTimeout(debounceTimer);
+    }, [search])
     const clearDate = () => {    setDate(undefined);
     setCalendarOpen(false);
   }
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-    clearTimeout(searchDebounce);
-  };
+ 
   // ─────────────────────────────────────────────────────────────────────────────
   return (
     <section className="w-full px-1">
@@ -244,7 +245,7 @@ earnings
           <input
             type="text"
             value={search}
-            onChange={handleSearchChange}
+            onChange={(e) => setSearch(e.target.value)}
             className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
             placeholder="Search by Transaction ID, Order Ref, or Txn Ref"
           />

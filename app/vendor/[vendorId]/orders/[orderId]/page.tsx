@@ -26,8 +26,6 @@ import {
     fetchUpdateOrderStatus,
     fetchVendorOrderDetails,
 } from "@/utils/vendorApiClient";
-import { fetchCancelOrderItem } from "@/utils/customerApiClient";
-import { getCompanyDomain } from "@/lib/get-domain";
 import { OrderStatusEnum } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
 
@@ -471,8 +469,13 @@ export default function VendorOrderDetails() {
     const handleCancelItem = async (reason: string) => {
 
         if (!cancellingItemId || !token) return;
-        const result = await fetchUpdateOrderStatus(cancellingItemId, 'cancelled', token);
-        if (result?.data?.success) await loadOrder();
+        const res = await fetchUpdateOrderStatus(cancellingItemId, 'cancelled', token);
+     setOrder((prev) =>
+            prev
+                ? { ...prev, items: prev.items.map((i) => i.id === cancellingItemId ? { ...i, order_status: 'cancelled' } : i) }
+                : prev
+        );
+        if (res?.data?.success) await loadOrder();
         setCancellingItemId(null);
     };
 

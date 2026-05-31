@@ -2,7 +2,7 @@
 import { BannerPlacement, ProductStatusEnum, PromotionType } from './Types';
 import { COMPLIANCE_REGEX } from '@/app/auth/vendorRegister/page';
 export const passwordValidation = new RegExp(
-  /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
+  /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*\-+]).{8,}$/
 );
 export const passwordValidationSchema = z.string().regex(passwordValidation, "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character");
 

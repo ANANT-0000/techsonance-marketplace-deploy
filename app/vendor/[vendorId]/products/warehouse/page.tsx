@@ -1,21 +1,23 @@
 ﻿'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import { set, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { locationSchema, LocationFormData, LocationForEnum, AddressSchema, AddressType } from '@/utils/validation'; // Adjust import path as needed
-import { FormInput } from '@/components/common/FormInput';
-import { ADDRESS_FIELDS, WAREHOUSE_ADDRESS_FIELDS } from '@/constants/dynamicFields';
+import { LocationForEnum, AddressSchema, AddressType } from '@/utils/validation';  
 import { fetchCreateWarehouseLocation, fetchDeleteWarehouseLocation, fetchUpdateWarehouseLocation, fetchVendorWarehouseLocations } from '@/utils/vendorApiClient';
 import { motion, AnimatePresence } from "motion/react";
 import { authToken } from '@/utils/authToken';
 import { redirect } from 'next/navigation';
+// 1. Import the new package
+import { Country, State, City } from 'country-state-city';
+import { FormInput } from '@/components/common/FormInput';
+import { WAREHOUSE_ADDRESS_FIELDS } from '@/constants';
 
 
 interface Address {
     id: string;
     name: string;
     number: string;
-    address_type: "warehouse" | string; // can extend if needed
+    address_type: "warehouse" | string;
     address_line_1: string;
     address_line_2: string;
     street: string;
@@ -25,8 +27,8 @@ interface Address {
     country: string;
     landmark: string;
     is_default: boolean;
-    created_at: string; // ISO date string
-    updated_at: string; // ISO date string
+    created_at: string;
+    updated_at: string;
     user_id: string | null;
     company_id: string;
 }
@@ -52,12 +54,12 @@ export default function LocationsPage() {
         success: null
     });
 
-    const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm({
         resolver: zodResolver(AddressSchema),
         mode: 'onChange',
         defaultValues: {
             name: "",
-            address_for: 'home',
+            address_for: 'warehouse',
             is_default: false,
             phone: "",
             address_line_1: "",
@@ -70,6 +72,42 @@ export default function LocationsPage() {
             landmark: ""
         }
     });
+
+    // 2. Watch Form Values for Cascading Logic
+    const watchedCountry = watch("country");
+    const watchedState = watch("state");
+
+    // 3. Compute dynamic dropdown options using country-state-city
+    // We map to .name so it stays compatible with your string[] inputs
+    const availableCountries: string[] = Country.getAllCountries().map(c => c.name);
+
+    // We need the Country ISO code to look up states
+    const selectedCountryObj = Country.getAllCountries().find(c => c.name === watchedCountry);
+    const availableStates: string[] = selectedCountryObj 
+        ? State.getStatesOfCountry(selectedCountryObj.isoCode).map(s => s.name) 
+        : [];
+    
+    // We need both the Country ISO and State ISO to look up cities
+    const selectedStateObj = selectedCountryObj 
+        ? State.getStatesOfCountry(selectedCountryObj.isoCode).find(s => s.name === watchedState)
+        : null;
+    const availableCities: string[] = selectedCountryObj && selectedStateObj
+        ? City.getCitiesOfState(selectedCountryObj.isoCode, selectedStateObj.isoCode).map(c => c.name)
+        : [];
+
+    // 4. Cleanup Hooks: Reset child dropdowns if a parent changes
+    useEffect(() => {
+        if (!isEditing) {
+            setValue("state", "");
+            setValue("city", "");
+        }
+    }, [watchedCountry, setValue, isEditing]);
+
+    useEffect(() => {
+        if (!isEditing) {
+            setValue("city", "");
+        }
+    }, [watchedState, setValue, isEditing]);
 
     const deleteLocation = async (id: string) => {
         if (!token) {
@@ -157,7 +195,6 @@ export default function LocationsPage() {
         }
     }, [closedLocationForm, isEditing, selectedLocation, reset]);
 
-    // Close modal on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (locationFormRef.current && !locationFormRef.current.contains(event.target as Node)) {
@@ -188,13 +225,19 @@ export default function LocationsPage() {
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             transition={{ type: "spring", duration: 0.4, bounce: 0.25 }}
-                            onSubmit={handleSubmit((data) => onSubmit(data, isEditing))}
+                            onSubmit={handleSubmit((data) => onSubmit(data as AddressType, isEditing))}
                             ref={locationFormRef}
                             className="lg:p-6 p-3 space-y-4 max-h-[80dvh] overflow-y-auto bg-white rounded-2xl shadow-2xl w-full max-w-2xl"
                         >
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                                 {WAREHOUSE_ADDRESS_FIELDS.map((field) => {
                                     const fieldError = errors[field.id as keyof typeof errors];
+
+                                    // 5. Inject Dynamic Options
+                                    let dynamicOptions = field.options;
+                                    if (field.id === "country") dynamicOptions = availableCountries;
+                                    if (field.id === "state") dynamicOptions = availableStates;
+                                    if (field.id === "city") dynamicOptions = availableCities;
 
                                     return (
                                         <div key={field.id} className="flex flex-col gap-1">
@@ -205,7 +248,7 @@ export default function LocationsPage() {
                                                         id={field.id}
                                                         register={register}
                                                         required={field.required}
-                                                        options={field.options}
+                                                        options={dynamicOptions}
                                                         type={field.type}
                                                         placeholder={field.placeholder}
                                                     />

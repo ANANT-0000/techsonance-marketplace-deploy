@@ -148,7 +148,45 @@ export enum ChangelogAction {
   EXPIRED = 'expired',
   DELETED = 'deleted',
 }
+export type PercentageOffConfig = {
+  value: number; // e.g. 20 (= 20%)
+  cap?: number; // max discount in ₹; undefined = no cap
+};
 
+export type FixedAmountConfig = {
+  value: number; // flat ₹ discount
+};
+
+export type BuyXGetYConfig = {
+  buy_qty: number; // items customer must buy
+  get_qty: number; // items given free / discounted
+  get_product_variant_id?: string; // specific free item; null = cheapest in cart
+  get_discount_percent: number; // 100 = free; 50 = half price
+};
+
+export type FreeShippingConfig = {
+  max_shipping_waived?: number; // cap on shipping fee waived; undefined = all
+};
+
+export type TieredDiscountConfig = {
+  tiers: Array<{
+    min_cart: number; // cart subtotal threshold in ₹
+    percent: number; // discount percent at this tier
+  }>;
+};
+
+export type BundleDealConfig = {
+  product_variant_ids: string[]; // all must be in cart
+  bundle_price: number; // total price for the bundle
+};
+
+export type DiscountConfig =
+  | PercentageOffConfig
+  | FixedAmountConfig
+  | BuyXGetYConfig
+  | FreeShippingConfig
+  | TieredDiscountConfig
+  | BundleDealConfig;
 // ─── Updated Coupon interface (add rules field for findOne response) ───────────
  
 export interface Coupon {
@@ -175,7 +213,25 @@ export interface Coupon {
   }>;
 }
 
-
+export interface AppliedPromotion {
+   id: string;
+        promotion_id: string;
+        code: string;
+        discount_type: PromotionType;
+        discount_value: number;
+        max_discount_amount: Object | null;
+        isGlobal: boolean;
+        applicableProducts: string[] | null;
+         discount_config: DiscountConfig,
+        rule:  {
+    id: string;
+    created_at: Date;
+    promotion_id: string;
+    rule_type: PromotionRuleType;
+    rule_config: unknown;
+    negate: boolean;
+}[]
+}
 export interface RuleConfig_MinCartValue   { amount: number }
 export interface RuleConfig_MinQty         { qty: number }
 export interface RuleConfig_CustomerSegment{ segment_id: string }
@@ -852,4 +908,22 @@ export interface ComplianceDocument {
   status: 'pending_review' | 'verified' | 'rejected' | 'expired';
   rejection_reason: string | null;
   created_at: string;
+}
+
+export  interface CartItemDisplay {
+  id: string;
+  cart_id: string;
+  product_variant_id: string;
+  quantity: number;
+  productVariant: Variant;
+}
+export interface VariantDetails {
+  id: string;
+  variant_name: string;
+  sku: string;
+  price: string;
+  status: string;
+  stock_quantity: number;
+  images?: { image_url: string }[] | string;
+  product_id?: string;
 }

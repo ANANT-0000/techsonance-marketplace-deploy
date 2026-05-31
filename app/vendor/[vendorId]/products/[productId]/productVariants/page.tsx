@@ -128,14 +128,14 @@ export default function VariantListingPage() {
 
                                     {variant.attributes.length > 0 && (
                                         <div>
-                                            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                                            <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
                                                 <Tag size={10} /> Attributes
                                             </p>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {variant.attributes.map((attr, idx) => (
                                                     <div
                                                         key={idx}
-                                                        className="flex items-center gap-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[11px] font-medium px-2 py-1 rounded-lg"
+                                                        className="flex items-center gap-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm  font-medium px-2 py-1 rounded-lg"
                                                     >
                                                         <span className="text-indigo-400 font-semibold">{attr.name}:</span>
                                                         <span>{attr.value}</span>
@@ -155,7 +155,7 @@ export default function VariantListingPage() {
                                                 ₹{formatCurrency(variant.price)}
                                             </p>
                                         </div>
-                                        <div className="text-right">
+                                        {/* <div className="text-right">
                                             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Stock</p>
                                             {variant.stock_quantity > 0 ? (
                                                 <p className="text-sm font-semibold text-slate-700 mt-0.5">
@@ -167,11 +167,11 @@ export default function VariantListingPage() {
                                                     Out of Stock
                                                 </span>
                                             )}
-                                        </div>
+                                        </div> */}
                                     </div>
 
                                     <div className="flex gap-10">
-                                        <DeleteBtn id={variant.id} style="mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:border-red-400 hover:text-red-600 hover:bg-red-50 active:scale-95 transition-all" toDelete="VARIANT" vendorId={vendorId} variantId={variant.id} />
+                                        {/* <DeleteBtn id={variant.id} style="mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:border-red-400 hover:text-red-600 hover:bg-red-50 active:scale-95 transition-all" toDelete="VARIANT" vendorId={vendorId} variantId={variant.id} /> */}
                                         <Link
                                             href={`/vendor/${vendorId}/products/variantUpdateForm/${variant.id}`}
                                             className="mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 active:scale-95 transition-all"

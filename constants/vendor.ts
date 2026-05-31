@@ -62,7 +62,7 @@ export const VendorDocumentTypes: { label: string; value: string , required: boo
 // ============================================================
 //used
 export const VENDOR_NAV_LINKS: NavLinkType[] = [
-  { Dashboard:        null,              icon: "layout-dashboard",    section: "Main"              },
+  { Dashboard:       '',              icon: "layout-dashboard",    section: "Main"              },
   { Products:         "products",        icon: "package",             section: "Main"              },
   { Orders:           "orders",          icon: "shopping-cart",       section: "Main"              },
   { Analytics:        "analytics",       icon: "chart-column-stacked",section: "Main"              },
@@ -134,7 +134,7 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
         section: "Master Catalog",
         list: [
           { title: "Product List", path: `/vendor/${vendorId}/products`, icon: "list" },
-          { title: "Stock Update", path: `/vendor/${vendorId}/products/stock-update`, icon: "refresh-cw" },
+          { title: "Stock Update", path: `/vendor/${vendorId}/products/stockUpdate`, icon: "refresh-cw" },
           // { title: "Variant Stock Update", path: `/vendor/${vendorId}/products/variant-stock-update`, icon: "layers" },
           { title: "Category Management", path: `/vendor/${vendorId}/products/categories`, icon: "layers" },
         ],

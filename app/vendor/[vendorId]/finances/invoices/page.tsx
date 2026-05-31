@@ -9,6 +9,7 @@ import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { fetchGstInvoices } from "@/utils/vendorApiClient";
+import { Pagination } from "@/components/common/Pagination";
 
 interface InvoiceType {
     id: string;
@@ -29,7 +30,7 @@ export const invoiceTableHeader = [
     "IGST",
     "Total Tax",
     "Date",
-    "Actions"
+    // "Actions"
 ]
 
 export default function InvoicesPage() {
@@ -40,15 +41,22 @@ export default function InvoicesPage() {
     const [isOpen, setIsOpen] = useState(false);
     const [sortBy, setSortBy] = useState<string>("desc");
     const [invoices, setInvoices] = useState<InvoiceType[]>([]);
+    const [search, setSearch] = useState<string>("");
+    const [debouncedSearch, setDebouncedSearch] = useState<string>("");
     const [loading, setLoading] = useState(true);
-
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalInvoices, setTotalInvoices] = useState(0);
     const handleDateChange = (selectedDate: Date | undefined) => {
         setDate(selectedDate);
         setIsOpen(false);
     };
+const offset = (currentPage - 1) * limit;
     
     const token = authToken();
     
+   
     useEffect(() => {
         if (!token) {
             redirect("/auth/vendorLogin");
@@ -57,8 +65,10 @@ export default function InvoicesPage() {
         const fetchInvoices = async () => {
             setLoading(true);
             try {
-                const res = await fetchGstInvoices(sortBy, date, token);
-                setInvoices(res.data?.data || []);
+                const res = await fetchGstInvoices(offset, limit, debouncedSearch, sortBy, date, token);
+                console.log("Fetched invoices:", res);
+                setInvoices(res.data.invoices || []);
+                setTotalInvoices(res.data.total || 0);
             } catch (err) {
                 console.log("Error fetching invoices:", err);
             } finally {
@@ -66,7 +76,21 @@ export default function InvoicesPage() {
             }
         };
         fetchInvoices();
-    }, [sortBy, token]);
+    }, [sortBy, token, currentPage, limit, debouncedSearch]);
+
+    useEffect(() => {
+        setTotalPages(Math.ceil(totalInvoices / limit));
+    }, [totalInvoices, limit]);
+ // Debounce effect - waits 500ms after user stops typing before updating search
+    useEffect(() => {
+        const debounceTimer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setCurrentPage(1); // Reset to first page on new search
+        }, 500); // 500ms delay
+
+        return () => clearTimeout(debounceTimer);
+    }, [search]);
+    
 
     return (
         <main className="w-full px-1">
@@ -81,10 +105,10 @@ export default function InvoicesPage() {
                         </span>
                     )}
                 </div>
-                <button className="flex items-center gap-2 font-semibold text-sm bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                {/* <button className="flex items-center gap-2 font-semibold text-sm bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                     <Download size={16} />
                     Export Invoices
-                </button>
+                </button> */}
             </header>
 
             {/* Filter Bar */}
@@ -95,6 +119,8 @@ export default function InvoicesPage() {
                         type="text"
                         className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
                         placeholder="Search by Invoice No. or Order Ref"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
                     />
                 </span>
 
@@ -103,8 +129,9 @@ export default function InvoicesPage() {
                         <option value="desc">Newest First</option>
                         <option value="asc">Oldest First</option>
                     </select>
+          
 
-                    {isOpen ? (
+                    {/* {isOpen ? (
                         <button
                             onClick={() => setIsOpen(false)}
                             className="flex items-center gap-2 text-sm border border-purple-300 bg-purple-50 text-purple-600 rounded-xl px-3 py-2 font-medium transition-colors"
@@ -132,12 +159,12 @@ export default function InvoicesPage() {
                                 captionLayout="dropdown"
                             />
                         </div>
-                    )}
+                    )} */}
                 </span>
             </div>
 
             {/* Data Table */}
-            <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
+            <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white my-2">
                 <table className="w-full table-auto min-w-[900px] border-collapse">
                     <thead>
                         <tr className="bg-gray-50 border-b border-gray-200 text-left">
@@ -151,7 +178,7 @@ export default function InvoicesPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {loading ? (
-                            <TableRowSkeleton columns={8} rows={5} />
+                            <TableRowSkeleton columns={8} rows={10} />
                         ) : invoices && invoices?.length === 0 ? (
                             <tr>
                                 <td colSpan={10} className="py-16 text-center text-gray-400 text-sm">
@@ -192,11 +219,11 @@ export default function InvoicesPage() {
                                         {new Date(item.invoice_date).toLocaleDateString("en-GB")}
                                     </td>
 
-                                    <td className="p-4">
+                                    {/* <td className="p-4">
                                         <button className="text-xs font-semibold text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
                                             Download ↓
                                         </button>
-                                    </td>
+                                    </td> */}
                                 </tr>
                             ))
                         )}
@@ -205,6 +232,12 @@ export default function InvoicesPage() {
             </div>
             <span className="flex justify-end mt-4">
                  {/* Pagination here */}
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <span className=" flex ">  
+                            showing {limit} of {totalInvoices }
+                        </span>
+                        <Pagination count={currentPage} setCount={setCurrentPage} totalPages={totalPages} />
+                        </div>
             </span>
         </main>
     );

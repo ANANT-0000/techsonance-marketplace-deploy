@@ -232,14 +232,14 @@ const toggleOrderSelection = (orderId: string) => {
             {/* Filter Bar */}
             <div className="relative flex flex-wrap justify-between rounded-xl items-center py-3 px-4 gap-3 bg-white border border-gray-200 shadow-sm mb-4">
                 {/* Search */}
-                <span className="flex flex-1 min-w-[220px] items-center gap-2 border border-gray-200 bg-gray-50 py-2 px-3 rounded-xl focus-within:border-blue-400 focus-within:bg-white transition-colors">
+                {/* <span className="flex flex-1 min-w-[220px] items-center gap-2 border border-gray-200 bg-gray-50 py-2 px-3 rounded-xl focus-within:border-blue-400 focus-within:bg-white transition-colors">
                     <img className="w-5 h-5 opacity-50 shrink-0" src={searchImgDark} alt="search icon" />
                     <input
                         type="text"
                         className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
                         placeholder="Search by name, email or domain"
                     />
-                </span>
+                </span> */}
 
                 {/* Filters */}
                 <span className="flex flex-wrap gap-3 items-center">
@@ -256,7 +256,7 @@ const toggleOrderSelection = (orderId: string) => {
                         <option value="desc">Newest First</option>
                         <option value="asc">Oldest First</option>
                     </select>
-
+{/* 
                     {isOpen ? (
                         <button
                             onClick={() => setIsOpen(false)}
@@ -285,7 +285,7 @@ const toggleOrderSelection = (orderId: string) => {
                                 captionLayout="dropdown"
                             />
                         </div>
-                    )}
+                    )} */}
                 </span>
             </div>
 

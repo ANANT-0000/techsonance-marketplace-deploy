@@ -15,7 +15,6 @@
             <input type={type}
                 {...register(id, { required })} placeholder={placeholder}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
-
             />
         ) : (
             <select
@@ -24,8 +23,8 @@
                 defaultValue=""
             >
                 <option value={placeholder} disabled>Select {placeholder}</option>
-                {type === "select" && options && options.map((option: string) => (
-                    <option key={option} value={option}>
+                {options && options.map((option: string, index: number) => (
+                    <option key={`${option}-${index}`} value={option}>
                         {option.charAt(0).toUpperCase() + option.slice(1)}
                     </option>
                 ))}

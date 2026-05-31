@@ -276,7 +276,7 @@ export const fetchInitiatePayment = async (customerId: string, paymentData: any,
 export const fetchUserOrderHistory = async (customerId: string, token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(`${BASE_API_URL}/v1/orders/user/${customerId}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/orders-items/user/${customerId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

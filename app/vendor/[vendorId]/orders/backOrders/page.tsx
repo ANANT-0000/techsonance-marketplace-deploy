@@ -174,7 +174,7 @@ export default function BackOrdersListPage() {
             {/* Filter Bar */}
             <div className="relative flex flex-wrap justify-between rounded-xl items-center py-3 px-4 gap-3 bg-white border border-gray-200 shadow-sm mb-4">
                 {/* Search */}
-                <span className="flex flex-1 min-w-[220px] items-center gap-2 border border-gray-200 bg-gray-50 py-2 px-3 rounded-xl focus-within:border-blue-400 focus-within:bg-white transition-colors">
+                {/* <span className="flex flex-1 min-w-[220px] items-center gap-2 border border-gray-200 bg-gray-50 py-2 px-3 rounded-xl focus-within:border-blue-400 focus-within:bg-white transition-colors">
                     <img className="w-5 h-5 opacity-50 shrink-0" src={searchImgDark} alt="search icon" />
                     <input
                         type="text"
@@ -183,7 +183,7 @@ export default function BackOrdersListPage() {
                         className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
                         placeholder="Search by name, email or reason"
                     />
-                </span>
+                </span> */}
 
                 {/* Filters */}
                 <span className="flex flex-wrap gap-3 items-center">
@@ -209,7 +209,7 @@ export default function BackOrdersListPage() {
                         <option value="replacement">Replacement</option>
                     </select>
 
-                    {isOpen ? (
+                    {/* {isOpen ? (
                         <button
                             onClick={() => setIsOpen(false)}
                             className="flex items-center gap-2 text-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
@@ -246,7 +246,7 @@ export default function BackOrdersListPage() {
                                 captionLayout="dropdown"
                             />
                         </div>
-                    )}
+                    )} */}
                 </span>
             </div>
 

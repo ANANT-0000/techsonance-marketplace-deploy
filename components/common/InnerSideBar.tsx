@@ -47,7 +47,9 @@ export function InnerSideBar({ path, links, isOpen, isNotOpen }: { path: string,
                             <h3 className="text-gray-500 text-lg font-bold uppercase mb-3">{section.section}</h3>
                             <ul>
                                 {
-                                    section.list.map((link, linkIndex) => (
+                                    section.list.map((link, linkIndex) => {
+
+                                        return(
                                         <li key={linkIndex} className="mb-2"  >
                                             {
                                                 link.path === null ?
@@ -63,7 +65,7 @@ export function InnerSideBar({ path, links, isOpen, isNotOpen }: { path: string,
                                                     </Link>
                                             }
                                         </li>
-                                    ))
+                                    )})
                                 }
                             </ul>
                         </div>

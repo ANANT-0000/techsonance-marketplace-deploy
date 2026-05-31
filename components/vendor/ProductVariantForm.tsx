@@ -91,7 +91,7 @@ export const ProductVariantForm = ({
     // ── Populate form when editing ──
     useEffect(() => {
         if (!existVariant) return;
-        console.log("existVariant", existVariant)
+        // console.log("existVariant", existVariant)
         reset({
             variantName: existVariant.variantName,
             attributes:
@@ -162,7 +162,7 @@ export const ProductVariantForm = ({
         [setValue, revokeOne]
     );
 
-    console.log("deletedImgs", deletedImgs)
+    // console.log("deletedImgs", deletedImgs)
     // ── Submit ──
     const onSubmit = async (data: ProductVariantFormValuesType) => {
         if (user && 'vendor_id' in user && user.vendor_id && !user.company_id) return;
@@ -192,8 +192,10 @@ export const ProductVariantForm = ({
             }
             if (variantId && existVariant?.productId) {
                 console.log('updating')
-                console.log("update ", (formData.getAll('variant_data')))
-                return await updateProductVariant(formData, vendorId, existVariant.productId, variantId, token)
+                return await updateProductVariant(formData, vendorId, existVariant.productId, variantId, token).then((res) => {
+                    console.log("[update response]", res);    
+                    return res; 
+                });
             } else {
                 console.log('creating')
                 if (!productId) {
@@ -205,7 +207,7 @@ export const ProductVariantForm = ({
         }
         const response = await createOrUpdate();
         console.log("response", response);
-        if (response?.status === 201) {
+        if (response?.status === 200 || response.status==201) {
             router.push(`/vendor/${vendorId}/products`);
         }
     };
@@ -362,7 +364,6 @@ export const ProductVariantForm = ({
                     <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                         {FILE_UPLOAD_FIELD_LABELS.map(({ label, fieldName }) => {
                             const { files, setFiles } = fileStateMap[fieldName as keyof typeof fileStateMap];
-                            console.log("files", JSON.stringify(files))
                             return (
                                 <div key={fieldName} className="border border-slate-200 rounded-xl p-4 bg-slate-50">
                                     <h3 className="text-sm font-semibold text-slate-700 mb-3">{label}</h3>

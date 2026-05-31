@@ -43,8 +43,7 @@ export default  function Products() {
    
     const [productList, setProductList] = useState<Product[]>([]);
     const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
-// Granular Loading States
-const [totalProducts, setTotalProducts] = useState(0);
+    const [totalProducts, setTotalProducts] = useState(0);
    const [totalPages, setTotalPages] = useState(1);
   const [itemsPerPage, setItemPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,7 +57,7 @@ const [totalProducts, setTotalProducts] = useState(0);
       if (response.status !== 200) {
         console.error("Error fetching products:", response.statusText);
         setProductList([]);
-        setTotalProducts(0);
+ 
         setTotalPages(1);
         setIsLoadingProducts(false);
         return;

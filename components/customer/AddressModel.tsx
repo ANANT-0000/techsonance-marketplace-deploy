@@ -2,7 +2,6 @@
 import { FormInput } from "../common/FormInput";
 import { useForm } from "react-hook-form";
 import { motion } from "motion/react";
-import { ADDRESS_FIELDS } from "@/constants/dynamicFields";
 import { AddressForEnum, AddressOperationEnum, Address, User } from "@/utils/Types";
 import { fetchCreateUserAddress, fetchUpdateUserAddress } from "@/utils/customerApiClient-SA";
 import { X } from "lucide-react";
@@ -10,18 +9,17 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AddressSchema } from "@/utils/validation";
 import { authToken } from "@/utils/authToken";
-
-
+import { ADDRESS_FIELDS } from "@/constants";
+import { Country, State, City } from "country-state-city";
 
 export const AddressModal = ({ user, addressId, addressList, operation, onClose, onSuccess }: {
     user: Partial<User>,
     addressId?: string,
     addressList?: Address[],
     operation: AddressOperationEnum,
-    onClose: () => void
+    onClose: () => void,
     onSuccess?: Dispatch<SetStateAction<boolean>>
 }) => {
-    console.log("Existing Address id in Modal", addressId);
     const [fetchError, setFetchError] = useState<{
         message: string | null;
         success: boolean | null;
@@ -29,22 +27,9 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose,
         message: null,
         success: null
     });
-    const existingAddress = addressList?.find((addr) => {
-        const isMatch = addr.id === addressId;
-        if (!isMatch) {
-            console.log(`No match: ${addr.id} (type: ${typeof addr.id}) vs ${addressId} (type: ${typeof addressId})`);
-        }
-        return isMatch;
-    });
 
-    console.log("Found Address:", existingAddress);
-    console.log("Existing Address in Modal", existingAddress?.name);
-    // const dispatch = useAppDispatch();
-
-    const { register, handleSubmit, reset, formState: {
-        errors
-    }
-    } = useForm({
+    const existingAddress = addressList?.find((addr) => addr.id === addressId);
+    const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm({
         resolver: zodResolver(AddressSchema),
         mode: 'onChange',
         defaultValues: {
@@ -62,13 +47,40 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose,
             landmark: ""
         }
     });
-    console.log("Existing Address in Modal", addressList);
-    console.log("Existing Address id in Modal", addressId);
+
     const token = authToken();
+
+    // 3. Watch Form Values for Cascading Logic
+    const watchedCountry = watch("country");
+    const watchedState = watch("state");
+
+    const availableCountries: string[] = Country.getAllCountries().map(c => c.name);
+
+    const selectedCountryObj = Country.getAllCountries().find(c => c.name === watchedCountry);
+    const availableStates: string[] = selectedCountryObj 
+        ? State.getStatesOfCountry(selectedCountryObj.isoCode).map(s => s.name) 
+        : [];
+        
+    const selectedStateObj = selectedCountryObj 
+        ? State.getStatesOfCountry(selectedCountryObj.isoCode).find(s => s.name === watchedState)
+        : null;
+    const availableCities: string[] = selectedCountryObj && selectedStateObj
+        ? City.getCitiesOfState(selectedCountryObj.isoCode, selectedStateObj.isoCode).map(c => c.name)
+        : [];
     useEffect(() => {
-        const fetchAddressDetails = async () => {
-        };
-        fetchAddressDetails();
+        if (operation !== AddressOperationEnum.EDIT) {
+            setValue("state", "");
+            setValue("city", "");
+        }
+    }, [watchedCountry, setValue, operation]);
+
+    useEffect(() => {
+        if (operation !== AddressOperationEnum.EDIT) {
+            setValue("city", "");
+        }
+    }, [watchedState, setValue, operation]);
+
+    useEffect(() => {
         if (operation === AddressOperationEnum.EDIT && addressId) {
             reset({
                 name: existingAddress?.name || "",
@@ -85,8 +97,7 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose,
                 landmark: existingAddress?.landmark || ""
             });
         }
-
-    }, [addressList, user]);
+    }, [addressList, user, addressId, existingAddress, reset, operation]);
 
     const handleFadeClose = () => {
         setTimeout(() => {
@@ -94,28 +105,18 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose,
         }, 800);
     };
 
-
     const onSubmit = async (data: any) => {
-        if (!token) {
-            console.error("Authentication token is missing");
-            return;
-        }
-        if (operation === AddressOperationEnum.EDIT && addressId && user.id) {
+        if (!token) return;
 
+        if (operation === AddressOperationEnum.EDIT && addressId && user.id) {
             const result = await fetchUpdateUserAddress(user.id, addressId, data, token);
             if (!result?.success) {
-                setFetchError({
-                    message: result?.message || 'Failed to update address',
-                    success: result?.success || false
-                });
+                setFetchError({ message: result?.message || 'Failed to update address', success: result?.success || false });
             }
         } else {
             const result = await fetchCreateUserAddress(user.id || "", data, token);
             if (!result?.success) {
-                setFetchError({
-                    message: result?.message || 'Failed to create address',
-                    success: result?.success || false
-                });
+                setFetchError({ message: result?.message || 'Failed to create address', success: result?.success || false });
             } else {
                 onSuccess && onSuccess(true);
             }
@@ -124,21 +125,19 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose,
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center  px-4">
-
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={onClose}
-                className="absolute inset-0  bg-black/40 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative bg-white w-full max-w-2xl  rounded-2xl shadow-2xl overflow-hidden z-10"
+                className="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden z-10"
             >
                 <div className="flex justify-between items-center py-3 px-6 border-b border-gray-100">
                     <h2 className="text-xl font-bold text-gray-800">
@@ -148,16 +147,23 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose,
                         <X size={20} />
                     </button>
                 </div>
+                
                 {fetchError.message !== null && (
                     <div className={`absolute top-0 right-0 left-0 ${fetchError.success === false ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'} py-6 px-2 mx-2 rounded-lg shadow-md`}>
                         <p>{fetchError.message}</p>
                     </div>
                 )}
+                
                 <form onSubmit={handleSubmit(onSubmit)} className="lg:p-6 p-3 space-y-4 max-h-[70dvh] overflow-y-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-
                         {ADDRESS_FIELDS.map((field) => {
                             const fieldError = errors[field.id as keyof typeof errors];
+
+                         
+                            let dynamicOptions = field.options;
+                            if (field.id === "country") dynamicOptions = availableCountries;
+                            if (field.id === "state") dynamicOptions = availableStates;
+                            if (field.id === "city") dynamicOptions = availableCities;
 
                             return (
                                 <div key={field.id} className="flex flex-col gap-1">
@@ -168,12 +174,12 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose,
                                                 id={field.id}
                                                 register={register}
                                                 required={field.required}
-                                                options={field.options}
+                                                options={dynamicOptions} // Passing dynamic arrays here
                                                 type={field.type}
                                                 placeholder={field.placeholder}
                                             />
                                             {fieldError && (
-                                                <p className="text-red-600 text-sm">{fieldError.message}</p>
+                                                <p className="text-red-600 text-sm">{fieldError.message as string}</p>
                                             )}
                                         </>
                                     ) : (
@@ -203,4 +209,3 @@ export const AddressModal = ({ user, addressId, addressList, operation, onClose,
         </div>
     );
 };
-

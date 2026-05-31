@@ -40,9 +40,9 @@ export const InnerSideBar = ({
         const allPaths = links.flatMap((s) =>
             s.sections.flatMap((sec) => sec.list?.map((item) => item.path) ?? [])
         )
-        const isMatch = allPaths.some((p) => p === path)
-        if (!isMatch) setIsClosed(true)
-    }, [path, links])
+        const isMatch = allPaths.some((p) => p !== path)
+        if (isMatch) setIsClosed(false)
+    }, [])
     if (!isMounted) return (
         <div className="w-20 animate-pulse space-y-4 p-4">
             <div className="h-6 bg-gray-300 rounded w-3/4 mx-auto"></div>
@@ -53,8 +53,7 @@ export const InnerSideBar = ({
     return (
          <AnimatePresence mode="wait">
         <div
-              onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+              
             className={`
         relative flex flex-col bg-white border-r border-gray-200 h-screen
         overflow-y-auto overflow-x-hidden
@@ -63,7 +62,7 @@ export const InnerSideBar = ({
       `}
         >
             <div className="sticky top-0 z-10 flex items-center justify-end bg-white border-b border-gray-100 px-3 py-3 w-full">
-                {!isClosed && (
+                {expanded && (
                     <span className="mr-auto text-xs font-semibold uppercase tracking-widest text-gray-400 truncate">
                         {selectedMenu}
                     </span>
@@ -81,12 +80,13 @@ export const InnerSideBar = ({
            
           
         
-            <aside className="flex-1 py-3 space-y-6 w-full">
+            <aside className="flex-1 py-3 space-y-6 w-full" onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}>
                 {links.map((section) => (
                     <div key={section.menu}>
                         {section.sections.map((group) => (
                             <div key={group.section} className="mb-1">
-                                {!isClosed && group.section && (
+                                {expanded && group.section && (
                                     <p className="px-4 pt-2 pb-1 text-[16px] font-medium text-gray-400 truncate mb-2">
                                         {group.section}
                                     </p>
@@ -100,7 +100,7 @@ export const InnerSideBar = ({
                                              transition={{ duration: 0.18 }} initial={{ opacity: 0, y: 8 }}            animate={{ opacity: 1, y: 0 }}            exit={{ opacity: 0, y: -8 }}            >
                                                 <Link
                                                     href={item.path ?? "#"}
-                                                    title={isClosed ? item.title : undefined}
+                                                    title={expanded ? item.title : undefined}
                                                     className={`
                             group relative flex items-center gap-3 mx-2 px-2.5 py-2 rounded-lg
                             text-sm font-medium transition-all duration-150
