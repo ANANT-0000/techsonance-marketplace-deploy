@@ -14,13 +14,24 @@ const complianceEntrySchema = z.object({
   valid_until: z.string().optional(),
 });
  
+const maxDigits = 3; // Change this number to your limit
 // ─── Main schema ─────────────────────────────────────────────────────────────
 export const vendorRegisterSchema = z.object({
   // Step 0 — Organization
   company_name: z
     .string()
     .min(2, "Company name must be at least 2 characters")
-    .max(100, "Company name too long"),
+    .max(100, "Company name too long")
+    .regex(/^[a-zA-Z0-9\s]+$/, "Only letters, numbers, and spaces are allowed")
+    .refine(
+      (val) => {
+        const digitCount = (val.match(/\d/g) || []).length;
+        return digitCount <= maxDigits;
+      },
+      {
+        message: `Company name can contain at most ${maxDigits} numbers`,
+      }
+    ),
   store_owner_first_name: z
     .string()
     .min(2, "First name must be at least 2 characters")

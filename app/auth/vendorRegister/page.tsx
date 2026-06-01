@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +30,7 @@ import { vendorRegister } from "@/utils/authApiClient";
 import FinancialCompliance from "@/components/vendor/FinancialCompliance";
 import { DocUploadInput, FileEntry } from "@/components/vendor/DocUploadInput";
 import { RegistrationSuccessModal } from "@/components/common/RegistrationSuccessModal";
+import AxiosAPI from "@/lib/axios";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -157,10 +158,10 @@ function StepIndicator({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function VendorRegisterPage() {
-  const [formStep, setFormStep] = useState(2);
+  const [formStep, setFormStep] = useState(0);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
-
+  const [emailError, setEmailError] = useState<string | null>(null);
   // Step 2 state
   const [countryCode, setCountryCode] = useState("");
   const [complianceValues, setComplianceValues] = useState<
@@ -182,6 +183,7 @@ export default function VendorRegisterPage() {
     register,
     handleSubmit,
     trigger,
+    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm({
@@ -199,7 +201,7 @@ export default function VendorRegisterPage() {
       country_code: "",
     },
   });
-
+const emailValue = watch("email");
   const currentCountryFields =
     COUNTRIES.find((c) => c.country_code === countryCode)?.fields ?? [];
     console.log("Current form errors:", errors);
@@ -218,7 +220,7 @@ console.log("legalFileMap after step advance:", legalFileMap);
     }
 
     // Step 2: compliance fields + financial doc upload
-    if (formStep === 2) {
+    if (formStep === 2 || formStep === 3) {
       if (!countryCode) {
         setGlobalError("Please select your country to continue.");
         return;
@@ -326,6 +328,30 @@ console.log("Current form stage "+ formStep);
       });
     }
   };
+
+  const checkEmail=async()=>{
+
+    if(emailValue){
+
+      AxiosAPI.get(`/v1/auth/verify-mail?email=${emailValue}`).then((res)=>{
+        if(res.data.data.exists){
+          setEmailError(res.data.data.message || "Email already in use. Please use a different email or login.");
+        }else{
+          setEmailError(null);
+        }
+      }).catch((err)=>{
+        if(err.response?.status === 409){ 
+          setEmailError("Email already in use. Please use a different email or login.");
+        }
+      })
+    }
+}
+  useEffect(() => {
+    const debouncedEmail = setTimeout(() => {
+    checkEmail();
+    }, 700);
+    return () => clearTimeout(debouncedEmail);
+  }, [emailValue]);
 
   // ─────────────────────────────────────────────────────────────────────────────
   return (
@@ -446,6 +472,11 @@ console.log("Current form stage "+ formStep);
                       {errors.email && (
                         <p className={errorCls}>{errors.email.message}</p>
                       )}
+                      {
+                        emailError && (
+                          <p className={errorCls}>{emailError}</p>
+                        )
+                      }
                     </div>
 
                     {/* Phone with country dial code */}

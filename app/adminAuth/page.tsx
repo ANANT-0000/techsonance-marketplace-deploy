@@ -1,10 +1,11 @@
-﻿import Link from 'next/link';
-import { ShieldCheck, Store, User, ShieldHalf } from 'lucide-react';
+﻿import { ShieldCheck, ShieldHalf } from 'lucide-react'
+import Link from 'next/link'
+import React from 'react'
 
-export default function AuthCenter() {
-    return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-            <div className="w-full ">
+export default function AdminAuthPage ()  {
+  return (
+<div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+            <div className="w-full max-w-2xl ">
 
                 {/* Header */}
                 <div className="mb-8">
@@ -19,42 +20,31 @@ export default function AuthCenter() {
                         Select your portal to sign in or get started.
                     </p> */}
                  </div>
-
-        
-
-                    {/* Vendor */}
-                   <div className="group bg-card border border-border hover:border-border/80 rounded-2xl p-6 flex flex-col transition-colors duration-150">
-                        <div className="w-10 h-10 rounded-xl bg-green-50 border border-green-200 flex items-center justify-center mb-5 text-green-700">
-                            <Store size={20} />
+                    <div className="group bg-card border border-border hover:border-border/80 rounded-2xl p-6 flex flex-col transition-colors duration-150">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center mb-5 text-blue-700">
+                            <ShieldCheck size={20} />
                         </div>
                         <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
-                            Seller
+                            Operations
                         </p>
                         <h2 className="text-base font-semibold text-foreground mb-2">
-                            Vendor portal
+                            Admin panel
                         </h2>
                         <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">
-                            Manage your listings, inventory, orders, and track your store's performance.
+                            Platform-wide controls, vendor management, analytics, and marketplace health.
                         </p>
                         <div className="flex flex-col gap-2">
                             <Link
-                                href="/auth/vendorLogin"
+                                href="/auth/adminLogin"
                                 className="w-full py-2 px-4 bg-blue-700 hover:bg-blue-800 text-blue-50 text-sm font-medium text-center rounded-lg transition-colors"
                             >
-                                Sign in as vendor
-                            </Link>
-                            <Link
-                                href="/auth/vendorRegister"
-                                className="w-full py-2 px-4 border border-border hover:bg-muted text-muted-foreground hover:text-foreground text-sm font-medium text-center rounded-lg transition-colors"
-                            >
-                                Become a vendor →
+                                Sign in as admin
                             </Link>
                         </div>
                     </div>
 
-
- 
-            </div>
-        </div>
-    );
+           </div>
+</div>
+               
+  )
 }
