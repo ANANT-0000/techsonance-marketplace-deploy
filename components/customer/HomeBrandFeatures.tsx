@@ -1,11 +1,17 @@
 "use client";
 import { HOME_BRAND_FEATURES } from "@/constants/customer";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
-export function HomeBrandFeatures() {
-    const features = Array.isArray(HOME_BRAND_FEATURES) ? HOME_BRAND_FEATURES : [];
+
+interface BrandFeature {
+  title: string;
+  icon: string;
+}
+
+export function HomeBrandFeatures({ features }: { features?: BrandFeature[] }) {
+    const activeFeatures = features || (Array.isArray(HOME_BRAND_FEATURES) ? HOME_BRAND_FEATURES : []);
     return (
         <>
-            {features.length > 0 && features.map((feature, idx) => (
+            {activeFeatures.length > 0 && activeFeatures.map((feature, idx) => (
                 <div key={idx} className="flex flex-col items-center justify-center gap-4 p-2">
                     <span className="bg-linear-to-t from-brand-primary to-brand-secondary p-3 rounded-full">
                         <DynamicIcon

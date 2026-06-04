@@ -3,10 +3,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { AddToCart } from './AddToCart';
 import { BuyBtn } from './BuyBtn';
 import { WishListBtn } from './WishListBtn';
+import { useShoppingCmsData } from "@/hooks/useShoppingCmsData";
 import { Pagination } from '../common/Pagination';
 import Link from 'next/link';
 import { FilterSidebar, FilterState } from './FilterSidebar';
- 
+
 import { useMediaQuery } from 'react-responsive';
 import { ProductSkeleton } from '../common/ProductSkeleton';
 import { motion, AnimatePresence } from 'motion/react';
@@ -17,7 +18,7 @@ import { ArrowUpDown, ChevronDown, PackageSearch } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 
 const PAGE_SIZE = 12;
-
+const STOCK_WARNING_THRESHOLD = 15;
 const SORT_OPTIONS: { label: string; value: SortBy }[] = [
     { label: 'Newest', value: 'newest' },
     { label: 'Price: Low → High', value: 'price_asc' },
@@ -42,6 +43,7 @@ interface ShoppingListProps {
 
 export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps) {
     const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+    const { promoContent } = useShoppingCmsData();
 
     // ── State ────────────────────────────────────────────────────────────────
     const [products, setProducts] = useState<Product[]>([]);
@@ -76,7 +78,7 @@ export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps)
     const fetchProducts = useCallback(async () => {
         setIsLoading(true);
         try {
-          
+
             const category_id = filters.selectedCategories[0];
 
             const response = await fetchProductVendorProducts({
@@ -88,7 +90,7 @@ export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps)
                 offset: (page - 1) * PAGE_SIZE,
                 limit: PAGE_SIZE,
             });
-            console.log("response product",response)
+            console.log("response product", response)
             setProducts(response.data || []);
             setTotal(response.total || 0);
             setTotalPages(response.totalPages || 1);
@@ -186,11 +188,10 @@ export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps)
                                     <button
                                         key={opt.value}
                                         onClick={() => handleSortChange(opt.value)}
-                                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                                            sortBy === opt.value
-                                                ? 'bg-blue-50 text-blue-700 font-semibold'
-                                                : 'text-gray-700 hover:bg-gray-50'
-                                        }`}
+                                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === opt.value
+                                            ? 'bg-blue-50 text-blue-700 font-semibold'
+                                            : 'text-gray-700 hover:bg-gray-50'
+                                            }`}
                                     >
                                         {opt.label}
                                     </button>
@@ -223,6 +224,35 @@ export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps)
                             Clear all filters
                         </button>
                     )}
+                </div>
+            )}
+
+            {/* ── Storefront Dynamic Promotion Banner ────────────────────────────── */}
+            {promoContent && promoContent.promo_banner_title && (
+                <div 
+                    className="relative w-full h-48 md:h-56 rounded-2xl overflow-hidden mb-6 flex flex-col justify-center px-6 md:px-12 text-white bg-cover bg-center shadow-lg transition-transform hover:scale-[1.005] duration-300"
+                    style={{ backgroundImage: `url(${promoContent.promo_banner_image_url || 'https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?q=80&w=1200&auto=format&fit=crop'})` }}
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-transparent z-0" />
+                    <div className="relative z-10 max-w-lg">
+                        <span className="bg-red-500/90 text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full mb-3 inline-block">
+                            Special Promotion
+                        </span>
+                        <h2 className="text-xl md:text-3xl font-extrabold tracking-tight leading-tight mb-2 text-white">
+                            {promoContent.promo_banner_title}
+                        </h2>
+                        <p className="text-xs md:text-sm text-gray-200 leading-relaxed mb-4 line-clamp-2 md:line-clamp-none">
+                            {promoContent.promo_banner_desc}
+                        </p>
+                        {promoContent.promo_banner_link && (
+                            <Link 
+                                href={promoContent.promo_banner_link}
+                                className="bg-white hover:bg-gray-100 text-gray-900 text-xs font-bold px-5 py-2.5 rounded-xl transition-all inline-block hover:shadow-md"
+                            >
+                                Discover Offer
+                            </Link>
+                        )}
+                    </div>
                 </div>
             )}
 
@@ -269,7 +299,7 @@ export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps)
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-6 gap-2 items-start"
+                                className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-6 gap-2 items-stretch"
                             >
                                 {products.map((product, idx) => (
                                     <ProductCard key={product.id} product={product} isMobile={isMobile} idx={idx} />
@@ -325,7 +355,7 @@ function ProductCard({ product, isMobile, idx }: { product: Product; isMobile: b
             </div>
 
             <div className="mt-auto">
-                <div className="flex items-baseline gap-2 flex-wrap">
+                <div className="flex items-center justify-between gap-2 flex-wrap-reverse ">
                     <span className="font-bold text-gray-900 lg:text-xl text-sm">
                         ₹{formatCurrency(Number(product.base_price))}
                     </span>
@@ -339,11 +369,22 @@ function ProductCard({ product, isMobile, idx }: { product: Product; isMobile: b
                             </span>
                         </div>
                     )}
+                    {
+                        product.variants[0].inventory.stock_quantity !== 0 &&
+                        product.variants[0].inventory.stock_quantity <= STOCK_WARNING_THRESHOLD && (
+                            <div className=" text-xs font-bold text-red-500 bg-red-100 px-2 py-1 rounded-lg lg:text-center md:text-center text-nowrap">Last {product.variants[0].inventory.stock_quantity} items left</div>
+                        )
+
+                    }
                 </div>
                 {!isMobile && variantId && (
-                    <div className="flex gap-2 mt-2 justify-between items-center">
+                    <div className="flex gap-2 mt-2 justify-between  items-stretch">
                         <AddToCart productVariantId={variantId} styles="w-full" />
-                        <BuyBtn id={variantId} mode={BuyBtnMode.QUICK_BUY} styles="px-6" />
+                        {
+                            product.variants[0].inventory.stock_quantity <= 0 ? (
+                                <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-lg w-full text-center flex justify-center items-center">Out of Stock</span>
+                            )
+                                : <BuyBtn id={variantId} mode={BuyBtnMode.QUICK_BUY} styles="px-6" />}
                     </div>
                 )}
             </div>

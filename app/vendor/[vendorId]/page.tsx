@@ -119,10 +119,10 @@ export default function DashboardPage() {
     const [recentOrders, setRecentOrders] = useState<OrderType[]>([]);
     const [loadingRecentOrders, setLoadingRecentOrders] = useState(false);
     const [loadingData, setLoadingData] = useState(true);
-     const [totalPages, setTotalPages] = useState(1);
-  const [itemsPerPage, setItemPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const offset = (currentPage - 1) * itemsPerPage;
+    const [totalPages, setTotalPages] = useState(1);
+    const [itemsPerPage, setItemPerPage] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
+    const offset = (currentPage - 1) * itemsPerPage;
     const [totalRecentOrders, setTotalRecentOrders] = useState(0);
     const [totalRevenue, setTotalRevenue] = useState(0);
     const [pendingOrders, setPendingOrders] = useState(0)
@@ -133,16 +133,16 @@ export default function DashboardPage() {
     const [chartData, setChartData] = useState([]);
     const [revenueGrowth, setRevenueGrowth] = useState(0)
     const router = useRouter()
-        const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+    const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
     const [isDownloading, setIsDownloading] = useState(false);
 
     const token = authToken();
-// Granular Loading States
+    // Granular Loading States
     const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
     const [isLoadingChart, setIsLoadingChart] = useState(true);
     const [isLoadingProducts, setIsLoadingProducts] = useState(true);
     const [isLoadingRecentOrders, setIsLoadingRecentOrders] = useState(true);
-    const loadData = async (token:string) => {
+    const loadData = async (token: string) => {
         setLoadingRecentOrders(true);
         await fetchVendorOrderList(offset, itemsPerPage, token, OrderStatusEnum.PROCESSING)
             .then((res) => {
@@ -154,7 +154,7 @@ export default function DashboardPage() {
             .catch((err) => {
                 console.error("Error fetching vendor orders list:", err);
             });
-       setIsLoadingMetrics(true);
+        setIsLoadingMetrics(true);
         Promise.all([
             fetchVendorPendingOrders(token),
             fetchVendorActiveProducts(token),
@@ -181,12 +181,12 @@ export default function DashboardPage() {
             setIsLoadingProducts(false);
         }).catch(console.error);
     };
-useEffect(() => {
-    if (!token) {
-        redirect("/auth/vendorLogin")
-    }
-    loadData(token);
-}, []);
+    useEffect(() => {
+        if (!token) {
+            redirect("/auth/vendorLogin")
+        }
+        loadData(token);
+    }, []);
     const handleOrderFilter = async (orderStatus: OrderStatusType) => {
         if (token) {
 
@@ -201,8 +201,8 @@ useEffect(() => {
         }
     }
 
-const toggleOrderSelection = (orderId: string) => {
-        setSelectedOrders(prev => 
+    const toggleOrderSelection = (orderId: string) => {
+        setSelectedOrders(prev =>
             prev.includes(orderId) ? prev.filter(id => id !== orderId) : [...prev, orderId]
         );
     };
@@ -215,15 +215,15 @@ const toggleOrderSelection = (orderId: string) => {
         }
     };
 
-  // --- THE DOWNLOAD LOOP ---
+    // --- THE DOWNLOAD LOOP ---
     const handleBulkDownload = async () => {
         if (selectedOrders.length === 0) return;
         setIsDownloading(true);
-        
+
         try {
             // 1. Get the Cloudinary URLs from Backend
             const res = await fetchBulkInvoiceUrls(selectedOrders, token as string);
-            console.log("Bulk Invoice URLs:", res);            const invoices = res.data;
+            console.log("Bulk Invoice URLs:", res); const invoices = res.data;
 
             if (!invoices || invoices.length === 0) {
                 alert("No generated invoices found for these orders yet.");
@@ -237,19 +237,19 @@ const toggleOrderSelection = (orderId: string) => {
                     const response = await fetch(invoice.invoice_url);
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
-                    
+
                     const a = document.createElement('a');
                     a.href = url;
                     a.download = `Invoice_${invoice.invoice_number}.pdf`;
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
-                    
+
                     // Small delay to prevent browser from blocking multiple rapid downloads
-                    await new Promise(resolve => setTimeout(resolve, 300)); 
+                    await new Promise(resolve => setTimeout(resolve, 300));
                 }
             }
-            
+
             setSelectedOrders([]); // Clear selection on success
         } catch (error) {
             console.error("Error downloading invoices", error);
@@ -261,311 +261,311 @@ const toggleOrderSelection = (orderId: string) => {
     return (
         <>
             {/* <Navbar title="Dashboard" /> */}
-            <main className="px-1">
-<span id='analytics-report-container'>
-                {/* Stats Cards */}
-{isLoadingMetrics ? (
-    <MetricsSkeleton count={3} style='my-6 flex justify-between ' subStyle='bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow' />) :
- (
-     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
-                    {/* Total Revenue */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
-                        <div className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Revenue</span>
-                            <span className="text-2xl font-bold text-gray-800 mt-1">
-                                ₹{formatCurrency(totalRevenue)}
-                            </span>
-                            <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 mt-1">
-                                <TrendingUp size={13} />
-                                {revenueGrowth}% vs last month
-                            </span>
-                        </div>
-                        {/* <span className="bg-emerald-50 p-3 rounded-xl">
+            <main className="px-2">
+                <span id='analytics-report-container'>
+                    {/* Stats Cards */}
+                    {isLoadingMetrics ? (
+                        <MetricsSkeleton count={3} style='my-6 flex justify-between ' subStyle='bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow' />) :
+                        (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+                                {/* Total Revenue */}
+                                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Revenue</span>
+                                        <span className="text-2xl font-bold text-gray-800 mt-1">
+                                            ₹{formatCurrency(totalRevenue)}
+                                        </span>
+                                        <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 mt-1">
+                                            <TrendingUp size={13} />
+                                            {revenueGrowth}% vs last month
+                                        </span>
+                                    </div>
+                                    {/* <span className="bg-emerald-50 p-3 rounded-xl">
                             <TrendingUp size={20} className="text-emerald-500" />
                         </span> */}
-                    </div>
+                                </div>
 
-                    {/* Pending Orders */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
-                        <div className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pending Orders</span>
-                            <span className="text-2xl font-bold text-gray-800 mt-1">
-                                {formatNumber(pendingOrders)}
-                            </span>
-                            <span className="text-xs text-amber-600 font-medium mt-1">Requires immediate shipping</span>
-                        </div>
-                        <span className="bg-amber-50 p-3 rounded-xl">
-                            <Clock size={20} className="text-amber-500" />
-                        </span>
-                    </div>
+                                {/* Pending Orders */}
+                                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pending Orders</span>
+                                        <span className="text-2xl font-bold text-gray-800 mt-1">
+                                            {formatNumber(pendingOrders)}
+                                        </span>
+                                        <span className="text-xs text-amber-600 font-medium mt-1">Requires immediate shipping</span>
+                                    </div>
+                                    <span className="bg-amber-50 p-3 rounded-xl">
+                                        <Clock size={20} className="text-amber-500" />
+                                    </span>
+                                </div>
 
-                    {/* Active Products */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
-                        <div className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Products</span>
-                            <span className="text-2xl font-bold text-gray-800 mt-1">
-                                {formatNumber(activeProducts)}
-                            </span>
-                            <span className="text-xs text-red-500 font-medium mt-1">
-                                {lowStock} products low on stock
-                            </span>
+                                {/* Active Products */}
+                                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Products</span>
+                                        <span className="text-2xl font-bold text-gray-800 mt-1">
+                                            {formatNumber(activeProducts)}
+                                        </span>
+                                        <span className="text-xs text-red-500 font-medium mt-1">
+                                            {lowStock} products low on stock
+                                        </span>
+                                    </div>
+                                    <span className="bg-blue-50 p-3 rounded-xl">
+                                        <Package size={20} className="text-blue-500" />
+                                    </span>
+                                </div>
+                            </div>
+                        )
+                    }
+                    {/* Revenue Chart Section */}
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 my-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h2 className="font-bold text-lg text-gray-800">Revenue Overview</h2>
+                                <p className="text-xs text-gray-500">Last 30 Days</p>
+                            </div>
                         </div>
-                        <span className="bg-blue-50 p-3 rounded-xl">
-                            <Package size={20} className="text-blue-500" />
-                        </span>
+                        {isLoadingChart ?
+                            <Skeleton className="h-64 w-full" />
+                            :
+                            chartData && chartData.length > 0 ? (
+                                <div className="h-[300px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                                            <XAxis
+                                                dataKey="date"
+                                                axisLine={false}
+                                                tickLine={false}
+                                                tick={{ fontSize: 12, fill: '#9ca3af' }}
+                                                dy={10}
+                                            />
+                                            <YAxis
+                                                axisLine={false}
+                                                tickLine={false}
+                                                tick={{ fontSize: 12, fill: '#9ca3af' }}
+                                                tickFormatter={(value) => `₹${value}`}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                formatter={(value: number) => [`₹${value}`, 'Revenue']}
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="revenue"
+                                                stroke="#8b5cf6"
+                                                strokeWidth={3}
+                                                fillOpacity={1}
+                                                fill="url(#colorRevenue)"
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                                    Not enough data to display chart.
+                                </div>
+                            )}
+
                     </div>
-                </div>
- )
-}
-{/* Revenue Chart Section */}
-<div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 my-6">
-    <div className="flex justify-between items-center mb-6">
-        <div>
-            <h2 className="font-bold text-lg text-gray-800">Revenue Overview</h2>
-            <p className="text-xs text-gray-500">Last 30 Days</p>
-        </div>
-    </div>
-        {isLoadingChart? 
-            <Skeleton className="h-64 w-full" />
-                 : 
-  chartData && chartData.length > 0 ? (     
-<div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                        </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                    <XAxis 
-                        dataKey="date" 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{fontSize: 12, fill: '#9ca3af'}} 
-                        dy={10}
-                    />
-                    <YAxis 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{fontSize: 12, fill: '#9ca3af'}}
-                        tickFormatter={(value) => `₹${value}`}
-                    />
-                    <Tooltip 
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        formatter={(value: number) => [`₹${value}`, 'Revenue']}
-                    />
-                    <Area 
-                        type="monotone" 
-                        dataKey="revenue" 
-                        stroke="#8b5cf6" 
-                        strokeWidth={3}
-                        fillOpacity={1} 
-                        fill="url(#colorRevenue)" 
-                    />
-                </AreaChart>
-            </ResponsiveContainer>
-                </div>
-        ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                Not enough data to display chart.
-            </div>
-        )}
-        
-</div>
-{/* Top Selling Products Section */}
-<div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 my-6">
-    <div className="flex justify-between items-center mb-6">
-        <h2 className="font-bold text-lg text-gray-800">Top Performing Products</h2>
-    </div>
-    
-    <div className="space-y-4">
-        { isLoadingProducts ? (<div>
-        {Array.from({ length: 2 }).map((_, idx) => (
-            <div key={idx} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
-                <div className="flex items-center gap-4">
-                    <Skeleton className="h-10 w-10 bg-purple-100 text-purple-600 rounded-full" />
-                    <div className="space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-20" />
-                    </div>
-                </div>
-                <div className="text-right space-y-2">
-                    <Skeleton className="h-6 w-24" />
-                    <Skeleton className="h-3 w-20" />
-                </div>
-                </div>
-        ))
-            
-        }         
-        </div>
-        ) : 
-        topProducts && topProducts.length > 0 ? topProducts.map((product, idx) => (
-            <div key={product.variant_id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">
-                        #{idx + 1}
-                    </div>
-                    <div>
-                        <p className="font-semibold text-gray-800 text-sm">{product.variant_name}</p>
-                        <p className="text-xs text-gray-500">SKU: {product.sku}</p>
-                    </div>
-                </div>
-                <div className="text-right">
-                    <p className="font-bold text-gray-800">₹{product.revenue.toLocaleString()}</p>
-                    <p className="text-xs text-emerald-600 font-medium">{product.total_sold} units sold</p>
-                </div>
-            </div>
-        )) : (
-            <div className="text-center py-6 text-gray-400 text-sm">
-                No sales data available yet.
-            </div>
-        )}
-    </div>
-</div>
-                {/* Recent Orders Table */}
-                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden my-6">
-                    <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
-                        <h2 className="font-bold text-lg text-gray-800">Recent Orders</h2>
-                        <span className='flex gap-4 items-center justify-between'>
-                                    
-                    {selectedOrders.length > 0 && (
-                        <button 
-                            onClick={handleBulkDownload}
-                            disabled={isDownloading}
-                            className="flex items-center gap-2 font-semibold text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm disabled:opacity-50"
-                        >
-                            <Printer size={16} />
-                            {isDownloading ? "Downloading..." : `Print Invoices (${selectedOrders.length})`}
-                        </button>
-                    )}
-                            <select name="" className='text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors' id="" onChange={(e) => handleOrderFilter(e.target.value as OrderStatusType)}>
-                                <option value="">Select Status</option>
-                                {
-                                    Object.values(OrderStatusEnum).map((status) => (
-                                        <option key={status} value={status}>{status}</option>
-                                    ))
+                    {/* Top Selling Products Section */}
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 my-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="font-bold text-lg text-gray-800">Top Performing Products</h2>
+                        </div>
+
+                        <div className="space-y-4">
+                            {isLoadingProducts ? (<div>
+                                {Array.from({ length: 2 }).map((_, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
+                                        <div className="flex items-center gap-4">
+                                            <Skeleton className="h-10 w-10 bg-purple-100 text-purple-600 rounded-full" />
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-32" />
+                                                <Skeleton className="h-3 w-20" />
+                                            </div>
+                                        </div>
+                                        <div className="text-right space-y-2">
+                                            <Skeleton className="h-6 w-24" />
+                                            <Skeleton className="h-3 w-20" />
+                                        </div>
+                                    </div>
+                                ))
+
                                 }
-                            </select>
-                            <button
-                                onClick={() => router.push(`/vendor/${vendorId}/orders`)}
-                                className="flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                            >
-                                View All <ArrowUpRight size={15} />
-                            </button>
-                        </span>
+                            </div>
+                            ) :
+                                topProducts && topProducts.length > 0 ? topProducts.map((product, idx) => (
+                                    <div key={product.variant_id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-10 w-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">
+                                                #{idx + 1}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-gray-800 text-sm">{product.variant_name}</p>
+                                                <p className="text-xs text-gray-500">SKU: {product.sku}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-bold text-gray-800">₹{product.revenue.toLocaleString()}</p>
+                                            <p className="text-xs text-emerald-600 font-medium">{product.total_sold} units sold</p>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="text-center py-6 text-gray-400 text-sm">
+                                        No sales data available yet.
+                                    </div>
+                                )}
+                        </div>
                     </div>
+                    {/* Recent Orders Table */}
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden my-6">
+                        <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
+                            <h2 className="font-bold text-lg text-gray-800">Recent Orders</h2>
+                            <span className='flex gap-4 items-center justify-between'>
 
-                    <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
-                        <table className="w-full table-auto min-w-[900px] border-collapse">
-                            <thead>
-                                <tr className="bg-gray-50 border-b border-gray-200 text-left">
-                                    <th className="p-4 w-10">
-                                        <input 
-                                    type="checkbox" 
-                                    className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer" 
-                                    checked={recentOrders?.length > 0 && selectedOrders.length === recentOrders.length}
-                                    onChange={toggleAllOrders}
-                                />
-                                    </th>
-                                    {orderTableHeader.map((header) => (
-                                        <th key={header} className="p-4 text-xs Rent-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{header}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {loadingRecentOrders ? (
-                                    
-                                    <TableRowSkeleton columns={9} rows={5}/> 
-                                ) : recentOrders && recentOrders.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={10} className="py-16 text-center text-gray-400 text-sm">
-                                            <Package size={36} className="mx-auto mb-3 opacity-30" />
-                                            No orders found.
-                                        </td>
+                                {selectedOrders.length > 0 && (
+                                    <button
+                                        onClick={handleBulkDownload}
+                                        disabled={isDownloading}
+                                        className="flex items-center gap-2 font-semibold text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm disabled:opacity-50"
+                                    >
+                                        <Printer size={16} />
+                                        {isDownloading ? "Downloading..." : `Print Invoices (${selectedOrders.length})`}
+                                    </button>
+                                )}
+                                <select name="" className='text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors' id="" onChange={(e) => handleOrderFilter(e.target.value as OrderStatusType)}>
+                                    <option value="">Select Status</option>
+                                    {
+                                        Object.values(OrderStatusEnum).map((status) => (
+                                            <option key={status} value={status}>{status}</option>
+                                        ))
+                                    }
+                                </select>
+                                <button
+                                    onClick={() => router.push(`/vendor/${vendorId}/orders`)}
+                                    className="flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                                >
+                                    View All <ArrowUpRight size={15} />
+                                </button>
+                            </span>
+                        </div>
+
+                        <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
+                            <table className="w-full table-auto min-w-[900px] border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50 border-b border-gray-200 text-left">
+                                        <th className="p-4 w-10">
+                                            <input
+                                                type="checkbox"
+                                                className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                                                checked={recentOrders?.length > 0 && selectedOrders.length === recentOrders.length}
+                                                onChange={toggleAllOrders}
+                                            />
+                                        </th>
+                                        {orderTableHeader.map((header) => (
+                                            <th key={header} className="p-4 text-xs Rent-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{header}</th>
+                                        ))}
                                     </tr>
-                                ) : (
-                                    Array.isArray(recentOrders) && recentOrders.map((item) => (
-                                        <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
-                                            <td className="p-4">
-                                              <input 
-                                        type="checkbox" 
-                                        className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer" 
-                                        checked={selectedOrders.includes(item.id)}
-                                        onChange={() => toggleOrderSelection(item.id)}
-                                    />
-                                            </td>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {loadingRecentOrders ? (
 
-                                            {/* ORDER ID */}
-                                            <td className="p-4">
-                                                <span className="font-mono text-sm font-semibold text-gray-800">
-                                                    #{item.id.split("-")[0].toUpperCase()}
-                                                </span>
-                                            </td>
-
-                                            {/* TOTAL AMOUNT */}
-                                            <td className="p-4">
-                                                <span className="font-semibold text-gray-800">
-                                                    ₹{Number(item.total_amount).toLocaleString()}
-                                                </span>
-                                            </td>
-
-                                            {/* QTY */}
-                                            <td className="p-4 text-gray-600 text-sm">
-                                                {item.items?.reduce((total, cur) => total + cur.quantity, 0) ?? 0}
-                                            </td>
-
-                                            {/* STATUS */}
-                                            <td className="p-4">
-                                                {getStatusBadges(
-                                                    item.items.map(x => x.return_request ? x.return_request.type : x.order_status)
-                                                )}
-                                            </td>
-
-                                            {/* CUSTOMER */}
-                                            <td className="p-4 text-sm text-gray-700 font-medium whitespace-nowrap">
-                                                {item.address?.name || "N/A"}
-                                            </td>
-
-                                            {/* PAYMENT */}
-                                            <td className="p-4">
-                                                {getPaymentBadge(item.payment?.payment_method, item.payment?.payment_status)}
-                                            </td>
-
-                                            {/* LOCATION */}
-                                            <td className="p-4 text-sm text-gray-500 whitespace-nowrap max-w-[200px] truncate">
-                                                {[item.address?.city, item.address?.state, item.address?.country, item.address?.postal_code]
-                                                    .filter(Boolean)
-                                                    .join(", ") || "N/A"}
-                                            </td>
-
-                                            {/* DATE */}
-                                            <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
-                                                {new Date(item.created_at).toLocaleDateString("en-GB")}
-                                            </td>
-
-                                            {/* ACTIONS */}
-                                            <td className="p-4">
-                                                <Link
-                                                    href={`/vendor/${vendorId}/orders/${item.id}`}
-                                                    className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
-                                                >
-                                                    View →
-                                                </Link>
+                                        <TableRowSkeleton columns={9} rows={5} />
+                                    ) :  Array.isArray(recentOrders) && recentOrders.length <= 0 ? (
+                                        <tr>
+                                            <td colSpan={10} className="py-16 text-center text-gray-400 text-sm">
+                                                <Package size={36} className="mx-auto mb-3 opacity-30" />
+                                                No orders found.
                                             </td>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                    ) : (
+                                        Array.isArray(recentOrders) && recentOrders.map((item) => (
+                                            <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
+                                                <td className="p-4">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                                                        checked={selectedOrders.includes(item.id)}
+                                                        onChange={() => toggleOrderSelection(item.id)}
+                                                    />
+                                                </td>
 
-                {/* Pagination */}
-                <span className="flex justify-end mt-2 mb-6">
-                    <Pagination setCount={setCurrentPage} count={currentPage} totalPages={totalPages} style="relative right-0 w-54" />
-                </span>
+                                                {/* ORDER ID */}
+                                                <td className="p-4">
+                                                    <span className="font-mono text-sm font-semibold text-gray-800">
+                                                        #{item.id.split("-")[0].toUpperCase()}
+                                                    </span>
+                                                </td>
+
+                                                {/* TOTAL AMOUNT */}
+                                                <td className="p-4">
+                                                    <span className="font-semibold text-gray-800">
+                                                        ₹{Number(item.total_amount).toLocaleString()}
+                                                    </span>
+                                                </td>
+
+                                                {/* QTY */}
+                                                <td className="p-4 text-gray-600 text-sm">
+                                                    {item.items?.reduce((total, cur) => total + cur.quantity, 0) ?? 0}
+                                                </td>
+
+                                                {/* STATUS */}
+                                                <td className="p-4">
+                                                    {getStatusBadges(
+                                                        item.items.map(x => x.return_request ? x.return_request.type : x.order_status)
+                                                    )}
+                                                </td>
+
+                                                {/* CUSTOMER */}
+                                                <td className="p-4 text-sm text-gray-700 font-medium whitespace-nowrap">
+                                                    {item.address?.name || "N/A"}
+                                                </td>
+
+                                                {/* PAYMENT */}
+                                                <td className="p-4">
+                                                    {getPaymentBadge(item.payment?.payment_method, item.payment?.payment_status)}
+                                                </td>
+
+                                                {/* LOCATION */}
+                                                <td className="p-4 text-sm text-gray-500 whitespace-nowrap max-w-[200px] truncate">
+                                                    {[item.address?.city, item.address?.state, item.address?.country, item.address?.postal_code]
+                                                        .filter(Boolean)
+                                                        .join(", ") || "N/A"}
+                                                </td>
+
+                                                {/* DATE */}
+                                                <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
+                                                    {new Date(item.created_at).toLocaleDateString("en-GB")}
+                                                </td>
+
+                                                {/* ACTIONS */}
+                                                <td className="p-4">
+                                                    <Link
+                                                        href={`/vendor/${vendorId}/orders/${item.id}`}
+                                                        className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                                                    >
+                                                        View →
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Pagination */}
+                    {Array.isArray(recentOrders) && recentOrders.length > 0 && <span className="flex justify-end mt-2 mb-6">
+                        <Pagination setCount={setCurrentPage} count={currentPage} totalPages={totalPages} style="relative right-0 w-54" />
+                    </span>}
                 </span>
             </main>
         </>

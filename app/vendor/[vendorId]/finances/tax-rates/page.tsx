@@ -7,37 +7,41 @@ import { Calendar } from "@/components/ui/calendar";
 import { TableRowSkeleton } from "@/components/common/skeletons";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
-import { fetchTaxRates } from "@/utils/vendorApiClient";
+import { fetchTaxSlabs } from "@/utils/vendorApiClient";
 
-interface TaxRateType {
-    id: string;
-    tax_rate_name: string;
-    state: string;
-    tax_rate_value: string;
-    is_exempt: boolean;
-    effective_from: string;
-    effective_to: string;
-    created_at: string;
+export interface TaxSlab {
+  id: string; // UUID
+  tax_profile_id: string; // UUID reference to tax profile
+  slab_name: string; // e.g., "GST 18%— Electronics"
+  tax_name: string; // e.g., "GST 18%"
+  tax_code: string; // e.g., "GST-IN-18"
+  tax_scope: "Intra" | "Inter" | "Both"; // scope of applicability
+  total_rate: string; // percentage as string, e.g., "18.00"
+  is_exempt: boolean; // exemption flag
+  effective_from: string; // YYYY-MM-DD
+  effective_to: string; // YYYY-MM-DD
+  created_at: string; // ISO timestamp
 }
 
-export const taxRateTableHeader = [
+
+export const taxSlabTableHeader = [
     "Rate Name",
     "State / Region",
     "Tax Value (%)",
     "Exemption Status",
     "Effective From",
     "Effective To",
-    "Actions"
+    // "Actions"
 ]
 
-export default function TaxRatesPage() {
+export default function TaxSlabsPage() {
     const params = useParams();
     const vendorId = params.vendorId as string;
 
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [isOpen, setIsOpen] = useState(false);
     const [sortBy, setSortBy] = useState<string>("desc");
-    const [taxRates, setTaxRates] = useState<TaxRateType[]>([]);
+    const [taxSlabs, setTaxSlabs] = useState<TaxSlab[]>([]);
     const [loading, setLoading] = useState(true);
 
     const handleDateChange = (selectedDate: Date | undefined) => {
@@ -52,18 +56,19 @@ export default function TaxRatesPage() {
             redirect("/auth/vendorLogin");
         }
         
-        const getTaxRates = async () => {
+        const getTaxSlabs = async () => {
             setLoading(true);
             try {
-                const res = await fetchTaxRates(sortBy, date, token);
-                setTaxRates(res.data|| []);
+                const res = await fetchTaxSlabs(sortBy, token); 
+                console.log("Fetched Tax Slabs:", res);
+                setTaxSlabs(res.data|| []);
             } catch (err) {
                 console.log("Error fetching Tax Rates:", err);
             } finally {
                 setLoading(false);
             }
         };
-        getTaxRates();
+        getTaxSlabs();
     }, [sortBy, date, token]);
 
         const handleRoute=(id:string|null) => {
@@ -80,9 +85,9 @@ export default function TaxRatesPage() {
                 <div className="flex items-center gap-2 text-gray-700">
                     <Percent size={22} className="text-blue-500" />
                     <h1 className="text-2xl font-bold text-gray-800">Tax Types & Rates</h1>
-                    {taxRates && taxRates.length > 0 && (
+                    {taxSlabs && taxSlabs.length > 0 && (
                         <span className="ml-2 bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
-                            {taxRates.length}
+                            {taxSlabs.length}
                         </span>
                     )}
                 </div>
@@ -116,7 +121,7 @@ export default function TaxRatesPage() {
                         <option value="asc">Lowest Rate First</option>
                     </select>
 
-                    {isOpen ? (
+                    {/* {isOpen ? (
                         <button
                             onClick={() => setIsOpen(false)}
                             className="flex items-center gap-2 text-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
@@ -144,7 +149,7 @@ export default function TaxRatesPage() {
                                 captionLayout="dropdown"
                             />
                         </div>
-                    )}
+                    )} */}
                 </span>
             </div>
 
@@ -156,7 +161,7 @@ export default function TaxRatesPage() {
                             <th className="p-4 w-10">
                                 <input type="checkbox" className="rounded" />
                             </th>
-                            {taxRateTableHeader.map((header) => (
+                            {taxSlabTableHeader.map((header) => (
                                 <th key={header} className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{header}</th>
                             ))}
                         </tr>
@@ -164,7 +169,7 @@ export default function TaxRatesPage() {
                     <tbody className="divide-y divide-gray-100">
                         {loading ? (
                             <TableRowSkeleton columns={7} rows={5} />
-                        ) : taxRates && taxRates?.length === 0 ? (
+                        ) : taxSlabs && taxSlabs?.length === 0 ? (
                             <tr>
                                 <td colSpan={10} className="py-16 text-center text-gray-400 text-sm">
                                     <Percent size={36} className="mx-auto mb-3 opacity-30 text-blue-400" />
@@ -172,7 +177,7 @@ export default function TaxRatesPage() {
                                 </td>
                             </tr>
                         ) : (
-                            taxRates && taxRates?.map((item) => (
+                            taxSlabs && taxSlabs?.map((item) => (
                                 <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
                                     <td className="p-4">
                                         <input type="checkbox" className="rounded border-gray-300 text-blue-500 focus:ring-blue-500" />
@@ -180,17 +185,17 @@ export default function TaxRatesPage() {
 
                                     <td className="p-4">
                                         <span className="font-semibold text-gray-800">
-                                            {item.tax_rate_name}
+                                            {item.tax_name}
                                         </span>
                                     </td>
 
                                     <td className="p-4 text-gray-600 text-sm font-medium">
-                                        {item.state}
+                                        {item.tax_scope}
                                     </td>
 
                                     <td className="p-4">
                                         <span className="font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded-lg">
-                                            {Number(item.tax_rate_value).toFixed(2)}%
+                                            {Number(item.total_rate).toFixed(2)}%
                                         </span>
                                     </td>
                                     
@@ -209,12 +214,12 @@ export default function TaxRatesPage() {
                                     <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
                                         {item.effective_to === "2099-12-31" || !item.effective_to ? "Ongoing" : new Date(item.effective_to).toLocaleDateString("en-GB")}
                                     </td>
-
+{/* 
                                     <td className="p-4">
                                         <button className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
                                             View Rules →
                                         </button>
-                                    </td>
+                                    </td> */}
                                 </tr>
                             ))
                         )}

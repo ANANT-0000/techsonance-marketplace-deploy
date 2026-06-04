@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { FOOTER_BOTTOM_TEXT, FOOTER_CONTENT } from "@/constants/customer";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
+import { useFooterData } from "@/hooks/useFooterData";
 
 export function Footer({ styles }: { styles?: string }) {
     const path = usePathname();
+    const { footerContent, footerBottomText } = useFooterData();
 
     // Skip footer for admin/vendor routes
     if (path.startsWith('/admin') || path.startsWith('/vendor')) {
@@ -47,7 +49,7 @@ export function Footer({ styles }: { styles?: string }) {
                     viewport={{ once: true }}
                     className="w-full flex flex-col sm:flex-row justify-between lg:gap-8 gap-2 lg:mb-12 mb-2 "
                 >
-                    {FOOTER_CONTENT.map((section, index) => (
+                    {footerContent.map((section, index) => (
                         <motion.ul
                             key={index}
                             variants={columnVariants}
@@ -101,7 +103,7 @@ export function Footer({ styles }: { styles?: string }) {
                     viewport={{ once: true }}
                     className="font-light text-center text-gray-100 text-sm  leading-relaxed lg:mb-0 mb-12 "
                 >
-                    {FOOTER_BOTTOM_TEXT}
+                    {footerBottomText}
                 </motion.p>
             </div>
         </footer>

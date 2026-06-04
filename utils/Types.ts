@@ -1,4 +1,4 @@
-﻿
+
 import { VendorRegisterSchema } from "./validation";
 export enum UserStatusEnum {
   ACTIVE = 'active',
@@ -148,7 +148,7 @@ export enum ChangelogAction {
   EXPIRED = 'expired',
   DELETED = 'deleted',
 }
-export type PercentageOffConfig = {
+export type PercentageConfig = {
   value: number; // e.g. 20 (= 20%)
   cap?: number; // max discount in ₹; undefined = no cap
 };
@@ -181,7 +181,7 @@ export type BundleDealConfig = {
 };
 
 export type DiscountConfig =
-  | PercentageOffConfig
+  | PercentageConfig
   | FixedAmountConfig
   | BuyXGetYConfig
   | FreeShippingConfig
@@ -242,7 +242,7 @@ export interface RuleConfig_DateRange      { days_of_week: number[] }  // 0=Sun 
 export interface RuleConfig_MaxUsesPerUser { max: number }
  
 /** Discriminated union — rule_type narrows the exact rule_config shape */
-export type PromotionRuleDto =
+export type PromotionRule =
   | { rule_type: PromotionRuleType.MIN_CART_VALUE;    rule_config: RuleConfig_MinCartValue;    negate?: boolean }
   | { rule_type: PromotionRuleType.MIN_QTY;           rule_config: RuleConfig_MinQty;          negate?: boolean }
   | { rule_type: PromotionRuleType.CUSTOMER_SEGMENT;  rule_config: RuleConfig_CustomerSegment; negate?: boolean }
@@ -277,12 +277,13 @@ export interface VendorUser {
   // user_status: 'active' | 'suspended' | 'pending';
   first_name: string;
   last_name: string;
-  country_code: string
-  phone_number: string
-  store_name: string
-  category: string
-  vendor_status: string
+  country_code: string;
+  phone_number: string;
+  store_name: string;
+  category: string;
+  vendor_status: string;
   joined_at: Date;
+  password_change_required?: boolean;
 }
 
 export interface User {
@@ -299,6 +300,7 @@ export interface User {
   updated_at: Date;
   company_id: string | null;
   role_id: string | null;
+  password_change_required?: boolean;
 }
 // Supporting Interfaces based on your schema
 // used in multiple places

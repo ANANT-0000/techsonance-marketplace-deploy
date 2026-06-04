@@ -6,7 +6,7 @@ export default function VendorSettingsLayout({ children }: { children: React.Rea
     const { vendorId } = useParams<{ vendorId: string }>();
     return (
         <>
-           <main className='flex gap-6'>
+               <main className='flex w-full'>
             <InnerSideBar vendorId={vendorId } selectedMenu="Settings" />
             {children}
         </main>

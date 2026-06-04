@@ -1,7 +1,7 @@
 'use client';
-import { ContactList, ContactPageContent } from "@/constants/customer";
 import { ContactFormData, contactSchema } from "@/utils/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useContactData } from "@/hooks/useContactData";
 
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { useState } from "react";
@@ -35,6 +35,7 @@ export const CONTACT_FORM_FIELDS = [
     }
 ]
 export default function Contact() {
+    const { heroContent, contactList } = useContactData();
     const { register, reset, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(contactSchema),
         mode: "onChange",
@@ -69,10 +70,10 @@ export default function Contact() {
                     Copied to clipboard!
                 </div>}
             </span>
-            <section className={`flex flex-col gap-4 items-center justify-center text-center py-20 relative bg-cover bg-center bg-no-repeat`} style={{ backgroundImage: `url(${ContactPageContent.heroImg})` }}>
-
-                <h2 className='text-2xl font-medium text-primary '>{ContactPageContent.heroTitle}</h2>
-                <h1 className="text-4xl font-bold text-primary">{ContactPageContent.heroDesc}</h1>
+            <section className={`flex flex-col gap-4 items-center justify-center text-center py-20 relative bg-cover bg-center bg-no-repeat`} style={{ backgroundImage: `url(${heroContent?.heroImg || ''})` }}>
+                <div className="absolute inset-0 bg-black/35 z-0" />
+                <h2 className='text-2xl font-medium text-white relative z-10'>{heroContent?.heroTitle}</h2>
+                <h1 className="text-4xl font-bold text-white relative z-10">{heroContent?.heroDesc}</h1>
             </section>
             <section className="w-full mt-6 mb-8 mx-auto  " >
                 <div className="flex  items-start justify-center mx-auto gap-16 flex-wrap   ">
@@ -81,7 +82,7 @@ export default function Contact() {
                         <span className="mt-6 flex flex-col justify-center items-start gap-6 px-6">
 
                             {
-                                ContactList.map(contact => (
+                                contactList?.map((contact: any) => (
                                     <div onClick={() => onclickCopy(contact.description)} className="flex justify-center items-center gap-4 cursor-pointer " key={contact.id} >
                                         <span className="border-2 border-gray-400 rounded-full p-2 ">
                                             <DynamicIcon name={contact.icon as IconName} fallback={() => <p></p>} />

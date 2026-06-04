@@ -8,10 +8,11 @@ interface SearchBarProps {
     value: string;
     onChange: (value: string) => void;
     onSearch: (value: string) => void;
+    onClose?: () => void;
     placeholder?: string;
 }
 
-export function SearchBar({ value, onChange, onSearch, placeholder = 'Search products...' }: SearchBarProps) {
+export function SearchBar({ value, onChange, onSearch, onClose, placeholder = 'Search products...' }: SearchBarProps) {
     const [suggestions, setSuggestions] = useState<{ id: string; name: string }[]>([]);
     const [isFocused, setIsFocused] = useState(false);
     const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
@@ -20,7 +21,7 @@ export function SearchBar({ value, onChange, onSearch, placeholder = 'Search pro
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Fetch suggestions with debounce (P2)
+    // Fetch suggestions with debounce
     const fetchSuggestions = useCallback(async (query: string) => {
         if (query.trim().length < 2) {
             setSuggestions([]);
@@ -28,10 +29,15 @@ export function SearchBar({ value, onChange, onSearch, placeholder = 'Search pro
             return;
         }
         setIsLoadingSuggestions(true);
-        const results = await fetchProductSuggestions(query);
-        setSuggestions(results);
-        setShowSuggestions(results.length > 0);
-        setIsLoadingSuggestions(false);
+        try {
+            const results = await fetchProductSuggestions(query);
+            setSuggestions(results);
+            setShowSuggestions(results.length > 0);
+        } catch (error) {
+            console.error("Failed to fetch suggestions", error);
+        } finally {
+            setIsLoadingSuggestions(false);
+        }
     }, []);
 
     useEffect(() => {
@@ -46,11 +52,23 @@ export function SearchBar({ value, onChange, onSearch, placeholder = 'Search pro
             if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
                 setShowSuggestions(false);
                 setIsFocused(false);
+                if (onClose) onClose();
             }
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
-    }, []);
+    }, [onClose]);
+
+    // Handle Blur (Tabs away or clicks away)
+    const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+        // e.relatedTarget is the element that is receiving focus.
+        // If the new focus is NOT inside our search container, close it.
+        if (containerRef.current && !containerRef.current.contains(e.relatedTarget as Node)) {
+            setShowSuggestions(false);
+            setIsFocused(false);
+            if (onClose) onClose();
+        }
+    };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -59,7 +77,7 @@ export function SearchBar({ value, onChange, onSearch, placeholder = 'Search pro
         }
         if (e.key === 'Escape') {
             setShowSuggestions(false);
-            inputRef.current?.blur();
+            inputRef.current?.blur(); // This triggers handleBlur
         }
     };
 
@@ -73,12 +91,11 @@ export function SearchBar({ value, onChange, onSearch, placeholder = 'Search pro
         onChange('');
         setSuggestions([]);
         setShowSuggestions(false);
-        onSearch('');
         inputRef.current?.focus();
     };
 
     return (
-        <div ref={containerRef} className="relative w-full">
+        <div ref={containerRef} className="relative w-full" onBlur={handleBlur}>
             {/* Input */}
             <div
                 className={`flex items-center gap-2 border-2 rounded-xl px-4 py-2.5 bg-white transition-all duration-200 ${
@@ -96,6 +113,7 @@ export function SearchBar({ value, onChange, onSearch, placeholder = 'Search pro
                         setIsFocused(true);
                         if (suggestions.length > 0) setShowSuggestions(true);
                     }}
+                    autoFocus // Automatically focus input when component mounts
                     placeholder={placeholder}
                     className="flex-1 text-sm text-gray-800 placeholder:text-gray-400 outline-none bg-transparent min-w-0"
                 />
@@ -118,7 +136,7 @@ export function SearchBar({ value, onChange, onSearch, placeholder = 'Search pro
                 )}
             </div>
 
-            {/* Suggestions Dropdown (P2) */}
+            {/* Suggestions Dropdown */}
             <AnimatePresence>
                 {showSuggestions && isFocused && suggestions.length > 0 && (
                     <motion.div
@@ -130,15 +148,14 @@ export function SearchBar({ value, onChange, onSearch, placeholder = 'Search pro
                         className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden"
                     >
                         <ul className="py-1.5 max-h-64 overflow-y-auto">
-                            {suggestions.map((s, i) => (
+                            {suggestions.map((s) => (
                                 <li key={s.id}>
                                     <button
-                                        onMouseDown={(e) => e.preventDefault()} // prevent blur before click
+                                        onMouseDown={(e) => e.preventDefault()} // Prevent input blur before click registers
                                         onClick={() => handleSuggestionClick(s.name)}
                                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors text-left"
                                     >
                                         <Search size={13} className="text-gray-300 flex-shrink-0" />
-                                        {/* Highlight matching portion */}
                                         <SuggestionText text={s.name} query={value} />
                                     </button>
                                 </li>
@@ -151,7 +168,7 @@ export function SearchBar({ value, onChange, onSearch, placeholder = 'Search pro
     );
 }
 
-// Highlight the matching part of the suggestion text
+
 function SuggestionText({ text, query }: { text: string; query: string }) {
     if (!query) return <span>{text}</span>;
     const idx = text.toLowerCase().indexOf(query.toLowerCase());

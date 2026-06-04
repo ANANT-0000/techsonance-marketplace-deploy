@@ -68,6 +68,7 @@ export const VENDOR_NAV_LINKS: NavLinkType[] = [
   { Analytics:        "analytics",       icon: "chart-column-stacked",section: "Main"              },
   { Finances:         "finances",        icon: "hand-coins",          section: "Finance & Growth"  },
   { Marketing:        "marketing",       icon: "megaphone",           section: "Finance & Growth"  },
+  { "CMS Manage":     "cms",             icon: "file-code",           section: "Finance & Growth"  },
   { "Config Documents":"configDocuments",icon: "file-text",           section: "Documents"         },
   { Settings:         "settings",        icon: "settings",            divider: true                },
 ];
@@ -307,6 +308,19 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
     //   ]
     // }
   ]
+},
+{
+  menu: "CMS Manage",
+  sections: [
+    {
+      section: "Storefront Pages",
+      list: [
+        { title: "Home Page", path: `/vendor/${vendorId}/cms?page=home`, icon: "home" },
+        { title: "Navbar Links", path: `/vendor/${vendorId}/cms?page=navbar`, icon: "link-2" },
+        { title: "Footer Config", path: `/vendor/${vendorId}/cms?page=footer`, icon: "layout" },
+      ],
+    },
+  ],
 }
 
 ].filter(section => section.menu.toLowerCase() === selectedMenu.toLowerCase());

@@ -10,9 +10,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, ArrowRight, AlertCircle, Check, X, Clock, Store, TrendingUp, Users } from "lucide-react";
 import { loginEnd, loginFailure, loginStart, loginSuccess } from "@/lib/features/auth/authSlice";
+import { authToken } from "@/utils/authToken";
+import { VendorUser } from "@/utils/Types";
 
 interface LoginFormData { email: string; password: string }
-type UiState = 'idle' | 'loading' | 'success' | 'error';
+type UiState = 'idle' | 'loading' | 'success' | 'error' | 'prompt_change_password';
 
 const STEPS = [
   'Verifying business credentials',
@@ -50,38 +52,38 @@ type StepStatus = 'pending' | 'active' | 'done' | 'failed';
 
 const StepIcon = ({ status }: { status: StepStatus }) => {
   if (status === 'active') return <span className="block w-3.5 h-3.5 rounded-full border-2 border-blue-200 border-t-blue-600 animate-spin" />;
-  if (status === 'done')   return <Check size={13} className="text-green-600" />;
+  if (status === 'done') return <Check size={13} className="text-green-600" />;
   if (status === 'failed') return <X size={13} className="text-red-500" />;
   return <Clock size={13} className="text-gray-300" />;
 };
 
 const stepStyle: Record<StepStatus, string> = {
   pending: 'bg-gray-50 border-gray-100 text-gray-400',
-  active:  'bg-blue-50 border-blue-100 text-blue-700',
-  done:    'bg-green-50 border-green-100 text-green-700',
-  failed:  'bg-red-50  border-red-100  text-red-600',
+  active: 'bg-blue-50 border-blue-100 text-blue-700',
+  done: 'bg-green-50 border-green-100 text-green-700',
+  failed: 'bg-red-50  border-red-100  text-red-600',
 };
 
 export default function VendorLoginPage() {
   const router = useRouter();
-  const { error } = useAppSelector((state: RootState) => state.auth);
+  const { error, user, } = useAppSelector((state: RootState) => state.auth);
   const dispatch = useAppDispatch();
-
-  const [uiState, setUiState]       = useState<UiState>('idle');
-  const [steps, setSteps]           = useState<StepStatus[]>(['pending','pending','pending']);
-  const [showPass, setShowPass]     = useState(false);
+  const vendor_id = user && 'vendor_id' in user ? user.vendor_id : undefined;
+  const token = authToken()
+  const [uiState, setUiState] = useState<UiState>('idle');
+  const [steps, setSteps] = useState<StepStatus[]>(['pending', 'pending', 'pending']);
+  const [showPass, setShowPass] = useState(false);
   const [redirectPct, setRedirectPct] = useState(100);
-  const [countdown, setCountdown]   = useState(3);
+  const [countdown, setCountdown] = useState(3);
 
   const { reset, register, handleSubmit, formState: { errors, isSubmitting } } =
-    useForm<LoginFormData>({ resolver: zodResolver(loginSchema), defaultValues: { email:'', password:'' } });
+    useForm<LoginFormData>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', password: '' } });
 
   useEffect(() => {
-    const stored = typeof window !== 'undefined' ? localStorage.getItem('auth') : null;
-    const auth = stored ? JSON.parse(stored) : null;
-    if (auth?.isAuthenticated && auth?.user?.user_role === 'vendor')
-      router.replace(`/vendor/${auth.user.vendor_id}`);
-  }, []);
+    if (vendor_id && token) {
+      router.replace(`/vendor/${vendor_id}`);
+    }
+  }, [vendor_id, token]);
 
   const setStep = (i: number, s: StepStatus) =>
     setSteps(prev => prev.map((v, idx) => idx === i ? s : v));
@@ -101,24 +103,29 @@ export default function VendorLoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     dispatch(loginStart());
     setUiState('loading');
-    setSteps(['active','pending','pending']);
+    setSteps(['active', 'pending', 'pending']);
 
     const result = await vendorLogin(data, dispatch);
-
+    console.log(result, 'result result');
     if (result?.status === 200 && result?.user) {
-      setStep(0,'done'); setStep(1,'active');
+      setStep(0, 'done'); setStep(1, 'active');
       await new Promise(r => setTimeout(r, 650));
-      setStep(1,'done'); setStep(2,'active');
+      setStep(1, 'done'); setStep(2, 'active');
       await new Promise(r => setTimeout(r, 650));
-      setStep(2,'done');
+      setStep(2, 'done');
       await new Promise(r => setTimeout(r, 350));
       reset();
       dispatch(loginSuccess(result.user));
       dispatch(loginEnd());
-      setUiState('success');
-      startRedirect(result.user?.user?.vendor_id ?? '');
+
+      if (result?.user?.user?.password_change_required) {
+        setUiState('prompt_change_password');
+      } else {
+        setUiState('success');
+        startRedirect(result?.user?.user?.vendor_id ?? '');
+      }
     } else {
-      setStep(0,'failed');
+      setStep(0, 'failed');
       dispatch(loginFailure(result?.message || 'Login failed'));
       setUiState('error');
     }
@@ -126,7 +133,7 @@ export default function VendorLoginPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4 font-sans">
-      <div className="w-full grid grid-cols-2 bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200" style={{minHeight: '620px'}}>
+      <div className="w-full grid grid-cols-2 bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200" style={{ minHeight: '620px' }}>
 
         {/* ── LEFT PANEL — illustration ── */}
         <div className="bg-[#1a56db] p-10 flex flex-col justify-between relative overflow-hidden">
@@ -145,8 +152,8 @@ export default function VendorLoginPage() {
             {/* stat pills */}
             <div className="flex gap-3 mt-7">
               {[
-                { icon: <Users size={14}/>, num: '12k+', label: 'Active vendors' },
-                { icon: <TrendingUp size={14}/>, num: '98%', label: 'Uptime SLA' },
+                { icon: <Users size={14} />, num: '12k+', label: 'Active vendors' },
+                { icon: <TrendingUp size={14} />, num: '98%', label: 'Uptime SLA' },
               ].map(s => (
                 <div key={s.label} className="bg-white/10 rounded-xl p-3.5 flex-1">
                   <div className="text-white/50 mb-1">{s.icon}</div>
@@ -182,7 +189,7 @@ export default function VendorLoginPage() {
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 tracking-wide">Business email address</label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><Store size={15}/></span>
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><Store size={15} /></span>
                     <input
                       type="text"
                       placeholder="you@business.com"
@@ -201,10 +208,10 @@ export default function VendorLoginPage() {
                     <a href="#" className="text-xs text-blue-600 hover:underline">Forgot password?</a>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><Eye size={15} style={{display:'none'}}/></span>
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><Eye size={15} style={{ display: 'none' }} /></span>
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                       {/* lock icon via unicode to keep it simple */}
-                      <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                      <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>
                     </span>
                     <input
                       type={showPass ? 'text' : 'password'}
@@ -219,7 +226,7 @@ export default function VendorLoginPage() {
                       aria-label={showPass ? 'Hide password' : 'Show password'}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
                     >
-                      {showPass ? <EyeOff size={15}/> : <Eye size={15}/>}
+                      {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                   </div>
                   {errors.password
@@ -229,7 +236,7 @@ export default function VendorLoginPage() {
 
                 {error && (
                   <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600">
-                    <AlertCircle size={15} className="flex-shrink-0"/> {error}
+                    <AlertCircle size={15} className="flex-shrink-0" /> {error}
                   </div>
                 )}
 
@@ -239,8 +246,8 @@ export default function VendorLoginPage() {
                   className="w-full mt-1 bg-[#1a56db] hover:bg-[#1648c0] active:scale-[.98] disabled:opacity-60 text-white font-semibold text-sm rounded-xl py-3.5 transition flex items-center justify-center gap-2"
                 >
                   {isSubmitting
-                    ? <><span className="block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin"/>Logging in…</>
-                    : <><ArrowRight size={16}/>Log in to Dashboard</>}
+                    ? <><span className="block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />Logging in…</>
+                    : <><ArrowRight size={16} />Log in to Dashboard</>}
                 </button>
               </form>
 
@@ -260,7 +267,7 @@ export default function VendorLoginPage() {
                 {STEPS.map((label, i) => (
                   <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${stepStyle[steps[i]]}`}>
                     <div className="w-6 h-6 rounded-full bg-white border border-gray-100 flex items-center justify-center flex-shrink-0">
-                      <StepIcon status={steps[i]}/>
+                      <StepIcon status={steps[i]} />
                     </div>
                     {label}
                   </div>
@@ -273,14 +280,51 @@ export default function VendorLoginPage() {
           {uiState === 'success' && (
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-5">
-                <Check size={28} className="text-green-600"/>
+                <Check size={28} className="text-green-600" />
               </div>
               <h2 className="text-lg font-bold text-gray-900 mb-1">You're in!</h2>
               <p className="text-sm text-gray-500 mb-6">Store verified. Taking you to your dashboard…</p>
               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden mb-2">
-                <div className="h-1.5 bg-[#1a56db] rounded-full transition-all duration-75" style={{width:`${redirectPct}%`}}/>
+                <div className="h-1.5 bg-[#1a56db] rounded-full transition-all duration-75" style={{ width: `${redirectPct}%` }} />
               </div>
               <p className="text-xs text-gray-400">Redirecting in {Math.max(0, countdown)}s</p>
+            </div>
+          )}
+
+          {/* PROMPT CHANGE PASSWORD */}
+          {uiState === 'prompt_change_password' && (
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-5 animate-bounce">
+                <AlertCircle size={28} className="text-amber-600" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900 mb-2">Temporary Password</h2>
+              <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                You logged in with a temporary generated password. For security, please set a new personal password.
+              </p>
+              <div className="w-full flex flex-col gap-3">
+                <button
+                  onClick={() => {
+                    const stored = localStorage.getItem('auth');
+                    const authObj = stored ? JSON.parse(stored) : null;
+                    const vendorId = authObj?.user?.user?.vendor_id || authObj?.user?.vendor_id || '';
+                    router.push(`/vendor/${vendorId}/settings/change-password`);
+                  }}
+                  className="w-full bg-[#1a56db] hover:bg-[#1648c0] text-white font-semibold text-sm rounded-xl py-3 transition cursor-pointer"
+                >
+                  Change Password Now
+                </button>
+                <button
+                  onClick={() => {
+                    const stored = localStorage.getItem('auth');
+                    const authObj = stored ? JSON.parse(stored) : null;
+                    const vendorId = authObj?.user?.user?.vendor_id || authObj?.user?.vendor_id || '';
+                    router.push(`/vendor/${vendorId}`);
+                  }}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl py-3 transition  cursor-pointer"
+                >
+                  Skip for Now
+                </button>
+              </div>
             </div>
           )}
 
@@ -288,12 +332,12 @@ export default function VendorLoginPage() {
           {uiState === 'error' && (
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-5">
-                <X size={28} className="text-red-500"/>
+                <X size={28} className="text-red-500" />
               </div>
               <h2 className="text-lg font-bold text-gray-900 mb-1">Login failed</h2>
               <p className="text-sm text-gray-500 mb-6">{error || 'Invalid credentials. Please try again.'}</p>
               <button
-                onClick={() => { setUiState('idle'); setSteps(['pending','pending','pending']); }}
+                onClick={() => { setUiState('idle'); setSteps(['pending', 'pending', 'pending']); }}
                 className="bg-[#1a56db] hover:bg-[#1648c0] text-white font-semibold text-sm rounded-xl px-8 py-3 transition"
               >
                 Try again

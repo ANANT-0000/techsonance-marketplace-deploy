@@ -1,4 +1,4 @@
-﻿import { loginFailure, loginSuccess } from "@/lib/features/auth/authSlice";
+import { loginFailure, loginSuccess } from "@/lib/features/auth/authSlice";
 import axios from "axios";
 import { VendorUser, UserRole, VendorRegisterFormData, User } from "./Types";
 import { ADMIN_AUTH_URL, CUSTOMER_AUTH_URL, CUSTOMER_BASE_URL, VENDOR_AUTH_URL, BASE_API_URL } from "@/constants";
@@ -9,7 +9,7 @@ const AxiosAPI = axios.create({
     baseURL: BASE_API_URL,
     headers: {
         'Content-Type': 'application/json',
-        'company-domain':await getCompanyDomain() 
+        'company-domain': await getCompanyDomain()
     },
 });
 
@@ -22,7 +22,7 @@ export const vendorLogin = async (data: { email: string; password: string }, dis
 
         const result = response.data;
         console.log("result", result);
-        console.log("response",response)
+        console.log("response", response)
 
         const payload: { user: VendorUser; access_token: string; role: UserRole; refresh_token: string } = {
             user: result.data.user,
@@ -196,4 +196,24 @@ export const resetPasswordWithOTP = async (email: string, otp: string, newPasswo
         throw new Error(errorData.message || 'Failed to reset password');
     }
     return response.json();
+};
+
+export const changePassword = async (userId: string, currentPassword: string, newPassword: string, token: string) => {
+    try {
+        const response = await AxiosAPI.post(`/v1/users/change-password/${userId}`, {
+            currentPassword: currentPassword,
+            newPassword: newPassword
+        }, {
+            params: {
+                user_id: userId
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return { status: 200, message: "Password updated successfully", data: response.data };
+    } catch (err: any) {
+        const errorMessage = err.response?.data?.message || err.message || "Failed to update password";
+        return { status: err.response?.status || 400, message: errorMessage };
+    }
 };

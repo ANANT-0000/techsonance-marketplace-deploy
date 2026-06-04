@@ -1,26 +1,25 @@
 ﻿'use client';
+
 import { formatCurrency } from "@/lib/utils";
-import { Address, OrderStatus, OrderStatusEnum } from "@/utils/Types";
-import { motion, AnimatePresence } from "motion/react";
+import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useMediaQuery } from "react-responsive";
 import { useState, useRef, useEffect } from "react";
-import { OrderItemType, OrderType, ReturnRequest } from "./OrderList";
+import { OrderItemType, OrderType, ReturnRequest, AddressPayload } from "./OrderList";
 import { Package, RotateCcw, XCircle, Truck, CheckCircle2 } from "lucide-react";
 
-// ── Per-item status badge ────────────────────
 function ItemStatusBadge({ status }: { status: string }) {
     const s = status?.toLowerCase();
     if (s === 'delivered')
         return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full"><CheckCircle2 size={9} />Delivered</span>;
-    if (s === 'pending')
-        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full"><Truck size={9} />Pending</span>;
+    if (s === 'pending' || s === 'processing')
+        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full"><Truck size={9} />{status}</span>;
     if (s === 'cancelled')
         return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full"><XCircle size={9} />Cancelled</span>;
     return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full capitalize">{status}</span>;
 }
 
-// ── Return badge ─────────────────────────────
 function ReturnBadge({ returnRequest }: { returnRequest: ReturnRequest }) {
     const colorMap: Record<string, string> = {
         pending: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -37,11 +36,9 @@ function ReturnBadge({ returnRequest }: { returnRequest: ReturnRequest }) {
     );
 }
 
-// ── Single item row ──────────────────────────
 function OrderItemRow({ item, highlighted }: { item: OrderItemType; highlighted: boolean }) {
     return (
-        <div className={`flex gap-3 rounded-xl overflow-hidden border transition-colors shadow-sm ${highlighted ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200 bg-white'
-            }`}>
+        <div className={`flex gap-3 rounded-xl overflow-hidden border transition-colors shadow-sm ${highlighted ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200 bg-white'}`}>
             <div className="w-20 sm:w-24 bg-gray-50 flex-shrink-0 flex items-center justify-center p-2">
                 <img
                     src={item.variant.images[0]?.image_url || "https://placehold.co/150x150/f9fafb/333?text=Product"}
@@ -76,8 +73,7 @@ function OrderItemRow({ item, highlighted }: { item: OrderItemType; highlighted:
     );
 }
 
-// ── Address dropdown ─────────────────────────
-function AddressDropdown({ address, isMobile }: { address: Address; isMobile: boolean }) {
+function AddressDropdown({ address, isMobile }: { address: AddressPayload; isMobile: boolean }) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
@@ -92,8 +88,8 @@ function AddressDropdown({ address, isMobile }: { address: Address; isMobile: bo
     const block = (
         <div className="text-xs sm:text-sm text-gray-700 space-y-0.5">
             <p className="font-semibold text-gray-900">{address.name}</p>
-            {address.address_line1 && <p>{address.address_line1}</p>}
-            {address.address_line2 && <p>{address.address_line2}</p>}
+            {address.address_line_1 && <p>{address.address_line_1}</p>}
+            {address.address_line_2 && <p>{address.address_line_2}</p>}
             <p>{[address.city, address.state, address.postal_code].filter(Boolean).join(', ')}</p>
             <p>{address.country}</p>
         </div>
@@ -151,7 +147,6 @@ function AddressDropdown({ address, isMobile }: { address: Address; isMobile: bo
     );
 }
 
-// ── Main OrderCard ───────────────────────────
 export const OrderCard = ({
     order,
     activeStatus,
@@ -161,7 +156,6 @@ export const OrderCard = ({
 }) => {
     const isMobile = useMediaQuery({ maxWidth: 640 });
 
-    // Which items match the current desktop tab?
     const matchingItems =
         activeStatus === null
             ? []
@@ -171,21 +165,17 @@ export const OrderCard = ({
 
     const allMatch = matchingItems.length === order.items.length;
 
-    // Highlight only the relevant items when not all items match the tab
     const isHighlighted = (item: OrderItemType): boolean => {
         if (activeStatus === null || allMatch) return false;
         if (activeStatus === 'returns') return item.return_request !== null;
         return item.order_status === activeStatus;
     };
 
-    // Show "partial match" banner only on desktop when needed
     const showBanner = !isMobile && activeStatus !== null && matchingItems.length > 0 && !allMatch;
 
-    // ── Mobile ───────────────────────────────────
     if (isMobile) {
         return (
             <motion.div className="w-full flex flex-col border border-gray-200 shadow-sm rounded-xl p-4 gap-4 bg-white">
-                {/* Header */}
                 <div className="flex justify-between items-start border-b border-gray-100 pb-3">
                     <p className="text-xs text-gray-400">
                         Ordered {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -196,20 +186,17 @@ export const OrderCard = ({
                     </div>
                 </div>
 
-                {/* Ship To */}
                 <div className="border-b border-gray-100 pb-3">
                     <p className="text-xs text-gray-400 mb-1">Ship To</p>
                     {order.address && <AddressDropdown address={order.address} isMobile={true} />}
                 </div>
 
-                {/* ALL items shown — no filter, no highlight */}
                 <div className="flex flex-col gap-3">
                     {order.items.map((item, index) => (
                         <OrderItemRow key={item.id ?? index} item={item} highlighted={false} />
                     ))}
                 </div>
 
-                {/* Footer */}
                 <div className="flex justify-between items-center pt-1">
                     <Link href={`orders/${order.id}`} className="text-xs font-medium text-blue-500 hover:underline">
                         View Details →
@@ -225,7 +212,6 @@ export const OrderCard = ({
         );
     }
 
-    // ── Desktop ──────────────────────────────────
     return (
         <motion.div className="w-full border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
             <header className="flex justify-between items-center px-5 py-3.5 bg-gray-50 border-b border-gray-200">
@@ -277,7 +263,6 @@ export const OrderCard = ({
                 </div>
             </header>
 
-            {/* Partial-match info banner */}
             {showBanner && (
                 <div className="px-5 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-700 font-medium flex items-center gap-2">
                     <Package size={13} />

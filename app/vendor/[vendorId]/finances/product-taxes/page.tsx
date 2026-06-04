@@ -7,14 +7,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { TableRowSkeleton } from "@/components/common/skeletons";
 import { redirect, useParams } from "next/navigation";
 import { authToken } from "@/utils/authToken";
-import {  fetchTaxRates, fetchAssignProductTax, fetchProductTaxMappings, fetchBulkAssignProductTax } from "@/utils/vendorApiClient";
+import {  fetchTaxSlabs, fetchAssignProductTax, fetchProductTaxMappings, fetchBulkAssignProductTax } from "@/utils/vendorApiClient";
 import Link from "next/link";
 interface ProductTaxMappingType {
     id: string;
     product_name: string;
     sku: string;
-    tax_rate_name: string;
-    tax_value: string;
+    tax_slabs: string;
+    tax_rate: string;
     is_mapped: boolean;
     updated_at: string;
 }
@@ -41,10 +41,10 @@ export default function ProductTaxMappingPage() {
     const [loading, setLoading] = useState(true);
 
     // --- MODAL STATES ---
-    const [availableRates, setAvailableRates] = useState<any[]>([]);
+    const [availableRates, setAvailableRates] = useState<{ id: string; slab_name: string; total_rate: number }[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-    const [selectedTaxRateId, setSelectedTaxRateId] = useState<string>("");
+    const [selectedTaxSlabId, setSelectedTaxSlabId] = useState<string>("");
     const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
     const token = authToken();
@@ -55,12 +55,13 @@ export default function ProductTaxMappingPage() {
         try {
             const [mappingRes, ratesRes] = await Promise.all([
                 fetchProductTaxMappings(0, sortBy, statusFilter, token as string),
-                fetchTaxRates(sortBy, date, token as string)
+                fetchTaxSlabs(sortBy, token as string)
             ]);
-            setProductTaxes(mappingRes.data?.data || []);
-            setAvailableRates(ratesRes?.data.data || []);
-            console.log("Fetched Product Taxes:", mappingRes.data?.data);
-            console.log("Fetched Available Tax Rates:", ratesRes?.data.data);
+            console.log("Mapping Response:", mappingRes.data);
+            setProductTaxes(mappingRes.data || []);
+            setAvailableRates(ratesRes?.data|| []);
+            console.log("Fetched Product Taxes:", mappingRes.data);
+            console.log("Fetched Available Tax Rates:", ratesRes?.data);
         } catch (err) {
             console.log("Error fetching data:", err);
         } finally {
@@ -76,7 +77,7 @@ export default function ProductTaxMappingPage() {
     // Handle opening modal
     const handleOpenModal = (productId: string) => {
         setSelectedProductId(productId);
-        setSelectedTaxRateId(""); // Reset dropdown
+        setSelectedTaxSlabId(""); // Reset dropdown
         setModalOpen(true);
     };
 
@@ -84,17 +85,17 @@ export default function ProductTaxMappingPage() {
     const handleAssignTax = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-        if (selectedProductId && selectedTaxRateId){
+        if (selectedProductId && selectedTaxSlabId){
         setSaving(true);
             await fetchAssignProductTax(
-                { product_id: selectedProductId, tax_rate_id: selectedTaxRateId }, 
+                { product_id: selectedProductId, tax_slab_id: selectedTaxSlabId }, 
                 vendorId, 
                 token as string
             );  
-    }else if (selectedProductIds.length > 0 && selectedTaxRateId) {
+    }else if (selectedProductIds.length > 0 && selectedTaxSlabId) {
         setSaving(true);
         await fetchBulkAssignProductTax(
-            { product_ids: selectedProductIds, tax_rate_id: selectedTaxRateId }, 
+            { product_ids: selectedProductIds, tax_slab_id: selectedTaxSlabId }, 
             vendorId, 
             token as string
         );
@@ -249,12 +250,13 @@ const handleDateChange = (selectedDate: Date) => {
                                     <td className="p-4 text-gray-500 text-sm font-mono">{item.sku}</td>
                                     
                                     <td className="p-4 text-gray-700 text-sm font-medium">
-                                        {item.tax_rate_name || "—"}
+                                        {item.tax_slabs
+ || "—"}
                                     </td>
                                     
                                     <td className="p-4">
                                         <span className="font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded-lg">
-                                            {item.tax_value ? `${Number(item.tax_value).toFixed(2)}%` : "0.00%"}
+                                            {item.tax_rate ? `${Number(item.tax_rate).toFixed(2)}%` : "0.00%"}
                                         </span>
                                     </td>
                                     
@@ -305,14 +307,14 @@ const handleDateChange = (selectedDate: Date) => {
                             <label className="text-sm font-semibold text-gray-700 block mb-2">Select a Tax Rate to apply to this product:</label>
                             <select 
                                 required
-                                value={selectedTaxRateId}
-                                onChange={(e) => setSelectedTaxRateId(e.target.value)}
+                                value={selectedTaxSlabId}
+                                onChange={(e) => setSelectedTaxSlabId(e.target.value)}
                                 className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 focus:border-blue-400 focus:bg-white focus:outline-none transition-colors"
                             >
                                 <option value="" disabled>-- Select from configured rates --</option>
                                 {availableRates.map(rate => (
                                     <option key={rate.id} value={rate.id}>
-                                        {rate.tax_rate_name} ({Number(rate.tax_rate_value).toFixed(2)}%)
+                                        {rate.slab_name} ({Number(rate.total_rate).toFixed(2)}%)
                                     </option>
                                 ))}
                             </select>

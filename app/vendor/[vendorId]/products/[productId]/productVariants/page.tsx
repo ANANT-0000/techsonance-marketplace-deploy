@@ -1,15 +1,16 @@
 ﻿"use client"
 import Link from "next/link";
-import { Plus, Package, Edit, ArrowLeft, Layers, Tag, ImageOff } from "lucide-react";
-import { fetchProductVariants } from "@/utils/vendorApiClient";
+import { Plus, Package, Edit, ArrowLeft, Layers, Tag, ImageOff, ToggleLeft, ToggleRight } from "lucide-react";
+import { fetchProductVariants, updateProductVariantStatus } from "@/utils/vendorApiClient";
 import { DeleteBtn } from "@/components/vendor/DeleteBtn";
 import { VariantImgGrid } from "@/components/vendor/VariantImgGrid";
-import { ProductImage } from "@/utils/Types";
+import { ProductImage, ProductVariantStatus } from "@/utils/Types";
 import { formatCurrency } from "@/lib/utils";
-import { StatusToggle } from "@/components/common/StatusToggle";
+import { StatusConfirmationModal } from "@/components/common/StatusConfirmationModal";
 import { authToken } from "@/utils/authToken";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 interface ProductVariant {
     id: string;
@@ -37,8 +38,42 @@ export default function VariantListingPage() {
             console.error("Error fetching variants:", error);
         });
     }, [productId, token]);
+    const [status, setStatus] = useState(ProductVariantStatus.INACTIVE);
+    const [isActive, setIsActive] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+
+
+
+    const handleStatusToggle = (variantId: string, currentStatus: ProductVariantStatus) => {
+        setShowModal(true);
+        setStatus(currentStatus);
+        setIsActive(currentStatus === ProductVariantStatus.ACTIVE);
+        setSelectedVariantId(variantId);
+
+    }
+    const handleConfirm = async () => {
+        setLoading(true);
+        if (!token) {
+            toast.error("Authentication Token not found");
+            return;
+        }
+        const isActive = status === ProductVariantStatus.ACTIVE;
+        const nextStatus = isActive ? ProductVariantStatus.INACTIVE : ProductVariantStatus.ACTIVE;
+        try {
+            await updateProductVariantStatus(selectedVariantId!, vendorId, nextStatus, token);
+            setStatus(nextStatus);
+            toast.success("Status updated successfully");
+        } catch (err) {
+            console.error("Failed to update status:", err);
+        } finally {
+            setLoading(false);
+            setShowModal(false);
+        }
+    };
     return (
-        <main className="min-h-screen w-full py-10 ">
+        <main className="min-h-screen w-full px-2 pb-10 pt-2 ">
             <div className="mx-auto  space-y-8">
 
 
@@ -57,14 +92,24 @@ export default function VariantListingPage() {
                             </p>
                         </div>
                     </div>
+                    <span className="flex gap-4 justify-between">
 
-                    <Link
-                        href={`/vendor/${vendorId}/products/variantForm/${productId}`}
-                        className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200"
-                    >
-                        <Plus size={16} />
-                        Add Variant
-                    </Link>
+
+                        <Link
+                            href={`/vendor/${vendorId}/products/productForm/${productId}`}
+                            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200"
+                        >
+                            <Edit size={16} />
+                            Edit Main Product
+                        </Link>
+                        <Link
+                            href={`/vendor/${vendorId}/products/variantForm/${productId}`}
+                            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200"
+                        >
+                            <Plus size={16} />
+                            Add Variant
+                        </Link>
+                    </span>
                 </div>
 
 
@@ -118,11 +163,12 @@ export default function VariantListingPage() {
                                         </div>
 
                                         {/* Status */}
-                                        <StatusToggle
-                                            productVariantId={variant.id}
-                                            vendorId={vendorId}
-                                            initialStatus={variant.status ?? "inactive"}
-                                        />
+                                        <span className={`inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-xs font-semibold border ${variant.status === ProductVariantStatus.ACTIVE
+                                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                            : "bg-gray-100 text-gray-500 border-gray-200"
+                                            }`}>
+                                            {variant.status}
+                                        </span>
                                     </div>
 
 
@@ -155,22 +201,9 @@ export default function VariantListingPage() {
                                                 ₹{formatCurrency(variant.price)}
                                             </p>
                                         </div>
-                                        {/* <div className="text-right">
-                                            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Stock</p>
-                                            {variant.stock_quantity > 0 ? (
-                                                <p className="text-sm font-semibold text-slate-700 mt-0.5">
-                                                    {variant.stock_quantity}{" "}
-                                                    <span className="text-slate-400 font-normal">units</span>
-                                                </p>
-                                            ) : (
-                                                <span className="inline-block mt-0.5 text-[11px] font-semibold text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
-                                                    Out of Stock
-                                                </span>
-                                            )}
-                                        </div> */}
                                     </div>
 
-                                    <div className="flex gap-10">
+                                    <div className="flex gap-4">
                                         {/* <DeleteBtn id={variant.id} style="mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:border-red-400 hover:text-red-600 hover:bg-red-50 active:scale-95 transition-all" toDelete="VARIANT" vendorId={vendorId} variantId={variant.id} /> */}
                                         <Link
                                             href={`/vendor/${vendorId}/products/variantUpdateForm/${variant.id}`}
@@ -179,6 +212,23 @@ export default function VariantListingPage() {
                                             <Edit size={14} />
                                             Edit Variant
                                         </Link>
+                                        <button
+                                            onClick={() => handleStatusToggle(variant.id, variant.status as ProductVariantStatus)}
+                                            disabled={loading}
+
+                                            className={`flex items-center gap-1.5 py-2.5 px-4 rounded-xl text-xs font-semibold border transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
+                    ${variant.status === ProductVariantStatus.ACTIVE
+                                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300"
+                                                    : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 hover:border-gray-300"
+                                                }`}
+                                        >
+                                            {
+                                                variant.status === ProductVariantStatus.ACTIVE
+                                                    ? <ToggleRight /> : <ToggleLeft />
+                                            }
+
+                                            {loading ? "Saving..." : variant.status === ProductVariantStatus.ACTIVE ? "Active" : "Inactive"}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -186,6 +236,10 @@ export default function VariantListingPage() {
                     </div>
                 )}
             </div>
+            {
+                showModal &&
+                <StatusConfirmationModal onConfirm={handleConfirm} onCancel={() => setShowModal(false)} isActive={isActive} />
+            }
         </main >
     );
 }

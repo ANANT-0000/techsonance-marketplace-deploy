@@ -1,5 +1,5 @@
 "use client"
-import { fetchTaxProfiles, fetchTaxRateOptions, fetchTaxRates, fetchVendorsProductsCategory, fetchVendorWarehouse } from "@/utils/vendorApiClient";
+import { fetchTaxProfiles, fetchTaxSlabOptions, fetchTaxSlabs, fetchVendorsProductsCategory, fetchVendorWarehouse } from "@/utils/vendorApiClient";
 import { ProductForm } from "@/components/vendor/ProductForm";
 import { authToken } from "@/utils/authToken";
 import { redirect, useParams } from "next/navigation";
@@ -20,9 +20,12 @@ const getCategoryOptions = async (token: string, vendorId: string, setCategoryOp
     });
 }
 
-const getTaxRatesOptions=async(token: string, setTaxRatesOptions: any) => {
-    fetchTaxRateOptions(token).then((res) => {
-        setTaxRatesOptions(res.data.map((t: any) => ({ value: t.id, label: t.tax_rate_name })));
+const getTaxSlabsOptions=async(token: string, setTaxSlabsOptions: any) => {
+    fetchTaxSlabOptions(token).then((res) => {
+        console.log("Tax slab options response:", res.data);
+        setTaxSlabsOptions(res.data.map((t: any) => ({ value: t.id, label: t.
+slab_name
+  })));
     }).catch((error) => {
         console.error("Error fetching tax rates options:", error);
     });
@@ -32,7 +35,7 @@ export default function ProductFormPage() {
     const { vendorId } = useParams<{ vendorId: string }>();
     const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string; }[]>([]);
     const [warehouseOptions, setWarehouseOptions] = useState<{ value: string; label: string; }[]>([]);
-    const [taxRatesOptions, setTaxRatesOptions] = useState<{ value: string; label: string; }[]>([]);
+    const [taxSlabsOptions, setTaxSlabsOptions] = useState<{ value: string; label: string; }[]>([]);
     const token = authToken();
     if (!token) {
         redirect("/auth/vendorLogin");
@@ -41,12 +44,12 @@ export default function ProductFormPage() {
     useEffect(() => {
         getWarehouseOptions(token, vendorId, setWarehouseOptions)
         getCategoryOptions(token, vendorId, setCategoryOptions)
-        getTaxRatesOptions(token, setTaxRatesOptions)
+        getTaxSlabsOptions(token, setTaxSlabsOptions)
     }, [token])
     return (
         <main className="min-h-screen  py-8 w-full ">
             <div className=" mx-auto">
-                <ProductForm categoryOptions={categoryOptions} vendorId={vendorId} warehouseOptions={warehouseOptions} taxRatesOptions={taxRatesOptions} />
+                <ProductForm categoryOptions={categoryOptions} vendorId={vendorId} warehouseOptions={warehouseOptions} taxSlabsOptions={taxSlabsOptions} />
             </div>
         </main>
     );

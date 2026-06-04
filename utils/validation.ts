@@ -213,7 +213,7 @@ export const productSchema = z.object({
 
   status: z.enum(ProductStatusEnum, { error: "Please select a status" }),
   warehouseId: z.string().min(1, { error: "Warehouse is required" }),
-  taxRateId: z.string().min(1, { error: "Tax rate is required" }),
+  taxSlabId: z.string().min(1, { error: "Tax slab is required" }),
   productMedia: z.array(z.any()).min(0, { error: "At least one product image is required" }).max(1, { error: "You can upload up to 1 image" }),
   featureMedia: z.array(z.any()).min(0, { error: "At least one feature image is required" }).max(10, { error: "You can upload up to 10 images" }),
 });
@@ -353,10 +353,7 @@ export const couponSchema = z.object({
   discount_type: z.enum(PromotionType, {
     message: "Please select a valid discount type" }),
 
-  value: z
-    .number({ error: "Value is required and must be a number" })
-    .positive({ error: "Value must be greater than zero" })
-    .max(1000000, { message: "Value is unusually high" }),
+value: z.number('Enter a valid amount' ).min(0.01, 'Value must be greater than 0'),
 
   valid_from: z.string().min(1, { message: "Start date is required" }),
   valid_to: z.string().min(1, { message: "End date is required" }),

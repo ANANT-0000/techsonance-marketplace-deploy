@@ -21,7 +21,7 @@ const updateExistingCoupon = async (
   userId: string,
   token: string
 ) =>
-  AxiosAPI.patch(`/v1/coupon/${id}/${userId}`, data, {
+  AxiosAPI.patch(`/v1/coupon/${id}`, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -216,6 +216,9 @@ export const CouponModel = ({
         try {
           const res = await fetchCouponDetails(id, token as string);
           const c = res.data.data;
+          const minCartRule = c.rules?.find(
+  (r: any) => r.rule_type === PromotionRuleType.MIN_CART_VALUE
+);
           reset({
             discount_type: c.discount_type || PromotionType.PERCENTAGE,
             code: c.code || '',
@@ -227,7 +230,9 @@ export const CouponModel = ({
             valid_to: c.valid_to
               ? new Date(c.valid_to).toISOString().split('T')[0]
               : '',
-            min_order_amount: c.rule ? String(c.min_order_amount) : '',
+            min_order_amount: minCartRule
+    ? String(minCartRule.rule_config?.amount ?? '')
+    : '',
             max_discount_amount: c.max_discount_amount
               ? String(c.max_discount_amount)
               : '',
@@ -318,11 +323,8 @@ export const CouponModel = ({
       }));
 
       const minOrderAmount = Number(data.min_order_amount);
-      const alreadyHasMinCart = rulesFromState.some(
-        (r) => r.rule_type === PromotionRuleType.MIN_CART_VALUE
-      );
       const rulesPayload =
-        minOrderAmount > 0 && !alreadyHasMinCart
+        minOrderAmount > 0  
           ? [
               {
                 rule_type: PromotionRuleType.MIN_CART_VALUE,
@@ -336,12 +338,7 @@ export const CouponModel = ({
       const payload = {
         code: data.code.toUpperCase(),
         description: data.description || '',
-        discount_type:
-          data.discount_type === 'percentage'
-            ? 'percentage'
-            : data.discount_type === 'free_shipping'
-            ? 'free_shipping'
-            : 'fixed_amount',
+        discount_type:data.discount_type as PromotionType ,
         discount_value: String(data.value),
         max_discount_amount: data.max_discount_amount
           ? String(data.max_discount_amount)
@@ -377,12 +374,12 @@ export const CouponModel = ({
           userId as string,
           token as string
         );
-        if (response.status === 201) {
-          setCoupons((prev) => [...prev, response.data.data]);
-        }
-        toast.success('Coupon created successfully!');
+toast.success('Coupon created successfully!');
+setIsModalOpen(false);
+setRules([]);
+if (onSuccess) onSuccess();
+reset();
       }
-
       setIsModalOpen(false);
       setRules([]);
       if (onSuccess) onSuccess();

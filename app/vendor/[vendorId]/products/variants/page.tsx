@@ -38,7 +38,7 @@ interface LowStockAlert {
     currentStock: number;
     warehouseName: string;
     isOutOfStock: boolean;
-    severity: "critical" | "low";
+    severity: "out_of_stock" | "low_stock"| 'in_stock';
 }
 
 
@@ -61,7 +61,7 @@ export const InventoryStats = ({ inventory }: { inventory: InventoryItem[] }) =>
                 },
                 {
                     label: "Healthy",
-                    value: inventory.filter((i) => !i.isLowStock).length,
+                    value: inventory.filter((i) => !i.isLowStock && !i.isOutOfStock).length,
                     color: "text-green-600",
                     bg: "bg-green-50 border-green-200",
                 },
@@ -95,7 +95,7 @@ async function fetchAlerts(domain: string, token: string): Promise<LowStockAlert
         cache: "no-cache",
     });
     const json = await res.json();
-    console.log("alet json", json)
+    console.log("alert json", json)
 
     return json.data ?? [];
 }
@@ -175,7 +175,7 @@ export default function InventoryPage() {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="mb-6 border-2 border-orange-300 bg-orange-50 rounded-2xl p-4"
+                            className="mb-6 border-2 border-orange-300 bg-orange-50 rounded-2xl p-4 mt-2"
                         >
                             <div className="flex items-center gap-2 mb-3">
                                 <AlertTriangle className="text-orange-500" size={20} />
@@ -263,7 +263,7 @@ export default function InventoryPage() {
                                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">Stock</th>
                                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">Status</th>
                                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">Price</th>
-                                <th className="p-4 border-b border-gray-200 font-semibold text-gray-600 text-center">Adjust</th>
+                                {/* <th className="p-4 border-b border-gray-200 font-semibold text-gray-600 text-center">Adjust</th> */}
                             </tr>
                         </thead>
                         <tbody>
@@ -382,7 +382,7 @@ export default function InventoryPage() {
                                         </td>
 
                                         {/* Adjust */}
-                                        <td className="p-4 text-center">
+                                        {/* <td className="p-4 text-center">
                                             {editId !== item.variant_id && (
                                                 <button
                                                     onClick={() => { setEditId(item.variant_id); setEditQty(item.total_stock); }}
@@ -391,7 +391,7 @@ export default function InventoryPage() {
                                                     <Edit2 size={12} /> Restock
                                                 </button>
                                             )}
-                                        </td>
+                                        </td> */}
                                     </tr>
                                 ))
                             )}

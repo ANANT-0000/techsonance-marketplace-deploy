@@ -1,6 +1,6 @@
 'use client';
 import Link from "next/link";
-import { Edit, Plus, Download, Package } from "lucide-react";
+import { Edit, Plus, Download, Package, Eye, MoveRight } from "lucide-react";
 import { Pagination } from "@/components/common/Pagination";
 import { fetchVendorProducts, fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,21 +9,21 @@ import { DynamicIcon } from "lucide-react/dynamic";
 import { TableRowSkeleton } from "@/components/common/skeletons";
 import { Product } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
-import { redirect, useParams } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface ProductsPageProps {
     setIsLoadingProducts: (loading: boolean) => void;
-    setProducts: (products:Product[]) => void;
-     setTotalPages: (total: number) => void;
-     itemsPerPage: number;
-      token: string;
+    setProducts: (products: Product[]) => void;
+    setTotalPages: (total: number) => void;
+    itemsPerPage: number;
+    token: string;
 }
 
 export const PRODUCT_TABLE_HEAD = ["PRODUCT", "CATEGORY", "VARIANT", "SKU", "STOCK", "PRICE", "ACTION"];
- const getCategoryOptions=async(setIsLoadingCategory: (loading: boolean) => void,setCategoryOptions: (options: { value: string; label: string }[]) => void, vendorId: string, token: string) =>{
-        setIsLoadingCategory(true);
-    await fetchVendorsProductsCategory( token ?? '')
+const getCategoryOptions = async (setIsLoadingCategory: (loading: boolean) => void, setCategoryOptions: (options: { value: string; label: string }[]) => void, vendorId: string, token: string) => {
+    setIsLoadingCategory(true);
+    await fetchVendorsProductsCategory(token ?? '')
         .then((res) => {
             const categories = res?.data || [];
             setCategoryOptions(categories.map((cat: any) => ({ value: cat.id, label: cat.name })));
@@ -35,56 +35,69 @@ export const PRODUCT_TABLE_HEAD = ["PRODUCT", "CATEGORY", "VARIANT", "SKU", "STO
         .finally(() => {
             setIsLoadingCategory(false);
         });
-    };
-export default  function Products() {
+};
+export default function Products() {
     const { vendorId } = useParams<{ vendorId: string }>();
-
+    const router = useRouter();
     const token = authToken();
-   
+
     const [productList, setProductList] = useState<Product[]>([]);
     const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
+    const [searchTerm, setSearchTerm] = useState<string>("");
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+    const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [totalProducts, setTotalProducts] = useState(0);
-   const [totalPages, setTotalPages] = useState(1);
-  const [itemsPerPage, setItemPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const offset = (currentPage - 1) * itemsPerPage;
+    const [totalPages, setTotalPages] = useState(1);
+    const [itemsPerPage, setItemPerPage] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
+    const offset = (currentPage - 1) * itemsPerPage;
     const [isLoadingProducts, setIsLoadingProducts] = useState(true);
- 
+
     const [isLoadingCategories, setIsLoadingCategories] = useState(false);
-    const loadProduct=async ()=>    {
-            setIsLoadingProducts(true);
-      const response=  await fetchVendorProducts(offset,itemsPerPage,token ?? '');
-      if (response.status !== 200) {
-        console.error("Error fetching products:", response.statusText);
-        setProductList([]);
- 
-        setTotalPages(1);
-        setIsLoadingProducts(false);
-        return;
-    }
-      const products=response?.data.data || [];
-      setProductList(products);
-      setTotalProducts(response?.data.total_products || 0);
-      setTotalPages(Math.ceil((response?.data.total_products || 0) / itemsPerPage));
-      setIsLoadingProducts(false);
-    }
-    useEffect(() => {   
-         setTimeout(() => {
-        if (!token) {
-            redirect("/auth/vendorLogin")
+    const loadProduct = async () => {
+        setIsLoadingProducts(true);
+        const response = await fetchVendorProducts(offset, itemsPerPage, selectedStatus, debouncedSearchTerm, selectedCategory, token ?? '');
+        if (response.status !== 200) {
+            console.error("Error fetching products:", response.statusText);
+            setProductList([]);
+
+            setTotalPages(1);
+            setIsLoadingProducts(false);
+            return;
         }
-    }, 1500)
- 
+        const products = response?.data.data || [];
+        setProductList(products);
+        setTotalProducts(response?.data.total_products || 0);
+        setTotalPages(Math.ceil((response?.data.total_products || 0) / itemsPerPage));
+        setIsLoadingProducts(false);
+    }
+    useEffect(() => {
+        setTimeout(() => {
+            if (!token) {
+                redirect("/auth/vendorLogin")
+            }
+        }, 1500)
+
         loadProduct();
-      //@ts-ignore
-            getCategoryOptions(setIsLoadingCategories, setCategoryOptions, vendorId, token);
-  
+        //@ts-ignore
+
+
+    }, [token, debouncedSearchTerm, selectedStatus, selectedCategory, currentPage]);
+    useEffect(() => {
+        getCategoryOptions(setIsLoadingCategories, setCategoryOptions, vendorId, token ?? '');
     }, [token]);
- 
- 
+    useEffect(() => {
+        const debounceTimer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 500); // Adjust the debounce delay as needed 
+        return () => clearTimeout(debounceTimer);
+    }, [searchTerm]);
+
+
 
     return (
-        <main className="w-full px-1">
+        <main className="w-full px-2">
             {/* Header */}
             <div className="flex gap-3 my-6 justify-between items-center">
                 <div className="flex items-center gap-2">
@@ -120,6 +133,7 @@ export default  function Products() {
                         type="text"
                         className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
                         placeholder="Search by name, email or domain"
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </span>
 
@@ -128,6 +142,7 @@ export default  function Products() {
                     <select
                         className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
                         name="status"
+                        onChange={(e) => setSelectedStatus(e.target.value)}
                     >
                         <option value="all">All Status</option>
                         <option value="active">Active</option>
@@ -137,6 +152,8 @@ export default  function Products() {
                     <select
                         className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
                         name="category"
+                        value={selectedCategory ?? ''}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
                     >
                         <option value="">All Categories</option>
                         {categoryOptions.map((option) => (
@@ -153,9 +170,9 @@ export default  function Products() {
                 <Table className="w-full table-auto min-w-[800px]">
                     <TableHeader>
                         <TableRow className="bg-gray-50 border-b border-gray-100 hover:bg-gray-50">
-                            <TableHead className="p-4 w-10">
+                            {/* <TableHead className="p-4 w-10">
                                 <input className="w-4 h-4" type="checkbox" />
-                            </TableHead>
+                            </TableHead> */}
                             {PRODUCT_TABLE_HEAD.map((head, index) => (
                                 <TableHead
                                     key={index}
@@ -169,22 +186,17 @@ export default  function Products() {
 
                     <TableBody className="divide-y divide-gray-100">
                         {isLoadingProducts ? (
-                            <TableRowSkeleton columns={8} rows={5} />
+                            <TableRowSkeleton columns={7} rows={5} />
                         ) : productList && productList.length > 0 ? (
-                
-                         productList && Array.isArray(productList) && productList.map((item: Product, index: number) => {
+
+                            productList && Array.isArray(productList) && productList.map((item: Product, index: number) => {
                                 const firstVariant = item.variants?.[0];
                                 const stockQty = firstVariant?.inventory?.stock_quantity;
                                 const isLowStock = stockQty !== undefined && stockQty < 20;
                                 const status = firstVariant?.status;
 
                                 return (
-                                    <TableRow key={item.id ?? index} className="hover:bg-gray-50 transition-colors">
-                                        {/* Checkbox */}
-                                        <TableCell className="p-4">
-                                            <input type="checkbox" className="w-4 h-4" />
-                                        </TableCell>
-
+                                    <TableRow key={item.id ?? index} className="hover:bg-gray-50 transition-colors" onClick={() => router.push(`/vendor/${vendorId}/products/${item.id}/productVariants`)}>
                                         {/* Product Image + Name */}
                                         <TableCell className="px-4 py-3">
                                             <div className="flex items-center gap-3 min-w-[220px] max-w-[320px]">
@@ -198,26 +210,26 @@ export default  function Products() {
                                                 </span>
                                             </div>
                                         </TableCell>
-<TableCell>
+                                        <TableCell>
                                             <span className="text-sm text-gray-500">
                                                 {item.category?.name || (
                                                     <span className="text-gray-300">—</span>
                                                 )}
                                             </span>
-</TableCell>
+                                        </TableCell>
                                         {/* Variant */}
                                         <TableCell className="px-4 py-3">
                                             {item.variants && item.variants.length > 0 ? (
-                                                <Link
-                                                    href={`/vendor/${vendorId}/products/${item.id}/productVariants`}
-                                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 py-1.5 px-3 rounded-full transition-colors whitespace-nowrap"
+
+                                                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 py-1.5 px-3 rounded-full transition-colors whitespace-nowrap"
                                                     title="View Variants"
                                                 >
                                                     <DynamicIcon name="tag" size={13} />
                                                     {item.variants.length} Variant{item.variants.length > 1 ? "s" : ""}
-                                                </Link>
+                                                </span>
                                             ) : (
                                                 <Link
+                                                    onClick={(e) => e.stopPropagation()}
                                                     href={`/vendor/${vendorId}/products/variantForm/${item.id}`}
                                                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 py-1.5 px-3 rounded-full transition-colors whitespace-nowrap"
                                                     title="Add Variant"
@@ -257,34 +269,22 @@ export default  function Products() {
 
 
                                         {/* Actions */}
-                                        <TableCell className="px-4 py-3">
-                                            <div className="flex gap-2 items-center whitespace-nowrap">
-                                                <Link
-                                                    href={`/vendor/${vendorId}/products/productUpdateForm/${firstVariant?.id ?? item.id}`}
-                                                    className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 py-1.5 px-3 rounded-lg transition-colors"
-                                                    title="Edit Product"
-                                                >
-                                                    <Edit size={16} />
-                                                    Edit
-                                                </Link>
-                                                <DeleteBtn
-                                                    id={item.id}
-                                                    vendorId={vendorId}
-                                                    toDelete="PRODUCT"
-                                                    style="flex items-center gap-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 py-1 px-3 rounded-lg transition-colors"
-                                                />
-                                            </div>
+                                        <TableCell className="px-4 py-3 cursor-pointer">
+                                            <span className={`flex text-sky-600 items-center gap-2 justify-center  text-xs font-semibold  px-3 rounded-lg transition-colors underline`}>
+                                                View Variants
+                                                <MoveRight size={18} />
+                                            </span>
                                         </TableCell>
                                     </TableRow>
                                 );
                             })
-                        ):            <TableRow>
-                                <TableCell colSpan={8} className="py-16 text-center text-gray-400 text-sm">
-                                    <Package size={36} className="mx-auto mb-3 opacity-30" />
-                                    No products found.
-                                </TableCell>
-                            </TableRow>
-                    }
+                        ) : <TableRow>
+                            <TableCell colSpan={8} className="py-16 text-center text-gray-400 text-sm">
+                                <Package size={36} className="mx-auto mb-3 opacity-30" />
+                                No products found.
+                            </TableCell>
+                        </TableRow>
+                        }
                     </TableBody>
                 </Table>
             </div>
@@ -293,6 +293,6 @@ export default  function Products() {
             <span className="flex justify-end mt-4 mb-6">
                 <Pagination setCount={setCurrentPage} count={currentPage} totalPages={totalPages} style="relative right-0 w-54" />
             </span>
-        </main>
+        </main >
     );
 }

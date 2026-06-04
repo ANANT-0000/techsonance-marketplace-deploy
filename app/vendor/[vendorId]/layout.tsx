@@ -11,6 +11,8 @@ import { UserRole } from "@/constants";
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import Navbar from '@/components/vendor/Navbar';
 import AxiosAPI from '@/lib/axios';
+import { TrialBanner } from '@/components/vendor/TrialBanner';
+
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
     const { vendorId } = useParams();
     const isSidebarOpen = useAppSelector((state) => state.sidebar.isSidebarOpen);
@@ -25,23 +27,25 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
         }
     }, [])
     // Axios interceptor in lib/axios.ts
-AxiosAPI.interceptors.response.use(
-  res => res,
-  err => {
-    if (err.response?.status === 402) {
-      // Subscription expired — redirect to upgrade
-      window.location.href = `/vendor/${vendorId}/settings/billing?reason=expired`;
-    }
-    return Promise.reject(err);
-  }
-);
+    AxiosAPI.interceptors.response.use(
+      res => res,
+      err => {
+        if (err.response?.status === 402) {
+          // Subscription expired — redirect to upgrade
+          window.location.href = `/vendor/${vendorId}/settings/billing?reason=expired`;
+        }
+        return Promise.reject(err);
+      }
+    );
     return (
         <>
-            <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={`/vendor/${vendorId}`} />
-            <main className={`vendor_dashboard mr-6 ${isSidebarOpen ? 'ml-57' : 'ml-14'}`}>
+            <main className={`flex w-full`}>
+                <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={`/vendor/${vendorId}`} />
                 <ProtectedRoute allowedRoles={[UserRole.Vendor, UserRole.Admin]} loginPath="/auth/vendorLogin">
-                {/* <Navbar /> */}
-                    {children}
+                    <div className="flex-1 flex flex-col min-h-screen">
+                        <TrialBanner vendorId={vendorId as string} />
+                        {children}
+                    </div>
                 </ProtectedRoute>
             </main>
         </>

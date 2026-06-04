@@ -174,10 +174,10 @@ export const updateProductVariantStatus = async (productVariantId: string, vendo
         return { status: 500, statusText: 'Internal Server Error' + error };
     }
 }
-export const fetchVendorProducts = async (offset: number, limit: number, token: string) => {
+export const fetchVendorProducts = async (offset: number, limit: number,status: string | null,search: string | null, categoryId: string | null, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/v1/products/all?offset=${offset}&limit=${limit}`, {
+        const response = await fetch(`${BASE_API_URL}/v1/products/all?offset=${offset}&limit=${limit}&search=${search??null}&category_id=${categoryId??null}&status=${status ?? null}`, {
             method: 'GET',
             // cache: 'force-cache',
             // next: { revalidate: 3600 },
@@ -371,8 +371,8 @@ export const fetchProductVariants = async (productId: string, token: string) => 
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/product-variant/${productId}`, {
             method: 'GET',
-            cache: 'force-cache',
-            next: { revalidate: 3600 },
+            cache: 'no-cache',
+            // next: { revalidate: 3600 },
             headers: {
                 'company-domain': companyDomain,
                 Authorization: `Bearer ${token}`,
@@ -922,23 +922,10 @@ export const fetchTaxProfiles = async (sortBy: string, date: Date | undefined, t
     }
 }
 
-export const fetchTaxRates = async (sortBy: string, date: Date | undefined, token: string) => {
+export const fetchTaxSlabOptions= async ( token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-rates?sort_by=${sortBy}${date ? `&date=${date.toISOString()}` : ''}`, {
-            method: 'GET',
-            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching tax rates:', error);
-        return { data: [] };
-    }
-}
-export const fetchTaxRateOptions= async ( token: string) => {
-    try {
-        const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-rate-options`, {
+        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-slab-options`, {
             method: 'GET',
             headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
         });
@@ -948,7 +935,7 @@ export const fetchTaxRateOptions= async ( token: string) => {
     }
 }
 // Add this below your existing finance API calls
-export const fetchAssignProductTax = async (data: { product_id: string, tax_rate_id: string }, vendorId: string, token: string) => {
+export const fetchAssignProductTax = async (data: { product_id: string, tax_slab_id: string }, vendorId: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/finances/product-tax-mappings`, {
@@ -967,7 +954,7 @@ export const fetchAssignProductTax = async (data: { product_id: string, tax_rate
         return { data: {}, message: 'Error assigning product tax' };
     }
 }
-export const fetchBulkAssignProductTax = async (data: { product_ids: string[], tax_rate_id: string }, vendorId: string, token: string) => {
+export const fetchBulkAssignProductTax = async (data: { product_ids: string[], tax_slab_id: string }, vendorId: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/finances/product-tax-bulk-mappings`, {
@@ -979,9 +966,6 @@ export const fetchBulkAssignProductTax = async (data: { product_ids: string[], t
             },
             body: JSON.stringify(data)
         });
-        
-        
-        
         revalidatePath(`/vendor/${vendorId}/finances/product-taxes`);
         return await response.json();
     } catch (error) {
@@ -993,6 +977,7 @@ export const fetchProductTaxMappings = async (offSet: number, sortBy: string, st
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/finances/product-tax-mappings?offset=${offSet}&sort_by=${sortBy}&status=${statusFilter}`, {
+            cache: 'no-store',
             method: 'GET',
             headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
         });
@@ -1036,25 +1021,6 @@ export const fetchCreateTaxProfile = async (formData: any, token: string) => {
     }
 }
 
-export const fetchCreateTaxRate = async (formData: any, token: string) => {
-    try {
-        const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-rates`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'company-domain': companyDomain,
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(formData)
-        });
- 
-        return await response.json();
-    } catch (error) {
-        console.error('Error saving Tax Rate:', error);
-        return { data: {}, message: 'Error saving Tax Rate' };
-    }
-}
 // ==========================================
 // FINANCE & TAXATION: GST REGISTRATIONS
 // ==========================================
@@ -1149,40 +1115,6 @@ export const fetchUpdateTaxProfile = async (id: string, data: any, vendorId: str
 // ==========================================
 // FINANCE & TAXATION: TAX RATES & RULES
 // ==========================================
-
-export const fetchSingleTaxRate = async (id: string, token: string) => {
-    try {
-        const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-rates/${id}`, {
-            method: 'GET',
-            headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching single Tax Rate:', error);
-        return { data: null };
-    }
-}
-
-export const fetchUpdateTaxRate = async (id: string, data: any, vendorId: string, token: string) => {
-    try {
-        const companyDomain = await getCompanyDomain();
-        const response = await fetch(`${BASE_API_URL}/v1/finances/tax-rates/${id}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'company-domain': companyDomain,
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(data)
-        });
-        revalidatePath(`/vendor/${vendorId}/finances/tax-rates`);
-        return await response.json();
-    } catch (error) {
-        console.error('Error updating Tax Rate:', error);
-        return { data: {}, message: 'Error updating Tax Rate' };
-    }
-}
 
 
 // ─── Company Branding ─────────────────────────────────────────────────────────
@@ -1770,3 +1702,86 @@ export const quickUpdateStock = async (productVariantId: string, quantity: numbe
         return { data: {}, message: 'Error updating stock' };
     }
 }
+
+
+export const fetchCreateTaxSlab = async (formData: any, token: string) => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const response = await fetch(`${BASE_API_URL}/v1/finances/tax-slabs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'company-domain': companyDomain,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formData),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating tax slab:', error);
+    return { data: {}, message: 'Error creating tax slab' };
+  }
+};
+
+export const fetchTaxSlabs = async (sortBy: string, token: string) => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const response = await fetch(
+      `${BASE_API_URL}/v1/finances/tax-slabs?sort_by=${sortBy??'desc'}`,
+      {
+        cache: 'no-store',
+        method: 'GET',
+        headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+      },
+    );
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching tax slabs:', error);
+    return { data: { data: [] } };
+  }
+};
+
+export const fetchSingleTaxSlab = async (id: string, token: string) => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const response = await fetch(
+      `${BASE_API_URL}/v1/finances/tax-slabs/${id}`,
+      {
+        method: 'GET',
+        headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
+      },
+    );
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching tax slab:', error);
+    return { data: null };
+  }
+};
+
+export const fetchUpdateTaxSlab = async (
+  id: string,
+  data: any,
+  vendorId: string,
+  token: string,
+) => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const response = await fetch(
+      `${BASE_API_URL}/v1/finances/tax-slabs/${id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'company-domain': companyDomain,
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      },
+    );
+    revalidatePath(`/vendor/${vendorId}/finances/tax-rates`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating tax slab:', error);
+    return { data: {}, message: 'Error updating tax slab' };
+  }
+};

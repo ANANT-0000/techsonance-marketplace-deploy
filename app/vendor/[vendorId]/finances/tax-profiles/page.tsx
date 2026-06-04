@@ -51,7 +51,7 @@ export default function TaxProfilesPage() {
             setLoading(true);
             try {
                 const res = await fetchTaxProfiles(  sortBy,date,token!);
-                setProfiles(res.data?.data || []);
+                setProfiles(res.data || []);
             } catch (err) {
                 console.log("Error fetching Tax Profiles:", err);
             } finally {

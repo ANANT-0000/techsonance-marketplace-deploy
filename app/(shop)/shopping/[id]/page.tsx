@@ -37,11 +37,11 @@ export default function ProductPage() {
     const [activeVariant, setActiveVariant] = useState<Variant | undefined>();
     const [product, setProduct] = useState<Product | undefined>(undefined);
     const [isCouponModalOpen, setCouponModalOpen] = useState(false);
-const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
-const isMobile = useMediaQuery({maxWidth: '1024px'});
-const {user} = useAppSelector((state:RootState) => state.auth);
-const route=useRouter();
-const token = authToken();
+    const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
+    const isMobile = useMediaQuery({ maxWidth: '1024px' });
+    const { user } = useAppSelector((state: RootState) => state.auth);
+    const route = useRouter();
+    const token = authToken();
     console.log("product id", id)
     useEffect(() => {
         setIsMounted(true);
@@ -78,201 +78,200 @@ const token = authToken();
     const averageRating = totalReviews > 0
         ? Math.round(reviewsList.reduce((sum, review) => sum + review.rating, 0) / totalReviews)
         : 0;
-         
- const handleCouponSelect =async (coupon: Coupon) => {
+
+    const handleCouponSelect = async (coupon: Coupon) => {
 
 
-      await AxiosAPI.post('/v1/coupon/validate', { 
-        userId: user?.id,
-     code: coupon.code, 
-     cartTotal: basePrice, 
-     productIdsInCart:[product?.id] }, {
-         headers: { Authorization: `Bearer ${token}` }
- }).then((res:AxiosResponse) => {    
-    console.log("Coupon validation response:", res.data);
-    if(res.data.success!==true || res.status !==201){
-        console.log("Coupon validation failed:", res.data);
-        toast.error(res.data.message || "Failed to validate coupon");
-        setTimeout(() => {            
-            setCouponModalOpen(false);        
-        }, 1500);
-    }else{
-        toast.success("Coupon applied successfully");
-        setSelectedCoupon(coupon);
-        setCouponModalOpen(false);
+        await AxiosAPI.post('/v1/coupon/validate', {
+            userId: user?.id,
+            code: coupon.code,
+            cartTotal: basePrice,
+            productIdsInCart: [product?.id]
+        }, {
+            headers: { Authorization: `Bearer ${token}` }
+        }).then((res: AxiosResponse) => {
+            console.log("Coupon validation response:", res.data);
+            if (res.data.success !== true || res.status !== 201) {
+                console.log("Coupon validation failed:", res.data);
+                toast.error(res.data.message || "Failed to validate coupon");
+                setTimeout(() => {
+                    setCouponModalOpen(false);
+                }, 1500);
+            } else {
+                toast.success("Coupon applied successfully");
+                setSelectedCoupon(coupon);
+                setCouponModalOpen(false);
+            }
+        }).catch((err: AxiosError) => {
+            // @ts-ignore   
+            toast.error(err.response?.data.error || "Failed to validate coupon");
+            console.log("Coupon validation error:", err.response?.data);
+        })
     }
-}).catch((err:AxiosError) => { 
-    // @ts-ignore   
-    toast.error(err.response?.data.error || "Failed to validate coupon");
-    console.log("Coupon validation error:", err.response?.data);
-}) 
-}
-        const basePrice = Number(activeVariant?.price) || 0;
-const productDiscountPercent = Number(product?.discount_percent) || 0;
-const originalMRP = productDiscountPercent > 0 
-    ? Math.floor(basePrice / (1 - productDiscountPercent / 100)) 
-    : basePrice;
+    const basePrice = Number(activeVariant?.price) || 0;
+    const productDiscountPercent = Number(product?.discount_percent) || 0;
+    const originalMRP = productDiscountPercent > 0
+        ? Math.floor(basePrice / (1 - productDiscountPercent / 100))
+        : basePrice;
 
-// Calculate additional coupon discount
-let couponDiscountAmount = 0;
-if (selectedCoupon) {
-    if (selectedCoupon.discount_type === 'percentage') {
-        couponDiscountAmount = Math.floor(basePrice * (Number(selectedCoupon.discount_value) / 100));
-        // Apply max cap if the coupon has one
-        if (selectedCoupon.max_discount_amount && couponDiscountAmount > Number(selectedCoupon.max_discount_amount)) {
-            couponDiscountAmount = Number(selectedCoupon.max_discount_amount);
+    // Calculate additional coupon discount
+    let couponDiscountAmount = 0;
+    if (selectedCoupon) {
+        if (selectedCoupon.discount_type === 'percentage') {
+            couponDiscountAmount = Math.floor(basePrice * (Number(selectedCoupon.discount_value) / 100));
+            // Apply max cap if the coupon has one
+            if (selectedCoupon.max_discount_amount && couponDiscountAmount > Number(selectedCoupon.max_discount_amount)) {
+                couponDiscountAmount = Number(selectedCoupon.max_discount_amount);
+            }
+        } else { // 'fixed_cart' or 'fixed_product'
+            couponDiscountAmount = Number(selectedCoupon.discount_value);
         }
-    } else { // 'fixed_cart' or 'fixed_product'
-        couponDiscountAmount = Number(selectedCoupon.discount_value);
     }
-}
-const [activeIndex, setActiveIndex] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(0);
 
-// Sync activeIndex with activeImage
-useEffect(() => {
-    const idx = productImages.findIndex(img => img.image_url === activeImage);
-    if (idx !== -1) setActiveIndex(idx);
-}, [activeImage, productImages]);
-// Final calculated values to display
-const finalPayablePrice = Math.max(0, basePrice - couponDiscountAmount);
-const totalSavings = originalMRP - finalPayablePrice;
-
+    // Sync activeIndex with activeImage
+    useEffect(() => {
+        const idx = productImages.findIndex(img => img.image_url === activeImage);
+        if (idx !== -1) setActiveIndex(idx);
+    }, [activeImage, productImages]);
+    // Final calculated values to display
+    const finalPayablePrice = Math.max(0, basePrice - couponDiscountAmount);
+    const totalSavings = originalMRP - finalPayablePrice;
 
 
 
-const handleCouponModalOpen = () => {
-    if (!token) {
-        route.push('/auth/customerLogin');
-    } else {
-        setCouponModalOpen(true);
+
+    const handleCouponModalOpen = () => {
+        if (!token) {
+            route.push('/auth/customerLogin');
+        } else {
+            setCouponModalOpen(true);
+        }
     }
-}
     return (
         <main className='xl:pt-10 pb-8 xl:px-32 lg:px-8 md:px-4 px-2 py-1 overflow-x-hidden'>
-               <Toaster />
+            <Toaster />
             <section className="flex flex-col lg:flex-row justify-evenly gap-12">
-            <div className='flex flex-col-reverse lg:flex-row gap-4 w-full lg:w-1/2'>
+                <div className='flex flex-col-reverse lg:flex-row gap-4 w-full lg:w-1/2'>
 
-    {/* THUMBNAIL — desktop only */}
-    {!isMobile && (
-        <div className='flex lg:flex-col gap-4 lg:overflow-y-auto lg:h-0 lg:min-h-full lg:w-24 shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth p-1'>
-            {productImages.map((img, idx) => (
-                <motion.img
-                    key={idx}
-                    src={img.image_url}
-                    onClick={() => setActiveImage(img.image_url)}
-                    whileHover={{ scale: 1.05, borderColor: "#3b82f6" }}
-                    whileTap={{ scale: 0.95 }}
-                    alt={`Thumbnail ${idx + 1}`}
-                    className={`shrink-0 aspect-square w-20 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all ${
-                        activeImage === img.image_url
-                            ? 'border-blue-500 ring-2 ring-blue-300'
-                            : 'border-transparent'
-                    }`}
-                />
-            ))}
-        </div>
-    )}
+                    {/* THUMBNAIL — desktop only */}
+                    {!isMobile && (
+                        <div className='flex lg:flex-col gap-4 lg:overflow-y-auto lg:h-0 lg:min-h-full lg:w-24 shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth p-1'>
+                            {productImages.map((img, idx) => (
+                                <motion.img
+                                    key={idx}
+                                    src={img.image_url}
+                                    onClick={() => setActiveImage(img.image_url)}
+                                    whileHover={{ scale: 1.05, borderColor: "#3b82f6" }}
+                                    whileTap={{ scale: 0.95 }}
+                                    alt={`Thumbnail ${idx + 1}`}
+                                    className={`shrink-0 aspect-square w-20 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all ${activeImage === img.image_url
+                                        ? 'border-blue-500 ring-2 ring-blue-300'
+                                        : 'border-transparent'
+                                        }`}
+                                />
+                            ))}
+                        </div>
+                    )}
 
-    {/* MAIN IMAGE CONTAINER */}
-    <div className='relative flex-1 aspect-square bg-gray-50 rounded-3xl overflow-hidden'>
-        <WishListBtn
-            productVariantId={activeVariant?.id}
-            styles="absolute lg:top-0 lg:right-4 right-8 z-20"
-            iconSize={32}
-        />
-
-        {isMobile ? (
-            /* ── MOBILE CAROUSEL ── */
-            <>
-                <AnimatePresence mode="wait">
-                    <motion.img
-                        key={activeIndex}
-                        initial={{ opacity: 0, x: 40 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -40 }}
-                        transition={{ duration: 0.25 }}
-                        src={productImages[activeIndex]?.image_url}
-                        alt={product?.name}
-                        className='aspect-square w-full h-full object-contain rounded-2xl'
-                        drag="x"
-                        dragConstraints={{ left: 0, right: 0 }}
-                        dragElastic={0.2}
-                        onDragEnd={(_, info) => {
-                            if (info.offset.x < -50 && activeIndex < productImages.length - 1) {
-                                const next = activeIndex + 1;
-                                setActiveIndex(next);
-                                setActiveImage(productImages[next].image_url);
-                            } else if (info.offset.x > 50 && activeIndex > 0) {
-                                const prev = activeIndex - 1;
-                                setActiveIndex(prev);
-                                setActiveImage(productImages[prev].image_url);
-                            }
-                        }}
-                    />
-                </AnimatePresence>
-
-                {/* Dot indicators */}
-                <div className='absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10'>
-                    {productImages.map((_, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => {
-                                setActiveIndex(idx);
-                                setActiveImage(productImages[idx].image_url);
-                            }}
-                            className={`rounded-full transition-all duration-300 ${
-                                idx === activeIndex
-                                    ? 'w-4 h-2 bg-blue-500'
-                                    : 'w-2 h-2 bg-gray-300'
-                            }`}
+                    {/* MAIN IMAGE CONTAINER */}
+                    <div className='relative flex-1 aspect-square bg-gray-50 rounded-3xl overflow-hidden'>
+                        <WishListBtn
+                            productVariantId={activeVariant?.id}
+                            styles="absolute lg:top-0 lg:right-4 right-8 z-20"
+                            iconSize={32}
                         />
-                    ))}
-                </div>
 
-                {/* Prev / Next arrows */}
-                {activeIndex > 0 && (
-                    <button
-                        onClick={() => {
-                            const prev = activeIndex - 1;
-                            setActiveIndex(prev);
-                            setActiveImage(productImages[prev].image_url);
-                        }}
-                        className='absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/70 backdrop-blur rounded-full p-1 shadow'
-                    >
-                        <ChevronLeft size={20} className='text-gray-700' />
-                    </button>
-                )}
-                {activeIndex < productImages.length - 1 && (
-                    <button
-                        onClick={() => {
-                            const next = activeIndex + 1;
-                            setActiveIndex(next);
-                            setActiveImage(productImages[next].image_url);
-                        }}
-                        className='absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/70 backdrop-blur rounded-full p-1 shadow'
-                    >
-                        <ChevronRight size={20} className='text-gray-700' />
-                    </button>
-                )}
-            </>
-        ) : (
-            /* ── DESKTOP MAIN IMAGE ── */
-            <AnimatePresence mode="wait">
-                <motion.img
-                    key={activeImage}
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    src={activeImage}
-                    alt={product?.name}
-                    className='aspect-square w-full h-full object-contain rounded-2xl'
-                />
-            </AnimatePresence>
-        )}
-    </div>
-</div>
+                        {isMobile ? (
+                            /* ── MOBILE CAROUSEL ── */
+                            <>
+                                <AnimatePresence mode="wait">
+                                    <motion.img
+                                        key={activeIndex}
+                                        initial={{ opacity: 0, x: 40 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -40 }}
+                                        transition={{ duration: 0.25 }}
+                                        src={productImages[activeIndex]?.image_url}
+                                        alt={product?.name}
+                                        className='aspect-square w-full h-full object-contain rounded-2xl'
+                                        drag="x"
+                                        dragConstraints={{ left: 0, right: 0 }}
+                                        dragElastic={0.2}
+                                        onDragEnd={(_, info) => {
+                                            if (info.offset.x < -50 && activeIndex < productImages.length - 1) {
+                                                const next = activeIndex + 1;
+                                                setActiveIndex(next);
+                                                setActiveImage(productImages[next].image_url);
+                                            } else if (info.offset.x > 50 && activeIndex > 0) {
+                                                const prev = activeIndex - 1;
+                                                setActiveIndex(prev);
+                                                setActiveImage(productImages[prev].image_url);
+                                            }
+                                        }}
+                                    />
+                                </AnimatePresence>
+
+                                {/* Dot indicators */}
+                                <div className='absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10'>
+                                    {productImages.map((_, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => {
+                                                setActiveIndex(idx);
+                                                setActiveImage(productImages[idx].image_url);
+                                            }}
+                                            className={`rounded-full transition-all duration-300 ${idx === activeIndex
+                                                ? 'w-4 h-2 bg-blue-500'
+                                                : 'w-2 h-2 bg-gray-300'
+                                                }`}
+                                        />
+                                    ))}
+                                </div>
+
+                                {/* Prev / Next arrows */}
+                                {activeIndex > 0 && (
+                                    <button
+                                        onClick={() => {
+                                            const prev = activeIndex - 1;
+                                            setActiveIndex(prev);
+                                            setActiveImage(productImages[prev].image_url);
+                                        }}
+                                        className='absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/70 backdrop-blur rounded-full p-1 shadow'
+                                    >
+                                        <ChevronLeft size={20} className='text-gray-700' />
+                                    </button>
+                                )}
+                                {activeIndex < productImages.length - 1 && (
+                                    <button
+                                        onClick={() => {
+                                            const next = activeIndex + 1;
+                                            setActiveIndex(next);
+                                            setActiveImage(productImages[next].image_url);
+                                        }}
+                                        className='absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/70 backdrop-blur rounded-full p-1 shadow'
+                                    >
+                                        <ChevronRight size={20} className='text-gray-700' />
+                                    </button>
+                                )}
+                            </>
+                        ) : (
+                            /* ── DESKTOP MAIN IMAGE ── */
+                            <AnimatePresence mode="wait">
+                                <motion.img
+                                    key={activeImage}
+                                    initial={{ opacity: 0, scale: 1.05 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    src={activeImage}
+                                    alt={product?.name}
+                                    className='aspect-square w-full h-full object-contain rounded-2xl'
+                                />
+                            </AnimatePresence>
+                        )}
+                    </div>
+                </div>
                 <motion.div variants={containerStagger} initial="hidden" animate="visible" className='flex flex-col gap-6 w-full lg:w-1/2'>
                     <motion.div variants={fadeInUp} className="flex items-center gap-2">
                         <span className='flex bg-yellow-50 px-2 py-1 rounded-md border border-yellow-100'>
@@ -291,9 +290,9 @@ const handleCouponModalOpen = () => {
                     </motion.div>
                     <motion.div variants={fadeInUp}>
                         <h1 className='text-sm lg:text-xl font-bold text-gray-900 mb-1 capitalize'>{activeVariant?.variant_name}</h1>
-        
+
                     </motion.div>
-     
+
                     <div>
                         <motion.p variants={fadeInUp} className='text-sm text-gray-500 font-medium'>
                             {activeVariant?.attributes[0]?.name && activeVariant?.attributes[0]?.name.charAt(0).toUpperCase() + activeVariant?.attributes[0]?.name.slice(1)}: <span className='font-semibold text-gray-700'>
@@ -312,91 +311,95 @@ const handleCouponModalOpen = () => {
                         </motion.div>
                     </div>
 
-       <motion.div variants={fadeInUp} className="flex flex-col lg:flex-row justify-between gap-4 lg:px-5 px-3 lg:py-4 py-2 bg-gray-50 rounded-2xl border border-gray-100">
-        
-        {/* Left Side: Pricing Details */}
-        <div className="flex flex-col justify-center">
-            <div className="flex items-end gap-3 flex-wrap">
-                <span className='lg:text-3xl text-lg font-black text-gray-900'>
-                    ₹{formatCurrency(finalPayablePrice)}
-                </span>
-                
-                {/* Original MRP */}
-                {(productDiscountPercent > 0 || couponDiscountAmount > 0) && (
-                    <span className='lg:text-lg text-md  line-through text-gray-400 mb-0.5'>
-                        ₹{formatCurrency(originalMRP)}
-                    </span>
-                )}
-                
-                {/* Total Savings Badge */}
-                {(productDiscountPercent > 0 || couponDiscountAmount > 0) && (
-                    <span className='lg:text-sm text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md mb-1'>
-                        Save ₹{formatCurrency(totalSavings)}
-                    </span>
-                )}
-            </div>
-            <p className='text-xs text-gray-500 mt-1.5 font-medium uppercase tracking-wide'>
-                Inclusive of all taxes
-            </p>
-        </div>
+                    <motion.div variants={fadeInUp} className="flex flex-col lg:flex-row justify-between gap-4 lg:px-5 px-3 lg:py-4 py-2 bg-gray-50 rounded-2xl border border-gray-100">
 
-        {/* Right Side: Coupon Interaction */}
-        <div className="lg:min-w-[280px]">
-            {selectedCoupon ? (
-                // --- APPLIED STATE ---
-                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl lg:px-4 px-2 lg:py-3 py-1.5 h-full">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-emerald-100 p-1.5 rounded-full text-emerald-600">
-                            <CheckCircle2 size={18} />
+                        {/* Left Side: Pricing Details */}
+                        <div className="flex flex-col justify-center">
+                            <div className="flex items-end gap-3 flex-wrap">
+                                <span className='lg:text-3xl text-lg font-black text-gray-900'>
+                                    ₹{formatCurrency(finalPayablePrice)}
+                                </span>
+
+                                {/* Original MRP */}
+                                {(productDiscountPercent > 0 || couponDiscountAmount > 0) && (
+                                    <span className='lg:text-lg text-md  line-through text-gray-400 mb-0.5'>
+                                        ₹{formatCurrency(originalMRP)}
+                                    </span>
+                                )}
+
+                                {/* Total Savings Badge */}
+                                {(productDiscountPercent > 0 || couponDiscountAmount > 0) && (
+                                    <span className='lg:text-sm text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md mb-1'>
+                                        Save ₹{formatCurrency(totalSavings)}
+                                    </span>
+                                )}
+                            </div>
+                            <p className='text-xs text-gray-500 mt-1.5 font-medium uppercase tracking-wide'>
+                                Inclusive of all taxes
+                            </p>
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-sm font-bold text-emerald-800 tracking-wide uppercase">
-                                {selectedCoupon.code} Applied
-                            </span>
-                            <span className="text-xs text-emerald-600 font-medium">
-                                Extra ₹{formatCurrency(couponDiscountAmount)} savings!
-                            </span>
+
+                        {/* Right Side: Coupon Interaction */}
+                        <div className="lg:min-w-[280px]">
+                            {selectedCoupon ? (
+                                // --- APPLIED STATE ---
+                                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl lg:px-4 px-2 lg:py-3 py-1.5 h-full">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-emerald-100 p-1.5 rounded-full text-emerald-600">
+                                            <CheckCircle2 size={18} />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-emerald-800 tracking-wide uppercase">
+                                                {selectedCoupon.code} Applied
+                                            </span>
+                                            <span className="text-xs text-emerald-600 font-medium">
+                                                Extra ₹{formatCurrency(couponDiscountAmount)} savings!
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setSelectedCoupon(null)}
+                                        className="p-1.5 text-emerald-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                                        title="Remove Coupon"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            ) : (
+                                // --- UNAPPLIED STATE ---
+                                <button
+                                    onClick={() => handleCouponModalOpen()}
+                                    className="w-full flex items-center justify-between bg-blue-50/60 hover:bg-blue-50 border border-blue-200 border-dashed rounded-xl lg:px-4 lg:py-3 py-1.5 transition-all group h-full"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-blue-100 p-1.5 rounded-lg text-blue-600 shadow-sm">
+                                            <Tag size={16} />
+                                        </div>
+                                        <div className="flex flex-col items-start text-left">
+                                            <span className="text-sm font-bold text-blue-800">Available Offers</span>
+                                            <span className="text-xs text-blue-600/80 font-medium">
+                                                Click to view coupons
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <ChevronRight
+                                        size={18}
+                                        className="text-blue-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all"
+                                    />
+                                </button>
+                            )}
                         </div>
-                    </div>
-                    <button 
-                        onClick={() => setSelectedCoupon(null)} 
-                        className="p-1.5 text-emerald-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                        title="Remove Coupon"
-                    >
-                        <X size={16} />
-                    </button>
-                </div>
-            ) : (
-                // --- UNAPPLIED STATE ---
-                <button
-                    onClick={() => handleCouponModalOpen()}
-                    className="w-full flex items-center justify-between bg-blue-50/60 hover:bg-blue-50 border border-blue-200 border-dashed rounded-xl lg:px-4 lg:py-3 py-1.5 transition-all group h-full"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="bg-blue-100 p-1.5 rounded-lg text-blue-600 shadow-sm">
-                            <Tag size={16} />
-                        </div>
-                        <div className="flex flex-col items-start text-left">
-                            <span className="text-sm font-bold text-blue-800">Available Offers</span>
-                            <span className="text-xs text-blue-600/80 font-medium">
-                                Click to view coupons
-                            </span>
-                        </div>
-                    </div>
-                    <ChevronRight
-                        size={18} 
-                        className="text-blue-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" 
-                    />
-                </button>
-            )}
-        </div>
-    </motion.div>
+                    </motion.div>
                     <motion.div variants={fadeInUp} className='flex gap-4 items-center'>
                         <motion.div variants={fadeInUp} className='flex gap-4 items-center'>
                             {isMounted && activeVariant && (
                                 <>
                                     <AddToCart productVariantId={activeVariant.id} styles="text-xl py-1 w-32 lg:w-40" />
-                                    <BuyBtn id={activeVariant.id} mode={BuyBtnMode.QUICK_BUY} styles="px-6" selectedCoupon={selectedCoupon} />
+                                    {activeVariant.inventory.stock_quantity <= 0 ? (
+                                        <span className="lg:text-md text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-lg w-full text-center flex justify-center items-center">Out of Stock</span>
+                                    )
+                                        : <BuyBtn id={activeVariant.id} mode={BuyBtnMode.QUICK_BUY} styles="px-6" selectedCoupon={selectedCoupon} />
+                                    }
                                 </>
                             )}
                         </motion.div>
@@ -428,8 +431,8 @@ const handleCouponModalOpen = () => {
             </section>
             <section className='mt-20'>
                 <h2 className='text-2xl font-bold text-gray-900 mb-8'>Customer Reviews</h2>
-                { product && product.id &&
-                    <ProductReview productId={product.id } />
+                {product && product.id &&
+                    <ProductReview productId={product.id} />
                 }
             </section>
             <section className='mt-20'>
@@ -437,7 +440,7 @@ const handleCouponModalOpen = () => {
                 {/* <ProductList products={product?.variants || []} /> */}
             </section>
             <AvailableCouponsModal isOpen={isCouponModalOpen} onClose={() => setCouponModalOpen(false)} onSelect={handleCouponSelect} productId={product?.id} />
-             
+
         </main >
     );
 }

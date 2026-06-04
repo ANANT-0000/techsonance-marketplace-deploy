@@ -1,4 +1,4 @@
-import { AppliedPromotion,  BundleDealConfig,  BuyXGetYConfig,  DiscountConfig,  FixedAmountConfig,  FreeShippingConfig,  PercentageOffConfig,  PromotionRuleType, TieredDiscountConfig } from "@/utils/Types";
+import { AppliedPromotion,  BundleDealConfig,  BuyXGetYConfig,  DiscountConfig,  FixedAmountConfig,  FreeShippingConfig,  PercentageConfig,  PromotionRuleType, PromotionType, TieredDiscountConfig } from "@/utils/Types";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -50,10 +50,10 @@ export function calculateCouponDiscount(
   if (!coupon) return 0;
 
   const config = coupon.discount_config;
-
+  if(!config) return 0;
   // ── Helper: is it a PercentageOffConfig? ─────────────────────────────
   // All config shapes have different required keys — use them as discriminants.
-  const isPercentage = (c: DiscountConfig): c is PercentageOffConfig =>
+  const isPercentage = (c: DiscountConfig): c is PercentageConfig =>
     'value' in c && !('buy_qty' in c) && !('tiers' in c) && !('product_variant_ids' in c);
 
   const isFixed = (c: DiscountConfig): c is FixedAmountConfig =>
@@ -76,19 +76,19 @@ export function calculateCouponDiscount(
 
   switch (type) {
 
-    case 'percentage_off': {
+    case PromotionType.PERCENTAGE: {
       if (!isPercentage(config)) return 0;
       const raw = Math.floor((subtotal * config.value) / 100);
-      return config.cap !== undefined ? Math.min(raw, config.cap) : raw;
+return (config.cap != null && config.cap > 0) ? Math.min(raw, config.cap) : raw;
     }
 
-    case 'fixed_amount': {
+    case PromotionType.FIXED_AMOUNT: {
       if (!isFixed(config)) return 0;
       // Can't discount more than the cart itself
       return Math.min(config.value, subtotal);
     }
 
-    case 'buy_x_get_y': {
+    case PromotionType.BUY_X_GET_Y: {
       if (!isBuyXGetY(config)) return 0;
       // Discount = price of "get" items × get_discount_percent/100
       // We don't have per-item prices here, so we return 0 and let
@@ -96,13 +96,13 @@ export function calculateCouponDiscount(
       return 0; // applied server-side per line item
     }
 
-    case 'free_shipping': {
+    case PromotionType.FREE_SHIPPING: {
       // Shipping discount is handled separately in the delivery variable.
       // Return 0 here so it doesn't double-count.
       return 0;
     }
 
-    case 'tiered_discount': {
+    case PromotionType.TIERED_DISCOUNT: {
       if (!isTiered(config)) return 0;
       // Find the highest tier the subtotal qualifies for
       const activeTier = [...config.tiers]
@@ -112,7 +112,7 @@ export function calculateCouponDiscount(
       return Math.floor((subtotal * activeTier.percent) / 100);
     }
 
-    case 'bundle_deal': {
+    case PromotionType.BUNDLE_DEAL: {
       if (!isBundle(config)) return 0;
       // Discount = difference between full subtotal and the fixed bundle price
       return Math.max(0, subtotal - config.bundle_price);

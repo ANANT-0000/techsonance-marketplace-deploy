@@ -7,9 +7,9 @@ import { authToken } from "@/utils/authToken";
 import { generateSKU } from "@/utils/generateSku";
 import { FileOrProductImage, ProductImage, ProductStatusEnum, VendorUser } from "@/utils/Types";
 import { ProductFormInput, ProductFormOutput, ProductFormValuesType, productSchema } from "@/utils/validation";
-import { createInventoryRecord, createProduct, fetchVendorWarehouse, fetchVendorWarehouseLocations, updateProduct } from "@/utils/vendorApiClient";
+import { createInventoryRecord, createProduct, updateProduct } from "@/utils/vendorApiClient";
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod.js";
-import { get } from "http";
+
 import { ArrowLeft } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { redirect, useRouter } from "next/navigation";
@@ -18,8 +18,18 @@ import { FieldErrors, useFieldArray, useForm } from "react-hook-form";
 
 
 const FILE_UPLOAD_FIELD_LABELS = [
-    { label: "Product Images / Thumbnail", fieldName: "productMedia" as keyof ProductFormValuesType },
-    { label: "Feature / Specification Media", fieldName: "featureMedia" as keyof ProductFormValuesType },
+    {
+        label: "Product Thumbnail",
+        fieldName: "productMedia" as keyof ProductFormValuesType,
+        limit: 1,
+        hint: "We highly recommend a square image (1:1 ratio) for the best display on the marketplace."
+    },
+    {
+        label: "Feature / Specification Media",
+        fieldName: "featureMedia" as keyof ProductFormValuesType,
+        limit: 5,
+        hint: "Upload detailed shots or videos to showcase features. You can upload up to 5 files."
+    },
 ] as const;
 const PRODUCT_FORM_GENERAL_FIELDS = [
     { name: "productName", label: "Product Name", placeholder: "e.g. Classic Cotton T-Shirt", type: "text" },
@@ -41,14 +51,14 @@ const PRODUCT_UPDATE_FORM_PAGE_LABELS = {
 export function ProductForm({
     categoryOptions,
     warehouseOptions,
-    taxRatesOptions,
+    taxSlabsOptions,
     vendorId,
     existingData,
     productId,
 }: {
     categoryOptions: { value: string; label: string }[];
     warehouseOptions?: { value: string; label: string }[];
-    taxRatesOptions: { value: string; label: string }[];
+    taxSlabsOptions: { value: string; label: string }[];
     vendorId: string;
     existingData?: Partial<ProductFormInput | ProductFormOutput>;
     productId?: string;
@@ -80,16 +90,15 @@ export function ProductForm({
             category: "",
             status: ProductStatusEnum.INACTIVE,
             warehouseId: "",
-                taxRateId: "", 
+            taxSlabId: "",
         },
     });
     const productName = watch('productName');
     const attributes = watch('attributes'); // Example: { Color: 'Black', Capacity: '256GB' }
-    const currentSku = watch('sku');
     const categoryName = watch('category');
     // Auto-generate SKU when variant details change, ONLY if the user hasn't manually typed a custom SKU
     const [isAutoGenerating, setIsAutoGenerating] = useState(true);
-    console.log("existingData",existingData)
+    console.log("existingData", existingData)
     useEffect(() => {
         if (isAutoGenerating && productName) {
             const newSku = generateSKU({
@@ -125,7 +134,7 @@ export function ProductForm({
 
     // Populate form when editing an existing product
     useEffect(() => {
-        console.log("existingData in effect",existingData)
+        console.log("existingData in effect", existingData)
         if (!isUpdate || !existingData) return;
         reset({
             productName: existingData.productName || "",
@@ -145,6 +154,7 @@ export function ProductForm({
             category: existingData.category || "",
             status: (existingData.status as ProductStatusEnum) || ProductStatusEnum.INACTIVE,
             warehouseId: existingData.warehouseId || "",
+            taxSlabId: existingData.taxSlabId || "",
         });
 
         const initialProductFiles = (existingData.productMedia as FileOrProductImage[]) || [];
@@ -157,7 +167,7 @@ export function ProductForm({
         setValue("productMedia", initialProductFiles as any, { shouldDirty: false });
         setValue("featureMedia", initialFeatureFiles as any, { shouldDirty: false });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [productId,existingData]);
+    }, [productId, existingData]);
 
     // ── File handlers ──
     const handleFileSelect = useCallback(
@@ -224,6 +234,7 @@ export function ProductForm({
             stock_quantity: Number(data.stocks),
             sku: data.sku,
             warehouse_id: data.warehouseId,
+            tax_slab_id: data.taxSlabId,
         };
 
         const payload = isUpdate
@@ -304,7 +315,7 @@ export function ProductForm({
                                         type="text"
                                         className="form_input"
                                         placeholder={field.placeholder}
-                                        {...register(field.name as keyof ProductFormValuesType)}
+                                        {...register(field.name as keyof ProductFormValuesType, { required: `${field.label} is required` })}
                                     />
                                 )}
                                 {errors[field.name as keyof ProductFormValuesType] && (
@@ -344,7 +355,7 @@ export function ProductForm({
                                                 type="text"
                                                 className="form_input"
                                                 placeholder="e.g. Waterproof"
-                                                {...register(`features.${index}.title`)}
+                                                {...register(`features.${index}.title`, { required: "Feature title is required" })}
                                             />
                                         </div>
                                         <div>
@@ -353,7 +364,7 @@ export function ProductForm({
                                                 rows={2}
                                                 className="form_input"
                                                 placeholder="Feature description…"
-                                                {...register(`features.${index}.description`)}
+                                                {...register(`features.${index}.description`, { required: "Feature description is required" })}
                                             />
                                         </div>
                                     </div>
@@ -389,7 +400,7 @@ export function ProductForm({
                                                 type="text"
                                                 className="form_input"
                                                 placeholder="e.g. Material Type"
-                                                {...register(`attributes.${index}.name`)}
+                                                {...register(`attributes.${index}.name`, { required: "Attribute title is required" })}
                                             />
                                         </div>
                                         <div>
@@ -398,7 +409,7 @@ export function ProductForm({
                                                 rows={2}
                                                 className="form_input"
                                                 placeholder="e.g. 100% Cotton"
-                                                {...register(`attributes.${index}.value`)}
+                                                {...register(`attributes.${index}.value`, { required: "Attribute value is required" })}
                                             />
                                         </div>
                                     </div>
@@ -444,20 +455,44 @@ export function ProductForm({
                 <div className="section">
                     <div className="section_header">
                         <DynamicIcon fallback={() => <p></p>} name="image" size={18} className="text-indigo-500" />
-                        <h2 className="text-base font-semibold text-slate-800">Media</h2>
+                        <h2 className="text-base font-semibold text-slate-800">Media & Assets</h2>
                     </div>
+
+                    {/* Global Media Guideline Banner */}
+                    <div className="px-6 pt-4 pb-2">
+                        <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 flex gap-3 items-start">
+                            <DynamicIcon fallback={() => <p></p>} name="info" size={16} className="text-indigo-500 mt-0.5 shrink-0" />
+                            <p className="text-xs text-indigo-700 leading-relaxed">
+                                <strong>Image Guidelines:</strong> For optimal performance and visual consistency, please upload high-resolution images under 10MB. Keep the main product centered with a clean background.
+                            </p>
+                        </div>
+                    </div>
+
                     <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {FILE_UPLOAD_FIELD_LABELS.map(({ label, fieldName }) => {
+                        {FILE_UPLOAD_FIELD_LABELS.map(({ label, fieldName, limit, hint }) => {
                             const { files, setFiles } = fileStateMap[fieldName as keyof typeof fileStateMap];
+
                             return (
-                                <div key={fieldName} className="border border-slate-200 rounded-xl p-4 bg-slate-50">
-                                    <h3 className="text-sm font-semibold text-slate-700 mb-3">{label}</h3>
+                                <div key={fieldName} className="border border-slate-200 rounded-xl p-5 bg-slate-50 flex flex-col">
+
+                                    {/* Header & Dynamic Hint */}
+                                    <div className="mb-4">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <h3 className="text-sm font-semibold text-slate-700">{label}</h3>
+                                            <span className="text-[10px] font-bold text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                                Max {limit} file{limit !== 1 ? 's' : ''}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-slate-500 leading-relaxed">
+                                            {hint}
+                                        </p>
+                                    </div>
 
                                     {/* Upload area */}
-                                    <label className="flex flex-col items-center justify-center py-2 border-2 border-dashed border-blue-300 bg-blue-50/30 rounded-xl cursor-pointer hover:bg-blue-50 transition group">
+                                    <label className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-blue-300 bg-blue-50/40 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition group mt-auto">
                                         <input
                                             type="file"
-                                            multiple
+                                            multiple={limit > 1} // Dynamically enable multiple uploads based on limit
                                             accept="image/*,video/*"
                                             className="hidden"
                                             onChange={(e) =>
@@ -469,40 +504,46 @@ export function ProductForm({
                                                 )
                                             }
                                         />
-                                        <DynamicIcon fallback={() => <p></p>} name="upload-cloud" size={32} className="text-blue-400 group-hover:text-blue-600 transition mb-2" />
-                                        <p className="text-xs font-semibold text-blue-500 group-hover:text-blue-700">Click to upload</p>
-                                        <p className="text-xs text-slate-400 mt-0.5">PNG, JPG, MP4 up to 10MB</p>
+                                        <DynamicIcon fallback={() => <p></p>} name="upload-cloud" size={28} className="text-blue-400 group-hover:text-blue-600 transition mb-2" />
+                                        <p className="text-sm font-semibold text-blue-600 group-hover:text-blue-700">
+                                            Click to browse files
+                                        </p>
+                                        <p className="text-[11px] text-slate-400 mt-1">PNG, JPG, MP4 up to 10MB</p>
                                     </label>
 
                                     {/* Preview list */}
                                     {files.length > 0 && (
-                                        <ul className="flex flex-wrap gap-3 mt-4">
+                                        <ul className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-slate-200/60">
                                             {files.map((file: FileOrProductImage, i: number) => (
                                                 <li
                                                     key={i}
-                                                    className="relative bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm w-20 h-20"
+                                                    className="relative bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm w-16 h-16 group/preview"
                                                 >
                                                     <img
                                                         src={getPreviewUrl(file)}
                                                         alt={`preview-${i}`}
                                                         className="w-full h-full object-cover"
                                                     />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            handleFileRemove(
-                                                                i,
-                                                                files,
-                                                                setFiles as React.Dispatch<React.SetStateAction<FileOrProductImage[]>>,
-                                                                fieldName,
-                                                                (file as { id?: string }).id ?? undefined
-                                                            )
-                                                        }
-                                                        className="absolute top-1 right-1 p-0.5 bg-red-50 text-red-400 hover:text-red-600 transition rounded-full border border-red-200"
-                                                        title="Remove image"
-                                                    >
-                                                        <DynamicIcon fallback={() => <p></p>} name="x" size={12} />
-                                                    </button>
+                                                    {/* Overlay that appears on hover for easier deletion */}
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.preventDefault(); // Prevent triggering the file input label
+                                                                handleFileRemove(
+                                                                    i,
+                                                                    files,
+                                                                    setFiles as React.Dispatch<React.SetStateAction<FileOrProductImage[]>>,
+                                                                    fieldName,
+                                                                    (file as { id?: string }).id ?? undefined
+                                                                );
+                                                            }}
+                                                            className="p-1.5 bg-red-500 text-white hover:bg-red-600 transition rounded-full shadow-sm"
+                                                            title="Remove image"
+                                                        >
+                                                            <DynamicIcon fallback={() => <p></p>} name="trash-2" size={14} />
+                                                        </button>
+                                                    </div>
                                                 </li>
                                             ))}
                                         </ul>
@@ -543,18 +584,18 @@ export function ProductForm({
                         <div>
                             <label className="form_label">Tax Rate <span className="text-red-400">*</span></label>
                             <div className="relative">
-                                <select {...register("taxRateId")} className="form_input appearance-none pr-9">
+                                <select {...register("taxSlabId")} className="form_input appearance-none pr-9">
                                     <option value="" disabled>Select Tax Rate</option>
-                                    {taxRatesOptions.map((t, idx) => (
+                                    {taxSlabsOptions.map((t, idx) => (
                                         <option key={idx} value={t.value}>{t.label}</option>
                                     ))}
                                 </select>
                                 <DynamicIcon fallback={() => <p></p>} name="chevron-down" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                             </div>
-                            {errors.taxRateId && (
+                            {errors.taxSlabId && (
                                 <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
                                     <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={12} />
-                                    {errors.taxRateId.message}
+                                    {errors.taxSlabId.message}
                                 </p>
                             )}
                         </div>

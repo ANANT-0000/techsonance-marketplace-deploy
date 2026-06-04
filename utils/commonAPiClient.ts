@@ -87,6 +87,49 @@ export const fetchProductVendorProducts = async (
     if (params.limit !== undefined)     searchParams.set('limit', String(params.limit));
  
     const qs = searchParams.toString();
+    const url = `${BASE_API_URL}/v1/products/vendor-products${qs ? `?${qs}` : ''}`;
+ 
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+         
+            cache: 'no-store',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+            },
+        });
+        if (response.status !== 200) {
+            console.log('Failed to fetch vendor products');
+            return { data: [], total: 0, offset: 0, limit: 12, totalPages: 0 };
+        }
+        const json = await response.json();
+        const payload = json?.data ?? json;
+        
+        if (Array.isArray(payload)) {
+            return { data: payload, total: payload.length, offset: 0, limit: payload.length, totalPages: 1 };
+        }
+        return payload ;
+    } catch (error) {
+        console.log('Error fetching vendor products:', error);
+        return { data: [], total: 0, offset: 0, limit: 12, totalPages: 0 };
+    }
+};
+export const fetchProductProducts = async (
+    params: ProductQueryParams = {}
+): Promise<ProductsResponse> => {
+    const companyDomain = await getCompanyDomain();
+ 
+    const searchParams = new URLSearchParams();
+    if (params.search)        searchParams.set('search', params.search);
+    if (params.category_id)   searchParams.set('category_id', params.category_id);
+    if (params.min_price !== undefined) searchParams.set('min_price', String(params.min_price));
+    if (params.max_price !== undefined) searchParams.set('max_price', String(params.max_price));
+    if (params.sort_by)       searchParams.set('sort_by', params.sort_by);
+    if (params.offset !== undefined)    searchParams.set('offset', String(params.offset));
+    if (params.limit !== undefined)     searchParams.set('limit', String(params.limit));
+ 
+    const qs = searchParams.toString();
     const url = `${BASE_API_URL}/v1/products/all${qs ? `?${qs}` : ''}`;
  
     try {

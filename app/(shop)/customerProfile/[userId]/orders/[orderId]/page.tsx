@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { motion } from "motion/react";
 import Link from "next/link";
@@ -24,8 +24,9 @@ import { fetchOrderDetails } from "@/utils/customerApiClient";
 import { useRouter } from "next/navigation";
 import { OrderStatus } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
-import { BASE_API_URL } from "@/constants";
 import toast, { Toaster } from "react-hot-toast";
+import { useInvoiceDownload } from "@/hooks/useInvoiceDownload";
+import { useWarrantyDownload } from "@/hooks/useWarrantyDownload";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,6 +37,7 @@ interface ProductVariant {
     variant_name: string;
     price: string;
     images: OrderImage[];
+    product_id: string;
 }
 
 interface ReturnRequest {
@@ -79,10 +81,10 @@ interface Payment {
 }
 
 interface Invoice {
-    company_id:string;
-order_id:string;
-invoice_url: string;
-invoice_number?: string;
+    company_id: string;
+    order_id: string;
+    invoice_url: string;
+    invoice_number?: string;
 
 }
 interface OrderDetailType {
@@ -299,7 +301,7 @@ interface OrderItemRowProps {
     handleDownload: (url: string, filename: string) => void;
 }
 
-function OrderItemRow({ item, isSingleItem, onCancel, onReturnReplace, onWriteReview ,handleDownload}: OrderItemRowProps) {
+function OrderItemRow({ item, isSingleItem, onCancel, onReturnReplace, onWriteReview, handleDownload }: OrderItemRowProps) {
     const status = item.order_status.toLowerCase();
 
     const isCancelled = status === "cancelled";
@@ -337,19 +339,19 @@ function OrderItemRow({ item, isSingleItem, onCancel, onReturnReplace, onWriteRe
                 <div className="flex-grow flex flex-col justify-between gap-3">
                     <div>
                         <Link
-                            href={`/shopping/${item.variant.id}`}
+                            href={`/shopping/${item.variant.product_id}`}
                             className="font-bold text-gray-900 text-sm sm:text-base hover:text-blue-600 line-clamp-2 transition-colors"
-                            >
+                        >
                             {item.variant.variant_name}
                         </Link>
-                <div className="flex justify-between w-full">
-                    <span >
-                        <p className="text-gray-500 text-sm mt-1">Qty: {item.quantity}</p>
-                        <p className="text-gray-900 font-semibold mt-0.5">
-                            ₹{formatCurrency(Number(item.price))}
-                        </p>
-   </span>
-                           {/* { item.invoice && item?.invoice?.invoice_url && (
+                        <div className="flex justify-between w-full">
+                            <span >
+                                <p className="text-gray-500 text-sm mt-1">Qty: {item.quantity}</p>
+                                <p className="text-gray-900 font-semibold mt-0.5">
+                                    ₹{formatCurrency(Number(item.price))}
+                                </p>
+                            </span>
+                            {/* { item.invoice && item?.invoice?.invoice_url && (
                                      <button 
       onClick={() => handleDownload(
          item.invoice.invoice_url,
@@ -360,9 +362,9 @@ function OrderItemRow({ item, isSingleItem, onCancel, onReturnReplace, onWriteRe
                                         <Download size={16} /> Download Invoice
                                     </button>
                                 )} */}
-                            </div>
+                        </div>
                     </div>
-                  
+
 
                     {/* ── Per-item tracker (only shown when there are multiple items OR single non-cancelled) */}
                     {!isCancelled && !isPastDelivery && (
@@ -450,9 +452,11 @@ function SingleItemTracker({ status }: { status: string }) {
 
 export default function OrderDetailsPage() {
     const { orderId } = useParams<{ orderId: string }>();
+    const { downloadInvoice, isGenerating } = useInvoiceDownload();
+    const { downloadWarranty, isGenerating: isGeneratingWarranty } = useWarrantyDownload();
     const [order, setOrder] = useState<OrderDetailType | null>(null);
     const router = useRouter();
-    const token=authToken(); 
+    const token = authToken();
     useEffect(() => {
         if (!orderId || !token) return;
         fetchOrderDetails(orderId, token)
@@ -462,7 +466,7 @@ export default function OrderDetailsPage() {
             })
             .catch((err) => console.error("Error fetching order details:", err));
     }, [orderId, token]);
-    console.log("order",order)
+    console.log("order", order)
     const handleCancelItem = (id: string) => router.push(`${orderId}/cancel/${id}`);
     const handleReturnReplace = (id: string) => router.push(`${orderId}/return/${id}`);
     const handleWriteReview = (id: string) =>
@@ -477,55 +481,24 @@ export default function OrderDetailsPage() {
 
     const paymentStatus = order?.payment?.payment_status ?? "";
     console.log('paymentStatus', order?.payment.payment_status
-)
+    )
 
-const handleDownload = async (url: string, filename: string) => {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = filename || 'invoice.pdf';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(blobUrl);
-  } catch (error) {
-    console.error('Download failed:', error);
-  }
-};const processMultipleDownloads = async (urls: string[]) => {
-  if (!urls || urls.length === 0) return;
-
-  for (let i = 0; i < urls.length; i++) {
-    const url = urls[i];
-    const extractedFilename = url.substring(url.lastIndexOf('/') + 1);
-    
-    await handleDownload(url, extractedFilename);
-    await new Promise(resolve => setTimeout(resolve, 300)); 
-  }
-};
- const handleOrderWarrantiesDownload = async (orderId: string) => {
-  try {
-    // Replace this URL with your actual server endpoint
-    const response = await fetch(`${BASE_API_URL}/v1/orders/warranty/${orderId}`); 
-    const result = await response.json();
-
-    // Check if the response matches your expected format
-    if (result.success && result.data && result.data.length > 0) {
-      // Trigger the downloads with the array of URLs
-      await processMultipleDownloads(result.data);
-      toast.success('Warranty documents downloaded successfully!');
-    } else {
-      console.warn('No warranties found or request failed:', result.message);
-      toast.error('No warranties found or request failed.');
-    }
-  } catch (error) {
-    console.error('Failed to fetch warranty URLs from server:', error);
-    // Optional: Show an error toast/alert to the user here
-  }
-};
+    const handleDownload = async (url: string, filename: string) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename || 'invoice.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error('Download failed:', error);
+        }
+    };
 
 
     return (
@@ -681,62 +654,106 @@ const handleDownload = async (url: string, filename: string) => {
                             )}
 
                             <div className="flex flex-col gap-2">
-                                {order?.invoice?.invoice_url && (
-                                     <button 
-      onClick={() => handleDownload(
-        order.invoice.invoice_url,
-        order.invoice.invoice_number ?? "invoice.pdf"
-      )}
-                                        className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer"
+                                {order?.id && (
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                await downloadInvoice(order.id, token!);
+                                                toast.success('Invoice downloaded!');
+                                            } catch {
+                                                toast.error('Failed to generate invoice. Please try again.');
+                                            }
+                                        }}
+                                        disabled={isGenerating}
+                                        className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
-                                        <Download size={16} /> Download Invoice
+                                        {isGenerating ? (
+                                            <>
+                                                <svg className="animate-spin h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                                </svg>
+                                                Generating PDF...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Download size={16} /> Download Invoice
+                                            </>
+                                        )}
                                     </button>
                                 )}
-                                <button onClick={()=>handleOrderWarrantiesDownload(orderId)} className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer">
-                                    <FileText size={16} /> Request Warranty Slip
-                                </button>
-                            </div>
-                        </motion.div>
-
-                        {/* Shipping Address */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200"
-                        >
-                            <h2 className="text-lg font-bold text-gray-900 mb-3">Shipping Address</h2>
-                            <div className="text-sm text-gray-600 leading-relaxed">
-                                <p className="font-bold text-gray-900 mb-1">{order?.address?.name}</p>
-                                <p>{order?.address?.address_line_1}</p>
-                                {order?.address?.address_line_2 && <p>{order?.address?.address_line_2}</p>}
-                                <p>
-                                    {order?.address?.city}, {order?.address?.state}{" "}
-                                    {order?.address?.postal_code}
-                                </p>
-                                <p>{order?.address?.country}</p>
-                            </div>
-                        </motion.div>
-
-                        {/* Support */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col gap-3"
-                        >
-                            <h2 className="text-sm font-bold text-gray-900">Need help with this order?</h2>
-                            <button className="flex items-center gap-3 text-sm text-blue-600 font-medium hover:underline w-fit">
-                                <HeadphonesIcon size={18} /> Contact Customer Support
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const hasWarranty = await downloadWarranty(orderId, token!);
+                                            if (hasWarranty) {
+                                                toast.success('Warranty document(s) downloaded!');
+                                            } else {
+                                                toast('No warranty documents found for this order.', { icon: 'ℹ️' });
+                                            }
+                                        } catch {
+                                            toast.error('Failed to generate warranty. Please try again.');
+                                        }
+                                    }}
+                                disabled={isGeneratingWarranty}
+                                className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                {isGeneratingWarranty ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                        </svg>
+                                        Generating Warranty...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FileText size={16} /> Download Warranty Slip
+                                    </>
+                                )}
                             </button>
-                            <button className="flex items-center gap-3 text-sm text-blue-600 font-medium hover:underline w-fit">
-                                <RefreshCcw size={18} /> View Return Policy
-                            </button>
-                        </motion.div>
                     </div>
-                </div>
+                </motion.div>
+
+                {/* Shipping Address */}
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200"
+                >
+                    <h2 className="text-lg font-bold text-gray-900 mb-3">Shipping Address</h2>
+                    <div className="text-sm text-gray-600 leading-relaxed">
+                        <p className="font-bold text-gray-900 mb-1">{order?.address?.name}</p>
+                        <p>{order?.address?.address_line_1}</p>
+                        {order?.address?.address_line_2 && <p>{order?.address?.address_line_2}</p>}
+                        <p>
+                            {order?.address?.city}, {order?.address?.state}{" "}
+                            {order?.address?.postal_code}
+                        </p>
+                        <p>{order?.address?.country}</p>
+                    </div>
+                </motion.div>
+
+                {/* Support */}
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col gap-3"
+                >
+                    <h2 className="text-sm font-bold text-gray-900">Need help with this order?</h2>
+                    <button className="flex items-center gap-3 text-sm text-blue-600 font-medium hover:underline w-fit">
+                        <HeadphonesIcon size={18} /> Contact Customer Support
+                    </button>
+                    <button className="flex items-center gap-3 text-sm text-blue-600 font-medium hover:underline w-fit">
+                        <RefreshCcw size={18} /> View Return Policy
+                    </button>
+                </motion.div>
             </div>
-            <Toaster />
         </div>
+            </div >
+        <Toaster />
+        </div >
     );
 }

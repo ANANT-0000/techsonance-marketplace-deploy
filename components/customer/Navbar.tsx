@@ -1,35 +1,40 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from "next/link";
-import { usePathname } from 'next/navigation';
-import { useMediaQuery } from 'react-responsive'
-import { BRAND_LOGO, searchImgDark, searchImgLight, userIcon } from "@/constants/common";
-import { Bell, Heart, ShoppingCart } from "lucide-react";
+// Added useRouter for redirection
+import { usePathname, useRouter } from 'next/navigation'; 
+import { useMediaQuery } from 'react-responsive';
+import { BRAND_LOGO } from "@/constants/common";
+import { Bell, Heart, ShoppingBag, User, Search, Menu } from "lucide-react";
 
 import { NAV_LINKS } from "@/constants/customer";
 import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import { motion } from "motion/react";
 import { RootState } from "@/lib/store";
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
+import { useNavbarData } from "@/hooks/useNavbarData";
 
+import { SearchBar } from './SearchBar'; 
 
-// @ts-ignore
-export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: { styles?: string, logoUrl?: string, menuLinks?: { [key: string]: string | null }[] }) {
-    const searchImg = false ? searchImgLight : searchImgDark;
+export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks: propMenuLinks }: { styles?: string, logoUrl?: string, menuLinks?: { [key: string]: string | null }[] }) {
+    const { menuLinks: dynamicLinks } = useNavbarData();
+    const menuLinks = propMenuLinks || dynamicLinks;
+    
     const { items } = useAppSelector((state: RootState) => state.cart);
     const { wishItems } = useAppSelector((state: RootState) => state.wishlist);
     const { user, isAuthenticated } = useAppSelector((state: RootState) => state.auth);
-    console.log('user', user, 'isAuthenticated', isAuthenticated)
 
     const dispatch = useAppDispatch();
     const wishlistCount = wishItems.map((item: any) => item.product_variant_id).length;
-    // const cartCount = items.length;
-    console.log("wishItems", wishItems)
-    console.log("items", items);
     const path = usePathname();
-    const isTabletOrMobile = useMediaQuery({ query: '(max-width: 1224px)' })
+    const router = useRouter(); // Initialize router
+    
+    const isTabletOrMobile = useMediaQuery({ query: '(max-width: 1224px)' });
+    
     const [isMounted, setIsMounted] = useState(false);
-    console.log("nav user", user?.id)
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
     useEffect(() => {
         setIsMounted(true);
     }, []);
@@ -39,81 +44,130 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks = NAV_LINKS }: 
     if (path.startsWith('/admin') || path.startsWith('/vendor') || path.includes('checkout') || path.includes('cart') || path.includes('wishlist') || path.includes('orders') || path.includes('changePassword') || path.includes('address') || path.includes('customerProfile')) {
         return <></>
     }
+    
     if (!isMounted) {
-
         return <nav className="h-16" />;
     }
+
     if (isTabletOrMobile) {
         return (
-            <nav className="flex justify-between items-center align-middle px-4 py-2 h-16">
-                <Link href="/"><img src={logoUrl} alt="brand logo" className="h-10" /></Link>
-                <Bell />
+            <nav className="flex justify-between items-center px-4 py-2 h-16 bg-white border-b border-gray-100">
+                <button className="text-black">
+                    <Menu strokeWidth={1.5} size={26} />
+                </button>
+                <Link href="/">
+                    <img src={logoUrl} alt="brand logo" className="h-6 object-contain" />
+                </Link>
+                <button className="text-black">
+                    <Bell strokeWidth={1.5} size={24} />
+                </button>
             </nav>
         )
     }
 
     return (
-        <nav className={`bg-navbar text-navbar-foreground flex justify-between items-center  align-middle  xl:px-32 xl:py-2 lg:px-8 md:px-4 sm:px-2 py-1 h-16   `}>
-            <Link href="/"><img src={logoUrl} alt="brand logo" className="h-10" /></Link>
-            <ul className={` ${path.includes('/checkout') ? 'hidden' : ''} flex space-x-2 md:text-[12px] lg:text-[0.8rem] font-medium items-center`}>
+        <nav className={`bg-white text-black flex justify-between items-center xl:px-16 lg:px-8 md:px-4 py-1 h-20 border-b border-gray-100 ${styles}`}>
+            
+            <div className="flex-1">
+                <Link href="/">
+                    <img src={logoUrl} alt="brand logo" className="h-6 font-black object-contain" />
+                </Link>
+            </div>
+
+            <ul className={`flex space-x-8 md:text-[13px] lg:text-[14px] font-medium items-center justify-center flex-1`}>
                 {menuLinks.map((item) => {
                     const label = Object.keys(item)[0];
                     const href = Object.values(item)[0];
                     const isActive = path === href;
 
                     return (
-                        <li key={label} className="relative py-1 px-4">
+                        <li key={label} className="relative py-1">
                             <Link
                                 href={href || '#'}
-                                className={`relative z-10 transition-colors duration-300 font-bold ${isActive ? 'text-white' : 'text-gray-600 hover:text-gray-900'
-                                    }`}
+                                className={`relative z-10 transition-colors duration-300 font-semibold pb-2 ${
+                                    isActive ? 'text-blue-600' : 'text-gray-800 hover:text-gray-500'
+                                }`}
                             >
                                 {label}
                             </Link>
 
-                            {/* Animated Background Pill */}
                             {isActive && (
                                 <motion.div
-                                    layoutId="nav-pill"
+                                    layoutId="nav-underline"
                                     transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
-                                    className="absolute   inset-0 bg-[#04b0ffc1] rounded-full z-0"
+                                    className="absolute -bottom-1 left-0 right-0 h-[2px] bg-blue-600 z-0"
                                 />
                             )}
                         </li>
                     );
                 })}
             </ul>
-            <span className="flex gap-4">
-                {/* <div className="border-2    border-black/40 rounded-full flex items-center px-5   gap-2   ">
-                    <input type="text" name="search" id="" placeholder="Search..." className="focus:outline-none text-lg  w-30 py-1" /> <button className="focus:outline-none">
-                        <img src={searchImg} alt="" className="h-4 w-4" />
-                    </button>
-                </div> */}
-                {path === '/customerRegister' || path === '/customerLogin' || path.includes('/customerProfile') ? null :
-                    <div className="  flex gap-6 items-center ">
-                        {showUserContent ?
-                            <Link href={'/customerProfile' + (`/${user?.id}`) + '/wishlist'} className="relative">
-                                {wishlistCount > 0 ? <motion.span
-                                    key={wishlistCount}
-                                    initial={{ scale: 1.2, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }} className="  absolute -top-2 -right-2 text-md bg-red-500 text-white rounded-full  w-6 h-6 flex items-center justify-center" >{wishlistCount}</motion.span> : null}
-                                <Heart size={38} color={isMounted && wishlistCount > 0 ? "pink" : "black"} fill={isMounted && wishlistCount > 0 ? "pink" : "none"} />
+
+            <div className="flex-1 flex justify-end">
+                {path === '/customerRegister' || path === '/customerLogin' || path.includes('/customerProfile') ? null : (
+                    <div className="flex gap-6 items-center">
+                        
+                        <div className="relative flex items-center">
+                            {isSearchOpen ? (
+                                <div className="absolute right-0 top-full mt-4 w-[300px] z-50">
+                                    <SearchBar 
+                                        value={searchQuery}
+                                        onChange={setSearchQuery}
+                                        onClose={() => setIsSearchOpen(false)} // Pass the close handler
+                                        onSearch={(val) => {
+                                            if (val.trim()) {
+                                                // Redirect to your shopping list page with the search query
+                                                router.push(`/shopping-list?q=${encodeURIComponent(val)}`);
+                                            }
+                                            setIsSearchOpen(false); // Close bar after searching
+                                            setSearchQuery(''); // Optional: clear the input after redirect
+                                        }}
+                                        placeholder="Search products..."
+                                    />
+                                </div>
+                            ) : (
+                                <button onClick={() => setIsSearchOpen(true)} className="hover:text-gray-500 transition-colors">
+                                    <Search size={22} strokeWidth={1.5} />
+                                </button>
+                            )}
+                        </div>
+
+                        {showUserContent && (
+                            <Link href={'/customerProfile' + (`/${user?.id}`) + '/wishlist'} className="relative hover:text-gray-500 transition-colors">
+                                {wishlistCount > 0 && (
+                                    <motion.span
+                                        key={wishlistCount}
+                                        initial={{ scale: 1.2, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }} 
+                                        className="absolute -top-2 -right-2 text-[10px] bg-black text-white rounded-full w-4 h-4 flex items-center justify-center"
+                                    >
+                                        {wishlistCount}
+                                    </motion.span>
+                                )}
+                                <Heart size={22} strokeWidth={1.5} color="currentColor" fill={isMounted && wishlistCount > 0 ? "black" : "none"} />
                             </Link>
-                            : ''
-                        }
-                        <button onClick={() => dispatch(toggleCartSidebar('open'))} className=" relative" >
-                            {isMounted && items.length > 0 && <motion.span key={items.length}
-                                initial={{ scale: 1.2, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }} className=" absolute -top-2 -right-2 text-md bg-red-500 text-white rounded-full  w-6 h-6 flex items-center justify-center">{items.length}</motion.span>}
-                            <ShoppingCart size={38} />
+                        )}
+
+                        <button onClick={() => dispatch(toggleCartSidebar('open'))} className="relative hover:text-gray-500 transition-colors">
+                            {isMounted && items.length > 0 && (
+                                <motion.span 
+                                    key={items.length}
+                                    initial={{ scale: 1.2, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }} 
+                                    className="absolute -top-2 -right-2 text-[10px] bg-black text-white rounded-full w-4 h-4 flex items-center justify-center"
+                                >
+                                    {items.length}
+                                </motion.span>
+                            )}
+                            <ShoppingBag size={22} strokeWidth={1.5} />
                         </button>
 
-                        <Link href={user?.id ? '/customerProfile' + `/${user?.id}` : '/auth/customerLogin'} className=" ">
-                            <img src={userIcon} alt="" className="h-8 w-8 rounded-full" />
+                        <Link href={user?.id ? '/customerProfile' + `/${user?.id}` : '/auth/customerLogin'} className="hover:text-gray-500 transition-colors">
+                             <User size={22} strokeWidth={1.5} />
                         </Link>
-                    </div>}
-            </span>
+                    </div>
+                )}
+            </div>
         </nav>
-
     )
 }

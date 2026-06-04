@@ -12,53 +12,11 @@ interface StatusToggleProps {
     initialStatus: string;
 }
 
-export function StatusToggle({ productVariantId, vendorId, initialStatus }: StatusToggleProps) {
-    const [status, setStatus] = useState(initialStatus);
-    const [loading, setLoading] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-
-    const isActive = status === ProductVariantStatus.ACTIVE;
-    const nextStatus = isActive ? ProductVariantStatus.INACTIVE : ProductVariantStatus.ACTIVE;
-    const token = authToken()
-    const handleConfirm = async () => {
-        setLoading(true);
-        setShowModal(false);
-        if (!token) {
-            toast.error("Authentication Token not found");
-            return;
-        }
-        try {
-            await updateProductVariantStatus(productVariantId, vendorId, nextStatus, token);
-            setStatus(nextStatus);
-        } catch (err) {
-            console.error("Failed to update status:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
+export const StatusConfirmationModal = ({ onConfirm, onCancel,isActive }: { onConfirm: () => void; onCancel: () => void; isActive: boolean }) => {
     return (
-        <>
-            {/* Badge / Trigger Button */}
-            <button
-                onClick={() => setShowModal(true)}
-                disabled={loading}
-                title={`Click to mark as ${nextStatus}`}
-                className={`inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-xs font-semibold border transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
-                    ${isActive
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300"
-                        : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 hover:border-gray-300"
-                    }`}
-            >
-                <span className={`w-1.5 h-1.5 rounded-full bg-current ${loading ? "animate-pulse" : ""}`} />
-                {loading ? "Saving..." : isActive ? "Active" : "Inactive"}
-            </button>
-
-            {/* Confirmation Modal */}
-            {showModal && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-                    onClick={() => setShowModal(false)}
+         <div
+                    className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                    onClick={() => onCancel()}
                 >
                     <div
                         className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-sm mx-4 p-6 flex flex-col gap-4"
@@ -106,13 +64,13 @@ export function StatusToggle({ productVariantId, vendorId, initialStatus }: Stat
                         {/* Actions */}
                         <div className="flex gap-3 mt-1">
                             <button
-                                onClick={() => setShowModal(false)}
+                                onClick={() => onCancel()}
                                 className="flex-1 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200 py-2.5 rounded-xl transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
-                                onClick={handleConfirm}
+                                onClick={() => onConfirm()}
                                 className={`flex-1 text-sm font-semibold text-white py-2.5 rounded-xl transition-colors ${isActive
                                     ? "bg-red-500 hover:bg-red-600 active:bg-red-700"
                                     : "bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700"
@@ -123,9 +81,5 @@ export function StatusToggle({ productVariantId, vendorId, initialStatus }: Stat
                         </div>
                     </div>
                 </div>
-            )}
-                        <Toaster />
-            
-        </>
     );
 }

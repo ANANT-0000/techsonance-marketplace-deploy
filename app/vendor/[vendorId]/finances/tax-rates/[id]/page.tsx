@@ -6,18 +6,112 @@ import { Save, ArrowLeft, Percent } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { authToken } from "@/utils/authToken";
-import {  fetchCreateTaxRate, fetchSingleTaxRate, fetchTaxProfiles, fetchUpdateTaxRate } from "@/utils/vendorApiClient";
+import { 
+    fetchCreateTaxSlab, 
+    fetchSingleTaxSlab, // Updated import
+    fetchTaxProfiles, 
+    fetchUpdateTaxSlab 
+} from "@/utils/vendorApiClient";
 
-export default function UnifiedTaxRateFormPage() {
+// ── Configuration Array ───────────────────────────────────────────────
+export const TAXSLAB_FORM_FIELDS = [
+  // Links to Tax Profile (required by tax_types insert)
+  {
+    name: "tax_profile_id",
+    label: "Tax Profile",
+    type: "select",
+    required: true,
+    placeholder: "Select a tax profile...",
+    note: "The category this slab belongs to (e.g. Electronics, Apparel)",
+    gridSpan: 2 // Added so it spans the full row
+  },
+
+  // tax_types fields (semantic definition)
+  {
+    name: "tax_name",
+    label: "Tax name",
+    type: "text",
+    required: true,
+    placeholder: "e.g. GST",
+    note: "The tax authority name"
+  },
+  {
+    name: "tax_code",
+    label: "Tax code",
+    type: "text",
+    required: true,
+    placeholder: "e.g. GST-IN-18",
+    note: "Unique identifier used in invoices and reports"
+  },
+  {
+    name: "tax_scope",
+    label: "Tax scope",
+    type: "select",
+    required: true,
+    options: [
+      { value: "Intra-state", label: "Intra-state (CGST + SGST)" },
+      { value: "Inter-state", label: "Inter-state (IGST)" },
+      { value: "Both",        label: "Both — resolved at checkout" },
+    ],
+    note: "For Indian GST, always use 'Both' — the split is auto-detected from addresses",
+    gridSpan: 2
+  },
+
+  // tax_slabs fields (numeric rate)
+  {
+    name: "slab_name",
+    label: "Slab name",
+    type: "text",
+    required: true,
+    placeholder: "e.g. GST 18% — Electronics",
+  },
+  {
+    name: "total_rate",
+    label: "Total GST rate (%)",
+    type: "number",
+    required: true,
+    placeholder: "18",
+    step: "0.01",
+    note: "Enter the full rate (e.g. 18 for GST 18%). Split calculated at checkout"
+  },
+  {
+    name: "description",
+    label: "Description",
+    type: "textarea",
+    placeholder: "Describe the slab...",
+    note: "Optional",
+    gridSpan: 2 // Make textarea span full width
+  },
+  {
+    name: "effective_from",
+    label: "Effective from",
+    type: "date",
+    required: true
+  },
+  {
+    name: "effective_to",
+    label: "Effective to (leave blank if ongoing)",
+    type: "date"
+  },
+  {
+    name: "is_exempt",
+    label: "Tax exempt (0% rate)",
+    type: "checkbox",
+    gridSpan: 2
+  },
+];
+
+// ── Main Component ────────────────────────────────────────────────────
+export default function TaxSlabFormPage() {
     const params = useParams();
     const router = useRouter();
     const vendorId = params.vendorId as string;
-    const rateId = params.id as string;
+    const slabId = params.id as string; // Updated from rateId to slabId
     
-    const isEditMode = rateId !== 'new';
+    const isEditMode = slabId !== 'new';
 
     const [loading, setLoading] = useState(isEditMode);
-    const [profiles, setProfiles] = useState<{id: string,profile_type: string}[]>([]);
+    const [profiles, setProfiles] = useState<{ id: string; profile_type: string }[]>([]);
     const token = authToken();
     
     const { 
@@ -27,44 +121,50 @@ export default function UnifiedTaxRateFormPage() {
         formState: { isSubmitting, errors } 
     } = useForm();
 
-    // Fetch Profiles (always needed) and Existing Data (if edit mode)
     useEffect(() => {
         if (!token) redirect("/auth/vendorLogin");
-        
+
         const fetchData = async () => {
             try {
-                // 1. Fetch available profiles for the Select dropdown
-                const profilesRes = await fetchTaxProfiles('', undefined, token);
-                setProfiles(profilesRes?.data.data || []);
-console.log("Fetched Profiles for Rate Form:", profilesRes?.data.data);
-                // 2. Fetch existing rate data if editing
+                // Always fetch profiles for the dropdown
+                const profilesRes = await fetchTaxProfiles('desc', undefined, token);
+                setProfiles(profilesRes?.data || []);
+
+                // Only fetch existing slab data in edit mode
                 if (isEditMode) {
-                    const res = await fetchSingleTaxRate(rateId, token!);
-                    
-                    if(res.data?.data) {
-                        const formattedData = {
-                            ...res.data.data,
-                            effective_from: res.data.data.effective_from?.split('T')[0],
-                            effective_to: res.data.data.effective_to?.split('T')[0]
-                        };
-                        reset(formattedData);
+                    const res = await fetchSingleTaxSlab(slabId, token);
+                    if (res?.data) {
+                        reset({
+                            ...res.data,
+                            effective_from: res.data.effective_from?.split('T')[0],
+                            effective_to: res.data.effective_to === '2099-12-31'
+                                ? '' // show blank instead of sentinel date
+                                : res.data.effective_to?.split('T')[0],
+                        });
                     }
                 }
             } catch (error) {
-                console.error("Failed to load form dependencies");
+                console.error('Failed to load form dependencies:', error);
             } finally {
                 setLoading(false);
             }
         };
+
         fetchData();
-    }, [token, rateId, isEditMode, reset]);
+    }, [token, slabId, isEditMode, reset]);
 
     const onSubmit = async (data: any) => {
         try {
+            // Apply the 2099-12-31 sentinel logic before submitting if left blank
+            const payload = {
+                ...data,
+                effective_to: data.effective_to ? data.effective_to : '2099-12-31'
+            };
+
             if (isEditMode) {
-                    await  fetchUpdateTaxRate(rateId, data, vendorId, token!);
+                await fetchUpdateTaxSlab(slabId, payload, vendorId, token!);
             } else {
-                await  fetchCreateTaxRate(data, token!);
+                await fetchCreateTaxSlab(payload, token!);
             }
             router.push(`/vendor/${vendorId}/finances/tax-rates`);
         } catch (error) {
@@ -75,7 +175,7 @@ console.log("Fetched Profiles for Rate Form:", profilesRes?.data.data);
     if (loading) return <div className="p-10 text-center text-gray-500">Loading form data...</div>;
 
     return (
-        <section className="w-full  px-1">
+        <section className="w-full px-1">
             <header className="flex justify-between items-center my-6">
                 <div className="flex items-center gap-2 text-gray-700">
                     <Percent size={22} className="text-blue-500" />
@@ -91,75 +191,94 @@ console.log("Fetched Profiles for Rate Form:", profilesRes?.data.data);
             <div className="w-full rounded-xl border border-gray-200 shadow-sm bg-white p-6 mb-4">
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
                     
-                    {/* Section 1 */}
-                    <div className="border-b border-gray-100 pb-6">
-                        <label className="text-sm font-bold text-gray-800 mb-3 block">1. Assign to Tax Profile <span className="text-red-500">*</span></label>
-                        <select 
-                            {...register("tax_profile_id", { required: true })}
-                            className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white focus:outline-none transition-colors"
-                        >
-                            <option value="">Select a Tax Profile...</option>
-                            {Array.isArray(profiles) &&  profiles.map(p => (
-                                <option key={p.id} value={p.id}>{p.profile_type}</option>
-                            ))}
-                        </select>
-                        {errors.tax_profile_id && <span className="text-xs text-red-500 mt-1 block">Please select a profile</span>}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {TAXSLAB_FORM_FIELDS.map((field) => {
+                            // Determine grid span width
+                            const spanClass = field.gridSpan === 2 ? "col-span-1 md:col-span-2" : "col-span-1";
+
+                            // ── 1. SELECT RENDERER ──
+                            if (field.type === 'select') {
+                                const options = field.name === 'tax_profile_id'
+                                    ? profiles.map(p => ({ value: p.id, label: p.profile_type }))
+                                    : field.options ?? [];
+
+                                return (
+                                    <div key={field.name} className={spanClass}>
+                                        <label className="text-sm font-semibold text-gray-700 block mb-1.5">
+                                            {field.label}
+                                            {field.required && <span className="text-red-500 ml-0.5">*</span>}
+                                        </label>
+                                        <select
+                                            {...register(field.name, { required: field.required })}
+                                            className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white focus:outline-none transition-colors"
+                                        >
+                                            <option value="">{field.placeholder ?? `Select...`}</option>
+                                            {options.map(opt => (
+                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                            ))}
+                                        </select>
+                                        {field.note && <p className="text-xs text-gray-400 mt-1">{field.note}</p>}
+                                        {errors[field.name] && <span className="text-xs text-red-500 mt-1 block">This field is required</span>}
+                                    </div>
+                                );
+                            }
+
+                            // ── 2. TEXTAREA RENDERER ──
+                            if (field.type === 'textarea') {
+                                return (
+                                    <div key={field.name} className={spanClass}>
+                                        <label className="text-sm font-semibold text-gray-700 block mb-1.5">
+                                            {field.label} {field.required && <span className="text-red-500">*</span>}
+                                        </label>
+                                        <textarea 
+                                            {...register(field.name, { required: field.required })}
+                                            placeholder={field.placeholder}
+                                            rows={3}
+                                            className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none resize-none"
+                                        />
+                                        {field.note && <p className="text-xs text-gray-400 mt-1">{field.note}</p>}
+                                        {errors[field.name] && <span className="text-xs text-red-500 mt-1 block">This field is required</span>}
+                                    </div>
+                                );
+                            }
+
+                            // ── 3. CHECKBOX RENDERER ──
+                            if (field.type === 'checkbox') {
+                                return (
+                                    <div key={field.name} className={spanClass}>
+                                        <div className="flex items-center mt-2">
+                                            <input 
+                                                type="checkbox"
+                                                {...register(field.name)}
+                                                className="w-5 h-5 text-blue-500 bg-gray-50 border-gray-300 rounded focus:ring-blue-400"
+                                            />
+                                            <label className="ml-2 text-sm font-semibold text-gray-700">{field.label}</label>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            // ── 4. DEFAULT (INPUT) RENDERER ──
+                            return (
+                                <div key={field.name} className={spanClass}>
+                                    <label className="text-sm font-semibold text-gray-700 block mb-1.5">
+                                        {field.label} {field.required && <span className="text-red-500">*</span>}
+                                    </label>
+                                    <input 
+                                        type={field.type} 
+                                        step={field.step}
+                                        {...register(field.name, { required: field.required })} 
+                                        placeholder={field.placeholder} 
+                                        className={`w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none ${field.type === 'number' ? 'font-bold text-blue-600' : ''}`}
+                                    />
+                                    {field.note && <p className="text-xs text-gray-400 mt-1">{field.note}</p>}
+                                    {errors[field.name] && <span className="text-xs text-red-500 mt-1 block">This field is required</span>}
+                                </div>
+                            );
+                        })}
                     </div>
 
-                    {/* Section 2 */}
-                    <div className="border-b border-gray-100 pb-6">
-                        <label className="text-sm font-bold text-gray-800 mb-3 block">2. Tax Type Definition</label>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label className="text-xs font-semibold text-gray-600 block mb-1">Tax Name <span className="text-red-500">*</span></label>
-                                <input type="text" {...register("tax_name", { required: true })} placeholder="e.g. State GST" className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none" />
-                            </div>
-                            <div>
-                                <label className="text-xs font-semibold text-gray-600 block mb-1">Tax Code <span className="text-red-500">*</span></label>
-                                <input type="text" {...register("tax_code", { required: true })} placeholder="e.g. SGST" className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none" />
-                            </div>
-                            <div>
-                                <label className="text-xs font-semibold text-gray-600 block mb-1">Scope <span className="text-red-500">*</span></label>
-                                <select {...register("tax_scope", { required: true })} className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none">
-                                    <option value="Intra-state">Intra-state (Local)</option>
-                                    <option value="Inter-state">Inter-state (National)</option>
-                                    <option value="Global">Global</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Section 3 */}
-                    <div>
-                        <label className="text-sm font-bold text-gray-800 mb-3 block">3. Rate & Applicability</label>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                            <div>
-                                <label className="text-xs font-semibold text-gray-600 block mb-1">Rate Display Name <span className="text-red-500">*</span></label>
-                                <input type="text" {...register("tax_rate_name", { required: true })} placeholder="e.g. SGST 9%" className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none" />
-                            </div>
-                            <div>
-                                <label className="text-xs font-semibold text-gray-600 block mb-1">Applicable State / Region <span className="text-red-500">*</span></label>
-                                <input type="text" {...register("state", { required: true })} placeholder="e.g. Maharashtra" className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none" />
-                            </div>
-                            <div>
-                                <label className="text-xs font-semibold text-gray-600 block mb-1">Tax Percentage (%) <span className="text-red-500">*</span></label>
-                                <input type="number" step="0.01" {...register("tax_rate_value", { required: true })} placeholder="9.00" className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none font-bold text-blue-600" />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="text-xs font-semibold text-gray-600 block mb-1">Effective From <span className="text-red-500">*</span></label>
-                                <input type="date" {...register("effective_from", { required: true })} className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none" />
-                            </div>
-                            <div>
-                                <label className="text-xs font-semibold text-gray-600 block mb-1">Effective To (Leave empty if ongoing)</label>
-                                <input type="date" {...register("effective_to")} className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-end pt-4 mt-2 border-t border-gray-100">
+                    <div className="flex justify-end pt-4 border-t border-gray-100">
                         <button disabled={isSubmitting} type="submit" className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-colors shadow-sm disabled:opacity-70">
                             {isSubmitting ? "Processing..." : (
                                 <>

@@ -273,14 +273,14 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                                             <td className="p-4 text-center font-medium text-gray-600">{product.cartAdditions}</td>
                                             <td className="p-4 text-center font-medium text-gray-600">{product.orderCompletions}</td>
                                             <td className="p-4">
-                                                <div className="flex items-center gap-3">
+                                                <span className="flex items-center gap-3">
                                                     <span className={`text-sm font-bold ${
                                                         product.conversionRate >= 50 ? 'text-emerald-600' :
                                                         product.conversionRate >= 20 ? 'text-amber-500' : 'text-red-500'
                                                     }`}>
                                                         {product.conversionRate}%
                                                     </span>
-                                                    <div className="w-24 h-2 rounded-full bg-gray-100 overflow-hidden">
+                                                    <span className="w-24 h-2 rounded-full bg-gray-100 overflow-hidden">
                                                         <div 
                                                             className={`h-full rounded-full ${
                                                                 product.conversionRate >= 50 ? 'bg-emerald-500' :
@@ -288,8 +288,8 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                                                             }`}
                                                             style={{ width: `${Math.min(product.conversionRate, 100)}%` }}
                                                         />
-                                                    </div>
-                                                </div>
+                                                    </span>
+                                                </span>
                                             </td>
                                         </tr>
                                     ))
@@ -300,7 +300,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                 </div>
 
                 {/* Reviews Section */}
-                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                {/* <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
                      <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
                         <h2 className="font-bold text-lg text-gray-800">Customer Reviews</h2>
                     </div>
@@ -308,9 +308,9 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                          Review mapping logic here...
                     </div>
                     <span className="flex justify-end p-4 border-t border-gray-100">
-                        {/* <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative" /> */}
+                      <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative" /> 
                     </span>
-                </div>
+                </div> */}
             </section>
 
            

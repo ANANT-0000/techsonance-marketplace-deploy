@@ -52,10 +52,10 @@ import {
   Area,
 } from 'recharts';
 import AxiosAPI from '@/lib/axios';
-import { exportDashboardToPDF } from '@/lib/exportPdf';
 import { authToken } from '@/utils/authToken';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
+import { useAnalyticsDownload } from '@/hooks/useAnalyticsDownload';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -105,11 +105,11 @@ interface Preset {
 }
 
 const PRESETS: Preset[] = [
-  { label: 'Last 7 days',   key: '7d',   range: () => ({ startDate: subDays(new Date(), 6),  endDate: new Date() }) },
-  { label: 'Last 30 days',  key: '30d',  range: () => ({ startDate: subDays(new Date(), 29), endDate: new Date() }) },
-  { label: 'Last 90 days',  key: '90d',  range: () => ({ startDate: subDays(new Date(), 89), endDate: new Date() }) },
-  { label: 'This month',    key: 'mtd',  range: () => ({ startDate: startOfMonth(new Date()), endDate: new Date() }) },
-  { label: 'This year',     key: 'ytd',  range: () => ({ startDate: startOfYear(new Date()),  endDate: new Date() }) },
+  { label: 'Last 7 days', key: '7d', range: () => ({ startDate: subDays(new Date(), 6), endDate: new Date() }) },
+  { label: 'Last 30 days', key: '30d', range: () => ({ startDate: subDays(new Date(), 29), endDate: new Date() }) },
+  { label: 'Last 90 days', key: '90d', range: () => ({ startDate: subDays(new Date(), 89), endDate: new Date() }) },
+  { label: 'This month', key: 'mtd', range: () => ({ startDate: startOfMonth(new Date()), endDate: new Date() }) },
+  { label: 'This year', key: 'ytd', range: () => ({ startDate: startOfYear(new Date()), endDate: new Date() }) },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -120,7 +120,7 @@ function fmtINR(value: number): string {
 
 function fmtShort(value: number): string {
   if (value >= 1_00_000) return '₹' + (value / 1_00_000).toFixed(1) + 'L';
-  if (value >= 1_000)    return '₹' + (value / 1_000).toFixed(1) + 'k';
+  if (value >= 1_000) return '₹' + (value / 1_000).toFixed(1) + 'k';
   return '₹' + value;
 }
 
@@ -242,14 +242,14 @@ function MetricCard({ title, value, sub, icon, iconColor, trend }: MetricCardPro
           <div
             className={cn(
               'flex items-center gap-1 mt-2 text-xs font-medium',
-              trend.positive === true  && 'text-emerald-600',
+              trend.positive === true && 'text-emerald-600',
               trend.positive === false && 'text-rose-500',
-              trend.positive === null  && 'text-muted-foreground',
+              trend.positive === null && 'text-muted-foreground',
             )}
           >
-            {trend.positive === true  && <ArrowUpRight className="h-3 w-3" />}
+            {trend.positive === true && <ArrowUpRight className="h-3 w-3" />}
             {trend.positive === false && <TrendingDown className="h-3 w-3" />}
-            {trend.positive === null  && <Minus className="h-3 w-3" />}
+            {trend.positive === null && <Minus className="h-3 w-3" />}
             {trend.label}
           </div>
         )}
@@ -294,15 +294,15 @@ function PieTooltip({ active, payload }: any) {
 // ─── SKU Bars ─────────────────────────────────────────────────────────────────
 
 function SkuBars({ products }: { products: TopProduct[] }) {
-  const total  = products.reduce((a, p) => a + p.revenue, 0);
+  const total = products.reduce((a, p) => a + p.revenue, 0);
   const maxRev = Math.max(...products.map((p) => p.revenue), 1);
 
   return (
     <div className="space-y-4">
       {products.map((product, i) => {
-        const pct     = Math.round((product.revenue / maxRev) * 100);
+        const pct = Math.round((product.revenue / maxRev) * 100);
         const sharePct = total > 0 ? ((product.revenue / total) * 100).toFixed(1) : '0';
-        const color   = COLORS[i % COLORS.length];
+        const color = COLORS[i % COLORS.length];
         return (
           <div key={product.sku}>
             <div className="flex justify-between items-baseline mb-1.5">
@@ -345,15 +345,15 @@ function SkuBars({ products }: { products: TopProduct[] }) {
 // ─── P&L Breakdown ────────────────────────────────────────────────────────────
 
 function PnLBreakdown({ summary }: { summary: AnalyticsSummary }) {
-  const grossRev   = summary.grossRevenue;
+  const grossRev = summary.grossRevenue;
   const deductions = summary.platformFees + summary.taxCollected + summary.refunds;
-  const netPct     = grossRev > 0 ? ((summary.netEarnings / grossRev) * 100).toFixed(1) : '0';
+  const netPct = grossRev > 0 ? ((summary.netEarnings / grossRev) * 100).toFixed(1) : '0';
 
   const lines = [
-    { label: 'Gross sales',       value: fmtINR(grossRev),               amount: grossRev,              deduct: false },
-    { label: 'Platform fees',     value: `− ${fmtINR(summary.platformFees)}`, amount: summary.platformFees, deduct: true  },
-    { label: 'GST / tax',         value: `− ${fmtINR(summary.taxCollected)}`, amount: summary.taxCollected, deduct: true  },
-    { label: 'Refunds',           value: `− ${fmtINR(summary.refunds)}`,  amount: summary.refunds,       deduct: true  },
+    { label: 'Gross sales', value: fmtINR(grossRev), amount: grossRev, deduct: false },
+    { label: 'Platform fees', value: `− ${fmtINR(summary.platformFees)}`, amount: summary.platformFees, deduct: true },
+    { label: 'GST / tax', value: `− ${fmtINR(summary.taxCollected)}`, amount: summary.taxCollected, deduct: true },
+    { label: 'Refunds', value: `− ${fmtINR(summary.refunds)}`, amount: summary.refunds, deduct: true },
   ];
 
   return (
@@ -439,11 +439,11 @@ function DerivedInsights({
   topProducts: TopProduct[];
   categoryPerformance: CategoryPerformance[];
 }) {
-  const days          = Math.max(differenceInDays(dateRange.endDate, dateRange.startDate), 1);
-  const aov           = summary.totalOrders > 0 ? summary.grossRevenue / summary.totalOrders : 0;
+  const days = Math.max(differenceInDays(dateRange.endDate, dateRange.startDate), 1);
+  const aov = summary.totalOrders > 0 ? summary.grossRevenue / summary.totalOrders : 0;
   const revenuePerDay = summary.grossRevenue / days;
-  const topCategory   = [...categoryPerformance].sort((a, b) => b.value - a.value)[0];
-  const taxRate       = summary.grossRevenue > 0
+  const topCategory = [...categoryPerformance].sort((a, b) => b.value - a.value)[0];
+  const taxSlab = summary.grossRevenue > 0
     ? ((summary.taxCollected / summary.grossRevenue) * 100).toFixed(1)
     : '0';
 
@@ -477,7 +477,7 @@ function DerivedInsights({
         <InsightRow
           icon={<Percent className="h-3.5 w-3.5 text-amber-600" />}
           label="Effective tax rate"
-          value={`${taxRate}%`}
+          value={`${taxSlab}%`}
           color="bg-amber-50 light:bg-amber-950"
         />
         {topCategory && (
@@ -500,11 +500,11 @@ function DerivedInsights({
     </Card>
   );
 }
- 
+
 function DonutChart({ data, total }: { data: CategoryPerformance[]; total: number }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState(220);
- 
+
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
@@ -517,12 +517,12 @@ function DonutChart({ data, total }: { data: CategoryPerformance[]; total: numbe
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
- 
+
   const cx = size / 2;
   const cy = size / 2;
   const outerR = Math.floor(size * 0.37);
   const innerR = Math.floor(size * 0.26);
- 
+
   return (
     <div ref={wrapRef} className="relative w-full" style={{ height: size }}>
       {/* Center label — absolutely positioned, never affects SVG layout */}
@@ -533,7 +533,7 @@ function DonutChart({ data, total }: { data: CategoryPerformance[]; total: numbe
         <span className="text-lg font-bold text-foreground leading-none">{fmtShort(total)}</span>
         <span className="text-xs text-muted-foreground mt-0.5">total</span>
       </div>
- 
+
       {/* Fixed-pixel chart — bypasses ResponsiveContainer collapse during PDF export */}
       <PieChart width={size} height={size} style={{ display: 'block' }}>
         <Pie
@@ -635,27 +635,25 @@ function DashboardSkeleton() {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function AnalysisBoard() {
+  const { downloadAnalyticsPdf, isGenerating } = useAnalyticsDownload()
   const [activePreset, setActivePreset] = useState<PresetKey>('30d');
   const [dateRange, setDateRange] = useState({
     startDate: subDays(new Date(), 29),
-    endDate:   new Date(),
+    endDate: new Date(),
   });
-  const [data,    setData]    = useState<AnalyticsData | null>(null);
+  const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState(false);
+  const [error, setError] = useState(false);
+  const [isPdfExporting, setIsPdfExporting] = useState(false);
 
-  const token = authToken;
+  const token = authToken();
 
   const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     setError(false);
     try {
-      const response = await AxiosAPI.get('/v1/vendors/analytics', {
+      const response = await AxiosAPI.get(`/v1/vendors/analytics?startDate=${dateRange.startDate.toISOString()}&endDate=${dateRange.endDate.toISOString()}`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: {
-          startDate: dateRange.startDate.toISOString(),
-          endDate:   dateRange.endDate.toISOString(),
-        },
       });
       setData(response.data.data as AnalyticsData);
       console.log(response.data.data);
@@ -695,12 +693,12 @@ export default function AnalysisBoard() {
 
   const { summary, monthlyTrend, topProducts, categoryPerformance } = data;
 
-  const marginPct  = summary.grossRevenue > 0
+  const marginPct = summary.grossRevenue > 0
     ? ((summary.netEarnings / summary.grossRevenue) * 100).toFixed(1)
     : '0.0';
-  const catTotal   = categoryPerformance.reduce((a, c) => a + c.value, 0);
-  const days       = Math.max(differenceInDays(dateRange.endDate, dateRange.startDate), 1);
-  const aov        = summary.totalOrders > 0 ? summary.grossRevenue / summary.totalOrders : 0;
+  const catTotal = categoryPerformance.reduce((a, c) => a + c.value, 0);
+  const days = Math.max(differenceInDays(dateRange.endDate, dateRange.startDate), 1);
+  const aov = summary.totalOrders > 0 ? summary.grossRevenue / summary.totalOrders : 0;
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6">
@@ -735,11 +733,26 @@ export default function AnalysisBoard() {
           <Button
             variant="outline"
             size="sm"
-            className="h-9"
-            onClick={() => exportDashboardToPDF('dashboard-report', 'Vendor-Report.pdf')}
+            className="h-9 gap-1.5"
+            disabled={isPdfExporting}
+            onClick={async () => {
+              if (!token) return;
+              setIsPdfExporting(true);
+              try {
+                await downloadAnalyticsPdf(token, dateRange.startDate, dateRange.endDate)
+              } catch (e) {
+                console.error('[AnalysisBoard] PDF export failed:', e);
+              } finally {
+                setIsPdfExporting(false);
+              }
+            }}
           >
-            <Download className="mr-1.5 h-3.5 w-3.5" />
-            Export
+            {isGenerating ? (
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
+            {isGenerating ? 'Downloading…' : 'Export PDF'}
           </Button>
         </div>
       </div>
@@ -807,7 +820,7 @@ export default function AnalysisBoard() {
                 <ComposedChart data={monthlyTrend} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#378ADD" stopOpacity={0.25} />
+                      <stop offset="5%" stopColor="#378ADD" stopOpacity={0.25} />
                       <stop offset="95%" stopColor="#378ADD" stopOpacity={0.03} />
                     </linearGradient>
                   </defs>
@@ -890,10 +903,10 @@ export default function AnalysisBoard() {
             </CardContent>
           </Card>
 
-      
-       {/* Donut chart */}
-      
-                <Card>
+
+          {/* Donut chart */}
+
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-medium">Revenue by Category</CardTitle>
             </CardHeader>

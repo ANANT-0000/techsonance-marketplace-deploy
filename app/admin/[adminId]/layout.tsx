@@ -9,7 +9,6 @@ import { useAppSelector } from "@/hooks/reduxHooks";
 import { useEffect } from "react";
 import { authToken } from "@/utils/authToken";
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const isSidebarOpen = useAppSelector((state) => state.sidebar.isSidebarOpen);
     const { adminId } = useParams();
     const token = authToken();
     const router = useRouter();
@@ -20,8 +19,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }, [token, router]);
     return (
         <>
+            <main className={`flex w-full mr-6`}>
             <Sidebar NAV_LINKS={ADMIN_NAV_LINKS} basePath={`/admin/${adminId}`} />
-            <main className={`mr-6 mb-[5px] ${isSidebarOpen ? 'ml-50' : 'ml-24'}`}>
                 {children}
             </main>
         </>

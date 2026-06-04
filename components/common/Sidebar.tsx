@@ -14,8 +14,8 @@ import { logOut } from "@/lib/features/auth/authSlice";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const RESERVED_KEYS = new Set(["icon", "section", "divider"]);
-const COLLAPSED_W   = 60;   // px — icon-only
-const EXPANDED_W    = 224;  // px — full
+const COLLAPSED_W = 64;   // px — icon-only
+const EXPANDED_W = 224;  // px — full
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -122,14 +122,13 @@ function NavItem({
         href={href}
         aria-current={isActive ? "page" : undefined}
         className={`
-          group/navitem relative flex items-center gap-3 overflow-hidden
+          relative flex items-center gap-3 overflow-hidden
          px-2.5 py-[9px] select-none
           transition-colors duration-150
           ${expanded ? "" : "justify-center"}
-          ${
-            isActive
-              ? "bg-[#4f8ef7]/[0.15] text-[#4f8ef7]"
-              : "text-white/50 hover:bg-white/[0.07] hover:text-white/90"
+          ${isActive
+            ? "bg-[#4f8ef7]/[0.15] text-[#4f8ef7]"
+            : "text-white/50 hover:bg-white/[0.07] hover:text-white/90"
           }
         `}
       >
@@ -139,7 +138,7 @@ function NavItem({
         )}
 
         {/* Icon */}
-        <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center">
+        <span className="flex h-[24px] w-[24px] shrink-0 items-center justify-center">
           <DynamicIcon name={icon} className="text-white  h-[24px] w-[24px]" fallback={() => null} />
         </span>
 
@@ -167,28 +166,39 @@ function Divider() {
 
 // ─── Main Sidebar ─────────────────────────────────────────────────────────────
 
-export function Sidebar({ basePath = "", NAV_LINKS}: SidebarProps) {
+export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
   const { isSidebarOpen }: isSidebarType = useAppSelector(
     (state: RootState) => state.sidebar,
   );
-  const { role,user } = useAppSelector((state: RootState) => state.auth);
-  const dispatch   = useAppDispatch();
-  const path       = usePathname();
+  const { role, user } = useAppSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const path = usePathname();
 
   // Hover state — sidebar expands while hovered OR while pinned open
-  const [hovered, setHovered]     = useState(false);
-  const leaveTimer                = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [hovered, setHovered] = useState(false);
+  const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const expanded = isSidebarOpen || hovered;
 
   const handleMouseEnter = useCallback(() => {
+    // 1. Clear any pending leave actions so it doesn't accidentally close
     if (leaveTimer.current) clearTimeout(leaveTimer.current);
-    setHovered(true);
+
+    // 2. Wait 500ms before triggering the hover state
+    enterTimer.current = setTimeout(() => {
+      setHovered(true);
+    }, 500);
   }, []);
 
   const handleMouseLeave = useCallback(() => {
-    // Small delay so accidental quick mouse-outs don't flicker
-    leaveTimer.current = setTimeout(() => setHovered(false), 120);
+    // 1. If the mouse leaves before 500ms, cancel the expansion entirely
+    if (enterTimer.current) clearTimeout(enterTimer.current);
+
+    // 2. Keep your existing small delay so accidental quick mouse-outs don't flicker
+    leaveTimer.current = setTimeout(() => {
+      setHovered(false);
+    }, 120);
   }, []);
 
   // ── Build render list with section headers inserted ──────────────────────
@@ -218,22 +228,22 @@ export function Sidebar({ basePath = "", NAV_LINKS}: SidebarProps) {
 
   return (
     <aside
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+
       style={{ width: expanded ? EXPANDED_W : COLLAPSED_W }}
-      className={`fixed left-0 top-0 z-40 flex h-full flex-col bg-[#0f1117]  transition-[width] duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden px-[10px] py-4 ${expanded ?'rounded-r-2xl' : ''}
+      className={` left-0 top-0 z-40  flex h-screen flex-col  bg-[#0f1117]  transition-[width] duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden px-[14px] py-4 ${expanded ? 'rounded-r-2xl' : ''}
      ` }
     >
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div
-        className={` relative
+        className={` relative py-1 w-full
           mb-2 flex items-center border-b border-white/[0.07] pb-3.5
-          ${expanded ? "justify-between px-1" : "justify-center "}
+          ${expanded ? "justify-between px-1" : "justify-between "}
         `}
       >
         {/* Logo mark + wordmark */}
-        <div className="flex items-center gap-2.5 overflow-hidden absolute z-10">
-          <div
+        <button className="flex items-center justify-between overflow-hidden w-full  mx-1 "
+          onClick={() => dispatch(toggleSidebar())}>
+          {isSidebarOpen && <div
             className="
               h-7 w-7 shrink-0 rounded-lg
               bg-gradient-to-br from-[#4f8ef7] to-[#7c5cfc]
@@ -242,47 +252,17 @@ export function Sidebar({ basePath = "", NAV_LINKS}: SidebarProps) {
             "
           >
             TS
-          </div>
-          <span
-            className={`
-              overflow-hidden whitespace-nowrap text-sm font-semibold text-white
-              transition-[max-width,opacity] duration-200
-              ${expanded ? "max-w-[140px] opacity-100" : "max-w-0 opacity-0"}
-            `}
-          >
-            Techsonance
-          </span>
-        </div>
+          </div>}
 
-        {/* Pin / unpin toggle — only visible when expanded */}
-        <button
-          onClick={() => dispatch(toggleSidebar())}
-          aria-label={isSidebarOpen ? "Unpin sidebar" : "Pin sidebar open"}
-          className={`
-            flex h-6 w-6 shrink-0 items-center justify-center rounded-[7px]
-            bg-white/[0.06] text-white/40
-            transition-[opacity,colors] duration-150
-            hover:bg-white/[0.12] hover:text-white
-            ${expanded ? "opacity-100" : "pointer-events-none opacity-0"}
-          `}
-        >
-          {/* Pin icon — filled when pinned */}
-          {isSidebarOpen ? (
-            /* unpin: panel-left-close look */
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <path d="M9 3v18M15 9l-3 3 3 3"/>
-            </svg>
-          ) : (
-            /* pin: panel-left-open */
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <path d="M9 3v18M15 15l3-3-3-3"/>
-            </svg>
-          )}
+
+          <span
+            className="block rounded-md text-gray-400 hover:text-gray-100  transition-colors"
+            aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            <DynamicIcon name={!expanded ? "panel-left-open" : "panel-left-close"} size={24} />
+          </span>
         </button>
+
       </div>
 
       {/* ── Nav ────────────────────────────────────────────────────────────── */}
@@ -304,10 +284,10 @@ export function Sidebar({ basePath = "", NAV_LINKS}: SidebarProps) {
             }
 
             const { linkObj } = item;
-            const label  = getLabel(linkObj);
-            const icon   = getIcon(linkObj);
-            const href   = getHref(basePath, linkObj);
-            const active =href.length > 0 && (path === href || path.startsWith(href + "/"));
+            const label = getLabel(linkObj);
+            const icon = getIcon(linkObj);
+            const href = getHref(basePath, linkObj);
+            const active = href.length > 0 && (path === href || path.startsWith(href + "/"));
 
             return (
               <NavItem
@@ -324,13 +304,13 @@ export function Sidebar({ basePath = "", NAV_LINKS}: SidebarProps) {
       </nav>
 
       {/* ── Footer / User ──────────────────────────────────────────────────── */}
-    {user && (
-    <UserMenu
-      user={user}
-      role={role}
-      expanded={expanded}
-    />
-  )}
+      {user && (
+        <UserMenu
+          user={user}
+          role={role}
+          expanded={expanded}
+        />
+      )}
     </aside>
   );
 }

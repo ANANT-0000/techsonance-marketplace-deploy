@@ -7,7 +7,6 @@ import { calculateCouponDiscount, formatCurrency, getMinOrderAmount } from "@/li
 import { SelectedPaymentMethod } from "@/components/customer/SelectedPaymentMethod";
 import { PAYMENT_METHODS_FIELDS } from "@/constants";
 import { checkAddressExistence, fetchGetCartList } from "@/utils/customerApiClient";
-import { AddToCart } from "@/components/customer/AddToCart";
 import {
   CreditCard, Loader2, Tag, CheckCircle2, X, AlertCircle,
  
@@ -179,8 +178,8 @@ export default function CheckoutPage() {
         customerAddressId: addressId,
         cartItems: cartItemsForTax,
       }, { headers: { Authorization: `Bearer ${token}` } });
-
-      const data = res.data?.data ?? res.data;
+      console.log("Tax API response:", res.data);
+      const data = res.data?.data;
       setTaxBreakdown({
         subtotal: Number(data.subTotal ?? data.subtotal ?? subtotal),
         totalCgst: Number(data.totalCgst ?? 0),
@@ -225,7 +224,7 @@ export default function CheckoutPage() {
         userId: user?.id,
         code,
         cartTotal: subtotal,
-        productIdsInCart: productIds,
+        productIds: productIds,
       });
       const data = res.data?.data ?? res.data;
       if (data?.code) {
@@ -561,7 +560,7 @@ export default function CheckoutPage() {
 
               <button
                 onClick={handlePayment}
-                disabled={selectedAddressId === null || isProcessing || isTaxLoading || (couponApplied && couponDiscount === 0) ? true : false}
+                disabled={selectedAddressId === null || isProcessing || isTaxLoading}
                 className="w-full bg-blue-600 text-white font-semibold lg:py-3.5 py-2.5 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:bg-blue-400 text-sm lg:text-base"
               >
                 {isProcessing ? (

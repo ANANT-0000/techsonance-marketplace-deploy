@@ -1,19 +1,20 @@
 'use client';
+
 import type { RootState } from "@/lib/store";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
 import { useRouter } from "next/navigation";
 import { useMediaQuery } from "react-responsive";
-import { ChevronLeft, ChevronLeftCircle } from "lucide-react";
-import { OrdersList } from "@/components/customer/OrderList";
+import { ChevronLeft } from "lucide-react";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { OrdersList } from "@/components/customer/OrderList";
 
 export default function OrdersPage() {
   const { user } = useAppSelector((state: RootState) => state.auth);
   const router = useRouter();
   const isMobile = useMediaQuery({ maxWidth: 640 });
-  const [ orderStatus, setOrderStatus ] = useState<OrderStatus | 'returns' | null>(
+  const [orderStatus, setOrderStatus] = useState<OrderStatus | 'returns' | null>(
     OrderStatusEnum.PENDING
   );
 
@@ -26,10 +27,9 @@ export default function OrdersPage() {
   ];
 
   const statusLabels: Record<string, string> = {
-    [ OrderStatusEnum.SHIPPED ]: "Orders",
-    [ OrderStatusEnum.DELIVERED ]: "Delivered",
-    [ OrderStatusEnum.CANCELLED ]: "Cancelled",
-    [ OrderStatusEnum.PROCESSING ]: "Not Shipped Yet",
+    [OrderStatusEnum.PROCESSING]: "Not Shipped Yet",
+    [OrderStatusEnum.DELIVERED]: "Delivered",
+    [OrderStatusEnum.CANCELLED]: "Cancelled",
     returns: "Returns & Replacements",
   };
   
@@ -48,7 +48,7 @@ export default function OrdersPage() {
 
       <section className="w-full lg:px-4 px-2 min-h-[60vh]">
         {/* Desktop tabs — hidden on mobile (< sm = 640px) */}
-        <div className="hidden sm:flex relative border-b border-gray-200 mb-6 gap-1">
+        <div className="hidden sm:flex relative border-b border-gray-200 mb-6 gap-1 overflow-x-auto">
           {ordersStatusMap.map((status) => {
             const isActive = orderStatus === status;
             return (
@@ -62,7 +62,7 @@ export default function OrdersPage() {
                 className="relative lg:px-6 lg:py-2.5 px-4 py-2 font-medium transition-colors focus:outline-none border-b-2 -mb-px text-sm whitespace-nowrap"
                 onClick={() => setOrderStatus(status)}
               >
-                {statusLabels[ status ] || status}
+                {statusLabels[status] || status}
               </motion.button>
             );
           })}
@@ -71,6 +71,7 @@ export default function OrdersPage() {
         <OrdersList
           customerId={user?.id ?? ''}
           status={isMobile ? null : orderStatus}
+          setStatus={setOrderStatus}
         />
       </section>
     </>

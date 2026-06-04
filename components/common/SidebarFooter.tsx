@@ -133,7 +133,7 @@ const onLogout = () => {
         `}
       >
         {/* Avatar */}
-        <div className="relative h-[30px] w-[30px] shrink-0 rounded-[9px] bg-gradient-to-br from-[#2ecc8a] to-[#1aab6d] flex items-center justify-center text-[11px] font-bold text-white">
+        <div className="ml-1 relative h-[30px] w-[30px] shrink-0 rounded-[9px] bg-gradient-to-br from-[#2ecc8a] to-[#1aab6d] flex items-center justify-center text-[11px] font-bold text-white">
           {user.first_name?.[0]}{user.last_name?.[0]}
           <span className="absolute -bottom-px -right-px h-[9px] w-[9px] rounded-full bg-emerald-400 border-2 border-[#0f1117]" />
         </div>
