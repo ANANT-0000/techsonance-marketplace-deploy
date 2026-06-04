@@ -75,13 +75,27 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks: propMenuLinks 
             </div>
 
             <ul className={`flex space-x-8 md:text-[13px] lg:text-[14px] font-medium items-center justify-center flex-1`}>
-                {menuLinks.map((item) => {
-                    const label = Object.keys(item)[0];
-                    const href = Object.values(item)[0];
+                {menuLinks.map((item, idx) => {
+                    // Handle two possible shapes:
+                    // 1. CMS format:    { id: 1234, label: 'Home', href: '/' }
+                    // 2. Static format: { 'Home': '/' }  (NAV_LINKS from constants)
+                    let label: string;
+                    let href: string;
+
+                    if ('label' in item && 'href' in item) {
+                        // CMS-sourced link
+                        label = String(item.label || '');
+                        href  = String(item.href  || '#');
+                    } else {
+                        // Static NAV_LINKS: single-key objects { "Label": "/path" }
+                        label = Object.keys(item)[0]   || '';
+                        href  = String(Object.values(item)[0] || '#');
+                    }
+
                     const isActive = path === href;
 
                     return (
-                        <li key={label} className="relative py-1">
+                        <li key={`nav-${label}-${idx}`} className="relative py-1">
                             <Link
                                 href={href || '#'}
                                 className={`relative z-10 transition-colors duration-300 font-semibold pb-2 ${

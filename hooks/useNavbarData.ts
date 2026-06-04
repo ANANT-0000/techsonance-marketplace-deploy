@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
 import { NAV_LINKS } from '@/constants/customer';
 
-const NAVBAR_CACHE_KEY = 'soundsphere_cms_navbar';
-const LANG_KEY = 'soundsphere_locale';
+const NAVBAR_CACHE_KEY = 'techsonance_cms_navbar';
+const LANG_KEY = 'techsonance_locale';
 
 export function useNavbarData() {
   const [lang, setLang] = useState<string>('en');
@@ -27,10 +27,12 @@ export function useNavbarData() {
     }
     try {
       const res = await AxiosAPI.get(`/v1/cms/navbar?lang=${currentLang}`);
-      if (res.data && res.data.content) {
-        const parsed = typeof res.data.content === 'string'
-          ? JSON.parse(res.data.content)
-          : res.data.content;
+      const cmsRow = res.data?.data ?? res.data;
+      const rawContent = cmsRow?.content;
+      if (rawContent) {
+        const parsed = typeof rawContent === 'string'
+          ? JSON.parse(rawContent)
+          : rawContent;
         
         if (parsed.links && Array.isArray(parsed.links)) {
           setMenuLinks(parsed.links);

@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
 import { FOOTER_CONTENT, FOOTER_BOTTOM_TEXT } from '@/constants/customer';
 
-const FOOTER_CACHE_KEY = 'soundsphere_cms_footer';
-const LANG_KEY = 'soundsphere_locale';
+const FOOTER_CACHE_KEY = 'techsonance_cms_footer';
+const LANG_KEY = 'techsonance_locale';
 
 export function useFooterData() {
   const [lang, setLang] = useState<string>('en');
@@ -30,11 +30,13 @@ export function useFooterData() {
     }
     try {
       const res = await AxiosAPI.get(`/v1/cms/footer?lang=${currentLang}`);
-      if (res.data && res.data.content) {
-        const parsed = typeof res.data.content === 'string'
-          ? JSON.parse(res.data.content)
-          : res.data.content;
-        
+      const cmsRow = res.data?.data ?? res.data;
+      const rawContent = cmsRow?.content;
+      if (rawContent) {
+        const parsed = typeof rawContent === 'string'
+          ? JSON.parse(rawContent)
+          : rawContent;
+
         const content = parsed.content || FOOTER_CONTENT;
         const bottomText = parsed.bottom_text || FOOTER_BOTTOM_TEXT;
         setFooterContent(content);

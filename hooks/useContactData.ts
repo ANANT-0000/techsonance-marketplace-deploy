@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
 import { ContactPageContent, ContactList } from '@/constants/customer';
 
-const CONTACT_CACHE_KEY = 'soundsphere_cms_contact';
-const LANG_KEY = 'soundsphere_locale';
+const CONTACT_CACHE_KEY = 'techsonance_cms_contact';
+const LANG_KEY = 'techsonance_locale';
 
 export function useContactData() {
   const [lang, setLang] = useState<string>('en');
@@ -30,11 +30,13 @@ export function useContactData() {
     }
     try {
       const res = await AxiosAPI.get(`/v1/cms/contact?lang=${currentLang}`);
-      if (res.data && res.data.content) {
-        const parsed = typeof res.data.content === 'string'
-          ? JSON.parse(res.data.content)
-          : res.data.content;
-        
+      const cmsRow = res.data?.data ?? res.data;
+      const rawContent = cmsRow?.content;
+      if (rawContent) {
+        const parsed = typeof rawContent === 'string'
+          ? JSON.parse(rawContent)
+          : rawContent;
+
         const hero = parsed.hero || ContactPageContent;
         const list = parsed.list || ContactList;
         setHeroContent(hero);

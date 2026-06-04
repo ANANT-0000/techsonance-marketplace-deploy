@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Save, Loader2, Plus, Trash2, Globe, Languages, CheckCircle } from 'lucide-react';
 import AxiosAPI from '@/lib/axios';
@@ -26,6 +26,156 @@ function Field({ label, value, onChange, textarea, mono }: any) {
   );
 }
 
+// ── Slide Query Picker ─────────────────────────────────────────────────────
+// Fetches real categories + product names from the server and presents them
+// as clickable tag chips.  No typing = no typos.  Vendor just clicks.
+function SlideQueryPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [categories, setCategories]   = useState<string[]>([]);
+  const [productTags, setProductTags] = useState<string[]>([]);
+  const [selected, setSelected]       = useState<string[]>(() =>
+    value ? value.split(' ').filter(Boolean) : []
+  );
+  const [fetching, setFetching] = useState(true);
+  const [search, setSearch]     = useState('');
+  const didFetch = useRef(false);
+
+  // Fetch categories + product names once
+  useEffect(() => {
+    if (didFetch.current) return;
+    didFetch.current = true;
+    (async () => {
+      try {
+        const [catRes, prodRes] = await Promise.all([
+          AxiosAPI.get('/v1/categories'),
+          AxiosAPI.get('/v1/products?limit=100'),
+        ]);
+        // Categories
+        const cats: string[] = (catRes.data?.data ?? catRes.data ?? []).map((c: any) => c.name).filter(Boolean);
+        // Product names (take first word of each, deduplicated, max 40 tags)
+        const rawProds: any[] = prodRes.data?.data ?? [];
+        const words = new Set<string>();
+        rawProds.forEach((p: any) => {
+          if (p.name) {
+            // Add full name as a tag
+            words.add(p.name.trim());
+            // Also split into individual keywords (≥4 chars)
+            p.name.split(/\s+/).forEach((w: string) => {
+              if (w.length >= 4) words.add(w.toLowerCase());
+            });
+          }
+          if (p.category?.name) words.add(p.category.name.trim());
+        });
+        const prodArr = Array.from(words).slice(0, 50);
+        setCategories(cats);
+        setProductTags(prodArr);
+      } catch {
+        setCategories([]);
+        setProductTags([]);
+      } finally {
+        setFetching(false);
+      }
+    })();
+  }, []);
+
+  // Sync inbound value → selected chips (if parent changes)
+  useEffect(() => {
+    const incoming = value ? value.split(' ').filter(Boolean) : [];
+    setSelected(incoming);
+  }, [value]);
+
+  const toggle = useCallback((tag: string) => {
+    setSelected(prev => {
+      const next = prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag];
+      onChange(next.join(' '));
+      return next;
+    });
+  }, [onChange]);
+
+  const clear = () => { setSelected([]); onChange(''); };
+
+  // Filter by search input
+  const allTags = [...new Set([...categories, ...productTags])];
+  const visible = search.trim()
+    ? allTags.filter(t => t.toLowerCase().includes(search.toLowerCase()))
+    : allTags;
+
+  return (
+    <div className="md:col-span-2">
+      <label className="block text-xs font-bold text-gray-500 mb-1.5">
+        Slide Promotion — Pick what products to show
+      </label>
+      <p className="text-[10px] text-gray-400 mb-3">
+        Click tags below to build the search query. Customers clicking the slide button will see matching products.
+      </p>
+
+      {/* Search filter */}
+      <input
+        type="text"
+        placeholder="Filter tags…"
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs mb-3 focus:outline-none focus:border-purple-400"
+      />
+
+      {/* Tag cloud */}
+      {fetching ? (
+        <div className="flex items-center gap-2 text-xs text-gray-400 py-3">
+          <span className="animate-spin border-2 border-purple-400 border-t-transparent rounded-full w-4 h-4 inline-block" />
+          Loading products from your store…
+        </div>
+      ) : visible.length === 0 ? (
+        <p className="text-xs text-gray-400 py-2">No matching tags. Try a different search.</p>
+      ) : (
+        <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
+          {visible.map(tag => {
+            const active = selected.includes(tag);
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => toggle(tag)}
+                className={`px-3 py-1 rounded-full text-[11px] font-semibold border transition-all duration-150 ${
+                  active
+                    ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300 hover:text-purple-700'
+                }`}
+              >
+                {active ? '✓ ' : ''}{tag}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Selected summary */}
+      <div className="mt-3 p-3 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+        {selected.length === 0 ? (
+          <p className="text-xs text-gray-400">No tags selected — all products will show.</p>
+        ) : (
+          <>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Selected ({selected.length})</p>
+                <div className="flex flex-wrap gap-1">
+                  {selected.map(t => (
+                    <span key={t} className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{t}</span>
+                  ))}
+                </div>
+              </div>
+              <button type="button" onClick={clear} className="text-[10px] text-red-400 hover:text-red-600 font-semibold mt-0.5 flex-shrink-0">
+                Clear all
+              </button>
+            </div>
+            <p className="text-[10px] text-emerald-600 mt-2 font-mono">
+              ↳ /shopping?search={encodeURIComponent(selected.join(' '))}
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function CmsManagementPage() {
   const [page, setPage] = useState<PageType>('home');
   const [lang, setLang] = useState<LangType>('en');
@@ -38,8 +188,11 @@ export default function CmsManagementPage() {
     setLoading(true);
     try {
       const res = await AxiosAPI.get(`/v1/cms/${page}?lang=${lang}`);
-      const raw = res.data?.content;
-      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw || {};
+      // Backend wraps: { data: { content: '...' }, status, message }
+      // Must unwrap the envelope before reading content
+      const cmsRow = res.data?.data ?? res.data;
+      const raw = cmsRow?.content;
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {});
       setData(parsed);
     } catch { setData({}); }
     finally { setLoading(false); }
@@ -52,15 +205,23 @@ export default function CmsManagementPage() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true); setMsg(null);
+    const payload = {
+      page_content_type: page, language: lang,
+      title: `${PAGE_LABELS[page]} (${lang.toUpperCase()})`,
+      content: JSON.stringify(data), seo_meta: {},
+    };
+    console.log('[CMS Save] Sending payload to /v1/cms:', payload);
     try {
-      await AxiosAPI.post('/v1/cms', {
-        page_content_type: page, language: lang,
-        title: `${PAGE_LABELS[page]} (${lang.toUpperCase()})`,
-        content: JSON.stringify(data), seo_meta: {},
-      });
-      localStorage.removeItem(`soundsphere_cms_${page}_${lang}`);
-      setMsg({ text: 'Saved successfully!', ok: true });
-    } catch { setMsg({ text: 'Save failed. Try again.', ok: false }); }
+      const res = await AxiosAPI.post('/v1/cms', payload);
+      console.log('[CMS Save] Server response:', res.data);
+      // Clear ALL cache variants so the storefront picks up fresh data immediately
+      localStorage.removeItem(`techsonance_cms_${page}_${lang}`);
+      localStorage.removeItem(`techsonance_cms_${page}`);  // legacy key format
+      setMsg({ text: 'Saved! Storefront will reflect changes on next page load.', ok: true });
+    } catch (err: any) {
+      console.error('[CMS Save] Failed:', err?.response?.data || err?.message);
+      setMsg({ text: `Save failed: ${err?.response?.data?.message || 'Try again.'}`, ok: false });
+    }
     finally { setSaving(false); }
   };
 
@@ -129,7 +290,41 @@ export default function CmsManagementPage() {
           {/* HOME */}
           {page === 'home' && (
             <>
-              <Section title="Hero Block">
+              <Section title="Hero Carousel Slides"
+                action={<AddBtn onClick={() => addItem('hero_slides', {
+                  image_url: '',
+                  title: '',
+                  subtitle: '',
+                  btn_text: 'Shop Now',
+                  search_query: '',
+                })} label="Add Slide" />}>
+                {(data.hero_slides || []).length === 0 && (
+                  <p className="text-center text-gray-400 text-sm py-8">
+                    No slides yet. Click <strong>Add Slide</strong> to add hero carousel images.
+                    Each slide can link to a product search on the shop page.
+                  </p>
+                )}
+                {(data.hero_slides || []).map((slide: any, idx: number) => (
+                  <ListCard key={slide.id} onRemove={() => removeItem('hero_slides', slide.id)}>
+                    <div className="md:col-span-2">
+                      <p className="text-[10px] font-bold text-purple-500 uppercase tracking-widest mb-1">
+                        Slide {idx + 1}
+                      </p>
+                    </div>
+                    <Field label="Title" value={slide.title || ''} onChange={(v: string) => updateItem('hero_slides', slide.id, 'title', v)} />
+                    <Field label="Subtitle (small label above title)" value={slide.subtitle || ''} onChange={(v: string) => updateItem('hero_slides', slide.id, 'subtitle', v)} />
+                    <Field label="Button Text" value={slide.btn_text || ''} onChange={(v: string) => updateItem('hero_slides', slide.id, 'btn_text', v)} />
+                    <SlideQueryPicker
+                      value={slide.search_query || ''}
+                      onChange={(v: string) => updateItem('hero_slides', slide.id, 'search_query', v)}
+                    />
+                    <div className="md:col-span-2">
+                      <Field label="Image URL" value={slide.image_url || ''} onChange={(v: string) => updateItem('hero_slides', slide.id, 'image_url', v)} mono />
+                    </div>
+                  </ListCard>
+                ))}
+              </Section>
+              <Section title="Hero Block (Legacy — used if no carousel slides above)">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field label="Subtitle" value={data.hero_subtitle || ''} onChange={(v: string) => set('hero_subtitle', v)} />
                   <Field label="Button Text" value={data.hero_btn_text || ''} onChange={(v: string) => set('hero_btn_text', v)} />
@@ -138,6 +333,7 @@ export default function CmsManagementPage() {
                   <div className="md:col-span-2"><Field label="Hero Image URL" value={data.hero_image_url || ''} onChange={(v: string) => set('hero_image_url', v)} mono /></div>
                 </div>
               </Section>
+
               <Section title="Middle Promo Banner">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field label="Subtitle" value={data.middle_banner_subtitle || ''} onChange={(v: string) => set('middle_banner_subtitle', v)} />

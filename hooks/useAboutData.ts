@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
 import { AboutPageContent } from '@/constants/customer';
 
-const ABOUT_CACHE_KEY = 'soundsphere_cms_about';
-const LANG_KEY = 'soundsphere_locale';
+const ABOUT_CACHE_KEY = 'techsonance_cms_about';
+const LANG_KEY = 'techsonance_locale';
 
 export function useAboutData() {
   const [lang, setLang] = useState<string>('en');
@@ -27,11 +27,13 @@ export function useAboutData() {
     }
     try {
       const res = await AxiosAPI.get(`/v1/cms/about?lang=${currentLang}`);
-      if (res.data && res.data.content) {
-        const parsed = typeof res.data.content === 'string'
-          ? JSON.parse(res.data.content)
-          : res.data.content;
-        
+      const cmsRow = res.data?.data ?? res.data;
+      const rawContent = cmsRow?.content;
+      if (rawContent) {
+        const parsed = typeof rawContent === 'string'
+          ? JSON.parse(rawContent)
+          : rawContent;
+
         setAboutContent(parsed);
         localStorage.setItem(`${ABOUT_CACHE_KEY}_${currentLang}`, JSON.stringify(parsed));
       }

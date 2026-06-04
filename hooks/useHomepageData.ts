@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
 
-const CMS_CACHE_KEY = 'soundsphere_cms_home';
-const BANNERS_CACHE_KEY = 'soundsphere_banners_home';
-const CATEGORIES_CACHE_KEY = 'soundsphere_categories_home';
-const LANG_KEY = 'soundsphere_locale';
+const CMS_CACHE_KEY = 'techsonance_cms_home';
+const BANNERS_CACHE_KEY = 'techsonance_banners_home';
+const CATEGORIES_CACHE_KEY = 'techsonance_categories_home';
+const LANG_KEY = 'techsonance_locale';
 
 // Dynamic banners fallback images
 const defaultBanners = [
@@ -25,6 +25,7 @@ export function useHomepageData() {
   const [cmsContent, setCmsContent] = useState<any>(null);
   const [banners, setBanners] = useState<string[]>(defaultBanners);
   const [categories, setCategories] = useState<any[]>(fallbackCategories);
+  const [heroSlides, setHeroSlides] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Initialize lang from localStorage
@@ -44,31 +45,55 @@ export function useHomepageData() {
 
   const fetchData = useCallback(async (currentLang: string) => {
     setIsLoading(true);
-
-    // Hydrate state from Cache on mount
-    if (typeof window !== 'undefined') {
-      const cachedCms = localStorage.getItem(`${CMS_CACHE_KEY}_${currentLang}`);
-      const cachedBanners = localStorage.getItem(BANNERS_CACHE_KEY);
-      const cachedCategories = localStorage.getItem(CATEGORIES_CACHE_KEY);
-
-      if (cachedCms) setCmsContent(JSON.parse(cachedCms));
-      if (cachedBanners) setBanners(JSON.parse(cachedBanners));
-      if (cachedCategories) setCategories(JSON.parse(cachedCategories));
-    }
+    console.log(`[useHomepageData] Starting fetch for lang: ${currentLang}`);
 
     try {
-      // 1. Fetch CMS Home Page content
+      // 1. Fetch CMS Home Page content (fresh from API first — don't pre-load stale cache)
       try {
+        console.log(`[useHomepageData] Fetching CMS page: /v1/cms/home?lang=${currentLang}`);
         const cmsRes = await AxiosAPI.get(`/v1/cms/home?lang=${currentLang}`);
-        if (cmsRes.data && cmsRes.data.content) {
-          const parsedContent = typeof cmsRes.data.content === 'string'
-            ? JSON.parse(cmsRes.data.content)
-            : cmsRes.data.content;
+        console.log('[useHomepageData] CMS API raw response:', cmsRes.data);
+
+        // The backend wraps all responses: { data: { content: '...' }, status, message }
+        // so the actual CMS row is at cmsRes.data.data, not cmsRes.data.
+        const cmsRow = cmsRes.data?.data ?? cmsRes.data;
+        const rawContent = cmsRow?.content;
+
+        if (rawContent) {
+          const parsedContent = typeof rawContent === 'string'
+            ? JSON.parse(rawContent)
+            : rawContent;
+          console.log('[useHomepageData] CMS content parsed successfully:', parsedContent);
           setCmsContent(parsedContent);
-          localStorage.setItem(`${CMS_CACHE_KEY}_${currentLang}`, JSON.stringify(parsedContent));
+          // Extract hero slides if present
+          if (Array.isArray(parsedContent.hero_slides) && parsedContent.hero_slides.length > 0) {
+            setHeroSlides(parsedContent.hero_slides);
+          }
+          // Bust the cache so next visit also gets fresh data
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(`${CMS_CACHE_KEY}_${currentLang}`, JSON.stringify(parsedContent));
+          }
+        } else {
+          console.warn('[useHomepageData] CMS API returned no content — using hardcoded fallbacks. Response was:', cmsRes.data);
+          // Hydrate from stale cache only as last resort
+          if (typeof window !== 'undefined') {
+            const cachedCms = localStorage.getItem(`${CMS_CACHE_KEY}_${currentLang}`);
+            if (cachedCms) {
+              console.log('[useHomepageData] Loading stale CMS cache as fallback');
+              setCmsContent(JSON.parse(cachedCms));
+            }
+          }
         }
-      } catch (err) {
-        console.error('Failed to fetch CMS page content', err);
+      } catch (err: any) {
+        console.error('[useHomepageData] CMS fetch FAILED — storefront will show hardcoded fallbacks.', err?.response?.data || err?.message || err);
+        // Try stale cache
+        if (typeof window !== 'undefined') {
+          const cachedCms = localStorage.getItem(`${CMS_CACHE_KEY}_${currentLang}`);
+          if (cachedCms) {
+            console.log('[useHomepageData] Loading stale CMS cache after fetch error');
+            setCmsContent(JSON.parse(cachedCms));
+          }
+        }
       }
 
       // 2. Fetch Active Hero Banners
@@ -78,32 +103,43 @@ export function useHomepageData() {
           const urls = bannersRes.data.map((b: any) => b.image_url).filter(Boolean);
           if (urls.length > 0) {
             setBanners(urls);
-            localStorage.setItem(BANNERS_CACHE_KEY, JSON.stringify(urls));
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(BANNERS_CACHE_KEY, JSON.stringify(urls));
+            }
           }
         }
       } catch (err) {
-        console.error('Failed to fetch banners', err);
+        // Banners are non-critical — use defaults silently
+        if (typeof window !== 'undefined') {
+          const cachedBanners = localStorage.getItem(BANNERS_CACHE_KEY);
+          if (cachedBanners) setBanners(JSON.parse(cachedBanners));
+        }
       }
 
       // 3. Fetch Categories with Product Images
       try {
-        const categoriesRes = await AxiosAPI.get('/v1/categories');
-        if (categoriesRes.data && Array.isArray(categoriesRes.data)) {
-          const formatted = categoriesRes.data.map((cat: any) => ({
+        const categoriesRes = await AxiosAPI.get('/v1/categories/homepage?limit=8');
+        if (categoriesRes.data && Array.isArray(categoriesRes.data.data)) {
+          const formatted = categoriesRes.data.data.map((cat: any) => ({
             title: cat.name,
             url: cat.product_image || 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=600&auto=format&fit=crop'
           }));
           if (formatted.length > 0) {
             setCategories(formatted);
-            localStorage.setItem(CATEGORIES_CACHE_KEY, JSON.stringify(formatted));
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(CATEGORIES_CACHE_KEY, JSON.stringify(formatted));
+            }
           }
         }
       } catch (err) {
-        console.error('Failed to fetch categories', err);
+        if (typeof window !== 'undefined') {
+          const cachedCategories = localStorage.getItem(CATEGORIES_CACHE_KEY);
+          if (cachedCategories) setCategories(JSON.parse(cachedCategories));
+        }
       }
 
     } catch (error) {
-      console.error('Error refreshing homepage data', error);
+      console.error('[useHomepageData] Unexpected error during data refresh:', error);
     } finally {
       setIsLoading(false);
     }
@@ -115,10 +151,10 @@ export function useHomepageData() {
 
   // Helper function to resolve localized content with static fallbacks matching the Luxe Market and Kinetic screenshots
   const getField = useCallback((key: string) => {
-    if (cmsContent && cmsContent[key] !== undefined) {
+    if (cmsContent && cmsContent[key] !== undefined && cmsContent[key] !== null && cmsContent[key] !== '') {
       return cmsContent[key];
     }
-    
+
     // Fallbacks corresponding exactly to the designs in the screenshots
     switch (key) {
       case 'hero_subtitle':
@@ -131,7 +167,7 @@ export function useHomepageData() {
         return 'Explore';
       case 'hero_image_url':
         return 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1000&auto=format&fit=crop';
-      
+
       case 'middle_banner_subtitle':
         return 'LIMITED TIME';
       case 'middle_banner_title':
@@ -142,7 +178,7 @@ export function useHomepageData() {
         return 'Shop Now';
       case 'middle_banner_image_url':
         return 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop';
-      
+
       case 'new_arrivals_left_subtitle':
         return 'NEW COLLECTION';
       case 'new_arrivals_left_title':
@@ -153,7 +189,7 @@ export function useHomepageData() {
         return 'Explore Collection';
       case 'new_arrivals_left_image_url':
         return 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop';
-      
+
       case 'new_arrivals_right_top_title':
         return 'Premium Footwear';
       case 'new_arrivals_right_top_image_url':
@@ -162,14 +198,14 @@ export function useHomepageData() {
         return 'Workplace Essentials';
       case 'new_arrivals_right_bottom_image_url':
         return 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?q=80&w=1000&auto=format&fit=crop';
-      
+
       case 'newsletter_title':
         return 'Join the Inner Circle';
       case 'newsletter_desc':
         return 'Subscribe for early access to our latest collections, exclusive events and seasonal updates.';
       case 'newsletter_btn_text':
         return 'Subscribe';
-      
+
       case 'feedback_list':
         return [
           {
@@ -194,6 +230,7 @@ export function useHomepageData() {
     getField,
     banners,
     categories,
+    heroSlides,
     isLoading
   };
 }

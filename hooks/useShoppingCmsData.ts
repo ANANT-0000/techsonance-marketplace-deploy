@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
 
-const SHOPPING_CACHE_KEY = 'soundsphere_cms_shopping';
-const LANG_KEY = 'soundsphere_locale';
+const SHOPPING_CACHE_KEY = 'techsonance_cms_shopping';
+const LANG_KEY = 'techsonance_locale';
 
 const defaultPromo = {
   promo_banner_title: 'Uncompromised High-Fidelity Audio',
@@ -33,10 +33,12 @@ export function useShoppingCmsData() {
     }
     try {
       const res = await AxiosAPI.get(`/v1/cms/shopping?lang=${currentLang}`);
-      if (res.data && res.data.content) {
-        const parsed = typeof res.data.content === 'string'
-          ? JSON.parse(res.data.content)
-          : res.data.content;
+      const cmsRow = res.data?.data ?? res.data;
+      const rawContent = cmsRow?.content;
+      if (rawContent) {
+        const parsed = typeof rawContent === 'string'
+          ? JSON.parse(rawContent)
+          : rawContent;
         
         setPromoContent(parsed);
         localStorage.setItem(`${SHOPPING_CACHE_KEY}_${currentLang}`, JSON.stringify(parsed));

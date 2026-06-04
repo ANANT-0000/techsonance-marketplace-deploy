@@ -32,23 +32,19 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     const router = useRouter();
     const token = authToken();
 
-     
     const syncingRef = useRef(false);
-     
     const rollbackRef = useRef<{ quantity: number; cartItemId?: string; cartId?: string } | null>(null);
 
     useEffect(() => {
         if (items.length === 0) {
             dispatch(loadCart());
         }
-    }, [dispatch]);
+    }, [dispatch, items.length]);
 
     const cartItem = items?.find((item) => item.productVariantId === productVariantId);
     const quantity = cartItem?.quantity ?? 0;
 
-    const isSmall = styles?.includes("small");
-    const containerBase = `flex items-center justify-center bg-brand-primary text-white rounded-lg shadow-md overflow-hidden transition-all duration-200`;
-    const heightClass = isSmall ? "h-6" : "h-11";
+    const containerBase = `relative flex items-center justify-center rounded-lg overflow-hidden transition-all duration-200 select-none`;
 
     const handleIncrement = async () => {
         if (!user?.id || !token) {
@@ -61,7 +57,6 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
         const prevCartItemId = cartItem?.cartItemId;
         const prevCartId = cartItem?.cartId;
 
-        // ── 1. Optimistic update — instant UI ────────────────────
         const optimisticQuantity = prevQuantity + 1;
         dispatch(addToCart({
             cartId: cartItem?.cartId ?? '',
@@ -70,12 +65,10 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
             quantity: optimisticQuantity,
         }));
 
-        // Open sidebar immediately (no waiting for server)
         if (!path.includes("cart") && !path.includes("wishlist")) {
             dispatch(toggleCartSidebar('open'));
         }
 
-        // ── 2. Sync with server in background ────────────────────
         syncingRef.current = true;
         rollbackRef.current = { quantity: prevQuantity, cartItemId: prevCartItemId, cartId: prevCartId };
 
@@ -85,7 +78,6 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
 
             if (!cartResponse?.cart_id) throw new Error('Invalid server response');
 
-            // Reconcile with real server data (cart IDs may be new for first add)
             dispatch(addToCart({
                 cartId: cartResponse.cart_id,
                 cartItemId: cartResponse.cart_item_id,
@@ -94,7 +86,6 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
             }));
         } catch (error) {
             console.error("Error adding to cart:", error);
-            // ── 3. Rollback to pre-click state ────────────────────
             if (prevQuantity === 0) {
                 dispatch(removeFromCart({ productVariantId, quantity: 0 }));
             } else {
@@ -119,14 +110,12 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
         const prevCartItemId = cartItem.cartItemId;
         const prevCartId = cartItem.cartId;
 
-        // ── 1. Optimistic update — instant UI ────────────────────
         if (prevQuantity <= 1) {
             dispatch(removeFromCart({ productVariantId, quantity: 0 }));
         } else {
             dispatch(removeFromCart({ productVariantId, quantity: prevQuantity - 1 }));
         }
 
-        // ── 2. Sync with server in background ────────────────────
         syncingRef.current = true;
         rollbackRef.current = { quantity: prevQuantity, cartItemId: prevCartItemId, cartId: prevCartId };
 
@@ -141,7 +130,6 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
 
             if (!cartResponse) throw new Error('Invalid server response');
 
-            // Reconcile: server is source of truth on final quantity
             if (cartResponse.success && !cartResponse.quantity) {
                 dispatch(removeFromCart({ productVariantId, quantity: 0 }));
             } else {
@@ -149,7 +137,6 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
             }
         } catch (error) {
             console.error("Error removing from cart:", error);
-            // ── 3. Rollback ───────────────────────────────────────
             dispatch(addToCart({
                 cartId: prevCartId,
                 cartItemId: prevCartItemId,
@@ -163,10 +150,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     };
 
     return (
-        <motion.div
-            whileHover={{ scale: 1.1 }}
-            className={`${containerBase} ${heightClass} ${styles}`}
-        >
+        <div className={`${containerBase} ${styles}`}>
             <AnimatePresence mode="wait">
                 {quantity === 0 ? (
                     <motion.button
@@ -175,48 +159,48 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={handleIncrement}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileTap={{ scale: 0.96 }}
                         transition={{ duration: 0.15 }}
-                        className="flex h-full w-full items-center justify-center gap-2 whitespace-nowrap"
+                        className="flex h-full w-full items-center justify-center gap-2 px-3 whitespace-nowrap"
                     >
-                        <ShoppingCart size={isSmall ? 18 : 22} />
+                        <ShoppingCart size={16} />
+                        <span className="text-[13px] font-semibold tracking-wide">Add</span>
                     </motion.button>
                 ) : (
                     <motion.div
                         key="counter-ui"
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        className="flex h-full w-full items-center justify-evenly"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="flex h-full w-full items-center justify-between px-1 bg-blue-600 text-white rounded-lg shadow-inner"
                     >
                         <motion.button
-                            whileTap={{ scale: 0.8 }}
+                            whileTap={{ scale: 0.85 }}
                             onClick={handleDecrement}
-                            className="h-full flex items-center justify-center flex-1 hover:bg-black/10 transition-colors"
+                            className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-black/20 transition-colors"
                         >
-                            <Minus size={16} />
+                            <Minus size={14} strokeWidth={2.5} />
                         </motion.button>
 
                         <motion.span
                             key={quantity}
-                            initial={{ scale: 1.2, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="font-bold flex-1 text-xs text-center"
+                            initial={{ y: -10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            className="font-bold text-sm w-6 text-center select-none"
                         >
                             {quantity}
                         </motion.span>
 
                         <motion.button
-                            whileTap={{ scale: 0.8 }}
+                            whileTap={{ scale: 0.85 }}
                             onClick={handleIncrement}
-                            className="h-full flex items-center justify-center flex-1 hover:bg-black/10 transition-colors"
+                            className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-black/20 transition-colors"
                         >
-                            <Plus size={16} />
+                            <Plus size={14} strokeWidth={2.5} />
                         </motion.button>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </motion.div>
+        </div>
     );
 }

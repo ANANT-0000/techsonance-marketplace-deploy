@@ -3,20 +3,61 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-  Globe, 
-  Search, 
-  Heart, 
-  ShoppingBag, 
-  User, 
-  Menu, 
-  Bell, 
-  Mail, 
-  ArrowRight, 
-  ChevronRight 
+import {
+  Globe,
+  Search,
+  Heart,
+  ShoppingBag,
+  User,
+  Menu,
+  Bell,
+  Mail, ChevronRight
 } from 'lucide-react';
 import { useHomepageData } from '@/hooks/useHomepageData';
+import { HeroCarousel } from '@/components/customer/HeroCarousel';
+import { ProductCard } from '@/components/customer/ProductCard';
 import AxiosAPI from '@/lib/axios';
+
+interface ProductImage {
+  image_url: string;
+}
+
+interface ProductVariant {
+  id: string;
+  images: ProductImage[];
+}
+
+interface Category {
+  name: string;
+}
+
+interface ProductData {
+  id: string;
+  name: string;
+  description: string;
+  features: Array<{
+    title: string;
+    description: string;
+  }>;
+  base_price: string;
+  discount_percent: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  company_id: string;
+  vendor_id: string;
+  category_id: string;
+  category: Category;
+  variants: ProductVariant[];
+}
+// ── Skeleton primitives ───────────────────────────────────────────────────────
+function Sk({ w = 'w-full', h = 'h-4', rounded = 'rounded', className = '' }: {
+  w?: string; h?: string; rounded?: string; className?: string;
+}) {
+  return (
+    <div className={`${w} ${h} ${rounded} bg-gray-200 animate-pulse ${className}`} />
+  );
+}
 
 // Static fallbacks for products matching screenshots
 const defaultFeaturedProducts = [
@@ -78,34 +119,29 @@ export default function Home() {
     getField,
     banners,
     categories,
+    heroSlides,
     isLoading
   } = useHomepageData();
 
-  const [products, setProducts] = useState<any[]>(defaultFeaturedProducts);
-  const [newArrivals, setNewArrivals] = useState<any[]>(defaultNewArrivals);
+  const [products, setProducts] = useState<any[]>([]);
+  const [newArrivals, setNewArrivals] = useState<any[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+
   const [emailInput, setEmailInput] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  // Fetch dynamic products on mount
   useEffect(() => {
     async function loadProducts() {
       try {
-        const res = await AxiosAPI.get('/v1/products?limit=8');
-        if (res.data && res.data.data && Array.isArray(res.data.data)) {
-          const fetched = res.data.data.map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            category: p.category?.name || "Premium Selection",
-            price: Number(p.base_price) || 299.00,
-            image: p.variants?.[0]?.images?.[0]?.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop"
-          }));
-          if (fetched.length > 0) {
-            setProducts(fetched.slice(0, 4));
-            setNewArrivals(fetched.slice(4, 7));
-          }
-        }
-      } catch (err) {
-        console.warn('Could not load products from API, using premium defaults');
+        const res = await AxiosAPI.get('/v1/products/homepage?limit=8');
+
+        setProducts(res.data.data.slice(0, 4));
+        setNewArrivals(res.data.data.slice(4, 7));
+      } catch {
+        setProducts(defaultFeaturedProducts);
+        setNewArrivals(defaultNewArrivals);
+      } finally {
+        setProductsLoading(false);
       }
     }
     loadProducts();
@@ -122,12 +158,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#faf9f6] text-[#1a1a1a] font-sans antialiased overflow-x-hidden">
-      
+
       {/* ========================================================================= */}
       {/* 1. LARGE SCREEN / DESKTOP VIEWPORT (Luxe Market Style)                   */}
       {/* ========================================================================= */}
       <div className="hidden lg:block">
-        
+
         {/* Sub-Header / Floating Language Panel */}
         <div className="w-full bg-[#f4f2ee] border-b border-gray-200/40 py-2 px-12 flex justify-between items-center text-xs tracking-wider text-gray-500 font-medium">
           <div className="flex items-center gap-2">
@@ -136,14 +172,14 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-4">
             <span className="opacity-75">SELECT LANGUAGE:</span>
-            <button 
-              onClick={() => setLang('en')} 
+            <button
+              onClick={() => setLang('en')}
               className={`hover:text-black transition-colors ${lang === 'en' ? 'font-bold text-black border-b border-black' : ''}`}
             >
               ENGLISH
             </button>
-            <button 
-              onClick={() => setLang('es')} 
+            <button
+              onClick={() => setLang('es')}
               className={`hover:text-black transition-colors ${lang === 'es' ? 'font-bold text-black border-b border-black' : ''}`}
             >
               ESPAÑOL
@@ -152,36 +188,11 @@ export default function Home() {
         </div>
 
         {/* Hero Section */}
-        <section className="relative w-full h-[85vh] bg-[#eae5db] flex items-center overflow-hidden">
-          {/* Left Text Column */}
-          <div className="w-1/2 px-20 flex flex-col justify-center items-start z-10">
-            <span className="text-xs uppercase tracking-[0.25em] text-gray-600 font-bold mb-4">
-              {getField('hero_subtitle')}
-            </span>
-            <h1 className="text-5xl xl:text-6xl font-serif text-[#1e1e1e] leading-[1.1] tracking-tight mb-6">
-              {getField('hero_title')}
-            </h1>
-            <p className="text-sm xl:text-base text-gray-600 font-light leading-relaxed max-w-md mb-8">
-              {getField('hero_desc')}
-            </p>
-            <Link href="/shopping">
-              <button className="bg-[#1e1e1e] text-white hover:bg-black transition-all duration-300 px-8 py-3 text-xs uppercase tracking-widest rounded-none shadow-md hover:shadow-lg">
-                {getField('hero_btn_text')}
-              </button>
-            </Link>
-          </div>
-
-          {/* Right Image/Model Column */}
-          <div className="absolute right-0 top-0 w-1/2 h-full">
-            <Image 
-              src={banners[0] || getField('hero_image_url')} 
-              alt="Luxe Model"
-              fill
-              className="object-cover object-top"
-              priority
-            />
-          </div>
-        </section>
+        {isLoading ? (
+          <div className="w-full h-[85vh] bg-gray-200 animate-pulse" />
+        ) : (
+          <HeroCarousel slides={heroSlides} />
+        )}
 
         {/* Curated Categories */}
         <section className="py-20 px-12 xl:px-20 bg-white">
@@ -196,20 +207,20 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-4 gap-6">
-            {categories.map((cat, idx) => (
-              <Link href={`/shopping?category=${cat.title}`} key={idx} className="group relative h-96 overflow-hidden bg-gray-100">
-                <Image 
-                  src={cat.url}
-                  alt={cat.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-85 transition-opacity" />
-                <div className="absolute bottom-6 left-6 text-white">
-                  <h3 className="text-lg font-medium tracking-wide">{cat.title}</h3>
-                </div>
-              </Link>
-            ))}
+            {isLoading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="relative h-96 bg-gray-200 animate-pulse" />
+              ))
+              : categories.map((cat, idx) => (
+                <Link href={`/shopping?search=${encodeURIComponent(cat.title)}`} key={idx} className="group relative h-96 overflow-hidden bg-gray-100">
+                  <Image src={cat.url} alt={cat.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                  <div className="absolute bottom-6 left-6 text-white">
+                    <h3 className="text-lg font-medium tracking-wide">{cat.title}</h3>
+                  </div>
+                </Link>
+              ))
+            }
           </div>
         </section>
 
@@ -221,52 +232,52 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-4 gap-8">
-            {products.map((p) => (
-              <div key={p.id} className="group flex flex-col bg-white border border-gray-100/50 p-4 transition-all duration-300 hover:shadow-xl relative">
-                <div className="relative h-80 w-full overflow-hidden bg-gray-50 mb-4">
-                  <Image 
-                    src={p.image}
-                    alt={p.name}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-102"
-                  />
-                  <button className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm text-gray-400 hover:text-red-500 hover:bg-white transition-all">
-                    <Heart size={16} />
-                  </button>
+            {productsLoading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex flex-col bg-white border border-gray-100 p-4 rounded-[20px]">
+                  <div className="h-80 w-full bg-gray-200 animate-pulse mb-4 rounded-[12px]" />
+                  <Sk w="w-1/3" h="h-3" className="mb-2" />
+                  <Sk w="w-2/3" h="h-4" className="mb-2" />
+                  <Sk w="w-1/4" h="h-4" />
                 </div>
-                <span className="text-[10px] uppercase tracking-widest text-gray-400 mb-1">{p.category}</span>
-                <h3 className="text-sm font-semibold text-gray-800 group-hover:text-black transition-colors">{p.name}</h3>
-                <span className="text-sm font-bold text-gray-900 mt-2">${p.price.toFixed(2)}</span>
-              </div>
-            ))}
+              ))
+              : products.map((p, idx) => (
+                <ul key={p.id} className="h-[460px] list-none p-0 m-0">
+                  <ProductCard product={p} idx={idx} />
+                </ul>
+              ))
+            }
           </div>
         </section>
 
         {/* Middle Promo Banner */}
         <section className="relative w-full h-[50vh] flex items-center justify-center text-center overflow-hidden">
-          <Image 
-            src={getField('middle_banner_image_url')}
-            alt="Summer Promotion"
-            fill
-            className="object-cover"
-          />
+          {isLoading ? (
+            <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+          ) : (
+            <Image src={getField('middle_banner_image_url')} alt="Promo" fill className="object-cover" />
+          )}
           <div className="absolute inset-0 bg-black/35 backdrop-blur-[1px]" />
-          
           <div className="relative z-10 text-white px-6">
-            <span className="text-xs uppercase tracking-[0.3em] font-bold text-white/90 mb-4 block">
-              {getField('middle_banner_subtitle')}
-            </span>
-            <h2 className="text-4xl font-serif mb-4 tracking-tight">
-              {getField('middle_banner_title')}
-            </h2>
-            <p className="text-sm text-white/80 font-light max-w-md mx-auto mb-6">
-              {getField('middle_banner_desc')}
-            </p>
-            <Link href="/shopping">
-              <button className="bg-white text-black hover:bg-black hover:text-white transition-all duration-300 px-6 py-2.5 text-xs uppercase tracking-widest rounded-none font-semibold">
-                {getField('middle_banner_btn_text')}
-              </button>
-            </Link>
+            {isLoading ? (
+              <div className="flex flex-col items-center gap-3">
+                <Sk w="w-24" h="h-3" rounded="rounded-full" />
+                <Sk w="w-64" h="h-8" rounded="rounded" />
+                <Sk w="w-48" h="h-4" rounded="rounded" />
+                <Sk w="w-28" h="h-9" rounded="rounded" />
+              </div>
+            ) : (
+              <>
+                <span className="text-xs uppercase tracking-[0.3em] font-bold text-white/90 mb-4 block">{getField('middle_banner_subtitle')}</span>
+                <h2 className="text-4xl font-serif mb-4 tracking-tight">{getField('middle_banner_title')}</h2>
+                <p className="text-sm text-white/80 font-light max-w-md mx-auto mb-6">{getField('middle_banner_desc')}</p>
+                <Link href="/shopping">
+                  <button className="bg-white text-black hover:bg-black hover:text-white transition-all duration-300 px-6 py-2.5 text-xs uppercase tracking-widest rounded-none font-semibold">
+                    {getField('middle_banner_btn_text')}
+                  </button>
+                </Link>
+              </>
+            )}
           </div>
         </section>
 
@@ -278,61 +289,45 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-5 gap-6">
-            {/* Left Big Panel (60% equivalent -> 3 cols) */}
-            <div className="col-span-3 relative h-[650px] overflow-hidden group bg-gray-50">
-              <Image 
-                src={getField('new_arrivals_left_image_url')}
-                alt="Avant Garde Edit"
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-102"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-              <div className="absolute bottom-10 left-10 text-white right-10">
-                <span className="text-xs uppercase tracking-widest font-bold text-white/85 mb-2 block">
-                  {getField('new_arrivals_left_subtitle')}
-                </span>
-                <h3 className="text-3xl font-serif mb-3 tracking-tight">{getField('new_arrivals_left_title')}</h3>
-                <p className="text-sm text-white/80 font-light max-w-sm mb-6">{getField('new_arrivals_left_desc')}</p>
-                <Link href="/shopping">
-                  <button className="border border-white hover:bg-white hover:text-black transition-colors px-6 py-2 text-xs uppercase tracking-wider">
-                    {getField('new_arrivals_left_btn_text')}
-                  </button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Right Stacked Panels (40% equivalent -> 2 cols) */}
-            <div className="col-span-2 flex flex-col gap-6">
-              {/* Top Panel */}
-              <div className="relative h-[313px] bg-gray-50 overflow-hidden group">
-                <Image 
-                  src={getField('new_arrivals_right_top_image_url')}
-                  alt="Premium Footwear"
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-103"
-                />
-                <div className="absolute inset-0 bg-black/15" />
-                <div className="absolute bottom-6 left-6 text-white">
-                  <h4 className="text-lg font-serif tracking-wide">{getField('new_arrivals_right_top_title')}</h4>
+            {isLoading ? (
+              <>
+                <div className="col-span-3 h-[650px] bg-gray-200 animate-pulse" />
+                <div className="col-span-2 flex flex-col gap-6">
+                  <div className="h-[313px] bg-gray-200 animate-pulse" />
+                  <div className="h-[313px] bg-gray-200 animate-pulse" />
                 </div>
-              </div>
-
-              {/* Bottom Panel */}
-              <div className="relative h-[313px] bg-gray-50 overflow-hidden group">
-                <Image 
-                  src={getField('new_arrivals_right_bottom_image_url')}
-                  alt="Workplace Essentials"
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-103"
-                />
-                <div className="absolute inset-0 bg-black/15" />
-                <div className="absolute bottom-6 left-6 text-white">
-                  <h4 className="text-lg font-serif tracking-wide">{getField('new_arrivals_right_bottom_title')}</h4>
+              </>
+            ) : (
+              <>
+                <div className="col-span-3 relative h-[650px] overflow-hidden group bg-gray-50">
+                  <Image src={getField('new_arrivals_left_image_url')} alt="New Arrivals" fill className="object-cover transition-transform duration-700 group-hover:scale-102" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  <div className="absolute bottom-10 left-10 text-white right-10">
+                    <span className="text-xs uppercase tracking-widest font-bold text-white/85 mb-2 block">{getField('new_arrivals_left_subtitle')}</span>
+                    <h3 className="text-3xl font-serif mb-3 tracking-tight">{getField('new_arrivals_left_title')}</h3>
+                    <p className="text-sm text-white/80 font-light max-w-sm mb-6">{getField('new_arrivals_left_desc')}</p>
+                    <Link href="/shopping">
+                      <button className="border border-white hover:bg-white hover:text-black transition-colors px-6 py-2 text-xs uppercase tracking-wider">{getField('new_arrivals_left_btn_text')}</button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </div>
+                <div className="col-span-2 flex flex-col gap-6">
+                  <div className="relative h-[313px] bg-gray-50 overflow-hidden group">
+                    <Image src={getField('new_arrivals_right_top_image_url')} alt="New Arrivals" fill className="object-cover transition-transform duration-500 group-hover:scale-103" />
+                    <div className="absolute inset-0 bg-black/15" />
+                    <div className="absolute bottom-6 left-6 text-white"><h4 className="text-lg font-serif tracking-wide">{getField('new_arrivals_right_top_title')}</h4></div>
+                  </div>
+                  <div className="relative h-[313px] bg-gray-50 overflow-hidden group">
+                    <Image src={getField('new_arrivals_right_bottom_image_url')} alt="New Arrivals" fill className="object-cover transition-transform duration-500 group-hover:scale-103" />
+                    <div className="absolute inset-0 bg-black/15" />
+                    <div className="absolute bottom-6 left-6 text-white"><h4 className="text-lg font-serif tracking-wide">{getField('new_arrivals_right_bottom_title')}</h4></div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </section>
+
 
         {/* Newsletter Section */}
         <section className="bg-[#0b0c10] text-white py-24 px-12 xl:px-20 text-center relative overflow-hidden">
@@ -348,10 +343,10 @@ export default function Home() {
               </div>
             ) : (
               <form onSubmit={handleSubscribe} className="flex border-b border-gray-600 py-2">
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   required
-                  placeholder="Enter your email address" 
+                  placeholder="Enter your email address"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   className="bg-transparent border-none text-white text-sm focus:outline-none w-full placeholder-gray-500 font-light"
@@ -373,43 +368,22 @@ export default function Home() {
       {/* 2. MOBILE VIEWPORT (Kinetic Style)                                       */}
       {/* ========================================================================= */}
       <div className="block lg:hidden min-h-screen bg-[#fcfdff]">
-        
-        {/* Kinetic Header */}
-        <header className="sticky top-0 z-40 bg-[#fcfdff]/90 backdrop-blur-md border-b border-gray-100 py-4 px-4 flex justify-between items-center">
-          <button className="text-gray-800 hover:text-black">
-            <Menu size={20} />
-          </button>
-          <span className="font-extrabold tracking-widest text-lg text-gray-900">KINETIC</span>
-          <button className="text-gray-800 hover:text-black relative">
-            <Bell size={20} />
-            <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-brand-primary rounded-full" />
-          </button>
-        </header>
 
         {/* Mobile Hero Banner */}
-        <section className="relative w-full h-[60vh] bg-gray-200 overflow-hidden flex items-end">
-          <Image 
-            src={getField('hero_image_url')}
-            alt="Kinetic Hero"
-            fill
-            className="object-cover object-top"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-          
-          <div className="relative z-10 w-full p-6 text-white flex flex-col items-center text-center">
-            <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/80 mb-2">
-              {getField('hero_subtitle')}
-            </span>
-            <h1 className="text-3xl font-extrabold tracking-tight mb-6">
-              {getField('hero_title')}
-            </h1>
-            <Link href="/shopping" className="w-full max-w-xs">
-              <button className="w-full bg-white text-black py-3 rounded-full text-xs font-bold uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-[0.98] transition-transform">
-                Shop Modernity
-              </button>
-            </Link>
+        {isLoading ? (
+          <div className="relative w-full h-[60vh] bg-gray-100 flex items-center justify-center animate-pulse">
+            <div className="absolute inset-0 bg-gray-200" />
+            <div className="z-10 text-center flex flex-col items-center gap-4">
+              <Sk w="w-32" h="h-4" />
+              <Sk w="w-64" h="h-10" />
+              <Sk w="w-40" h="h-10" rounded="rounded-full" />
+            </div>
           </div>
-        </section>
+        ) : (
+          <div className="h-[60vh]">
+            <HeroCarousel slides={heroSlides} isLoading={isLoading} />
+          </div>
+        )}
 
         {/* Explore Essentials */}
         <section className="py-8 px-4">
@@ -425,7 +399,7 @@ export default function Home() {
             {categories.map((cat, idx) => (
               <Link href={`/shopping?category=${cat.title}`} key={idx} className="flex flex-col items-center min-w-[76px] snap-center">
                 <div className="relative w-16 h-16 rounded-full overflow-hidden border border-gray-100 bg-gray-50 shadow-sm">
-                  <Image 
+                  <Image
                     src={cat.url}
                     alt={cat.title}
                     fill
@@ -443,24 +417,12 @@ export default function Home() {
         {/* Featured Masterpieces */}
         <section className="py-6 px-4 bg-gray-50/50">
           <h2 className="text-base font-bold text-gray-900 uppercase tracking-wide mb-6">Featured Masterpieces</h2>
-          
+
           <div className="grid grid-cols-2 gap-4">
-            {products.slice(0, 2).map((p) => (
-              <div key={p.id} className="flex flex-col bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm relative p-3">
-                <div className="relative h-44 w-full overflow-hidden bg-gray-100 rounded-lg mb-3">
-                  <Image 
-                    src={p.image}
-                    alt={p.name}
-                    fill
-                    className="object-cover"
-                  />
-                  <button className="absolute top-2 right-2 bg-white/95 p-1.5 rounded-full shadow-sm text-gray-400 hover:text-red-500">
-                    <Heart size={14} />
-                  </button>
-                </div>
-                <h3 className="text-xs font-bold text-gray-800 line-clamp-1">{p.name}</h3>
-                <span className="text-xs font-bold text-gray-900 mt-1">${p.price.toFixed(2)}</span>
-              </div>
+            {products.slice(0, 2).map((p, idx) => (
+              <ul key={p.id} className="h-80 list-none p-0 m-0">
+                <ProductCard product={p} idx={idx} />
+              </ul>
             ))}
           </div>
         </section>
@@ -468,7 +430,7 @@ export default function Home() {
         {/* Promo Banner */}
         <section className="my-6 mx-4">
           <div className="relative h-48 rounded-2xl overflow-hidden bg-black flex items-center">
-            <Image 
+            <Image
               src={getField('middle_banner_image_url')}
               alt="Promo Banner"
               fill
@@ -503,15 +465,15 @@ export default function Home() {
             {newArrivals.map((arr) => (
               <div key={arr.id} className="min-w-[150px] snap-center flex flex-col bg-white border border-gray-100 p-2.5 rounded-xl">
                 <div className="relative h-36 w-full overflow-hidden bg-gray-100 rounded-lg mb-2">
-                  <Image 
-                    src={arr.image}
+                  <Image
+                    src={arr.variants?.[0]?.images?.[0]?.image_url || 'https://placehold.net/400x500.png'}
                     alt={arr.name}
                     fill
                     className="object-cover"
                   />
                 </div>
                 <h3 className="text-[11px] font-bold text-gray-800 line-clamp-1">{arr.name}</h3>
-                <span className="text-[11px] font-bold text-gray-900 mt-1">${arr.price.toFixed(2)}</span>
+                <span className="text-[11px] font-bold text-gray-900 mt-1">₹{Number(arr.base_price)}</span>
               </div>
             ))}
           </div>
