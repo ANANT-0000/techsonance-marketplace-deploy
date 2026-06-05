@@ -3,7 +3,7 @@ import { Navbar } from "@/components/admin/Navbar";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/common/Button";
 import { UploadCloud, FileText, X } from "lucide-react";
 import { fetchCreateTemplate, fetchTemplateById, fetchUpdateTemplate } from "@/utils/adminApiClients";
@@ -20,7 +20,8 @@ const getTemplate = async (id: string, token: string) => {
     return template.data;
 }
 
-export default function TemplateFormPage() {
+// 1. Isolate the logic into a separate component
+function TemplateFormContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const editId = searchParams.get('id');  
@@ -195,6 +196,7 @@ export default function TemplateFormPage() {
                                                     <button 
                                                         onClick={() => setShowPreview(true)} 
                                                         className="text-xs text-blue-500 hover:text-blue-700 underline mt-0.5 w-fit"
+                                                        type="button"
                                                     >
                                                         View Existing PDF
                                                     </button>
@@ -297,5 +299,18 @@ export default function TemplateFormPage() {
                 </div>
             )}
         </>
+    );
+}
+
+// 2. Wrap the newly isolated component inside a Suspense Boundary
+export default function TemplateFormPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center h-screen w-full">
+                <p className="text-gray-500 font-medium">Loading form...</p>
+            </div>
+        }>
+            <TemplateFormContent />
+        </Suspense>
     );
 }
