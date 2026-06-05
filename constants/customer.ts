@@ -12,16 +12,17 @@ export const HOME_HERO_DESC = "Discover, buy, and sell music products with ease.
 export const HERO_BTN_TEXT = "Shop Now";
 
 // Navigation Links
-export const NAV_LINKS= [{ Home: '/' }, { Shop: '/shopping' }, { About: '/about' }, { Contact: '/contact' }]
+export const NAV_LINKS = [{ Home: '/' }, { Shop: '/shopping' }, { About: '/about' }, { Contact: '/contact' }]
 export interface tabLinkType {
     [key: string]: string;
 }
 export const TAB_LINKS: tabLinkType[] = [
     { title: 'Home', url: '/', iconNames: 'house' },
+    { title: 'Search', url: '/customer/search', iconNames: 'search' },
     { title: 'Shop', url: '/shopping', iconNames: 'shopping-bag' },
     { title: 'Cart', url: '/cart', iconNames: 'shopping-cart' },
 
-    { title: 'Profile', url: '/customerProfile', iconNames: 'user' },
+    { title: 'Profile', url: '/customer', iconNames: 'user' },
     { title: 'Menu', url: '', iconNames: 'menu' }
 
 ]

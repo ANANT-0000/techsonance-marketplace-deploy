@@ -164,10 +164,10 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
             </aside>
 
             {/* Mobile Filter Button (Top Right of product grid) */}
-            <div className="lg:hidden absolute top-0 right-0 z-10 pt-[38px] pr-4">
+            <div className="lg:hidden absolute top-13 right-0 z-10   pr-4">
                <button
                     onClick={() => setIsOpen(true)}
-                    className="bg-[#0A0A0B] text-white px-5 py-2.5 rounded-full flex items-center gap-2 shadow-md hover:bg-black transition-colors"
+                    className="bg-[#0A0A0B] text-white px-4 py-1.5 rounded-full flex items-center gap-2 shadow-md hover:bg-black transition-colors"
                 >
                     <SlidersHorizontal size={14} />
                     <span className="font-semibold text-sm">Filter</span>
@@ -184,7 +184,7 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 bg-black/50 z-[60] lg:hidden backdrop-blur-[2px]"
+                            className="fixed inset-0 bottom-5 bg-black/50 z-[60] lg:hidden backdrop-blur-[2px]"
                         />
 
                         {/* Sheet */}
@@ -272,7 +272,7 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                             </div>
 
                             {/* Sticky Footer */}
-                            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-white">
+                            <div className="absolute bottom-8 left-0 right-0 p-4 border-t border-gray-100 bg-white">
                                 <button
                                     onClick={() => setIsOpen(false)}
                                     className="w-full bg-[#0A0A0B] hover:bg-black text-white font-semibold py-4 rounded-[12px] text-[15px] transition-colors"

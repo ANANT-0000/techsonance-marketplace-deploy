@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { companyDomain } from "@/config";
 import { BASE_API_URL, ORGANIZATION_TAXATION_OPTIONS, PRODUCT_FORM_FIELDS, PRODUCT_FORM_PRICING_FIELDS } from "@/constants";
 import { useAppSelector } from "@/hooks/reduxHooks";
@@ -258,7 +258,7 @@ export function ProductForm({
             let response: { ok: boolean; status: number; statusText: string; data?: any };
 
             if (isUpdate) {
-                response = await updateProduct(formData, vendorId, productId!, token);
+                response = await updateProduct(formData, productId!, token);
             } else {
                 response = await createProduct(formData, vendorId, token);
                 console.log("response", response);
@@ -267,7 +267,7 @@ export function ProductForm({
                 console.error("Submission failed:", response?.status, response?.statusText);
                 return;
             }
-            router.push(`/vendor/${vendorId}/products`);
+            router.push('/vendor/products');
         } catch (error) {
             console.error("Error occurred while submitting product:", error);
         }

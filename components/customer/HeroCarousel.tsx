@@ -68,7 +68,7 @@ export function HeroCarousel({ slides, autoPlayMs = 5000, isLoading }: HeroCarou
 
   return (
     <section
-      className="relative w-full h-[85vh] overflow-hidden bg-[#0b0c10] select-none"
+      className="relative w-full lg:h-[85vh] h-[60vh] overflow-hidden bg-[#0b0c10] select-none"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -93,7 +93,7 @@ export function HeroCarousel({ slides, autoPlayMs = 5000, isLoading }: HeroCarou
       ))}
 
       {/* Text content — always on top */}
-      <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 md:px-16 xl:px-24 max-w-3xl">
+      <div className="absolute inset-0 z-20 flex flex-col justify-center px-14 md:px-16 xl:px-24 lg:max-w-3xl w-full">
         {slide.subtitle && (
           <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-white/75 font-bold mb-3 md:mb-4 block">
             {slide.subtitle}
@@ -105,7 +105,7 @@ export function HeroCarousel({ slides, autoPlayMs = 5000, isLoading }: HeroCarou
           </h1>
         )}
         <Link href={ctaHref}>
-          <button className="bg-white text-black hover:bg-gray-100 transition-all duration-300 px-8 py-3 text-xs uppercase tracking-widest shadow-lg hover:shadow-xl active:scale-[0.98]">
+          <button className="bg-white text-black hover:bg-gray-100 transition-all duration-300 lg:px-8 px-4 lg:py-3 py-2 text-xs uppercase tracking-widest shadow-lg hover:shadow-xl active:scale-[0.98]">
             {slide.btn_text || 'Shop Now'}
           </button>
         </Link>
@@ -117,14 +117,14 @@ export function HeroCarousel({ slides, autoPlayMs = 5000, isLoading }: HeroCarou
           <button
             onClick={prev}
             aria-label="Previous slide"
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/25 backdrop-blur-sm border border-white/20 rounded-full p-2.5 transition-all duration-200 text-white hover:scale-110"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/25 backdrop-blur-sm border border-white/20 rounded-full lg:p-2.5 p-1 transition-all duration-200 text-white hover:scale-110"
           >
             <ChevronLeft size={22} />
           </button>
           <button
             onClick={next}
             aria-label="Next slide"
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/25 backdrop-blur-sm border border-white/20 rounded-full p-2.5 transition-all duration-200 text-white hover:scale-110"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/25 backdrop-blur-sm border border-white/20 rounded-full lg:p-2.5 p-1 transition-all duration-200 text-white hover:scale-110"
           >
             <ChevronRight size={22} />
           </button>

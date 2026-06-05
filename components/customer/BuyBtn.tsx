@@ -9,7 +9,7 @@ import { createCheckoutSession } from '@/hooks/UseCheckoutSession';
 import { authToken } from '@/utils/authToken';
 import { CreditCard } from 'lucide-react';
 
-export function BuyBtn({ id, styles, mode, selectedCoupon }: { id?: string, styles?: string, mode?: BuyBtnMode, selectedCoupon?: Coupon | null }) {
+export function BuyBtn({ id, styles, iconStyles, mode, selectedCoupon, quantity }: { id?: string, styles?: string, iconStyles?: string, mode?: BuyBtnMode, selectedCoupon?: Coupon | null, quantity?: number }) {
   const { user } = useAppSelector((state: RootState) => state.auth);
   const token = authToken();
   const [isMounted, setIsMounted] = useState(false);
@@ -28,9 +28,9 @@ export function BuyBtn({ id, styles, mode, selectedCoupon }: { id?: string, styl
 
     createCheckoutSession();
     if (id && mode === BuyBtnMode.CART) {
-      router.push(`/customerProfile/${userId}/checkout?type=cart&id=${id}${selectedCoupon?.id ? '&couponId=' + selectedCoupon?.id : ''}`); // Example: /customerProfile/123/checkout?type=cart&id=789
+      router.push(`/customer/checkout?type=cart&id=${id}${selectedCoupon?.id ? '&couponId=' + selectedCoupon?.id : ''}`); // Example:   
     } else if (id && mode === BuyBtnMode.QUICK_BUY) {
-      router.push(`/customerProfile/${userId}/checkout?type=product&id=${id}${selectedCoupon?.id ? '&couponId=' + selectedCoupon?.id : ''}`); // Example: /customerProfile/123/checkout?type=product&id=456
+      router.push(`/customer/checkout?type=product&id=${id}&qty=${quantity ?? 1}${selectedCoupon?.id ? '&couponId=' + selectedCoupon?.id : ''}`); // Example:  
     };
   }
   return (
@@ -39,8 +39,8 @@ export function BuyBtn({ id, styles, mode, selectedCoupon }: { id?: string, styl
       onClick={handleBuyNow}
       className={`flex items-center justify-center gap-2 whitespace-nowrap select-none ${styles}`}
     >
-      <CreditCard size={16} className="text-gray-700" />
-      <span className="text-[13px] font-semibold tracking-wide">Buy Now</span>
+      <CreditCard size={16} className={iconStyles || 'text-white'} />
+      <span className="text-[13px] font-semibold tracking-wide ">Buy Now</span>
     </motion.button>
   );
 }

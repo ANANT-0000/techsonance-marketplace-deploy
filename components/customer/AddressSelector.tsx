@@ -1,150 +1,213 @@
-﻿import { fetchGetUserAddresses } from "@/utils/customerApiClient";
+﻿'use client';
+import { fetchGetUserAddresses } from "@/utils/customerApiClient";
 import { Address } from "@/utils/Types";
-import { MapPin, Plus } from "lucide-react";
-import { Dispatch, SetStateAction, use, useEffect, useState } from "react";
+import { MapPin, Plus, CheckCircle2, Edit } from "lucide-react";
+import { Dispatch, SetStateAction, useEffect, useReducer } from "react";
 import { motion } from "motion/react";
-import Link from "next/link";
-import { on } from "events";
 import { authToken } from "@/utils/authToken";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "../ui/button";
 
-const BADGE_STYLES: Record<string, string> = {
-    home: "bg-green-50 text-green-700",
-    work: "bg-purple-50 text-purple-700",
-    other: "bg-gray-100 text-gray-500",
+// ─── State ────────────────────────────────────────────────────────────────────
+
+interface AddressSelectorState {
+    addresses: Address[];
+    isLoading: boolean;
+}
+
+function addressReducer(state: AddressSelectorState, action: Partial<AddressSelectorState>): AddressSelectorState {
+    return { ...state, ...action };
+}
+
+// ─── Badge style map ──────────────────────────────────────────────────────────
+
+const BADGE_VARIANTS: Record<string, string> = {
+    home: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+    work: 'bg-purple-50  text-purple-700  border border-purple-100',
+    other: 'bg-gray-100   text-gray-500    border border-gray-200',
 };
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function AddressSelector({
     userId,
     selectedAddressId,
     onSelect,
-    addNewAddress,
-    loadingAddresses
+    addNewAddress, onEditAddress, loadingAddresses,
 }: {
     userId: string;
     selectedAddressId: string | null;
     onSelect: Dispatch<SetStateAction<string | null>>;
-    addNewAddress: () => void;
-    loadingAddresses?: boolean;
+    addNewAddress: () => void; onEditAddress: (id: string) => void; loadingAddresses?: boolean;
 }) {
-    const [addresses, setAddresses] = useState<Address[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const token = authToken();  
+    const token = authToken();
+
+    const [state, dispatch] = useReducer(addressReducer, {
+        addresses: [],
+        isLoading: true,
+    });
+
+    // ─── Fetch addresses ─────────────────────────────────────────────────────
     useEffect(() => {
         if (!token) {
             console.error("Authentication token is missing");
             return;
         }
         const fetchAddresses = async () => {
-            setIsLoading(true);
+            dispatch({ isLoading: true });
             const userAddresses = await fetchGetUserAddresses(userId, token);
-            if (userAddresses.status === 200) setAddresses(userAddresses.data);
-            setIsLoading(false);
+            if (userAddresses.status === 200) dispatch({ addresses: userAddresses.data });
+            dispatch({ isLoading: false });
         };
         fetchAddresses();
     }, [userId, loadingAddresses]);
 
+    // ─── Auto-select default ─────────────────────────────────────────────────
     useEffect(() => {
-        console.log("Fetched addresses:", addresses);
-        addresses.find(addr => {
+        console.log("Fetched addresses:", state.addresses);
+        state.addresses.find(addr => {
             const isMatch = addr.is_default === true;
-            if (isMatch) {
-                onSelect(addr.id);
-            }
-        }
-        )
+            if (isMatch) onSelect(addr.id);
+        });
+    }, [state.addresses]);
 
-    }, [addresses]);
+    // ─── Render ──────────────────────────────────────────────────────────────
     return (
-        <div className="border border-gray-200 rounded-xl p-4 lg:p-5 space-y-3">
-
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
-                        <MapPin className="w-4 h-4 text-blue-600" />
+        <Card className="rounded-2xl border border-gray-100 shadow-sm">
+            <CardHeader className="pb-2 pt-4 px-4 lg:px-5">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                            <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                        </div>
+                        <h2 className="text-[15px] font-semibold text-gray-900">Delivery address</h2>
                     </div>
-                    <h2 className="text-[15px] font-medium text-gray-900">Delivery address</h2>
+
+                    <button
+                        onClick={addNewAddress}
+                        className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 transition-colors active:scale-95"
+                    >
+                        <Plus className="w-3 h-3" />
+                        Add new
+                    </button>
                 </div>
-                <button onClick={addNewAddress}  className="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-md hover:bg-blue-100 transition-colors">
-                    <Plus className="w-3 h-3" />
-                    Add new
-                </button>
-            </div>
+            </CardHeader>
 
-            {/* Loading */}
-            {isLoading && (
-                <div className="space-y-2">
-                    {[1, 2].map((i) => (
-                        <div key={i} className="h-20 rounded-lg bg-gray-100 animate-pulse" />
-                    ))}
-                </div>
-            )}
+            <CardContent className="px-4 lg:px-5 pb-4">
 
-            {/* Empty */}
-            {!isLoading && addresses.length === 0 && (
-                <div className="text-center py-8">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-2">
-                        <MapPin className="w-5 h-5 text-gray-400" />
-                    </div>
-                    <p className="text-sm text-gray-400">No saved addresses</p>
-                    <p className="text-xs text-gray-300 mt-0.5">Add one to continue</p>
-                </div>
-            )}
-
-            {/* Address list */}
-            {!isLoading && addresses.length > 0 && (
-                <div className="space-y-2 max-h-72 overflow-y-auto pr-0.5">
-                    {addresses && addresses.map((addr) => {
-                        const isSelected = selectedAddressId === addr.id;
-                        const badgeStyle = BADGE_STYLES[addr.address_type?.toLowerCase()] ?? BADGE_STYLES.other;
-
-                        return (
-                            <motion.button
-                                key={addr.id}
-                                onClick={() => onSelect(addr.id)}
-                                whileTap={{ scale: 0.99 }}
-                                className={`w-full text-left flex items-start gap-3 p-3 rounded-lg border transition-all text-sm ${isSelected
-                                    ? "border-blue-400 bg-blue-50"
-                                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                    }`}
-                            >
-                                {/* Radio indicator */}
-                                <div
-                                    className={`mt-0.5 w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300"
-                                        }`}
-                                >
-                                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                                        <span className="font-medium text-gray-900 text-[13px]">{addr.name}</span>
-                                        <span className={`text-[.5rem] font-medium px-2 py-0.5 rounded-full capitalize ${badgeStyle}`}>
-                                            {addr.address_type}
-                                        </span>
+                {/* Loading skeletons */}
+                {state.isLoading && (
+                    <div className="space-y-2.5">
+                        {[1, 2].map(i => (
+                            <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100">
+                                <Skeleton className="w-4 h-4 rounded-full mt-0.5 shrink-0" />
+                                <div className="flex-1 space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <Skeleton className="h-3 w-24 rounded" />
+                                        <Skeleton className="h-4 w-12 rounded-full" />
                                     </div>
-                                    <p className="text-gray-500 text-[0.875rem] leading-relaxed">
-                                        {[addr.address_line1, addr.address_line2, addr.street].filter(Boolean).join(", ")}
-                                        <br />
-                                        {addr.city}, {addr.state} — {addr.postal_code}
-                                    </p>
-                                    {addr.number && (
-                                        <p className="text-gray-400 text-[0.875rem] mt-1">{addr.number}</p>
-                                    )}
+                                    <Skeleton className="h-3 w-full rounded" />
+                                    <Skeleton className="h-3 w-2/3 rounded" />
                                 </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
-                                {/* Checkmark */}
-                                {isSelected && (
-                                    <svg className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                )}
-                            </motion.button>
-                        );
-                    })}
-                </div>
-            )}
-        </div>
+                {/* Empty state — shown when no address exists (the "no address" conditional flow) */}
+                {!state.isLoading && state.addresses.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-10 gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+                            <MapPin className="w-5 h-5 text-blue-400" />
+                        </div>
+                        <div className="text-center">
+                            <p className="text-sm font-semibold text-gray-700">No saved addresses</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Add a delivery address to continue</p>
+                        </div>
+                        <button
+                            onClick={addNewAddress}
+                            className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-3.5 py-2 rounded-xl hover:bg-blue-100 transition-colors active:scale-95"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                            Add delivery address
+                        </button>
+                    </div>
+                )}
+
+                {/* Address list */}
+                {!state.isLoading && state.addresses.length > 0 && (
+                    <ScrollArea className="max-h-72 pr-1">
+                        <div className="space-y-2 pt-0.5">
+                            {state.addresses.map((addr) => {
+                                const isSelected = selectedAddressId === addr.id;
+                                const badgeClass = BADGE_VARIANTS[addr.address_type?.toLowerCase()] ?? BADGE_VARIANTS.other;
+
+                                return (
+                                    <motion.button
+                                        key={addr.id}
+                                        onClick={() => onSelect(addr.id)}
+                                        whileTap={{ scale: 0.99 }}
+                                        className={`w-full text-left flex items-start gap-3 p-3 rounded-xl border transition-all duration-150 ${isSelected
+                                            ? 'border-blue-300 bg-blue-50/70 shadow-sm shadow-blue-100'
+                                            : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50/60'
+                                            }`}
+                                    >
+                                        {/* Custom radio indicator */}
+                                        <div
+                                            className={`mt-0.5 w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300 bg-white'
+                                                }`}
+                                        >
+                                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                        </div>
+
+                                        {/* Address content */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                                <span className="text-[13px] font-semibold text-gray-900">{addr.name}</span>
+                                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full capitalize ${badgeClass}`}>
+                                                    {addr.address_type}
+                                                </span>
+                                                {addr.is_default && (
+                                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
+                                                        Default
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-[12px] text-gray-500 leading-relaxed">
+                                                {[addr.address_line1, addr.address_line2, addr.street].filter(Boolean).join(', ')}
+                                                <br />
+                                                {addr.city}, {addr.state} — {addr.postal_code}
+                                            </p>
+                                            {addr.number && (
+                                                <p className="text-[11px] text-gray-400 mt-1">{addr.number}</p>
+                                            )}
+                                        </div>
+                                        <span className="flex items-center gap-2">
+
+
+                                            <Button className="rounded-md flex px-2 border-gray-200 border" variant="default" size="sm" onClick={(e) => {
+                                                e.stopPropagation();
+                                                onEditAddress(addr.id);
+                                            }}>
+                                                <Edit size={14} /> <span className='text-[14px] md:block hidden'>
+                                                    Edit</span>
+                                            </Button>
+                                            {/* Selected checkmark */}
+                                            {isSelected && (
+                                                <CheckCircle2 size={15} className="text-blue-500 shrink-0 mt-0.5" />
+                                            )}
+                                        </span>
+
+                                    </motion.button>
+                                );
+                            })}
+                        </div>
+                    </ScrollArea>
+                )}
+            </CardContent>
+        </Card>
     );
 }

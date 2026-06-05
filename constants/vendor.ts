@@ -108,23 +108,23 @@ interface InnerSidebar {
   sections: SidebarSection[];
 }
 
-// Factory function to generate links with vendorId
-export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: string): InnerSidebar[] => [
+// Factory function to generate links
+export const getVendorInnerSidebarLinks = (selectedMenu: string): InnerSidebar[] => [
   {
     menu: "Sales",
     sections: [
       {
         section: "Sellings",
         list: [
-          { title: "Orders", path: `/vendor/${vendorId}/orders`, icon: "shopping-cart" },
-          { title: "Back Orders", path: `/vendor/${vendorId}/orders/backOrders`, icon: "rotate-ccw" },
-          // { title: "Failed Orders", path: `/vendor/${vendorId}/orders/failedOrders`, icon: "x-circle" },
-          // { title: "Archived", path: `/vendor/${vendorId}/orders/archivedOrders`, icon: "archive" },
+          { title: "Orders", path: `/vendor/orders`, icon: "shopping-cart" },
+          { title: "Back Orders", path: `/vendor/orders/backOrders`, icon: "rotate-ccw" },
+          // { title: "Failed Orders", path: `/vendor/orders/failedOrders`, icon: "x-circle" },
+          // { title: "Archived", path: `/vendor/orders/archivedOrders`, icon: "archive" },
         ],
       },
       // {
       //   section: "Request",
-      //   list: [{ title: "Quotes", path: `/vendor/${vendorId}/quotes`, icon: "file-text" }],
+      //   list: [{ title: "Quotes", path: `/vendor/quotes`, icon: "file-text" }],
       // },
     ],
   },
@@ -134,25 +134,25 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
       {
         section: "Master Catalog",
         list: [
-          { title: "Product List", path: `/vendor/${vendorId}/products`, icon: "list" },
-          { title: "Stock Update", path: `/vendor/${vendorId}/products/stockUpdate`, icon: "refresh-cw" },
-          // { title: "Variant Stock Update", path: `/vendor/${vendorId}/products/variant-stock-update`, icon: "layers" },
-          { title: "Category Management", path: `/vendor/${vendorId}/products/categories`, icon: "layers" },
+          { title: "Product List", path: `/vendor/products`, icon: "list" },
+          { title: "Stock Update", path: `/vendor/products/stockUpdate`, icon: "refresh-cw" },
+          // { title: "Variant Stock Update", path: `/vendor/products/variant-stock-update`, icon: "layers" },
+          { title: "Category Management", path: `/vendor/products/categories`, icon: "layers" },
         ],
       },
       {
         section: 'Configuration',
         list: [
-          { title: "Product Variants", path: `/vendor/${vendorId}/products/variants`, icon: "list-check" },
-          { title: "Warehouses", path: `/vendor/${vendorId}/products/warehouse`, icon: "map-pin" },
+          { title: "Product Variants", path: `/vendor/products/variants`, icon: "list-check" },
+          { title: "Warehouses", path: `/vendor/products/warehouse`, icon: "map-pin" },
         ]
       },
       // {
       //   section: "Data",
       //   list: [
-      //     { title: "Bulk Product Imports", path: `/vendor/${vendorId}/products/import-products`, icon: "upload" },
-      //     { title: "Export Data", path: `/vendor/${vendorId}/products/export-products`, icon: "download" },
-      //     { title: "Product Localization", path: `/vendor/${vendorId}/products/product-localization`, icon: "globe" },
+      //     { title: "Bulk Product Imports", path: `/vendor/products/import-products`, icon: "upload" },
+      //     { title: "Export Data", path: `/vendor/products/export-products`, icon: "download" },
+      //     { title: "Product Localization", path: `/vendor/products/product-localization`, icon: "globe" },
       //   ],
       // },
     ],
@@ -163,30 +163,30 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
     {
       section: 'Overview',
       list: [
-        { title: 'Earnings', path: `/vendor/${vendorId}/finances`, icon: 'trending-up' },
-        // { title: 'Payouts', path: `/vendor/${vendorId}/finances/payouts`, icon: 'credit-card' },
+        { title: 'Earnings', path: `/vendor/finances`, icon: 'trending-up' },
+        // { title: 'Payouts', path: `/vendor/finances/payouts`, icon: 'credit-card' },
       ]
     },
     {
       section: 'Ledger',
       list: [
-        { title: 'Refunds', path: `/vendor/${vendorId}/finances/refunds`, icon: 'corner-down-left' },
-        { title: 'Invoices', path: `/vendor/${vendorId}/finances/invoices`, icon: 'receipt' },
+        { title: 'Refunds', path: `/vendor/finances/refunds`, icon: 'corner-down-left' },
+        { title: 'Invoices', path: `/vendor/finances/invoices`, icon: 'receipt' },
       ]
     },
     {
       section: 'GST & Compliance',
       list: [
-        { title: 'GST Registrations', path: `/vendor/${vendorId}/finances/gst`, icon: 'shield-check' },
-        // { title: 'Add GST Number', path: `/vendor/${vendorId}/finances/gst/new`, icon: 'plus-circle' },
+        { title: 'GST Registrations', path: `/vendor/finances/gst`, icon: 'shield-check' },
+        // { title: 'Add GST Number', path: `/vendor/finances/gst/new`, icon: 'plus-circle' },
       ]
     },
     {
       section: 'Taxation',
       list: [
-        { title: 'Tax Profiles', path: `/vendor/${vendorId}/finances/tax-profiles`, icon: 'layers' },
-        { title: 'Tax Types & Rates', path: `/vendor/${vendorId}/finances/tax-rates`, icon: 'percent' },
-        { title: 'Product Tax Mapping', path: `/vendor/${vendorId}/finances/product-taxes`, icon: 'tag' },
+        { title: 'Tax Profiles', path: `/vendor/finances/tax-profiles`, icon: 'layers' },
+        { title: 'Tax Types & Rates', path: `/vendor/finances/tax-rates`, icon: 'percent' },
+        { title: 'Product Tax Mapping', path: `/vendor/finances/product-taxes`, icon: 'tag' },
       ]
     }
   ]
@@ -197,29 +197,29 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
     {
       section: 'Marketing Overview',
       list: [
-        { title: 'Dashboard', path: `/vendor/${vendorId}/marketing`, icon: 'layout-dashboard' },
+        { title: 'Dashboard', path: `/vendor/marketing`, icon: 'layout-dashboard' },
       ]
     },
     {
       section: 'Promotions',
       list: [
-        { title: 'Coupons', path: `/vendor/${vendorId}/marketing/coupons`, icon: 'tag' },
-        { title: 'Campaigns', path: `/vendor/${vendorId}/marketing/campaigns`, icon: 'megaphone' },
+        { title: 'Coupons', path: `/vendor/marketing/coupons`, icon: 'tag' },
+        { title: 'Campaigns', path: `/vendor/marketing/campaigns`, icon: 'megaphone' },
       ]
     },
     {
       section: 'Engagement',
       list: [
-        // { title: 'Notifications', path: `/vendor/${vendorId}/marketing/notifications`, icon: 'bell' },
-        // { title: 'Customer Reviews', path: `/vendor/${vendorId}/marketing/reviews`, icon: 'message-square' },
-        { title: 'Banners', path: `/vendor/${vendorId}/marketing/banners`, icon: 'image' },
-        { title: 'Audiences', path: `/vendor/${vendorId}/marketing/audiences`, icon: 'users' },
+        // { title: 'Notifications', path: `/vendor/marketing/notifications`, icon: 'bell' },
+        // { title: 'Customer Reviews', path: `/vendor/marketing/reviews`, icon: 'message-square' },
+        { title: 'Banners', path: `/vendor/marketing/banners`, icon: 'image' },
+        { title: 'Audiences', path: `/vendor/marketing/audiences`, icon: 'users' },
       ]
     },
     // {
     //   section: 'Analytics',
     //   list: [
-    //     { title: 'Performance', path: `/vendor/${vendorId}/marketing/analytics`, icon: 'bar-chart-3' },
+    //     { title: 'Performance', path: `/vendor/marketing/analytics`, icon: 'bar-chart-3' },
     //   ]
     // }
   ]
@@ -232,17 +232,17 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
       list: [
         { 
           title: "Product Policies", 
-          path: `/vendor/${vendorId}/configDocuments`, 
+          path: `/vendor/configDocuments`, 
           icon: "shield-check" 
         },
         { 
           title: "Assign Policies", 
-          path: `/vendor/${vendorId}/configDocuments/assign`, 
+          path: `/vendor/configDocuments/assign`, 
           icon: "link" 
         },
         { 
           title: "Coverage Policies", 
-          path: `/vendor/${vendorId}/configDocuments/coverage`, 
+          path: `/vendor/configDocuments/coverage`, 
           icon: "layers" 
         },
       ],
@@ -252,12 +252,12 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
     //   list: [
     //     { 
     //       title: "Vendor Agreements", 
-    //       path: `/vendor/${vendorId}/settings/companyIdentity`, // Maps to existing legal/identity page
+    //       path: `/vendor/settings/companyIdentity`, // Maps to existing legal/identity page
     //       icon: "file-signature" 
     //     },
     //     { 
     //       title: "Tax Profiles", 
-    //       path: `/vendor/${vendorId}/finances/tax-profiles`, 
+    //       path: `/vendor/finances/tax-profiles`, 
     //       icon: "file-text" 
     //     },
     //   ],
@@ -267,12 +267,12 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
       list: [
         { 
           title: "Invoices", 
-          path: `/vendor/${vendorId}/finances/invoices`, 
+          path: `/vendor/finances/invoices`, 
           icon: "receipt" 
         },
         { 
           title: "GST Reports", 
-          path: `/vendor/${vendorId}/finances/gst`, 
+          path: `/vendor/finances/gst`, 
           icon: "file-digit" 
         },
       ],
@@ -285,26 +285,26 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
     {
       section: 'General',
       list: [
-        { title: 'Store Profile', path: `/vendor/${vendorId}/settings`, icon: 'store' },
-        { title: 'Locations/Headquarters', path: `/vendor/${vendorId}/settings/locations`, icon: 'map-pin' },
-        // { title: 'Business Hours', path: `/vendor/${vendorId}/settings/business-hours`, icon: 'clock' },
+        { title: 'Store Profile', path: `/vendor/settings`, icon: 'store' },
+        { title: 'Locations/Headquarters', path: `/vendor/settings/locations`, icon: 'map-pin' },
+        // { title: 'Business Hours', path: `/vendor/settings/business-hours`, icon: 'clock' },
       ]
     },
     {
       section: 'Organization',
       list: [
-        // { title: 'Billing & Banking', path: `/vendor/${vendorId}/settings/billing`, icon: 'landmark' },
-        { title: 'Tax & Compliance', path: `/vendor/${vendorId}/settings/compliance`, icon: 'file-check' },
-        { title: 'Company Identity Configuration', path: `/vendor/${vendorId}/settings/companyIdentity`, icon: 'folder-open' },
+        // { title: 'Billing & Banking', path: `/vendor/settings/billing`, icon: 'landmark' },
+        { title: 'Tax & Compliance', path: `/vendor/settings/compliance`, icon: 'file-check' },
+        { title: 'Company Identity Configuration', path: `/vendor/settings/companyIdentity`, icon: 'folder-open' },
       ]
     },
     // {
     //   section: 'Account',
     //   list: [
-        // { title: 'Business Profile', path: `/vendor/${vendorId}/settings/businessProfile`, icon: 'building-2' },
-        // { title: 'Security & Password', path: `/vendor/${vendorId}/settings/security`, icon: 'shield' },
-        // { title: 'Notifications', path: `/vendor/${vendorId}/settings/notifications`, icon: 'bell' },
-        // { title: 'Team & Roles', path: `/vendor/${vendorId}/settings/team`, icon: 'users' },
+        // { title: 'Business Profile', path: `/vendor/settings/businessProfile`, icon: 'building-2' },
+        // { title: 'Security & Password', path: `/vendor/settings/security`, icon: 'shield' },
+        // { title: 'Notifications', path: `/vendor/settings/notifications`, icon: 'bell' },
+        // { title: 'Team & Roles', path: `/vendor/settings/team`, icon: 'users' },
     //   ]
     // }
   ]
@@ -315,9 +315,9 @@ export const getVendorInnerSidebarLinks = (vendorId: string, selectedMenu: strin
     {
       section: "Storefront Pages",
       list: [
-        { title: "Home Page", path: `/vendor/${vendorId}/cms?page=home`, icon: "home" },
-        { title: "Navbar Links", path: `/vendor/${vendorId}/cms?page=navbar`, icon: "link-2" },
-        { title: "Footer Config", path: `/vendor/${vendorId}/cms?page=footer`, icon: "layout" },
+        { title: "Home Page", path: `/vendor/cms?page=home`, icon: "home" },
+        { title: "Navbar Links", path: `/vendor/cms?page=navbar`, icon: "link-2" },
+        { title: "Footer Config", path: `/vendor/cms?page=footer`, icon: "layout" },
       ],
     },
   ],

@@ -1,10 +1,14 @@
-﻿'use client';
+'use client';
 import { authToken } from "@/utils/authToken";
 import { createVendorProductCategory, deleteVendorProductCategory, } from "@/utils/vendorApiClient";
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-export default function CategoryManager({ categories, vendorId, setCheckChange }: any) {
+import { useAppSelector } from "@/hooks/reduxHooks";
+
+export default function CategoryManager({ categories, setCheckChange }: any) {
+    const { user } = useAppSelector((state) => state.auth);
+    const vendorId = (user && 'vendor_id' in user ? user.vendor_id : '') ?? '';
     console.log(categories);
     const router = useRouter()
     const token = authToken();
@@ -22,7 +26,7 @@ export default function CategoryManager({ categories, vendorId, setCheckChange }
             const description = formData.get('description') as string;
             const categoryData = { name, description };
             setIsLoading(true);
-            const response = await createVendorProductCategory(vendorId, categoryData, token);
+            const response = await createVendorProductCategory(categoryData, token);
             console.log(response, '\n', response.status)
             if (response?.status === 201 || response?.status === 200) {
                 toast.success("Category created successfully");
@@ -100,7 +104,7 @@ export default function CategoryManager({ categories, vendorId, setCheckChange }
                                             <td className="px-6 py-4 text-right space-x-3">
                                                 <button className="bg-blue-50 px-2 py-1 rounded-lg text-blue-600 hover:underline font-medium cursor-pointer">Edit</button>
                                                 <button className="bg-red-50 px-2 py-1 rounded-lg text-red-600 hover:underline font-medium cursor-pointer"
-                                                    onClick={() => deleteVendorProductCategory(vendorId, cat.id, token ?? '').then(() => setCheckChange((prev: boolean) => !prev))}
+                                                    onClick={() => deleteVendorProductCategory(cat.id, token ?? '').then(() => setCheckChange((prev: boolean) => !prev))}
                                                 >
                                                     Delete
                                                 </button>

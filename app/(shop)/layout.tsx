@@ -2,8 +2,7 @@ import { Navbar } from "@/components/customer/Navbar";
 import { Footer } from "@/components/customer/Footer";
 import { CartSidebar } from "@/components/customer/CartSidebar";
 import { TabNavBar } from "@/components/customer/TabNavBar";
-import { useMediaQuery } from "react-responsive";
-import { get } from "http";
+ 
 import { getCompanyDomain } from "@/lib/get-domain";
 
 export default async function ShopLayout({ children }: { children: React.ReactNode }) {

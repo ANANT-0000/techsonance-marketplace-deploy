@@ -1,4 +1,4 @@
-import { CartItemListResponse } from "@/app/(shop)/customerProfile/[userId]/cart/page";
+import { CartItemListResponse } from "@/app/(shop)/customer/cart/CartClient";
 import { companyDomain } from "@/config";
 import { CART_KEY, CartItem, IS_AUTHENTICATED_KEY, USER_STORAGE_KEY } from "@/constants";
 import { authToken } from "@/utils/authToken";
@@ -42,7 +42,7 @@ const loadCartFromLocalOrServer = async (): Promise<Omit<CartState, 'loading' | 
         if (customerId && companyDomain && token) {
             console.log("Fetching cart from server for customerId:", customerId);
             const response = await fetchGetCartList(customerId, token);
-           if (response && response.success && response.data && response.data.length > 0) {
+            if (response && response.success && response.data && response.data.length > 0) {
                 const itemList: CartItemListResponse[] = response.data;
 
                 const items: CartItem[] = itemList.map((item) => ({
@@ -102,6 +102,15 @@ const CartSlice = createSlice({
             } else {
                 state.items.push({ ...action.payload, quantity: action.payload.quantity ?? 1 });
             }
+
+            // Keep itemList in sync
+            const existingItemList = state.itemList.find(
+                (item) => item.product_variant_id === action.payload.productVariantId
+            );
+            if (existingItemList) {
+                existingItemList.quantity = action.payload.quantity ?? existingItemList.quantity + 1;
+            }
+
             saveCartToLocalStorage(state.cartId, state.items);
         },
         removeFromCart: (state, action: { payload: { productVariantId: string; quantity?: number } }) => {
@@ -110,14 +119,48 @@ const CartSlice = createSlice({
             );
 
             if (existingItem) {
-                if (existingItem.quantity > 1) {
-                    existingItem.quantity = action.payload.quantity ?? existingItem.quantity - 1;
+                if (action.payload.quantity !== undefined) {
+                    if (action.payload.quantity <= 0) {
+                        state.items = state.items.filter(
+                            (item) => item.productVariantId !== action.payload.productVariantId
+                        );
+                    } else {
+                        existingItem.quantity = action.payload.quantity;
+                    }
                 } else {
-                    state.items = state.items.filter(
-                        (item) => item.productVariantId !== action.payload.productVariantId
-                    );
+                    if (existingItem.quantity > 1) {
+                        existingItem.quantity -= 1;
+                    } else {
+                        state.items = state.items.filter(
+                            (item) => item.productVariantId !== action.payload.productVariantId
+                        );
+                    }
                 }
             }
+
+            const existingItemList = state.itemList.find(
+                (item) => item.product_variant_id === action.payload.productVariantId
+            );
+            if (existingItemList) {
+                if (action.payload.quantity !== undefined) {
+                    if (action.payload.quantity <= 0) {
+                        state.itemList = state.itemList.filter(
+                            (item) => item.product_variant_id !== action.payload.productVariantId
+                        );
+                    } else {
+                        existingItemList.quantity = action.payload.quantity;
+                    }
+                } else {
+                    if (existingItemList.quantity > 1) {
+                        existingItemList.quantity -= 1;
+                    } else {
+                        state.itemList = state.itemList.filter(
+                            (item) => item.product_variant_id !== action.payload.productVariantId
+                        );
+                    }
+                }
+            }
+
             saveCartToLocalStorage(state.cartId, state.items);
         },
 

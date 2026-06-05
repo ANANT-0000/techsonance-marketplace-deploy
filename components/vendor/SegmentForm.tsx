@@ -1,6 +1,8 @@
-﻿"use client";
+"use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { RootState } from "@/lib/store";
 import { Plus, Trash2, Target, Users } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Button } from "../ui/button";
@@ -39,7 +41,8 @@ const fetchSegmentData = async (segmentId: string | undefined,token: string) => 
 };
 
 export default function SegmentForm({segmentId}: {segmentId: string|null}) {
-  const { vendorId } = useParams<{ vendorId: string }>();
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const vendorId = user && 'vendor_id' in user ? user.vendor_id : '';
   const router = useRouter();
   const token = authToken();
   console.log("segmentId",segmentId)
@@ -110,7 +113,7 @@ export default function SegmentForm({segmentId}: {segmentId: string|null}) {
         await AxiosAPI.post("/v1/audiences", payload, { headers: { Authorization: `Bearer ${token}` }});
         toast.success("Segment created");
       }
-      router.push(`/vendor/${vendorId}/marketing/audiences`);
+      router.push(`/vendor/marketing/audiences`);
     } catch (err: any) {
       toast.error(err.response?.data?.message ?? "Failed to save segment");
     } finally {

@@ -11,11 +11,11 @@
 // import { VendorLayout } from './vendor/VendorLayout.tsx'
 // import { VendorSettingLayout } from './vendor/settings/VendorSettingLayout.tsx'
 // import { ShopLayout } from './shop/ShopLayout.tsx'
-// import { UserLayout } from './shop/customerProfile/UserLayout.tsx'
-// import { Unauthorized } from './shop/customerProfile/Unauthorized.tsx'
-// import { CustomersOrders } from './shop/customerProfile/CustomersOrders.tsx'
-// import PasswordForm from './shop/customerProfile/PasswordForm.tsx'
-// import { ProfileForm } from './shop/customerProfile/ProfileForm.tsx'
+// import { UserLayout } from './shop/customer/UserLayout.tsx'
+// import { Unauthorized } from './shop/customer/Unauthorized.tsx'
+// import { CustomersOrders } from './shop/customer/CustomersOrders.tsx'
+// import PasswordForm from './shop/customer/PasswordForm.tsx'
+// import { ProfileForm } from './shop/customer/ProfileForm.tsx'
 // import ScrollToTop from '../components/common/ScrollToTop.tsx'
 
 // createRoot(document.getElementById('root')!).render(
@@ -32,7 +32,7 @@
 //             <Route path='*' element={<Unauthorized />} />
 //             <Route path='contact' element={<Contact />} />
 //             <Route path='about' element={<AboutAs />} />
-//             <Route path='customerProfile/:userId' element={<UserLayout />} >
+//             <Route path='customer/:userId' element={<UserLayout />} >
 //               <Route index element={<UserProfile />} />
 //               <Route path='addresses' element={<Addresses />} />
 //               <Route path='wishlist' element={< WishList />} />

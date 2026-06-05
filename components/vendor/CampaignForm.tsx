@@ -1,7 +1,7 @@
-﻿// components/vendor/CampaignForm.tsx
+// components/vendor/CampaignForm.tsx
 "use client";
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { Input } from "./Input";
 import { Textarea } from "./TextArea";
@@ -331,7 +331,6 @@ export default function CampaignForm({
 }: {
   existingData?: ExistingPromotion;
 }) {
-  const { vendorId } = useParams<{ vendorId: string }>();
   const router = useRouter();
   const token = authToken();
   const isEdit = !!existingData?.id;
@@ -460,7 +459,7 @@ export default function CampaignForm({
         toast.success("Campaign created");
       }
 
-      router.push(`/vendor/${vendorId}/marketing/campaigns`);
+      router.push(`/vendor/marketing/campaigns`);
     } catch (err: any) {
       toast.error(
         err.response?.data?.message ?? "Failed to save campaign"

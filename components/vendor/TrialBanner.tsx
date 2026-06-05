@@ -14,9 +14,9 @@ interface SubscriptionStatus {
 }
 
 const CONFIG = {
-  info:    { bg: 'bg-blue-50',   text: 'text-blue-800',  border: 'border-blue-200',  Icon: Clock         },
-  warning: { bg: 'bg-amber-50',  text: 'text-amber-800', border: 'border-amber-200', Icon: AlertTriangle },
-  danger:  { bg: 'bg-red-50',    text: 'text-red-800',   border: 'border-red-200',   Icon: Lock          },
+  info: { bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-200', Icon: Clock },
+  warning: { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200', Icon: AlertTriangle },
+  danger: { bg: 'bg-red-50', text: 'text-red-800', border: 'border-red-200', Icon: Lock },
 };
 
 function getBannerMessage(status: SubscriptionStatus): string {
@@ -36,26 +36,29 @@ export function TrialBanner({ vendorId }: Props) {
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
-  useEffect(() => {
+  const getStatus = async () => {
     const token = authToken();
     if (!token) return;
 
-    (async () => {
-      const domain = await getCompanyDomain();
-      try {
-        const res = await fetch(`${BASE_API_URL}/v1/subscription/status`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'company-domain': domain,
-          },
-        });
-        const json = await res.json();
-        setStatus(json.data ?? null);
-      } catch {
-        // silently skip — banner is non-critical
-      }
-    })();
+    const domain = await getCompanyDomain();
+    try {
+      const res = await fetch(`${BASE_API_URL}/v1/subscription/status`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'company-domain': domain,
+        },
+      });
+      const json = await res.json();
+      setStatus(json.data ?? null);
+    } catch {
+      // silently skip — banner is non-critical
+    }
+
+  }
+  useEffect(() => {
+    getStatus();
   }, []);
+
 
   if (!status?.show_banner || dismissed) return null;
 
@@ -67,7 +70,7 @@ export function TrialBanner({ vendorId }: Props) {
         <Icon size={14} className="shrink-0" />
         <span>
           {getBannerMessage(status)}{' '}
-          <a 
+          <a
             href={`/vendor/${vendorId}/settings/billing`}
             className="font-semibold underline underline-offset-2">
             {status.in_grace_period ? 'Upgrade to restore access' : 'Upgrade now'} →

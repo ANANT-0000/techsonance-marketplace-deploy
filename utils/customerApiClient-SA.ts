@@ -31,7 +31,7 @@ export const fetchVerifyPayment = async (userId: string, verifyPayload: any, tok
         },
         body: JSON.stringify(verifyPayload),
     });
-    revalidatePath(`/customerProfile`);
+    revalidatePath(`/customer`);
     return await response.json();
 }
 export const fetchCreateUserAddress = async (customerId: string, addressData: any, token: string) => {
@@ -56,7 +56,7 @@ export const fetchCreateUserAddress = async (customerId: string, addressData: an
                 data: null
             }
         }
-        revalidatePath(`/customerProfile/${customerId}/addresses`);
+        revalidatePath(`/customer/${customerId}/addresses`);
         const responseData = await response.json();
         return {
             success: true,
@@ -89,7 +89,7 @@ export const fetchUpdateUserAddress = async (customerId: string, addressId: stri
                 message: 'Failed to update address'
             }
         }
-        revalidatePath(`/customerProfile/${customerId}/addresses`);
+        revalidatePath(`/customer/${customerId}/addresses`);
         const responseData = await response.json();
         return {
             success: true,
@@ -117,7 +117,7 @@ export const fetchDeleteUserAddress = async (customerId: string, addressId: stri
             console.log('Failed to delete address');
             return;
         }
-        revalidatePath(`/customerProfile/${customerId}/addresses`);
+        revalidatePath(`/customer/${customerId}/addresses`);
         return await response.json();
     }
     catch (error) {

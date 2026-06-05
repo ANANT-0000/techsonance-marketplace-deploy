@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
 import { FOOTER_CONTENT, FOOTER_BOTTOM_TEXT } from '@/constants/customer';
+import { FooterSectionType } from '@/utils/Types';
 
 const FOOTER_CACHE_KEY = 'techsonance_cms_footer';
 const LANG_KEY = 'techsonance_locale';
 
 export function useFooterData() {
   const [lang, setLang] = useState<string>('en');
-  const [footerContent, setFooterContent] = useState<any[]>(FOOTER_CONTENT);
+  const [footerContent, setFooterContent] = useState<FooterSectionType[]>(FOOTER_CONTENT);
   const [footerBottomText, setFooterBottomText] = useState<string>(FOOTER_BOTTOM_TEXT);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 

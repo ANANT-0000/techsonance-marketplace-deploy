@@ -44,8 +44,6 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     const cartItem = items?.find((item) => item.productVariantId === productVariantId);
     const quantity = cartItem?.quantity ?? 0;
 
-    const containerBase = `relative flex items-center justify-center rounded-lg overflow-hidden transition-all duration-200 select-none`;
-
     const handleIncrement = async () => {
         if (!user?.id || !token) {
             router.push('/auth/customerLogin');
@@ -56,8 +54,8 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
         const prevQuantity = quantity;
         const prevCartItemId = cartItem?.cartItemId;
         const prevCartId = cartItem?.cartId;
-
         const optimisticQuantity = prevQuantity + 1;
+
         dispatch(addToCart({
             cartId: cartItem?.cartId ?? '',
             cartItemId: cartItem?.cartItemId ?? '',
@@ -75,15 +73,16 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
         try {
             const response = await fetchAddToCart(productVariantId, optimisticQuantity, user.id, token);
             const cartResponse: CartItemResponse = response?.data;
-
             if (!cartResponse?.cart_id) throw new Error('Invalid server response');
-
             dispatch(addToCart({
                 cartId: cartResponse.cart_id,
                 cartItemId: cartResponse.cart_item_id,
                 productVariantId: cartResponse.product_variant_id,
                 quantity: cartResponse.quantity,
             }));
+            if (prevQuantity === 0) {
+                dispatch(loadCart());
+            }
         } catch (error) {
             console.error("Error adding to cart:", error);
             if (prevQuantity === 0) {
@@ -127,9 +126,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                 token
             );
             const cartResponse: CartItemResponse = response?.data;
-
             if (!cartResponse) throw new Error('Invalid server response');
-
             if (cartResponse.success && !cartResponse.quantity) {
                 dispatch(removeFromCart({ productVariantId, quantity: 0 }));
             } else {
@@ -150,7 +147,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     };
 
     return (
-        <div className={`${containerBase} ${styles}`}>
+        <div className={`relative flex items-center justify-center overflow-hidden select-none transition-all duration-200 ${styles ?? ''}`}>
             <AnimatePresence mode="wait">
                 {quantity === 0 ? (
                     <motion.button
@@ -158,45 +155,53 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={handleIncrement}
-                        whileTap={{ scale: 0.96 }}
                         transition={{ duration: 0.15 }}
-                        className="flex h-full w-full items-center justify-center gap-2 px-3 whitespace-nowrap"
+                        onClick={handleIncrement}
+                        whileTap={{ scale: 0.97 }}
+                        className="flex h-full w-full items-center justify-center gap-2 px-2"
                     >
-                        <ShoppingCart size={16} />
-                        <span className="text-[13px] font-semibold tracking-wide">Add</span>
+                        <ShoppingCart className="w-4 h-4 shrink-0" />
+                        <span className="text-[12px] sm:text-[13px] font-semibold tracking-wide whitespace-nowrap">Add</span>
                     </motion.button>
                 ) : (
                     <motion.div
                         key="counter-ui"
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.96 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="flex h-full w-full items-center justify-between px-1 bg-blue-600 text-white rounded-lg shadow-inner"
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute inset-0 flex items-center justify-between bg-blue-600 text-white px-1 py-1 w-full h-full"
                     >
+                        {/* Using h-full aspect-square ensures it never overflows the container's height */}
                         <motion.button
-                            whileTap={{ scale: 0.85 }}
+                            whileTap={{ scale: 0.82 }}
                             onClick={handleDecrement}
-                            className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-black/20 transition-colors"
+                            className="h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors "
+                            aria-label="Remove one"
                         >
-                            <Minus size={14} strokeWidth={2.5} />
+                            <Minus size={15} strokeWidth={2.5} />
                         </motion.button>
 
-                        <motion.span
-                            key={quantity}
-                            initial={{ y: -10, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            className="font-bold text-sm w-6 text-center select-none"
-                        >
-                            {quantity}
-                        </motion.span>
+                        <AnimatePresence mode="wait">
+                            <motion.span
+                                key={quantity}
+                                initial={{ y: -8, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ y: 8, opacity: 0 }}
+                                transition={{ duration: 0.12 }}
+                                className="font-bold text-xs sm:text-sm min-w-[20px] text-center tabular-nums grow"
+                            >
+                                {quantity}
+                            </motion.span>
+                        </AnimatePresence>
 
                         <motion.button
-                            whileTap={{ scale: 0.85 }}
+                            whileTap={{ scale: 0.82 }}
                             onClick={handleIncrement}
-                            className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-black/20 transition-colors"
+                            className="h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors "
+                            aria-label="Add one more"
                         >
-                            <Plus size={14} strokeWidth={2.5} />
+                            <Plus size={15} strokeWidth={2.5} />
                         </motion.button>
                     </motion.div>
                 )}

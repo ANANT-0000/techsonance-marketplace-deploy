@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useEffect, useReducer } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { DynamicIcon, IconName } from 'lucide-react/dynamic';
@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { ChevronLeft } from 'lucide-react';
 
 const ProfileSidebarLink = [
-    { name: 'Profile Overview', path: '/customerProfile', icon: 'user' },
+    { name: 'Profile Overview', path: '/customer', icon: 'user' },
     { name: 'My Orders', path: '/orders', icon: 'shopping-bag' },
     { name: 'My Cart', path: '/cart', icon: 'shopping-cart' },
     { name: 'Wishlist', path: '/wishlist', icon: 'heart' },
@@ -18,77 +18,90 @@ const ProfileSidebarLink = [
     { name: 'Logout', path: '/logout', icon: 'log-out', isDanger: true }
 ];
 
+type SidebarState = { isMounted: boolean; isMobile: boolean };
+type SidebarAction = 
+    | { type: 'SET_MOUNTED' }
+    | { type: 'SET_MOBILE'; payload: boolean };
+
+const sidebarReducer = (state: SidebarState, action: SidebarAction): SidebarState => {
+    switch (action.type) {
+        case 'SET_MOUNTED': return { ...state, isMounted: true };
+        case 'SET_MOBILE': return { ...state, isMobile: action.payload };
+        default: return state;
+    }
+};
+
 export function ProfileSidebar() {
     const { user } = useAppSelector((state: RootState) => state.auth);
     const router = useRouter();
     const dispatch = useAppDispatch();
     const currentPath = usePathname();
-    const currentUserId = user?.id ?? '';
 
-    const [isMobile, setIsMobile] = useState(false);
-    const [hasMounted, setHasMounted] = useState(false);
+    const [state, dispatchState] = useReducer(sidebarReducer, {
+        isMounted: false,
+        isMobile: false,
+    });
 
     useEffect(() => {
-        setHasMounted(true);
+        dispatchState({ type: 'SET_MOUNTED' });
         const mql = window.matchMedia('(max-width: 1023px)');
-        setIsMobile(mql.matches);
-        const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+        dispatchState({ type: 'SET_MOBILE', payload: mql.matches });
+        
+        const handler = (e: MediaQueryListEvent) => dispatchState({ type: 'SET_MOBILE', payload: e.matches });
         mql.addEventListener('change', handler);
         return () => mql.removeEventListener('change', handler);
     }, []);
 
-    if (!hasMounted) return null;
-    if (currentPath.includes('checkout')) return null;
+    if (!state.isMounted || currentPath.includes('checkout')) return null;
 
     const handleNavigation = (linkPath: string) => {
         if (linkPath === '/logout') {
             dispatch(logOut());
             router.push('/');
-        } else if (linkPath === '/customerProfile') {
-            router.push(`/customerProfile/${currentUserId}`);
+        } else if (linkPath === '/customer') {
+            router.push(`/customer`);
         } else {
-            router.push(`/customerProfile/${currentUserId}${linkPath}`);
+            router.push(`/customer${linkPath}`);
         }
     };
 
-    const profileOverviewPath = `/customerProfile/${currentUserId}`;
-    const isOnOverviewPage = currentPath === profileOverviewPath;
-    if (isMobile) {
+    const isOnOverviewPage = currentPath === `/customer`;
+
+    if (state.isMobile) {
         if (!isOnOverviewPage) return null;
 
         const mobileLinks = ProfileSidebarLink.filter(
-            link => link.path !== '/customerProfile' && link.path !== '/logout'
+            link => link.path !== '/customer' && link.path !== '/logout'
         );
 
         return (
             <motion.ul
-                className="grid grid-cols-2 gap-2 w-full mb-5"
+                className="grid grid-cols-2 gap-3 w-full mb-6"
                 initial="hidden"
                 animate="visible"
                 variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
             >
                 {mobileLinks.map((link) => {
-                    const targetPath = `/customerProfile/${currentUserId}${link.path}`;
+                    const targetPath = `/customer${link.path}`;
                     const isActive = currentPath === targetPath || currentPath.startsWith(targetPath);
 
                     return (
                         <motion.li
                             key={link.name}
-                            variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}
-                            className="border-2 border-gray-200 rounded-md"
+                            variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
                         >
                             <button
                                 onClick={() => handleNavigation(link.path)}
                                 className={`
-                                    w-full flex items-center gap-3 px-3 py-2.5
-                                    text-sm font-semibold transition-colors
+                                    w-full flex flex-col items-center justify-center gap-2 px-4 py-6
+                                    rounded-xl border text-sm font-medium transition-all shadow-sm
                                     ${isActive
-                                        ? 'text-brand-primary bg-blue-50'
-                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                        ? 'border-blue-600 bg-blue-50/50 text-blue-700'
+                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                                     }
                                 `}
                             >
-                                <DynamicIcon name={link.icon as IconName} size={18} fallback={() => <span />} />
+                                <DynamicIcon name={link.icon as IconName} size={24} fallback={() => <span />} className={isActive ? 'text-blue-600' : 'text-gray-500'} />
                                 <span>{link.name}</span>
                             </button>
                         </motion.li>
@@ -100,54 +113,52 @@ export function ProfileSidebar() {
 
     // ── DESKTOP ──
     return (
-        <>
-        <aside className="w-72 flex-shrink-0 rounded-xl px-6 ">
-<div className="flex items-center gap-3 my-4 sm:hidden">
+        <aside className="w-72 flex-shrink-0 px-6 py-4">
+            <div className="flex items-center gap-3 mb-6 sm:hidden">
                 <button
                     onClick={() => router.back()}
-                    className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center rounded-md border border-gray-200 bg-white hover:bg-gray-100 transition-colors"
                     aria-label="Go back"
                 >
                     <ChevronLeft size={20} />
                 </button>
-                <h1 className="font-bold text-xl text-gray-900">Back</h1>
             </div>
+            
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8 p-4 border-l-4 border-brand-primary flex items-center gap-4"
+                className="mb-8 flex flex-col items-center text-center gap-3"
             >
-                <div className="overflow-hidden">
-                    {user?.first_name && (
-                        <>
-                            <h2 className="text-base font-bold text-gray-900 truncate">
+                {user && (
+                    <>
+                        <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-100 shadow-sm">
+                            <img 
+                                src={'profile_picture_url' in user && user.profile_picture_url ? (user.profile_picture_url as string) : "https://i.pinimg.com/originals/74/a3/b6/74a3b6a8856b004dfff824ae9668fe9b.jpg"} 
+                                alt={`${user.first_name}`} 
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <h2 className="text-lg font-semibold text-gray-900">
                                 {`${user.first_name} ${user.last_name}`}
                             </h2>
-                            <p className="text-gray-500 text-xs truncate max-w-[150px]">
+                            <p className="text-sm text-gray-500">
                                 {user.email}
                             </p>
-                        </>
-                    )}
-                </div>
+                        </div>
+                    </>
+                )}
             </motion.div>
 
             <motion.ul
-                className="space-y-1"
+                className="space-y-1.5"
                 initial="hidden"
                 animate="visible"
                 variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
             >
                 {ProfileSidebarLink.map((link) => {
-                    const targetPath = link.path === '/customerProfile'
-                        ? `/customerProfile/${currentUserId}`
-                        : `/customerProfile/${currentUserId}${link.path}`;
-
-                    const isActive =
-                        link.path !== '/logout' &&
-                        (currentPath === targetPath ||
-                            (link.path !== '/customerProfile' &&
-                                currentPath.startsWith(targetPath)));
-
+                    const targetPath = link.path === '/customer' ? `/customer` : `/customer${link.path}`;
+                    const isActive = link.path !== '/logout' && (currentPath === targetPath || (link.path !== '/customer' && currentPath.startsWith(targetPath)));
                     const isDanger = link.path === '/logout';
 
                     return (
@@ -158,42 +169,23 @@ export function ProfileSidebar() {
                             <button
                                 onClick={() => handleNavigation(link.path)}
                                 className={`
-                                    relative w-full flex items-center gap-4 px-5 py-3.5
-                                    rounded-xl text-sm font-medium transition-colors group
-                                    ${isDanger
-                                        ? 'text-red-500 hover:bg-red-50'
+                                relative w-full flex items-center gap-3 px-4 py-3
+                                rounded-md text-sm font-medium transition-colors group
+                                ${isDanger
+                                        ? 'text-red-600 hover:bg-red-50'
                                         : isActive
-                                            ? 'text-brand-primary'
-                                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                            ? 'bg-gray-900 text-white shadow-md'
+                                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                                     }
                                 `}
                             >
-                                {isActive && !isDanger && (
-                                    <motion.div
-                                        layoutId="sidebar-active-pill"
-                                        className="absolute inset-0 bg-blue-50 border border-blue-100 rounded-xl"
-                                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                                    />
-                                )}
-                                <span className="relative z-10 flex items-center justify-center w-5 h-5">
-                                    <DynamicIcon name={link.icon as IconName} size={20} fallback={() => <span />} />
-                                </span>
-                                <span className="relative z-10 font-semibold">{link.name}</span>
-                                {!isActive && !isDanger && (
-                                    <motion.div
-                                        initial={{ opacity: 0, x: -5 }}
-                                        whileHover={{ opacity: 1, x: 0 }}
-                                        className="absolute right-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        <DynamicIcon name="chevron-right" size={16} fallback={() => <span />} />
-                                    </motion.div>
-                                )}
+                                <DynamicIcon name={link.icon as IconName} size={18} fallback={() => <span />} />
+                                <span className="relative z-10">{link.name}</span>
                             </button>
                         </motion.li>
                     );
                 })}
             </motion.ul>
         </aside>
-        </>
     );
 }

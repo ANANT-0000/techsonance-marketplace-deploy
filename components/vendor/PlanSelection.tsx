@@ -25,13 +25,13 @@ const PLAN_META: Record<string, {
   featured: boolean;
   ctaLabel: string;
 }> = {
-  starter:    { badge: 'Free to start',  badgeVariant: 'success', icon: <Zap size={14} />,      featured: false, ctaLabel: 'Start free trial' },
-  pro:        { badge: 'Most popular',   badgeVariant: 'info',    icon: <Rocket size={14} />,   featured: true,  ctaLabel: 'Start free trial' },
-  enterprise: { badge: 'Contact sales',  badgeVariant: 'warning', icon: <Building size={14} />, featured: false, ctaLabel: 'Contact sales' },
+  starter: { badge: 'Free to start', badgeVariant: 'success', icon: <Zap size={14} />, featured: false, ctaLabel: 'Start free trial' },
+  pro: { badge: 'Most popular', badgeVariant: 'info', icon: <Rocket size={14} />, featured: true, ctaLabel: 'Start free trial' },
+  enterprise: { badge: 'Contact sales', badgeVariant: 'warning', icon: <Building size={14} />, featured: false, ctaLabel: 'Contact sales' },
 };
 
 const BADGE_STYLES: Record<string, string> = {
-  info:    'bg-blue-50 text-blue-800',
+  info: 'bg-blue-50 text-blue-800',
   success: 'bg-green-50 text-green-800',
   warning: 'bg-amber-50 text-amber-800',
 };
@@ -39,13 +39,16 @@ const BADGE_STYLES: Record<string, string> = {
 export default function PlanSelectionStep({ selectedPlanId, onChange }: Props) {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const getPlans = async () => {
 
-  useEffect(() => {
-    fetch(`${BASE_API_URL}/v1/subscription/plans`)
+    await fetch(`${BASE_API_URL}/v1/subscription/plans`)
       .then(r => r.json())
       .then(r => setPlans(r.data ?? []))
       .catch(() => setPlans([]))
       .finally(() => setLoading(false));
+  }
+  useEffect(() => {
+    getPlans();
   }, []);
 
   if (loading) {

@@ -18,38 +18,6 @@ import { HeroCarousel } from '@/components/customer/HeroCarousel';
 import { ProductCard } from '@/components/customer/ProductCard';
 import AxiosAPI from '@/lib/axios';
 
-interface ProductImage {
-  image_url: string;
-}
-
-interface ProductVariant {
-  id: string;
-  images: ProductImage[];
-}
-
-interface Category {
-  name: string;
-}
-
-interface ProductData {
-  id: string;
-  name: string;
-  description: string;
-  features: Array<{
-    title: string;
-    description: string;
-  }>;
-  base_price: string;
-  discount_percent: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  company_id: string;
-  vendor_id: string;
-  category_id: string;
-  category: Category;
-  variants: ProductVariant[];
-}
 // ── Skeleton primitives ───────────────────────────────────────────────────────
 function Sk({ w = 'w-full', h = 'h-4', rounded = 'rounded', className = '' }: {
   w?: string; h?: string; rounded?: string; className?: string;
@@ -58,60 +26,6 @@ function Sk({ w = 'w-full', h = 'h-4', rounded = 'rounded', className = '' }: {
     <div className={`${w} ${h} ${rounded} bg-gray-200 animate-pulse ${className}`} />
   );
 }
-
-// Static fallbacks for products matching screenshots
-const defaultFeaturedProducts = [
-  {
-    id: "prod-1",
-    name: "Classic Tote Bag",
-    category: "Leather Goods",
-    price: 1200.00,
-    image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: "prod-2",
-    name: "Classic Minimalist",
-    category: "Timepieces",
-    price: 750.00,
-    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: "prod-3",
-    name: "Modern Oud Perfume",
-    category: "Fragrances",
-    price: 250.00,
-    image: "https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: "prod-4",
-    name: "Sonic HP-2",
-    category: "Audio Equipment",
-    price: 299.00,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop"
-  }
-];
-
-const defaultNewArrivals = [
-  {
-    id: "arr-1",
-    name: "Lunar Watch S",
-    price: 245.00,
-    image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: "arr-2",
-    name: "Zen Tea Set",
-    price: 85.00,
-    image: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: "arr-3",
-    name: "Classic Wallet",
-    price: 125.00,
-    image: "https://images.unsplash.com/photo-1627124765951-86c06df9a571?q=80&w=600&auto=format&fit=crop"
-  }
-];
-
 export default function Home() {
   const {
     lang,
@@ -138,8 +52,8 @@ export default function Home() {
         setProducts(res.data.data.slice(0, 4));
         setNewArrivals(res.data.data.slice(4, 7));
       } catch {
-        setProducts(defaultFeaturedProducts);
-        setNewArrivals(defaultNewArrivals);
+        setProducts([]);
+        setNewArrivals([]);
       } finally {
         setProductsLoading(false);
       }
@@ -165,7 +79,7 @@ export default function Home() {
       <div className="hidden lg:block">
 
         {/* Sub-Header / Floating Language Panel */}
-        <div className="w-full bg-[#f4f2ee] border-b border-gray-200/40 py-2 px-12 flex justify-between items-center text-xs tracking-wider text-gray-500 font-medium">
+        {/* <div className="w-full bg-[#f4f2ee] border-b border-gray-200/40 py-2 px-12 flex justify-between items-center text-xs tracking-wider text-gray-500 font-medium">
           <div className="flex items-center gap-2">
             <Globe size={13} className="text-gray-400" />
             <span>GLOBAL LUXURY STANDARD</span>
@@ -185,7 +99,7 @@ export default function Home() {
               ESPAÑOL
             </button>
           </div>
-        </div>
+        </div> */}
 
         {/* Hero Section */}
         {isLoading ? (
@@ -198,8 +112,8 @@ export default function Home() {
         <section className="py-20 px-12 xl:px-20 bg-white">
           <div className="flex justify-between items-end mb-10">
             <div>
-              <h2 className="text-3xl font-serif tracking-tight text-gray-900">Curated Categories</h2>
-              <p className="text-xs text-gray-500 tracking-wider mt-1 uppercase">Exquisite selections curated by style specialists</p>
+              <h2 className="text-3xl font-serif tracking-tight text-gray-900">Categories</h2>
+              {/* <p className="text-xs text-gray-500 tracking-wider mt-1 uppercase">Exquisite selections curated by style specialists</p> */}
             </div>
             <Link href="/shopping" className="text-xs font-semibold uppercase tracking-wider text-black border-b border-black pb-1 hover:opacity-70 transition-opacity">
               View All
@@ -212,13 +126,14 @@ export default function Home() {
                 <div key={i} className="relative h-96 bg-gray-200 animate-pulse" />
               ))
               : categories.map((cat, idx) => (
-                <Link href={`/shopping?search=${encodeURIComponent(cat.title)}`} key={idx} className="group relative h-96 overflow-hidden bg-gray-100">
-                  <Image src={cat.url} alt={cat.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                  <div className="absolute bottom-6 left-6 text-white">
-                    <h3 className="text-lg font-medium tracking-wide">{cat.title}</h3>
+                <div key={idx} className="flex flex-col">
+                  <Link href={`/shopping?search=${encodeURIComponent(cat.title)}`} className="group relative h-96 overflow-hidden bg-gray-100 rounded-md ">
+                    {cat.url ? <Image src={cat.url} alt={cat.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" /> : null}
+                  </Link>
+                  <div className=" text-black bg-white py-2">
+                    <h3 className="text-lg font-medium tracking-wide capitalize">{cat.title}</h3>
                   </div>
-                </Link>
+                </div>
               ))
             }
           </div>
@@ -242,7 +157,7 @@ export default function Home() {
                 </div>
               ))
               : products.map((p, idx) => (
-                <ul key={p.id} className="h-[460px] list-none p-0 m-0">
+                <ul key={p.id} className="list-none p-0 m-0">
                   <ProductCard product={p} idx={idx} />
                 </ul>
               ))
@@ -380,13 +295,13 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="h-[60vh]">
+          <div className="h-[45vh]">
             <HeroCarousel slides={heroSlides} isLoading={isLoading} />
           </div>
         )}
 
         {/* Explore Essentials */}
-        <section className="py-8 px-4">
+        <section className="lg:py-8 py-6 px-4 lg:mt-0  mt-24">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-base font-bold text-gray-900 uppercase tracking-wide">Explore Essentials</h2>
             <Link href="/shopping" className="text-xs text-brand-primary font-semibold">
@@ -418,9 +333,9 @@ export default function Home() {
         <section className="py-6 px-4 bg-gray-50/50">
           <h2 className="text-base font-bold text-gray-900 uppercase tracking-wide mb-6">Featured Masterpieces</h2>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 items-stretch">
             {products.slice(0, 2).map((p, idx) => (
-              <ul key={p.id} className="h-80 list-none p-0 m-0">
+              <ul key={p.id} className="h-full list-none p-0 m-0">
                 <ProductCard product={p} idx={idx} />
               </ul>
             ))}

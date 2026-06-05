@@ -1,4 +1,4 @@
-﻿import { BASE_API_URL } from "@/constants";
+import { BASE_API_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
 
 export const fetchProduct = async (productId: string) => {
@@ -159,21 +159,34 @@ export const fetchProductProducts = async (
     }
 };
 
+export const fetchProductOptions = async (): Promise<{ id: string; name: string }[]> => {
+    try {
+        const companyDomain = await getCompanyDomain();
+        const response = await fetch(`${BASE_API_URL}/v1/products/options`, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+                'Content-Type': 'application/json',
+                'company-domain': companyDomain,
+            },
+        });
+        if (response.status !== 200) {
+            return [];
+        }
+        const json = await response.json();
+        return json?.data ?? json ?? [];
+    } catch (error) {
+        console.error('Error fetching product options:', error);
+        return [];
+    }
+};
+
 export const fetchProductSuggestions = async (search: string): Promise<{ id: string; name: string }[]> => {
     if (!search || search.trim().length < 2) return [];
-    const companyDomain = await getCompanyDomain();
     try {
-        const response = await fetch(
-            `${BASE_API_URL}/v1/products/suggestions?search=${encodeURIComponent(search.trim())}`,
-            {
-                method: 'GET',
-                cache: 'no-store',
-                headers: { 'Content-Type': 'application/json', 'company-domain': companyDomain },
-            }
-        );
-        if (!response.ok) return [];
-        const json = await response.json();
-        return json?.data ?? [];
+        const options = await fetchProductOptions();
+        const term = search.trim().toLowerCase();
+        return options.filter(opt => opt.name.toLowerCase().includes(term)).slice(0, 8);
     } catch {
         return [];
     }

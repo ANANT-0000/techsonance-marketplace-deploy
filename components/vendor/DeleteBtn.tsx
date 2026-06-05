@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 import { authToken } from '@/utils/authToken';
 import { deleteProduct, deleteProductVariant } from '@/utils/vendorApiClient';
 import { Delete, Trash2 } from 'lucide-react'
@@ -20,13 +20,13 @@ export const DeleteBtn = (props: DeleteBtnProps) => {
             return;
         }
         if (props.toDelete === "VARIANT") {
-            console.log(props.id, props.vendorId, props?.variantId)
-            const result = await deleteProductVariant(productId, props.variantId, props.vendorId, token);
+            console.log(props.id, props?.variantId)
+            const result = await deleteProductVariant(productId, props.variantId, token);
             console.log(result)
             return;
         } else if (props.toDelete === "PRODUCT") {
             
-            const result = await deleteProduct(productId, props.vendorId, token);
+            const result = await deleteProduct(productId, token);
             console.log(result)
             return;
         }

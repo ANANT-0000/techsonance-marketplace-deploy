@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { FileOrProductImage, ProductImage, ProductStatusEnum, Product, VariantFormValues } from "@/utils/Types";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { redirect, useRouter } from "next/navigation";
@@ -192,7 +192,7 @@ export const ProductVariantForm = ({
             }
             if (variantId && existVariant?.productId) {
                 console.log('updating')
-                return await updateProductVariant(formData, vendorId, existVariant.productId, variantId, token).then((res) => {
+                return await updateProductVariant(formData, existVariant.productId, variantId, token).then((res) => {
                     console.log("[update response]", res);    
                     return res; 
                 });
@@ -202,13 +202,13 @@ export const ProductVariantForm = ({
                     console.error("Product ID is required to create a variant");
                     return;
                 }
-                return await createProductVariant(formData, vendorId, productId, token);
+                return await createProductVariant(formData, productId, token);
             }
         }
         const response = await createOrUpdate();
         console.log("response", response);
         if (response?.status === 200 || response.status==201) {
-            router.push(`/vendor/${vendorId}/products`);
+            router.push('/vendor/products');
         }
     };
 

@@ -11,7 +11,6 @@ import { useAppSelector } from "@/hooks/reduxHooks";
 
 export function TabNavBar() {
     const { user } = useAppSelector((state: any) => state.auth)
-    const userId = user?.id ? user.id : '';
     const path = usePathname();
     const [isMounted, setIsMounted] = useState(false);
 
@@ -24,15 +23,15 @@ export function TabNavBar() {
             const newLink = { ...link };
 
             if (isMounted && user) {
-                const userId = user.id || '';
+      
                 if (newLink.title.toLowerCase() === 'profile') {
-                    newLink.url = `/customerProfile/${userId}`;
+                    newLink.url = `/customer`;
                 } else if (newLink.title.toLowerCase() === 'cart') {
-                    newLink.url = `/customerProfile/${userId}/cart`;
+                    newLink.url = `/customer/cart`;
                 }
             } else {
                 if (newLink.url.toLowerCase() === '/profile' || newLink.url.toLowerCase() === '/cart') {
-                    newLink.url = '/customerProfile';
+                    newLink.url = '/customer';
                 }
             }
             return newLink;
@@ -52,10 +51,10 @@ export function TabNavBar() {
                             <motion.div
                                 key={index}
                                 whileTap={{ scale: 0.90 }}
-                                initial={{ backgroundColor: "transparent", opacity: 0 }}
+                                initial={{ backgroundColor: "rgba(255, 255, 255, 0)", opacity: 0 }}
                                 animate={{
                                     opacity: 1,
-                                    backgroundColor: isActive ? "#007BFF" : "transparent",
+                                    backgroundColor: isActive ? "#007BFF" : "rgba(255, 255, 255, 0)",
                                     color: isActive ? "#FFFFFF" : "#6B7280",
                                     y: isActive ? -2 : 0,
                                     boxShadow: isActive ? "0 4px 12px rgba(0, 123, 255, 0.3)" : "none"

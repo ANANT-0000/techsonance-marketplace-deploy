@@ -68,7 +68,6 @@ export default function VendorLoginPage() {
   const router = useRouter();
   const { error, user, } = useAppSelector((state: RootState) => state.auth);
   const dispatch = useAppDispatch();
-  const vendor_id = user && 'vendor_id' in user ? user.vendor_id : undefined;
   const token = authToken()
   const [uiState, setUiState] = useState<UiState>('idle');
   const [steps, setSteps] = useState<StepStatus[]>(['pending', 'pending', 'pending']);
@@ -80,23 +79,22 @@ export default function VendorLoginPage() {
     useForm<LoginFormData>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', password: '' } });
 
   useEffect(() => {
-    if (vendor_id && token) {
-      router.replace(`/vendor/${vendor_id}`);
+    if (token) {
+      router.replace(`/vendor`);
     }
-  }, [vendor_id, token]);
+  }, [token]);
 
   const setStep = (i: number, s: StepStatus) =>
     setSteps(prev => prev.map((v, idx) => idx === i ? s : v));
 
-  const startRedirect = (vendorId: string | undefined) => {
-    if (!vendorId) return;
+  const startRedirect = () => {
     let elapsed = 0;
     const total = 3000, tick = 50;
     const t = setInterval(() => {
       elapsed += tick;
       setRedirectPct(Math.max(0, 100 - (elapsed / total) * 100));
       setCountdown(Math.ceil((total - elapsed) / 1000));
-      if (elapsed >= total) { clearInterval(t); router.push(`/vendor/${vendorId}`); }
+      if (elapsed >= total) { clearInterval(t); router.push(`/vendor`); }
     }, tick);
   };
 
@@ -122,7 +120,7 @@ export default function VendorLoginPage() {
         setUiState('prompt_change_password');
       } else {
         setUiState('success');
-        startRedirect(result?.user?.user?.vendor_id ?? '');
+        startRedirect();
       }
     } else {
       setStep(0, 'failed');
@@ -304,10 +302,7 @@ export default function VendorLoginPage() {
               <div className="w-full flex flex-col gap-3">
                 <button
                   onClick={() => {
-                    const stored = localStorage.getItem('auth');
-                    const authObj = stored ? JSON.parse(stored) : null;
-                    const vendorId = authObj?.user?.user?.vendor_id || authObj?.user?.vendor_id || '';
-                    router.push(`/vendor/${vendorId}/settings/change-password`);
+                    router.push(`/vendor/settings/change-password`);
                   }}
                   className="w-full bg-[#1a56db] hover:bg-[#1648c0] text-white font-semibold text-sm rounded-xl py-3 transition cursor-pointer"
                 >
@@ -315,10 +310,7 @@ export default function VendorLoginPage() {
                 </button>
                 <button
                   onClick={() => {
-                    const stored = localStorage.getItem('auth');
-                    const authObj = stored ? JSON.parse(stored) : null;
-                    const vendorId = authObj?.user?.user?.vendor_id || authObj?.user?.vendor_id || '';
-                    router.push(`/vendor/${vendorId}`);
+                    router.push(`/vendor`);
                   }}
                   className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl py-3 transition  cursor-pointer"
                 >

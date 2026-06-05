@@ -2,7 +2,7 @@
 import { BASE_API_URL, CUSTOMER_BASE_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
 
-export const fetchCustomerProfile = async (token: string) => {
+export const fetchcustomer = async (token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${CUSTOMER_BASE_URL}/profile`, {
@@ -121,7 +121,7 @@ export const fetchRemoveFromCart = async (customerId: string, cartId: string, ca
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ cartId, cartItemId }),
         });
@@ -142,7 +142,7 @@ export const fetchGetCartList = async (customerId: string, token: string) => {
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,
             },
         });
         if (response.status !== 200) {
@@ -153,7 +153,7 @@ export const fetchGetCartList = async (customerId: string, token: string) => {
         console.log('Error fetching cart:', error);
     }
 };
-export const fetchUpdateCartQuantity = async (productVariantId: string, quantity: number, customerId: string,token: string) => {
+export const fetchUpdateCartQuantity = async (productVariantId: string, quantity: number, customerId: string, token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/cart/${customerId}`, {
@@ -161,7 +161,7 @@ export const fetchUpdateCartQuantity = async (productVariantId: string, quantity
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ productVariantId, quantity }),
         });
@@ -175,7 +175,7 @@ export const fetchUpdateCartQuantity = async (productVariantId: string, quantity
     }
 }
 
-export const fetchGetUserAddresses = async (customerId: string, token: string   ) => {
+export const fetchGetUserAddresses = async (customerId: string, token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/address/customer/${customerId}`, {
@@ -183,7 +183,7 @@ export const fetchGetUserAddresses = async (customerId: string, token: string   
             headers: {
                 'Content-Type': 'application/json',
                 "company-domain": companyDomain,
-                Authorization: `Bearer ${token}`,    
+                Authorization: `Bearer ${token}`,
             },
         });
         if (response.status !== 200) {
@@ -197,7 +197,7 @@ export const fetchGetUserAddresses = async (customerId: string, token: string   
 };
 
 
-export const fetchGetAddressById = async (customerId: string, addressId: string, token: string  ) => { }
+export const fetchGetAddressById = async (customerId: string, addressId: string, token: string) => { }
 
 export const fetchSetDefaultAddress = async (customerId: string, addressId: string, token: string) => {
     try {
@@ -206,7 +206,7 @@ export const fetchSetDefaultAddress = async (customerId: string, addressId: stri
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                "company-domain": companyDomain, 
+                "company-domain": companyDomain,
                 Authorization: `Bearer ${token}`,
             },
         });
@@ -414,7 +414,7 @@ export const fetchUserReturns = async (userId: string, token: string) => {
         console.log('Error fetching user returns:', error);
     }
 };
-export const fetchSubmitReview = async (reviewData:FormData, userId: string, token: string) => {
+export const fetchSubmitReview = async (reviewData: FormData, userId: string, token: string) => {
     const companyDomain = await getCompanyDomain();
     try {
         const response = await fetch(`${BASE_API_URL}/v1/product-review/${userId}`, {
@@ -436,7 +436,7 @@ export const fetchSubmitReview = async (reviewData:FormData, userId: string, tok
 }
 export const fetchReviews = async (productId: string) => {
     try {
-        const response = await fetch(`${BASE_API_URL}/v1/product-review/product/${productId}`, {    
+        const response = await fetch(`${BASE_API_URL}/v1/product-review/product/${productId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -446,20 +446,20 @@ export const fetchReviews = async (productId: string) => {
         if (response.status !== 200) {
             console.log('Failed to fetch reviews');
             return {
-                data:[]
+                data: []
             };
-        }   
+        }
         return await response.json();
-    } catch (error) {   
-        console.log('Error fetching reviews:', error);  
+    } catch (error) {
+        console.log('Error fetching reviews:', error);
         return {
             data: []
         };
     }
 }
-export const fetchExistingReviews = async (variantId: string,userId: string,token: string) => {
+export const fetchExistingReviews = async (variantId: string, userId: string, token: string) => {
     try {
-        const response = await fetch(`${BASE_API_URL}/v1/product-review/existing/${variantId}/${userId}`, {    
+        const response = await fetch(`${BASE_API_URL}/v1/product-review/existing/${variantId}/${userId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -470,12 +470,12 @@ export const fetchExistingReviews = async (variantId: string,userId: string,toke
         if (response.status !== 200) {
             console.log('Failed to fetch reviews');
             return {
-                data:[]
+                data: []
             };
-        }   
+        }
         return await response.json();
-    } catch (error) {   
-        console.log('Error fetching reviews:', error);  
+    } catch (error) {
+        console.log('Error fetching reviews:', error);
         return {
             data: []
         };

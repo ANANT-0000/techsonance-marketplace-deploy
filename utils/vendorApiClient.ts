@@ -1,4 +1,4 @@
-﻿"use server"
+"use server"
 import { BASE_API_URL} from "@/constants";
 import { revalidatePath } from "next/cache";
 import { getCompanyDomain } from "@/lib/get-domain";
@@ -29,7 +29,7 @@ export const fetchVendorsProductsCategory = async (token: string) => {
         return { data: [], message: 'Error fetching product categories' };
     }
 };
-export const createVendorProductCategory = async (vendorId: string, categoryData: { name: string; description?: string }, token: string) => {
+export const createVendorProductCategory = async (categoryData: { name: string; description?: string }, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         console.log(categoryData);
@@ -46,7 +46,7 @@ export const createVendorProductCategory = async (vendorId: string, categoryData
             console.error('Failed to create product category');
             return { data: {}, message: 'Failed to create product category' };
         }
-        // revalidatePath(`/vendor/${vendorId}/products/categories`);
+        // revalidatePath('/vendor/products/categories');
         return await response.json();
     }
     catch (error) {
@@ -54,7 +54,7 @@ export const createVendorProductCategory = async (vendorId: string, categoryData
          return { data: {}, message: 'Error creating product category' };
     }
 }
-export const updateVendorProductCategory = async (vendorId: string, categoryId: string, categoryData: { name: string; description?: string }, token: string) => {
+export const updateVendorProductCategory = async (categoryId: string, categoryData: { name: string; description?: string }, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/categories/${categoryId}`, {
@@ -66,7 +66,7 @@ export const updateVendorProductCategory = async (vendorId: string, categoryId: 
             },
             body: JSON.stringify({ category: categoryData }),
         });
-        revalidatePath(`/vendor/${vendorId}/products/categories`);
+        revalidatePath('/vendor/products/categories');
         return await response.json();
     }
     catch (error) {
@@ -74,9 +74,8 @@ export const updateVendorProductCategory = async (vendorId: string, categoryId: 
         return { data: {}, message: 'Error updating product category' };
     }
 }
-export const deleteVendorProductCategory = async (vendorId: string, categoryId: string, token: string) => {
+export const deleteVendorProductCategory = async (categoryId: string, token: string) => {
     try {
-        console.log('vendorId', vendorId);
         console.log('categoryId', categoryId);
 
         const response = await fetch(`${BASE_API_URL}/v1/categories/${categoryId}`, {
@@ -89,7 +88,7 @@ export const deleteVendorProductCategory = async (vendorId: string, categoryId: 
             console.error('Failed to delete product category');
         }
         console.log('delete successful');
-        revalidatePath(`/vendor/${vendorId}/products/categories`);
+        revalidatePath('/vendor/products/categories');
         return await response.json();
     }
     catch (error) {
@@ -117,14 +116,14 @@ export const createProduct = async (productData: FormData, vendorId: string, tok
             console.error('Failed to create product');
             return { status: response.status, statusText: response.statusText };
         }
-        revalidatePath(`/vendor/${vendorId}/products`);
+        revalidatePath('/vendor/products');
         return await response.json();
     } catch (error) {
         console.error('Error creating product:', error);
         return { status: 500, statusText: 'Internal Server Error' };
     }
 }
-export const updateProduct = async (formData: FormData, vendorId: string, productId: string, token: string) => {
+export const updateProduct = async (formData: FormData, productId: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/products/${productId}`, {
@@ -139,14 +138,14 @@ export const updateProduct = async (formData: FormData, vendorId: string, produc
             console.error('Failed to create product');
             return { status: response.status, statusText: response.statusText };
         }
-        revalidatePath(`/vendor/${vendorId}/products`);
+        revalidatePath('/vendor/products');
         return await response.json();
     } catch (error) {
         console.error('Error creating product:', error);
         return { status: 500, statusText: 'Internal Server Error' + error };
     }
 }
-export const updateProductVariantStatus = async (productVariantId: string, vendorId: string, nextStatus: string, token: string) => {
+export const updateProductVariantStatus = async (productVariantId: string, nextStatus: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         console.log("nextStatus", nextStatus);
@@ -165,8 +164,8 @@ export const updateProductVariantStatus = async (productVariantId: string, vendo
             return { status: response.status, statusText: response.statusText };
         }
 
-        revalidatePath(`/vendor/${vendorId}/products`);
-        revalidatePath(`/vendor/${vendorId}/products/${productVariantId}/productVariants`);
+        revalidatePath('/vendor/products');
+        revalidatePath(`/vendor/products/${productVariantId}/productVariants`);
         console.log('Product variant status updated');
         return await response.json();
     } catch (error) {
@@ -260,7 +259,7 @@ export const fetchVendorOneProducts = async (id: string, token: string) => {
         return {data:{}, status: 500, statusText: 'Internal Server Error' + error };
     }
 }
-export const deleteProduct = async (productId: string, vendorId: string, token: string) => {
+export const deleteProduct = async (productId: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/products/${productId}`, {
@@ -273,8 +272,8 @@ export const deleteProduct = async (productId: string, vendorId: string, token: 
         if (!response.ok) {
             console.error('Failed to delete product');
         }
-        revalidatePath(`/vendor/${vendorId}/products`);
-        revalidatePath(`/vendor/${vendorId}/products/${productId}`);
+        revalidatePath('/vendor/products');
+        revalidatePath(`/vendor/products/${productId}`);
         return await response.json();
     } catch (error) {
         console.error('Error deleting product:', error);
@@ -285,7 +284,7 @@ export const deleteProduct = async (productId: string, vendorId: string, token: 
 // PRODUCT VARIANT API ENDPOINTS
 // ==========================================
 
-export const createProductVariant = async (variantData: FormData, vendorId: string, productId: string, token: string) => {
+export const createProductVariant = async (variantData: FormData, productId: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
 
@@ -297,9 +296,9 @@ export const createProductVariant = async (variantData: FormData, vendorId: stri
             }
         });
         const res = await response.json();
-        revalidatePath(`/vendor/${vendorId}/products/variants`);
-        revalidatePath(`/vendor/${vendorId}/products/${productId}/productVariants`);
-        revalidatePath(`/vendor/${vendorId}/products`);
+        revalidatePath('/vendor/products/variants');
+        revalidatePath(`/vendor/products/${productId}/productVariants`);
+        revalidatePath('/vendor/products');
         return res;
     } catch (error) {
         console.error("Error creating product variant:", error);
@@ -338,7 +337,6 @@ try{
 }
 export const updateProductVariant = async (
     formData: FormData,
-    vendorId: string,
     productId: string,
     variantId: string
     , token: string) => {
@@ -359,7 +357,7 @@ export const updateProductVariant = async (
 
         const res = await response.json();
         console.log(`[updateProducrtVarint] reponse`,res)
-        revalidatePath(`/vendor/${vendorId}/products/${productId}/variants`);
+        revalidatePath(`/vendor/products/${productId}/variants`);
         return res;
     } catch (error) {
         console.error("Error updating product variant:", error);
@@ -390,7 +388,7 @@ export const fetchProductVariants = async (productId: string, token: string) => 
         throw error;
     }
 }
-export const deleteProductVariant = async (productId: string, variantId: string, vendorId: string, token: string) => {
+export const deleteProductVariant = async (productId: string, variantId: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/product-variant/${variantId}`, {
@@ -403,8 +401,8 @@ export const deleteProductVariant = async (productId: string, variantId: string,
         if (!response.ok) {
             console.error('Failed to delete product variant');
         }
-        revalidatePath(`/vendor/${vendorId}/products/${productId}/variants`);
-        revalidatePath(`/vendor/${vendorId}/products`);
+        revalidatePath(`/vendor/products/${productId}/variants`);
+        revalidatePath('/vendor/products');
         return await response.json();
     } catch (error) {
         console.error('Error deleting product variant:', error);
@@ -935,7 +933,7 @@ export const fetchTaxSlabOptions= async ( token: string) => {
     }
 }
 // Add this below your existing finance API calls
-export const fetchAssignProductTax = async (data: { product_id: string, tax_slab_id: string }, vendorId: string, token: string) => {
+export const fetchAssignProductTax = async (data: { product_id: string, tax_slab_id: string }, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/finances/product-tax-mappings`, {
@@ -947,14 +945,14 @@ export const fetchAssignProductTax = async (data: { product_id: string, tax_slab
             },
             body: JSON.stringify(data)
         });
-               revalidatePath(`/vendor/${vendorId}/finances/product-taxes`);
+               revalidatePath('/vendor/finances/product-taxes');
         return await response.json();
     } catch (error) {
         console.error('Error assigning product tax:', error);
         return { data: {}, message: 'Error assigning product tax' };
     }
 }
-export const fetchBulkAssignProductTax = async (data: { product_ids: string[], tax_slab_id: string }, vendorId: string, token: string) => {
+export const fetchBulkAssignProductTax = async (data: { product_ids: string[], tax_slab_id: string }, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/finances/product-tax-bulk-mappings`, {
@@ -966,7 +964,7 @@ export const fetchBulkAssignProductTax = async (data: { product_ids: string[], t
             },
             body: JSON.stringify(data)
         });
-        revalidatePath(`/vendor/${vendorId}/finances/product-taxes`);
+        revalidatePath('/vendor/finances/product-taxes');
         return await response.json();
     } catch (error) {
         console.error('Error assigning product tax:', error);
@@ -1039,7 +1037,7 @@ export const fetchSingleGstRecord = async (id: string, token: string) => {
     }
 }
 
-export const fetchUpdateGstRecord = async (id: string, data: any, vendorId: string, token: string) => {
+export const fetchUpdateGstRecord = async (id: string, data: any, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/finances/gst/${id}`, {
@@ -1051,7 +1049,7 @@ export const fetchUpdateGstRecord = async (id: string, data: any, vendorId: stri
             },
             body: JSON.stringify(data)
         });
-        revalidatePath(`/vendor/${vendorId}/finances/gst`);
+        revalidatePath(`/vendor/finances/gst`);
         return await response.json();
     } catch (error) {
         console.error('Error updating GST:', error);
@@ -1059,14 +1057,14 @@ export const fetchUpdateGstRecord = async (id: string, data: any, vendorId: stri
     }
 }
 
-export const fetchDeleteGstRecord = async (id: string, vendorId: string, token: string) => {
+export const fetchDeleteGstRecord = async (id: string, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/finances/gst/${id}`, {
             method: 'DELETE',
             headers: { 'company-domain': companyDomain, Authorization: `Bearer ${token}` },
         });
-        revalidatePath(`/vendor/${vendorId}/finances/gst`);
+        revalidatePath('/vendor/finances/gst');
         return await response.json();
     } catch (error) {
         console.error('Error deleting GST:', error);
@@ -1092,7 +1090,7 @@ export const fetchSingleTaxProfile = async (id: string, token: string) => {
     }
 }
 
-export const fetchUpdateTaxProfile = async (id: string, data: any, vendorId: string, token: string) => {
+export const fetchUpdateTaxProfile = async (id: string, data: any, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/finances/tax-profiles/${id}`, {
@@ -1104,7 +1102,7 @@ export const fetchUpdateTaxProfile = async (id: string, data: any, vendorId: str
             },
             body: JSON.stringify(data)
         });
-        revalidatePath(`/vendor/${vendorId}/finances/tax-profiles`);
+        revalidatePath('/vendor/finances/tax-profiles');
         return await response.json();
     } catch (error) {
         console.error('Error updating Tax Profile:', error);
@@ -1683,7 +1681,7 @@ export const fetchStockManagerVariants = async (token: string) => {
         return { data: [], message: 'Error fetching stock manager variants' };
     }
 }
-export const quickUpdateStock = async (productVariantId: string, quantity: number, vendorId: string, token: string) => {
+export const quickUpdateStock = async (productVariantId: string, quantity: number, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
         const response = await fetch(`${BASE_API_URL}/v1/inventory/${productVariantId}`, {
@@ -1695,7 +1693,7 @@ export const quickUpdateStock = async (productVariantId: string, quantity: numbe
             },
             body: JSON.stringify({ quantity }) // The backend expects 'quantity'
         });
-        revalidatePath(`/vendor/${vendorId}/products`);
+        revalidatePath('/vendor/products');
         return await response.json();
     } catch (error) {
         console.error('Error updating stock:', error);
@@ -1761,7 +1759,6 @@ export const fetchSingleTaxSlab = async (id: string, token: string) => {
 export const fetchUpdateTaxSlab = async (
   id: string,
   data: any,
-  vendorId: string,
   token: string,
 ) => {
   try {
@@ -1778,7 +1775,7 @@ export const fetchUpdateTaxSlab = async (
         body: JSON.stringify(data),
       },
     );
-    revalidatePath(`/vendor/${vendorId}/finances/tax-rates`);
+    revalidatePath(`/vendor/finances/tax-rates`);
     return await response.json();
   } catch (error) {
     console.error('Error updating tax slab:', error);

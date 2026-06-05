@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { formatCurrency } from "@/lib/utils";
 import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
@@ -6,8 +6,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useMediaQuery } from "react-responsive";
 import { useState, useRef, useEffect } from "react";
-import { OrderItemType, OrderType, ReturnRequest, AddressPayload } from "./OrderList";
+import { OrderItemAPIResponse as OrderItemType, ReturnRequest, AddressPayload } from "./OrderList";
 import { Package, RotateCcw, XCircle, Truck, CheckCircle2 } from "lucide-react";
+
+export interface OrderType {
+    id: string;
+    total_amount: string;
+    created_at: string;
+    address: AddressPayload;
+    payment?: { id: string; payment_method: string; payment_status: string; transaction_ref: string; amount: string; };
+    shipping?: { tracking_url?: string };
+    items: OrderItemType[];
+}
 
 function ItemStatusBadge({ status }: { status: string }) {
     const s = status?.toLowerCase();

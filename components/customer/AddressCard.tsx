@@ -1,89 +1,94 @@
-﻿import { Briefcase, CheckCircle2, Home, MapPin, Pen, Trash2 } from "lucide-react";
-import { motion } from "motion/react";
+﻿import { Briefcase, Home, MapPin, Pen, Trash2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) => {
-    const Icon = address.address_for === 'work' ? Briefcase : address.address_for === 'home' ? Home : MapPin;
+    const isWork = address.address_for?.toLowerCase() === 'work';
+    const isHome = address.address_for?.toLowerCase() === 'home';
+    const Icon = isWork ? Briefcase : isHome ? Home : MapPin;
+    
+    // Capitalize the title nicely
+    const title = address.address_for ? address.address_for.charAt(0).toUpperCase() + address.address_for.slice(1) : "Address";
 
     return (
         <motion.div
             layout
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            whileHover={{ y: -2 }}
-            className={`relative p-4 sm:p-6 rounded-2xl border-2 transition-colors bg-white ${address.is_default ? 'border-blue-500 bg-blue-50/30' : 'border-gray-100 hover:border-blue-200'
-                }`}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="h-full"
         >
-            {address.is_default && (
-                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-1 text-blue-600 text-[10px] sm:text-xs font-bold bg-blue-100 px-2 py-1 sm:py-1.5 rounded-lg shadow-sm">
-                    <CheckCircle2 size={12} className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    <span>DEFAULT</span>
-                </div>
-            )}
-
-            <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-                {/* Icon */}
-                <div className={`p-2.5 sm:p-3 rounded-xl mt-0.5 sm:mt-1 shrink-0 ${address.is_default ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
-                    <Icon size={20} className="sm:w-6 sm:h-6" />
-                </div>
-
-                <div className="flex-1 pr-16 sm:pr-20">
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-                        <h3 className="font-bold text-gray-900 text-base sm:text-lg tracking-tight">
-                            {address.name}
-                        </h3>
-                        <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 uppercase tracking-wider">
-                            {address.address_for}
-                        </span>
+            <Card className={`h-full flex flex-col rounded-2xl shadow-sm transition-colors border ${address.is_default ? 'border-primary/50 bg-primary/5' : 'border-border hover:border-border/80'}`}>
+                <CardContent className="p-6 flex flex-col flex-1">
+                    
+                    {/* Header: Icon, Title, and Default Badge */}
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2 text-primary">
+                            <Icon size={20} strokeWidth={2.5} />
+                            <h3 className="font-bold text-lg text-foreground tracking-tight">
+                                {title}
+                            </h3>
+                        </div>
+                        {address.is_default && (
+                            <Badge variant="default" className="bg-black hover:bg-black text-white rounded-full px-3 text-[10px] font-bold tracking-wide uppercase">
+                                Default
+                            </Badge>
+                        )}
                     </div>
 
-                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
-                        {address.address_line1}
-                        {address.address_line2 && <><br />{address.address_line2}</>}
-                        {address.street && <><br />{address.street}</>}
-                        <br />
-                        {address.city}, {address.state} {address.postal_code}
-                        <br />
-                        {address.country}
-                    </p>
+                    {/* Address Body */}
+                    <div className="flex-1 flex flex-col gap-1 text-sm text-muted-foreground leading-relaxed">
+                        <p className="font-bold text-foreground mb-0.5 text-base">{address.name}</p>
+                        <p>{address.address_line1}</p>
+                        {address.address_line2 && <p>{address.address_line2}</p>}
+                        {address.street && <p>{address.street}</p>}
+                        <p>{address.city}, {address.state} {address.postal_code}</p>
+                        <p>{address.country}</p>
+                        
+                        {address.landmark && (
+                            <p className="mt-1 italic text-xs">
+                                <span className="font-medium not-italic">Landmark:</span> {address.landmark}
+                            </p>
+                        )}
 
-                    {address.landmark && (
-                        <p className="text-gray-500 text-xs sm:text-sm mt-1 sm:mt-1.5 italic">
-                            <span className="font-medium not-italic">Landmark:</span> {address.landmark}
-                        </p>
-                    )}
-
-                    <div className="flex items-center gap-2 mt-2 sm:mt-3">
-                        <p className="text-gray-900 text-xs sm:text-sm font-semibold bg-gray-50 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-gray-100 inline-block">
+                        <p className="mt-3 text-foreground font-medium">
                             {address.phone || address.number}
                         </p>
                     </div>
-                </div>
-            </div>
 
-
-            <div className="flex items-center flex-wrap gap-y-3 gap-x-4 pt-3 sm:pt-4 border-t border-gray-100 mt-2">
-                <button
-                    onClick={() => onEdit(address.id)}
-                    className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors py-1"
-                >
-                    <Pen size={14} className="sm:w-4 sm:h-4" /> Edit
-                </button>
-                <button
-                    onClick={() => onDelete(address.user_id, address.id)}
-                    className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-600 hover:text-red-600 transition-colors py-1"
-                >
-                    <Trash2 size={14} className="sm:w-4 sm:h-4" /> Delete
-                </button>
-                {!address.is_default && (
-                    <button
-                        onClick={() => onSetDefault(address.user_id, address.id)}
-                        className="ml-auto text-[10px] sm:text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline uppercase tracking-wide py-1"
-                    >
-                        Set as Default
-                    </button>
-                )}
-            </div>
+                    {/* Footer Actions */}
+                    <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => onEdit(address.id)}
+                                className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                                <Pen size={14} /> Edit
+                            </button>
+                            <button
+                                onClick={() => onDelete(address.user_id, address.id)}
+                                className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-red-600 transition-colors"
+                            >
+                                <Trash2 size={14} /> Delete
+                            </button>
+                        </div>
+                        
+                        {!address.is_default && (
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="rounded-full h-8 px-4 text-xs font-semibold text-foreground border-border hover:bg-gray-50"
+                                onClick={() => onSetDefault(address.user_id, address.id)}
+                            >
+                                Set as Default
+                            </Button>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
         </motion.div>
     );
 };

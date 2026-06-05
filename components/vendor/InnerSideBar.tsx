@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 import { getVendorInnerSidebarLinks } from "@/constants"
 import { AnimatePresence } from "framer-motion";
 import { DynamicIcon, IconName } from "lucide-react/dynamic"
@@ -7,10 +7,8 @@ import { usePathname } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 export const InnerSideBar = ({
-    vendorId,
     selectedMenu,
 }: {
-    vendorId: string
     selectedMenu: string
 }) => {
     const path = usePathname()
@@ -43,7 +41,7 @@ export const InnerSideBar = ({
         }, 120);
     }, []);
 
-    const links = getVendorInnerSidebarLinks(vendorId, selectedMenu)
+    const links = getVendorInnerSidebarLinks(selectedMenu)
     useEffect(() => {
         const allPaths = links.flatMap((s) =>
             s.sections.flatMap((sec) => sec.list?.map((item) => item.path) ?? [])

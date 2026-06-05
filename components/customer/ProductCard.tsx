@@ -16,7 +16,7 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.03, duration: 0.25 }}
-            className="group flex flex-col cursor-pointer bg-white border border-gray-100 rounded-[20px] overflow-hidden hover:shadow-lg transition-all duration-300 relative h-full list-none"
+            className="group flex flex-col cursor-pointer bg-white border border-gray-100 rounded-[20px] overflow-hidden hover:shadow-lg transition-all duration-300 relative h-full"
         >
             <div className="relative aspect-square md:aspect-[4/5] bg-[#F8F9FA] overflow-hidden">
                 <WishListBtn productVariantId={variantId} styles="absolute top-3 right-3 z-10 w-9 h-9 bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center rounded-full text-gray-600 hover:text-red-500 transition-colors" />
@@ -39,32 +39,34 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
                         {product.name}
                     </h3>
                 </Link>
-                
+
                 <div className="mt-auto">
                     <div className="flex items-end justify-between">
                         <div>
                             <span className="font-bold text-gray-900 text-lg">
-                                ${formatCurrency(Number(product.base_price))}
+                                ₹{formatCurrency(Number(product.base_price))}
                             </span>
                             {Number(product.discount_percent) > 0 && (
                                 <span className="text-xs line-through text-gray-400 ml-1.5 font-medium">
-                                    ${formatCurrency(Math.floor(Number(product.base_price) / (1 - Number(product.discount_percent) / 100)))}
+                                    ₹{formatCurrency(Math.floor(Number(product.base_price) / (1 - Number(product.discount_percent) / 100)))}
                                 </span>
                             )}
                         </div>
                     </div>
 
-                    {/* Always-Visible Action Buttons */}
+                    {/* Always-Visible Action Buttons (Mobile Stacked Pill Style) */}
                     {variantId && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col xl:flex-row gap-2 w-full">
-                            <AddToCart 
-                                productVariantId={variantId} 
-                                styles="flex-1 h-10 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center text-white transition-colors" 
+                        <div className="hidden lg:flex xl:flex mt-3 pt-3  justify-between items-center border-t border-gray-100  gap-2.5 w-full">
+                            <AddToCart
+                                productVariantId={variantId}
+                                /* [&_span]:hidden hides the text so only the cart icon shows, matching the image exactly */
+                                styles="w-full h-10 rounded-full bg-blue-500 border border-gray-200 hover:bg-blue-600 text-white transition-colors cursor-pointer "
                             />
-                            <BuyBtn 
-                                id={variantId} 
-                                mode={BuyBtnMode.QUICK_BUY} 
-                                styles="flex-1 h-10 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-lg flex items-center justify-center text-gray-900 transition-colors" 
+                            <BuyBtn
+                                id={variantId}
+                                mode={BuyBtnMode.QUICK_BUY}
+                                styles="w-full h-10 bg-black border border-gray-200 hover:bg-black/90 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm transition-colors cursor-pointer"
+                                iconStyles="text-white"
                             />
                         </div>
                     )}
