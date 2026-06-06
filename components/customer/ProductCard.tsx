@@ -6,19 +6,26 @@ import { AddToCart } from './AddToCart';
 import { BuyBtn } from './BuyBtn';
 import { BuyBtnMode, Product } from '@/utils/Types';
 import { formatCurrency } from '@/lib/utils';
+import { useThemeData } from '@/hooks/useThemeData';
 
 export function ProductCard({ product, idx }: { product: Product; idx: number }) {
+    const { themeData } = useThemeData();
     const primaryImage = product.variants?.[0]?.images?.[0]?.image_url ?? 'https://placehold.net/400x500.png';
     const variantId = product.variants?.[0]?.id ?? '';
+
+    const isGlass = themeData.card_style === 'glassmorphic';
+    const cardCls = isGlass 
+      ? "bg-white/45 backdrop-blur-lg border border-white/60 shadow-[0_8px_32px_0_rgba(15,23,42,0.06)] hover:shadow-xl hover:bg-white/55"
+      : "bg-white border border-gray-100 hover:shadow-lg";
 
     return (
         <motion.li
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.03, duration: 0.25 }}
-            className="group flex flex-col cursor-pointer bg-white border border-gray-100 rounded-[20px] overflow-hidden hover:shadow-lg transition-all duration-300 relative h-full"
+            className={`group flex flex-col cursor-pointer overflow-hidden transition-all duration-300 relative h-full rounded-[var(--radius)] ${cardCls}`}
         >
-            <div className="relative aspect-square md:aspect-[4/5] bg-[#F8F9FA] overflow-hidden">
+            <div className="relative aspect-square md:aspect-[4/5] bg-black/5 overflow-hidden">
                 <WishListBtn productVariantId={variantId} styles="absolute top-3 right-3 z-10 w-9 h-9 bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center rounded-full text-gray-600 hover:text-red-500 transition-colors" />
                 <Link href={`/shopping/${product.id}`} className="block w-full h-full p-4">
                     <img
@@ -30,8 +37,8 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
                 </Link>
             </div>
 
-            <div className="p-4 flex flex-col flex-grow bg-white">
-                <div className="mb-1 text-xs font-semibold text-gray-500 uppercase tracking-wide truncate">
+            <div className={`p-4 flex flex-col flex-grow ${isGlass ? 'bg-transparent' : 'bg-white'}`}>
+                <div className="mb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide truncate">
                     {product.category?.name || 'Category'}
                 </div>
                 <Link href={`/shopping/${product.id}`} className="block">
@@ -60,7 +67,7 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
                             <AddToCart
                                 productVariantId={variantId}
                                 /* [&_span]:hidden hides the text so only the cart icon shows, matching the image exactly */
-                                styles="w-full h-10 rounded-full bg-blue-500 border border-gray-200 hover:bg-blue-600 text-white transition-colors cursor-pointer "
+                                styles="w-full h-10 rounded-full bg-theme-primary border border-gray-200 hover:bg-theme-secondary text-theme-primary-foreground transition-colors cursor-pointer "
                             />
                             <BuyBtn
                                 id={variantId}

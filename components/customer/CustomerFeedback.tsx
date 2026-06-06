@@ -66,10 +66,10 @@ export function CustomerFeedback({
                             boxShadow:
                                 "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
                         }}
-                        className="group bg-white text-card-foreground border-2 border-gray-100 lg:p-10 p-4 rounded-3xl min-w-full lg:max-w-md snap-center transition-colors hover:border-brand-primary/20 "
+                        className="group bg-white text-card-foreground border-2 border-gray-100 lg:p-10 p-4 rounded-3xl min-w-full lg:max-w-md snap-center transition-colors hover:border-theme-primary/20 "
                     >
                         <Quote
-                            className='mb-6 text-brand-primary'
+                            className='mb-6 text-theme-primary'
                             fill='currentColor'
                             size={32}
                         />
@@ -79,7 +79,7 @@ export function CustomerFeedback({
                         </p>
 
                         <div className="flex  lg:w-full items-center gap-2">
-                            <span className="h-[2px] w-4 bg-brand-primary"></span>
+                            <span className="h-[2px] w-4 bg-theme-primary"></span>
                             <p className="font-bold text-gray-900 uppercase tracking-wider text-sm">
                                 {feedback.customerName}
                             </p>

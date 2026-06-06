@@ -96,12 +96,12 @@ export function ProfileSidebar() {
                                     w-full flex flex-col items-center justify-center gap-2 px-4 py-6
                                     rounded-xl border text-sm font-medium transition-all shadow-sm
                                     ${isActive
-                                        ? 'border-blue-600 bg-blue-50/50 text-blue-700'
+                                        ? 'border-theme-primary/50 bg-theme-primary/5 text-theme-primary'
                                         : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                                     }
                                 `}
                             >
-                                <DynamicIcon name={link.icon as IconName} size={24} fallback={() => <span />} className={isActive ? 'text-blue-600' : 'text-gray-500'} />
+                                <DynamicIcon name={link.icon as IconName} size={24} fallback={() => <span />} className={isActive ? 'text-theme-primary' : 'text-gray-500'} />
                                 <span>{link.name}</span>
                             </button>
                         </motion.li>

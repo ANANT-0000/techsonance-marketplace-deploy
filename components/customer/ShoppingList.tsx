@@ -382,7 +382,7 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
                             <AddToCart
                                 productVariantId={variantId}
                                 /* [&_span]:hidden hides the text so only the cart icon shows, matching the image exactly */
-                                styles="w-full h-10 rounded-full bg-blue-500 border border-gray-200 hover:bg-blue-600 text-white transition-colors cursor-pointer "
+                                styles="w-full h-10 rounded-full bg-theme-primary border border-gray-200 hover:bg-theme-secondary text-theme-primary-foreground transition-colors cursor-pointer "
                             />
                             <BuyBtn
                                 id={variantId}

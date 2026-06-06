@@ -65,7 +65,7 @@ export function Footer({ styles }: { styles?: string }) {
                                     <motion.li
                                         key={linkIndex}
                                         whileHover={{ x: 5 }}
-                                        className="lg:text-sm text-xs text-primary hover:text-brand-primary transition-colors"
+                                        className="lg:text-sm text-xs text-primary hover:text-theme-primary transition-colors"
                                     >
                                         <Link
                                             href={link.url}

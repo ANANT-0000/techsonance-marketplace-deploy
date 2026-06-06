@@ -16,7 +16,7 @@ export function BestSelling({
   return (
     <section
       ref={ref}
-      className={`flex lg:flex-row flex-col gap-12 justify-center xl:pt-10 pb-8 xl:px-32 lg:px-8 md:px-4 px-4 py-12 w-full bg-brand-secondary overflow-hidden ${styles}`}
+      className={`flex lg:flex-row flex-col gap-12 justify-center xl:pt-10 pb-8 xl:px-32 lg:px-8 md:px-4 px-4 py-12 w-full bg-theme-secondary overflow-hidden ${styles}`}
     >
       {/* Left Side: Image with a scale-up and slide effect */}
       <motion.div

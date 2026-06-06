@@ -99,10 +99,10 @@ export function SearchBar({ value, onChange, onSearch, onClose, placeholder = 'S
             {/* Input */}
             <div
                 className={`flex items-center gap-2 border-2 rounded-xl px-4 py-2.5 bg-white transition-all duration-200 ${
-                    isFocused ? 'border-blue-500 shadow-sm shadow-blue-100' : 'border-gray-200 hover:border-gray-300'
+                    isFocused ? 'border-theme-primary/60 shadow-sm shadow-theme-primary/10' : 'border-gray-200 hover:border-gray-300'
                 }`}
             >
-                <Search size={18} className={`flex-shrink-0 ${isFocused ? 'text-blue-500' : 'text-gray-400'}`} />
+                <Search size={18} className={`flex-shrink-0 ${isFocused ? 'text-theme-primary' : 'text-gray-400'}`} />
                 <input
                     ref={inputRef}
                     type="text"
@@ -132,7 +132,7 @@ export function SearchBar({ value, onChange, onSearch, onClose, placeholder = 'S
                     )}
                 </AnimatePresence>
                 {isLoadingSuggestions && (
-                    <Loader2 size={14} className="flex-shrink-0 text-blue-400 animate-spin" />
+                    <Loader2 size={14} className="flex-shrink-0 text-theme-primary/70 animate-spin" />
                 )}
             </div>
 
@@ -153,7 +153,7 @@ export function SearchBar({ value, onChange, onSearch, onClose, placeholder = 'S
                                     <button
                                         onMouseDown={(e) => e.preventDefault()} // Prevent input blur before click registers
                                         onClick={() => handleSuggestionClick(s.name)}
-                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors text-left"
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left"
                                     >
                                         <Search size={13} className="text-gray-300 flex-shrink-0" />
                                         <SuggestionText text={s.name} query={value} />
@@ -176,7 +176,7 @@ function SuggestionText({ text, query }: { text: string; query: string }) {
     return (
         <span>
             {text.slice(0, idx)}
-            <mark className="bg-blue-100 text-blue-700 rounded-sm">{text.slice(idx, idx + query.length)}</mark>
+            <mark className="bg-theme-primary/10 text-theme-primary rounded-sm">{text.slice(idx, idx + query.length)}</mark>
             {text.slice(idx + query.length)}
         </span>
     );

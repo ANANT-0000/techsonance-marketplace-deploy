@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { FormInput } from "../common/FormInput";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
@@ -173,8 +173,8 @@ export const AddressModal = ({
                 {/* Header */}
                 <div className="flex items-center justify-between py-4 px-5 border-b border-gray-100 bg-white shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
-                            <MapPin size={15} className="text-blue-600" />
+                        <div className="w-8 h-8 rounded-xl bg-theme-primary/10 flex items-center justify-center">
+                            <MapPin size={15} className="text-theme-primary" />
                         </div>
                         <h2 className="text-base font-bold text-gray-900">
                             {operation === AddressOperationEnum.EDIT ? 'Edit Address' : 'Add New Address'}
@@ -248,7 +248,7 @@ export const AddressModal = ({
                                                 type="checkbox"
                                                 id={field.id}
                                                 {...register(field.id as keyof typeof register)}
-                                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-400 cursor-pointer"
+                                                className="h-4 w-4 rounded border-gray-300 text-theme-primary focus:ring-theme-primary/50 cursor-pointer"
                                             />
                                             <label
                                                 htmlFor={field.id}

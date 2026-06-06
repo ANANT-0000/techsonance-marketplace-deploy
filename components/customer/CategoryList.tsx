@@ -59,7 +59,7 @@ export function CategoryList({ categories, styles }: { categories?: CategoryList
                                 alt={category.title.trim()}
                             />
                         </div>
-                        <span className="mt-4 text-lg font-medium text-gray-700 group-hover:text-brand-primary transition-colors">
+                        <span className="mt-4 text-lg font-medium text-gray-700 group-hover:text-theme-primary transition-colors">
                             {category.title.trim()}
                         </span>
                     </motion.li>

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Loader2, Tag, Clock, AlertCircle } from 'lucide-react';
 import AxiosAPI from '@/lib/axios';
 import { authToken } from '@/utils/authToken';
@@ -54,7 +54,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                 {/* Header (Sticky) */}
                 <div className="p-4 sm:p-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
                     <div className="flex items-center gap-2">
-                        <Tag className="text-blue-600" size={20} />
+                        <Tag className="text-theme-primary" size={20} />
                         <h3 className="font-bold text-gray-900 text-base sm:text-lg">Available Offers</h3>
                     </div>
                     <button onClick={onClose} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-500 hover:text-gray-800 transition-colors shadow-sm">
@@ -66,7 +66,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                 <div className="overflow-y-auto lg:p-4 p-2 space-y-4 bg-slate-50/50 flex-1 hide-scrollbar">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center lg:py-12 py-6 gap-3">
-                            <Loader2 className="animate-spin text-blue-600" size={32} />
+                            <Loader2 className="animate-spin text-theme-primary" size={32} />
                             <p className="text-sm text-gray-500 font-medium">Finding the best offers...</p>
                         </div>
                     ) :coupons && Array.isArray(coupons) &&  coupons.length === 0 ? (
@@ -89,15 +89,15 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                     className={`relative bg-white border rounded-2xl lg:py-4 lg:px-4 py-2 px-4 shadow-sm transition-all overflow-hidden flex flex-col gap-3 ${
                                         isLocked 
                                             ? 'border-gray-200 opacity-80' 
-                                            : 'border-blue-100 hover:border-blue-300 hover:shadow-md'
+                                            : 'border-theme-primary/20 hover:border-theme-primary/40 hover:shadow-md'
                                     }`}
                                 >
-                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${isLocked ? 'bg-gray-300' : 'bg-blue-500'}`} />
+                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${isLocked ? 'bg-gray-300' : 'bg-theme-primary'}`} />
 
                                     {/* Top Row: Discount & Apply Button */}
                                     <div className="flex justify-between items-start gap-2">
                                         <div className="flex flex-col">
-                                            <span className={`text-xl sm:text-2xl font-black tracking-tight leading-tight ${isLocked ? 'text-gray-600' : 'text-blue-700'}`}>
+                                            <span className={`text-xl sm:text-2xl font-black tracking-tight leading-tight ${isLocked ? 'text-gray-600' : 'text-theme-primary'}`}>
                                                 {coupon.discount_type === 'percentage' 
                                                     ? `${coupon.discount_value}% OFF` 
                                                     : `₹${coupon.discount_value} OFF`}

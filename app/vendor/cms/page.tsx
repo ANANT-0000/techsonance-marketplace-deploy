@@ -1,16 +1,80 @@
 'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Save, Loader2, Plus, Trash2, Globe, Languages, CheckCircle } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef, useReducer } from 'react';
+import { Save, Loader2, Plus, Trash2, Globe, Languages, CheckCircle, ArrowUp, ArrowDown, Palette, LayoutGrid, Upload, Image as ImageIcon } from 'lucide-react';
 import AxiosAPI from '@/lib/axios';
 
-type PageType = 'home' | 'navbar' | 'footer' | 'about' | 'contact' | 'shopping';
+type PageType = 'home' | 'navbar' | 'footer' | 'about' | 'contact' | 'shopping' | 'theme';
 type LangType = 'en' | 'es';
 
-const PAGES: PageType[] = ['home', 'navbar', 'footer', 'about', 'contact', 'shopping'];
+interface CmsState {
+  page: PageType;
+  lang: LangType;
+  loading: boolean;
+  saving: boolean;
+  msg: { text: string; ok: boolean } | null;
+  data: any;
+}
+
+type CmsAction =
+  | { type: 'SET_PAGE'; payload: PageType }
+  | { type: 'SET_LANG'; payload: LangType }
+  | { type: 'FETCH_START' }
+  | { type: 'FETCH_SUCCESS'; payload: any }
+  | { type: 'FETCH_FAILURE'; payload: string }
+  | { type: 'SAVE_START' }
+  | { type: 'SAVE_SUCCESS'; payload: string }
+  | { type: 'SAVE_FAILURE'; payload: string }
+  | { type: 'SET_DATA_FIELD'; payload: { key: string; val: any } }
+  | { type: 'SET_DATA_FULL'; payload: any }
+  | { type: 'CLEAR_MESSAGE' };
+
+const initialState: CmsState = {
+  page: 'home',
+  lang: 'en',
+  loading: false,
+  saving: false,
+  msg: null,
+  data: {},
+};
+
+function cmsReducer(state: CmsState, action: CmsAction): CmsState {
+  switch (action.type) {
+    case 'SET_PAGE':
+      return { ...state, page: action.payload, msg: null };
+    case 'SET_LANG':
+      return { ...state, lang: action.payload, msg: null };
+    case 'FETCH_START':
+      return { ...state, loading: true, msg: null };
+    case 'FETCH_SUCCESS':
+      return { ...state, loading: false, data: action.payload };
+    case 'FETCH_FAILURE':
+      return { ...state, loading: false, msg: { text: action.payload, ok: false } };
+    case 'SAVE_START':
+      return { ...state, saving: true, msg: null };
+    case 'SAVE_SUCCESS':
+      return { ...state, saving: false, msg: { text: action.payload, ok: true } };
+    case 'SAVE_FAILURE':
+      return { ...state, saving: false, msg: { text: action.payload, ok: false } };
+    case 'SET_DATA_FIELD':
+      return {
+        ...state,
+        data: { ...state.data, [action.payload.key]: action.payload.val },
+      };
+    case 'SET_DATA_FULL':
+      return { ...state, data: action.payload };
+    case 'CLEAR_MESSAGE':
+      return { ...state, msg: null };
+    default:
+      return state;
+  }
+}
+
+const PAGES: PageType[] = ['home', 'navbar', 'footer', 'about', 'contact', 'shopping', 'theme'];
 
 const PAGE_LABELS: Record<PageType, string> = {
   home: 'Home Page', navbar: 'Navbar', footer: 'Footer',
   about: 'About Us', contact: 'Contact', shopping: 'Promotions',
+  theme: 'Storefront Theme & Layout',
 };
 
 function Field({ label, value, onChange, textarea, mono }: any) {
@@ -21,6 +85,123 @@ function Field({ label, value, onChange, textarea, mono }: any) {
       {textarea
         ? <textarea rows={3} value={value} onChange={e => onChange(e.target.value)} className={cls} />
         : <input type="text" value={value} onChange={e => onChange(e.target.value)} className={cls} />}
+    </div>
+  );
+}
+
+function ColorField({ label, value, onChange }: any) {
+  return (
+    <div>
+      <label className="block text-xs font-bold text-gray-500 mb-1.5">{label}</label>
+      <div className="flex gap-2">
+        <input
+          type="color"
+          value={value || '#000000'}
+          onChange={e => onChange(e.target.value)}
+          className="w-10 h-10 border border-gray-200 rounded-xl cursor-pointer bg-transparent shrink-0"
+        />
+        <input
+          type="text"
+          value={value || ''}
+          onChange={e => onChange(e.target.value)}
+          placeholder="#000000"
+          className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-purple-400 font-mono"
+        />
+      </div>
+    </div>
+  );
+}
+
+function ImageUploadField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File size must be under 5MB.');
+      return;
+    }
+
+    setUploading(true);
+    setError(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await AxiosAPI.post('/v1/cms/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res.data?.secure_url) {
+        onChange(res.data.secure_url);
+      } else {
+        throw new Error('Upload succeeded but no URL returned.');
+      }
+    } catch (err: any) {
+      console.error('[CMS Image Upload] Failed:', err);
+      setError(err?.response?.data?.message || 'Upload failed. Try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div>
+      <label className="block text-xs font-bold text-gray-500 mb-1.5">{label}</label>
+      <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3">
+        {value ? (
+          <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200 bg-white shadow-sm shrink-0">
+            <img src={value} alt="Preview" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="w-12 h-12 rounded-lg border border-dashed border-gray-300 flex items-center justify-center bg-white text-gray-400 shrink-0">
+            <ImageIcon size={16} />
+          </div>
+        )}
+
+        <div className="flex-1 min-w-0">
+          <label className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-250 rounded-lg px-3 py-1.5 text-xs font-bold cursor-pointer transition-all">
+            {uploading ? (
+              <>
+                <Loader2 size={12} className="animate-spin text-purple-600" />
+                <span>Uploading...</span>
+              </>
+            ) : (
+              <>
+                <Upload size={12} className="text-gray-500" />
+                <span>Upload Image</span>
+              </>
+            )}
+            <input type="file" accept="image/*" onChange={handleFileChange} disabled={uploading} className="hidden" />
+          </label>
+          {error && <p className="text-[10px] text-red-500 mt-1">{error}</p>}
+          {!error && value && (
+            <p className="text-[10px] text-emerald-600 mt-1 truncate" title={value}>
+              ✓ Cloudinary Image Attached
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SelectField({ label, value, onChange, options }: any) {
+  return (
+    <div>
+      <label className="block text-xs font-bold text-gray-500 mb-1.5">{label}</label>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-purple-400 font-semibold text-gray-750"
+      >
+        {options.map((opt: any) => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
     </div>
   );
 }
@@ -176,34 +357,71 @@ function SlideQueryPicker({ value, onChange }: { value: string; onChange: (v: st
 }
 
 export default function CmsManagementPage() {
-  const [page, setPage] = useState<PageType>('home');
-  const [lang, setLang] = useState<LangType>('en');
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
-  const [data, setData] = useState<any>({});
+  const [state, dispatch] = useReducer(cmsReducer, initialState);
+  const { page, lang, loading, saving, msg, data } = state;
 
   const load = async () => {
-    setLoading(true);
+    dispatch({ type: 'FETCH_START' });
     try {
       const res = await AxiosAPI.get(`/v1/cms/${page}?lang=${lang}`);
       // Backend wraps: { data: { content: '...' }, status, message }
       // Must unwrap the envelope before reading content
       const cmsRow = res.data?.data ?? res.data;
       const raw = cmsRow?.content;
-      const parsed = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {});
-      setData(parsed);
-    } catch { setData({}); }
-    finally { setLoading(false); }
+      let parsed = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {});
+      if (page === 'theme' && (!parsed || Object.keys(parsed).length === 0)) {
+        parsed = {
+          primary_color: "#2563eb",
+          secondary_color: "#4f46e5",
+          background_color: "#f8fafc",
+          text_color: "#0f172a",
+          navbar_bg: "#ffffff",
+          navbar_fg: "#0f172a",
+          footer_bg: "#0f172a",
+          footer_fg: "#ffffff",
+          navbar_position: "sticky",
+          logo_alignment: "left",
+          footer_style: "detailed",
+          border_radius: "md",
+          card_style: "standard",
+          homepage_layout: ["hero", "categories", "products", "promo", "new_arrivals", "newsletter"]
+        };
+      }
+      dispatch({ type: 'FETCH_SUCCESS', payload: parsed });
+    } catch { 
+      if (page === 'theme') {
+        dispatch({
+          type: 'FETCH_SUCCESS',
+          payload: {
+            primary_color: "#2563eb",
+            secondary_color: "#4f46e5",
+            background_color: "#f8fafc",
+            text_color: "#0f172a",
+            navbar_bg: "#ffffff",
+            navbar_fg: "#0f172a",
+            footer_bg: "#0f172a",
+            footer_fg: "#ffffff",
+            navbar_position: "sticky",
+            logo_alignment: "left",
+            footer_style: "detailed",
+            border_radius: "md",
+            card_style: "standard",
+            homepage_layout: ["hero", "categories", "products", "promo", "new_arrivals", "newsletter"]
+          }
+        });
+      } else {
+        dispatch({ type: 'FETCH_SUCCESS', payload: {} });
+      }
+    }
   };
 
   useEffect(() => { load(); }, [page, lang]);
 
-  const set = (key: string, val: any) => setData((d: any) => ({ ...d, [key]: val }));
+  const set = (key: string, val: any) => dispatch({ type: 'SET_DATA_FIELD', payload: { key, val } });
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true); setMsg(null);
+    dispatch({ type: 'SAVE_START' });
     const payload = {
       page_content_type: page, language: lang,
       title: `${PAGE_LABELS[page]} (${lang.toUpperCase()})`,
@@ -216,22 +434,38 @@ export default function CmsManagementPage() {
       // Clear ALL cache variants so the storefront picks up fresh data immediately
       localStorage.removeItem(`techsonance_cms_${page}_${lang}`);
       localStorage.removeItem(`techsonance_cms_${page}`);  // legacy key format
-      setMsg({ text: 'Saved! Storefront will reflect changes on next page load.', ok: true });
+      dispatch({ type: 'SAVE_SUCCESS', payload: 'Saved! Storefront will reflect changes on next page load.' });
     } catch (err: any) {
       console.error('[CMS Save] Failed:', err?.response?.data || err?.message);
-      setMsg({ text: `Save failed: ${err?.response?.data?.message || 'Try again.'}`, ok: false });
+      dispatch({ type: 'SAVE_FAILURE', payload: `Save failed: ${err?.response?.data?.message || 'Try again.'}` });
     }
-    finally { setSaving(false); }
   };
 
-  const addItem = (key: string, template: any) =>
-    setData((d: any) => ({ ...d, [key]: [...(d[key] || []), { id: Date.now(), ...template }] }));
+  const addItem = (key: string, template: any) => {
+    const nextArr = [...(data[key] || []), { id: Date.now(), ...template }];
+    dispatch({ type: 'SET_DATA_FIELD', payload: { key, val: nextArr } });
+  };
 
-  const removeItem = (key: string, id: any) =>
-    setData((d: any) => ({ ...d, [key]: (d[key] || []).filter((i: any) => i.id !== id) }));
+  const removeItem = (key: string, id: any) => {
+    const nextArr = (data[key] || []).filter((i: any) => i.id !== id);
+    dispatch({ type: 'SET_DATA_FIELD', payload: { key, val: nextArr } });
+  };
 
-  const updateItem = (key: string, id: any, field: string, val: string) =>
-    setData((d: any) => ({ ...d, [key]: (d[key] || []).map((i: any) => i.id === id ? { ...i, [field]: val } : i) }));
+  const updateItem = (key: string, id: any, field: string, val: string) => {
+    const nextArr = (data[key] || []).map((i: any) => i.id === id ? { ...i, [field]: val } : i);
+    dispatch({ type: 'SET_DATA_FIELD', payload: { key, val: nextArr } });
+  };
+
+  const moveItem = (index: number, direction: 'up' | 'down') => {
+    const layout = [...(data.homepage_layout || [])];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex >= 0 && targetIndex < layout.length) {
+      const temp = layout[index];
+      layout[index] = layout[targetIndex];
+      layout[targetIndex] = temp;
+      dispatch({ type: 'SET_DATA_FIELD', payload: { key: 'homepage_layout', val: layout } });
+    }
+  };
 
   return (
     <div className="flex-1 bg-gray-50 p-6 lg:p-10">
@@ -253,7 +487,7 @@ export default function CmsManagementPage() {
           <p className="text-xs font-bold text-gray-400 uppercase mb-2">Page / Section</p>
           <div className="flex flex-wrap gap-1.5">
             {PAGES.map(p => (
-              <button key={p} onClick={() => setPage(p)}
+              <button key={p} onClick={() => dispatch({ type: 'SET_PAGE', payload: p })}
                 className={`px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${page === p ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-purple-300'}`}>
                 {PAGE_LABELS[p]}
               </button>
@@ -264,7 +498,7 @@ export default function CmsManagementPage() {
           <p className="text-xs font-bold text-gray-400 uppercase mb-2">Language</p>
           <div className="flex gap-1.5">
             {(['en', 'es'] as LangType[]).map(l => (
-              <button key={l} onClick={() => setLang(l)}
+              <button key={l} onClick={() => dispatch({ type: 'SET_LANG', payload: l })}
                 className={`flex items-center gap-1 px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${lang === l ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
                 {l === 'en' ? <><Globe size={12} /> English</> : <><Languages size={12} /> Español</>}
               </button>
@@ -318,7 +552,7 @@ export default function CmsManagementPage() {
                       onChange={(v: string) => updateItem('hero_slides', slide.id, 'search_query', v)}
                     />
                     <div className="md:col-span-2">
-                      <Field label="Image URL" value={slide.image_url || ''} onChange={(v: string) => updateItem('hero_slides', slide.id, 'image_url', v)} mono />
+                      <ImageUploadField label="Slide Banner Image" value={slide.image_url || ''} onChange={(v: string) => updateItem('hero_slides', slide.id, 'image_url', v)} />
                     </div>
                   </ListCard>
                 ))}
@@ -329,7 +563,7 @@ export default function CmsManagementPage() {
                   <Field label="Button Text" value={data.hero_btn_text || ''} onChange={(v: string) => set('hero_btn_text', v)} />
                   <div className="md:col-span-2"><Field label="Title" value={data.hero_title || ''} onChange={(v: string) => set('hero_title', v)} /></div>
                   <div className="md:col-span-2"><Field label="Description" value={data.hero_desc || ''} onChange={(v: string) => set('hero_desc', v)} textarea /></div>
-                  <div className="md:col-span-2"><Field label="Hero Image URL" value={data.hero_image_url || ''} onChange={(v: string) => set('hero_image_url', v)} mono /></div>
+                  <div className="md:col-span-2"><ImageUploadField label="Hero Banner Image" value={data.hero_image_url || ''} onChange={(v: string) => set('hero_image_url', v)} /></div>
                 </div>
               </Section>
 
@@ -339,7 +573,7 @@ export default function CmsManagementPage() {
                   <Field label="Button Text" value={data.middle_banner_btn_text || ''} onChange={(v: string) => set('middle_banner_btn_text', v)} />
                   <div className="md:col-span-2"><Field label="Title" value={data.middle_banner_title || ''} onChange={(v: string) => set('middle_banner_title', v)} /></div>
                   <div className="md:col-span-2"><Field label="Description" value={data.middle_banner_desc || ''} onChange={(v: string) => set('middle_banner_desc', v)} textarea /></div>
-                  <div className="md:col-span-2"><Field label="Image URL" value={data.middle_banner_image_url || ''} onChange={(v: string) => set('middle_banner_image_url', v)} mono /></div>
+                  <div className="md:col-span-2"><ImageUploadField label="Promo Banner Image" value={data.middle_banner_image_url || ''} onChange={(v: string) => set('middle_banner_image_url', v)} /></div>
                 </div>
               </Section>
               <Section title="New Arrivals — Left Card">
@@ -348,15 +582,19 @@ export default function CmsManagementPage() {
                   <Field label="Button Text" value={data.new_arrivals_left_btn_text || ''} onChange={(v: string) => set('new_arrivals_left_btn_text', v)} />
                   <div className="md:col-span-2"><Field label="Title" value={data.new_arrivals_left_title || ''} onChange={(v: string) => set('new_arrivals_left_title', v)} /></div>
                   <div className="md:col-span-2"><Field label="Description" value={data.new_arrivals_left_desc || ''} onChange={(v: string) => set('new_arrivals_left_desc', v)} /></div>
-                  <div className="md:col-span-2"><Field label="Image URL" value={data.new_arrivals_left_image_url || ''} onChange={(v: string) => set('new_arrivals_left_image_url', v)} mono /></div>
+                  <div className="md:col-span-2"><ImageUploadField label="Left Card Cover Image" value={data.new_arrivals_left_image_url || ''} onChange={(v: string) => set('new_arrivals_left_image_url', v)} /></div>
                 </div>
               </Section>
               <Section title="New Arrivals — Right Cards">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label="Top Card Title" value={data.new_arrivals_right_top_title || ''} onChange={(v: string) => set('new_arrivals_right_top_title', v)} />
-                  <Field label="Top Card Image URL" value={data.new_arrivals_right_top_image_url || ''} onChange={(v: string) => set('new_arrivals_right_top_image_url', v)} mono />
-                  <Field label="Bottom Card Title" value={data.new_arrivals_right_bottom_title || ''} onChange={(v: string) => set('new_arrivals_right_bottom_title', v)} />
-                  <Field label="Bottom Card Image URL" value={data.new_arrivals_right_bottom_image_url || ''} onChange={(v: string) => set('new_arrivals_right_bottom_image_url', v)} mono />
+                  <ImageUploadField label="Top Card Banner Image" value={data.new_arrivals_right_top_image_url || ''} onChange={(v: string) => set('new_arrivals_right_top_image_url', v)} />
+                  <ImageUploadField label="Bottom Card Banner Image" value={data.new_arrivals_right_bottom_image_url || ''} onChange={(v: string) => set('new_arrivals_right_bottom_image_url', v)} />
+                  <div className="md:col-span-2">
+                    <Field label="Top Card Title" value={data.new_arrivals_right_top_title || ''} onChange={(v: string) => set('new_arrivals_right_top_title', v)} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Field label="Bottom Card Title" value={data.new_arrivals_right_bottom_title || ''} onChange={(v: string) => set('new_arrivals_right_bottom_title', v)} />
+                  </div>
                 </div>
               </Section>
               <Section title="Newsletter Block">
@@ -399,12 +637,12 @@ export default function CmsManagementPage() {
                     <div className="flex justify-between items-center gap-3">
                       <div className="flex-1">
                         <Field label="Column Header" value={col.header}
-                          onChange={(v: string) => setData((d: any) => ({ ...d, content: d.content.map((c: any, i: number) => i === ci ? { ...c, header: v } : c) }))} />
+                          onChange={(v: string) => set('content', data.content.map((c: any, i: number) => i === ci ? { ...c, header: v } : c))} />
                       </div>
                       <div className="flex gap-2 self-end mb-0.5">
-                        <button type="button" onClick={() => setData((d: any) => ({ ...d, content: d.content.map((c: any, i: number) => i === ci ? { ...c, links: [...(c.links || []), { id: Date.now(), title: '', url: '' }] } : c) }))}
+                        <button type="button" onClick={() => set('content', data.content.map((c: any, i: number) => i === ci ? { ...c, links: [...(c.links || []), { id: Date.now(), title: '', url: '' }] } : c))}
                           className="text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1"><Plus size={12} /> Link</button>
-                        <button type="button" onClick={() => setData((d: any) => ({ ...d, content: d.content.filter((_: any, i: number) => i !== ci) }))}
+                        <button type="button" onClick={() => set('content', data.content.filter((_: any, i: number) => i !== ci))}
                           className="text-red-400 hover:text-red-600 p-1.5 border border-red-200 rounded-lg"><Trash2 size={13} /></button>
                       </div>
                     </div>
@@ -412,10 +650,10 @@ export default function CmsManagementPage() {
                       {(col.links || []).map((lnk: any, li: number) => (
                         <div key={lnk.id || li} className="flex gap-3 items-end bg-white border border-gray-100 p-2.5 rounded-lg">
                           <div className="flex-1 grid grid-cols-2 gap-2">
-                            <input placeholder="Label" value={lnk.title} onChange={e => setData((d: any) => ({ ...d, content: d.content.map((c: any, i: number) => i === ci ? { ...c, links: c.links.map((l: any, j: number) => j === li ? { ...l, title: e.target.value } : l) } : c) }))} className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs" />
-                            <input placeholder="/path" value={lnk.url} onChange={e => setData((d: any) => ({ ...d, content: d.content.map((c: any, i: number) => i === ci ? { ...c, links: c.links.map((l: any, j: number) => j === li ? { ...l, url: e.target.value } : l) } : c) }))} className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-mono" />
+                            <input placeholder="Label" value={lnk.title} onChange={e => set('content', data.content.map((c: any, i: number) => i === ci ? { ...c, links: c.links.map((l: any, j: number) => j === li ? { ...l, title: e.target.value } : l) } : c))} className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs" />
+                            <input placeholder="/path" value={lnk.url} onChange={e => set('content', data.content.map((c: any, i: number) => i === ci ? { ...c, links: c.links.map((l: any, j: number) => j === li ? { ...l, url: e.target.value } : l) } : c))} className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-mono" />
                           </div>
-                          <button type="button" onClick={() => setData((d: any) => ({ ...d, content: d.content.map((c: any, i: number) => i === ci ? { ...c, links: c.links.filter((_: any, j: number) => j !== li) } : c) }))}
+                          <button type="button" onClick={() => set('content', data.content.map((c: any, i: number) => i === ci ? { ...c, links: c.links.filter((_: any, j: number) => j !== li) } : c))}
                             className="text-red-400 hover:text-red-600"><Trash2 size={13} /></button>
                         </div>
                       ))}
@@ -433,23 +671,23 @@ export default function CmsManagementPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field label="Hero Title" value={data.heroTitle || ''} onChange={(v: string) => set('heroTitle', v)} />
                   <Field label="Hero Subtitle" value={data.heroDesc || ''} onChange={(v: string) => set('heroDesc', v)} />
-                  <div className="md:col-span-2"><Field label="Hero Background Image URL" value={data.heroImg || ''} onChange={(v: string) => set('heroImg', v)} mono /></div>
+                  <div className="md:col-span-2"><ImageUploadField label="Hero Background Image" value={data.heroImg || ''} onChange={(v: string) => set('heroImg', v)} /></div>
                 </div>
               </Section>
               <Section title="Thoughts & Founder">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field label="Section Title" value={data.ownThoughtsTitle || ''} onChange={(v: string) => set('ownThoughtsTitle', v)} />
-                  <Field label="Section Image URL" value={data.ownThoughtsImg || ''} onChange={(v: string) => set('ownThoughtsImg', v)} mono />
+                  <ImageUploadField label="Section Image" value={data.ownThoughtsImg || ''} onChange={(v: string) => set('ownThoughtsImg', v)} />
                   <div className="md:col-span-2"><Field label="Description" value={data.ownThoughtsDesc || ''} onChange={(v: string) => set('ownThoughtsDesc', v)} textarea /></div>
                   <Field label="Founder Name" value={data.founderName || ''} onChange={(v: string) => set('founderName', v)} />
                   <Field label="Founder Title / Role" value={data.founderTitle || ''} onChange={(v: string) => set('founderTitle', v)} />
-                  <div className="md:col-span-2"><Field label="Founder Image URL" value={data.founderImg || ''} onChange={(v: string) => set('founderImg', v)} mono /></div>
+                  <div className="md:col-span-2"><ImageUploadField label="Founder Photo" value={data.founderImg || ''} onChange={(v: string) => set('founderImg', v)} /></div>
                 </div>
               </Section>
               <Section title="Core Values Banner">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field label="Section Title" value={data.coreValuesTitle || ''} onChange={(v: string) => set('coreValuesTitle', v)} />
-                  <Field label="Background Image URL" value={data.coreValuesImg || ''} onChange={(v: string) => set('coreValuesImg', v)} mono />
+                  <ImageUploadField label="Background Image" value={data.coreValuesImg || ''} onChange={(v: string) => set('coreValuesImg', v)} />
                   <div className="md:col-span-2"><Field label="Description" value={data.coreValuesDesc || ''} onChange={(v: string) => set('coreValuesDesc', v)} /></div>
                 </div>
               </Section>
@@ -466,7 +704,7 @@ export default function CmsManagementPage() {
               <Section title="Mission Section">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field label="Mission Title" value={data.missionTitle || ''} onChange={(v: string) => set('missionTitle', v)} />
-                  <Field label="Mission Image URL" value={data.missionImg || ''} onChange={(v: string) => set('missionImg', v)} mono />
+                  <ImageUploadField label="Mission Image" value={data.missionImg || ''} onChange={(v: string) => set('missionImg', v)} />
                   <div className="md:col-span-2"><Field label="Mission Statement" value={data.missionDesc || ''} onChange={(v: string) => set('missionDesc', v)} textarea /></div>
                 </div>
               </Section>
@@ -490,7 +728,7 @@ export default function CmsManagementPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field label="Hero Title" value={data.hero?.heroTitle || ''} onChange={(v: string) => set('hero', { ...data.hero, heroTitle: v })} />
                   <Field label="Hero Subtitle" value={data.hero?.heroDesc || ''} onChange={(v: string) => set('hero', { ...data.hero, heroDesc: v })} />
-                  <div className="md:col-span-2"><Field label="Background Image URL" value={data.hero?.heroImg || ''} onChange={(v: string) => set('hero', { ...data.hero, heroImg: v })} mono /></div>
+                  <div className="md:col-span-2"><ImageUploadField label="Hero Background Image" value={data.hero?.heroImg || ''} onChange={(v: string) => set('hero', { ...data.hero, heroImg: v })} /></div>
                 </div>
               </Section>
               <Section title="Contact Methods"
@@ -523,9 +761,137 @@ export default function CmsManagementPage() {
                 <Field label="Banner Title" value={data.promo_banner_title || ''} onChange={(v: string) => set('promo_banner_title', v)} />
                 <Field label="Banner Action Link (URL)" value={data.promo_banner_link || ''} onChange={(v: string) => set('promo_banner_link', v)} mono />
                 <div className="md:col-span-2"><Field label="Banner Description" value={data.promo_banner_desc || ''} onChange={(v: string) => set('promo_banner_desc', v)} textarea /></div>
-                <div className="md:col-span-2"><Field label="Background Image URL" value={data.promo_banner_image_url || ''} onChange={(v: string) => set('promo_banner_image_url', v)} mono /></div>
+                <div className="md:col-span-2"><ImageUploadField label="Promo Card Background Image" value={data.promo_banner_image_url || ''} onChange={(v: string) => set('promo_banner_image_url', v)} /></div>
               </div>
             </Section>
+          )}
+
+          {/* STOREFRONT THEME & LAYOUT CUSTOMIZER */}
+          {page === 'theme' && (
+            <>
+              <Section title="Storefront Color Palette & Theme">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  <ColorField label="Primary Accent Color" value={data.primary_color} onChange={(v: string) => set('primary_color', v)} />
+                  <ColorField label="Secondary Accent Color" value={data.secondary_color} onChange={(v: string) => set('secondary_color', v)} />
+                  <ColorField label="Page Background Color" value={data.background_color} onChange={(v: string) => set('background_color', v)} />
+                  <ColorField label="Text Primary Color" value={data.text_color} onChange={(v: string) => set('text_color', v)} />
+                </div>
+              </Section>
+
+              <Section title="Header & Footer Branding Colors">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  <ColorField label="Navbar Background" value={data.navbar_bg} onChange={(v: string) => set('navbar_bg', v)} />
+                  <ColorField label="Navbar Text/Links" value={data.navbar_fg} onChange={(v: string) => set('navbar_fg', v)} />
+                  <ColorField label="Footer Background" value={data.footer_bg} onChange={(v: string) => set('footer_bg', v)} />
+                  <ColorField label="Footer Text/Links" value={data.footer_fg} onChange={(v: string) => set('footer_fg', v)} />
+                </div>
+              </Section>
+
+              <Section title="Component Layout Choices">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <SelectField
+                    label="Navbar Layout Type"
+                    value={data.navbar_position || 'sticky'}
+                    onChange={(v: string) => set('navbar_position', v)}
+                    options={[
+                      { value: 'sticky', label: 'Sticky / Fixed (Scrolls with page)' },
+                      { value: 'static', label: 'Static (Remains at the top)' },
+                    ]}
+                  />
+                  <SelectField
+                    label="Navbar Logo Position"
+                    value={data.logo_alignment || 'left'}
+                    onChange={(v: string) => set('logo_alignment', v)}
+                    options={[
+                      { value: 'left', label: 'Left Aligned' },
+                      { value: 'center', label: 'Center Aligned' },
+                    ]}
+                  />
+                  <SelectField
+                    label="Footer Layout Style"
+                    value={data.footer_style || 'detailed'}
+                    onChange={(v: string) => set('footer_style', v)}
+                    options={[
+                      { value: 'detailed', label: 'Detailed Columns & Links' },
+                      { value: 'simple', label: 'Minimal Simple Row' },
+                    ]}
+                  />
+                  <SelectField
+                    label="Borders Roundedness"
+                    value={data.border_radius || 'md'}
+                    onChange={(v: string) => set('border_radius', v)}
+                    options={[
+                      { value: 'none', label: 'Sharp Corners (0px)' },
+                      { value: 'sm', label: 'Soft Corners (4px)' },
+                      { value: 'md', label: 'Medium Corners (8px)' },
+                      { value: 'lg', label: 'Rounded Corners (12px)' },
+                      { value: 'xl', label: 'Highly Rounded (16px)' },
+                      { value: 'full', label: 'Pill / Fully Round (24px)' },
+                    ]}
+                  />
+                  <SelectField
+                    label="Product Card Style"
+                    value={data.card_style || 'standard'}
+                    onChange={(v: string) => set('card_style', v)}
+                    options={[
+                      { value: 'standard', label: 'Standard Clean Border' },
+                      { value: 'glassmorphic', label: 'Glassmorphic (Blur & Shadow)' },
+                    ]}
+                  />
+                </div>
+              </Section>
+
+              <Section title="Homepage Section Layout Order (Position Customization)">
+                <p className="text-xs text-gray-400 mb-4 font-medium">
+                  Rearrange the display order of the storefront homepage panels. Click the arrows to shift positions.
+                </p>
+                <div className="space-y-2.5 bg-gray-50 p-4 rounded-2xl border border-gray-150 max-w-2xl">
+                  {(data.homepage_layout || []).map((sectionKey: string, idx: number) => {
+                    const labels: Record<string, string> = {
+                      hero: 'Hero Slider / Banner',
+                      categories: 'Shop Categories Grid',
+                      products: 'Featured Products Grid',
+                      promo: 'Middle Promo Card',
+                      new_arrivals: 'New Arrivals Block',
+                      newsletter: 'Newsletter Subscription Banner',
+                    };
+                    return (
+                      <div
+                        key={sectionKey}
+                        className="flex items-center justify-between p-3.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-purple-250 transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="w-6 h-6 rounded-full bg-purple-50 flex items-center justify-center text-xs font-bold text-purple-700">
+                            {idx + 1}
+                          </span>
+                          <span className="text-xs font-bold text-gray-800 uppercase tracking-wide">
+                            {labels[sectionKey] || sectionKey}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => moveItem(idx, 'up')}
+                            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 disabled:opacity-30 transition-colors"
+                          >
+                            <ArrowUp size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === (data.homepage_layout || []).length - 1}
+                            onClick={() => moveItem(idx, 'down')}
+                            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 disabled:opacity-30 transition-colors"
+                          >
+                            <ArrowDown size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Section>
+            </>
           )}
 
           {/* Footer Actions */}

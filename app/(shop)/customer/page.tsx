@@ -148,7 +148,7 @@ export default function UserProfilePage() {
                     </Link>
 
                     {/* Security Card */}
-                    <Link href="#" className="block group">
+                    <Link href="/customer/changePassword" className="block group">
                         <Card className="h-full shadow-sm transition-all hover:border-primary/50 hover:shadow-md">
                             <CardHeader className="pb-2">
                                 <div className="flex items-center gap-3">
@@ -168,7 +168,7 @@ export default function UserProfilePage() {
                     </Link>
 
                     {/* Notifications Card */}
-                    <Link href="#" className="block group">
+                    <Link href={`/customer/settings/notifications`} className="block group">
                         <Card className="h-full shadow-sm transition-all hover:border-primary/50 hover:shadow-md">
                             <CardHeader className="pb-2">
                                 <div className="flex items-center gap-3">

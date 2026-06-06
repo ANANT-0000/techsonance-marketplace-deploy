@@ -60,7 +60,7 @@ function DesktopSidebarContent({
                             const isSelected = filters.selectedCategories.includes(cat.id);
                             return (
                                 <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
-                                    <div className={`w-4 h-4 rounded-[4px] flex items-center justify-center border transition-colors ${isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white group-hover:border-gray-400'}`}>
+                                    <div className={`w-4 h-4 rounded-[4px] flex items-center justify-center border transition-colors ${isSelected ? 'bg-theme-primary border-theme-primary' : 'border-gray-300 bg-white group-hover:border-gray-400'}`}>
                                         {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
                                     </div>
                                     <span className={`text-[14px] ${isSelected ? 'text-gray-900 font-medium' : 'text-gray-500 group-hover:text-gray-700'}`}>
@@ -200,7 +200,7 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                                 <div className="w-10 h-1 bg-gray-300 rounded-full mb-5" />
                                 <div className="w-full flex items-center justify-between">
                                     <h2 className="text-xl font-bold text-gray-900">Filters</h2>
-                                    <button onClick={handleClearAll} className="text-[15px] font-semibold text-blue-600">
+                                    <button onClick={handleClearAll} className="text-[15px] font-semibold text-theme-primary hover:text-theme-secondary transition-colors">
                                         Clear all
                                     </button>
                                 </div>
@@ -231,9 +231,9 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                                 {/* Price Range Visual */}
                                 <section>
                                     <h3 className="text-[16px] font-bold text-gray-900 mb-5">Price Range</h3>
-                                    <div className="w-full bg-blue-100/50 h-2.5 rounded-full mb-4 relative">
+                                    <div className="w-full bg-theme-primary/10 h-2.5 rounded-full mb-4 relative">
                                         <div 
-                                            className="absolute h-full bg-[#1A56DB] rounded-full"
+                                            className="absolute h-full bg-theme-primary rounded-full"
                                             style={{ 
                                                 left: `${(filters.minPrice / DEFAULT_MAX) * 100}%`, 
                                                 right: `${100 - (filters.maxPrice / DEFAULT_MAX) * 100}%` 

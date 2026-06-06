@@ -1,4 +1,4 @@
-﻿import { Briefcase, Home, MapPin, Pen, Trash2 } from "lucide-react";
+import { Briefcase, Home, MapPin, Pen, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,7 +64,7 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => onEdit(address.id)}
-                                className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                                className="flex items-center gap-1.5 text-sm font-medium text-theme-primary hover:text-theme-secondary transition-colors"
                             >
                                 <Pen size={14} /> Edit
                             </button>

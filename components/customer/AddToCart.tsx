@@ -170,7 +170,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.96 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute inset-0 flex items-center justify-between bg-blue-600 text-white px-1 py-1 w-full h-full"
+                        className="absolute inset-0 flex items-center justify-between bg-theme-primary text-theme-primary-foreground px-1 py-1 w-full h-full"
                     >
                         {/* Using h-full aspect-square ensures it never overflows the container's height */}
                         <motion.button

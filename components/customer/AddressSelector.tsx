@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { fetchGetUserAddresses } from "@/utils/customerApiClient";
 import { Address } from "@/utils/Types";
 import { MapPin, Plus, CheckCircle2, Edit } from "lucide-react";
@@ -80,15 +80,15 @@ export function AddressSelector({
             <CardHeader className="pb-2 pt-4 px-4 lg:px-5">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                            <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                        <div className="w-7 h-7 rounded-lg bg-theme-primary/10 flex items-center justify-center shrink-0">
+                            <MapPin className="w-3.5 h-3.5 text-theme-primary" />
                         </div>
                         <h2 className="text-[15px] font-semibold text-gray-900">Delivery address</h2>
                     </div>
 
                     <button
                         onClick={addNewAddress}
-                        className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 transition-colors active:scale-95"
+                        className="flex items-center gap-1.5 text-[11px] font-semibold text-theme-primary bg-theme-primary/10 border border-theme-primary/20 px-2.5 py-1.5 rounded-lg hover:bg-theme-primary/20 transition-colors active:scale-95"
                     >
                         <Plus className="w-3 h-3" />
                         Add new
@@ -120,8 +120,8 @@ export function AddressSelector({
                 {/* Empty state — shown when no address exists (the "no address" conditional flow) */}
                 {!state.isLoading && state.addresses.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-10 gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
-                            <MapPin className="w-5 h-5 text-blue-400" />
+                        <div className="w-12 h-12 rounded-2xl bg-theme-primary/10 flex items-center justify-center">
+                            <MapPin className="w-5 h-5 text-theme-primary/70" />
                         </div>
                         <div className="text-center">
                             <p className="text-sm font-semibold text-gray-700">No saved addresses</p>
@@ -129,7 +129,7 @@ export function AddressSelector({
                         </div>
                         <button
                             onClick={addNewAddress}
-                            className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-3.5 py-2 rounded-xl hover:bg-blue-100 transition-colors active:scale-95"
+                            className="flex items-center gap-1.5 text-xs font-semibold text-theme-primary bg-theme-primary/10 border border-theme-primary/20 px-3.5 py-2 rounded-xl hover:bg-theme-primary/20 transition-colors active:scale-95"
                         >
                             <Plus className="w-3.5 h-3.5" />
                             Add delivery address
@@ -151,13 +151,13 @@ export function AddressSelector({
                                         onClick={() => onSelect(addr.id)}
                                         whileTap={{ scale: 0.99 }}
                                         className={`w-full text-left flex items-start gap-3 p-3 rounded-xl border transition-all duration-150 ${isSelected
-                                            ? 'border-blue-300 bg-blue-50/70 shadow-sm shadow-blue-100'
+                                            ? 'border-theme-primary/30 bg-theme-primary/5 shadow-sm shadow-theme-primary/5'
                                             : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50/60'
                                             }`}
                                     >
                                         {/* Custom radio indicator */}
                                         <div
-                                            className={`mt-0.5 w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300 bg-white'
+                                            className={`mt-0.5 w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${isSelected ? 'border-theme-primary bg-theme-primary' : 'border-gray-300 bg-white'
                                                 }`}
                                         >
                                             {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
@@ -197,7 +197,7 @@ export function AddressSelector({
                                             </Button>
                                             {/* Selected checkmark */}
                                             {isSelected && (
-                                                <CheckCircle2 size={15} className="text-blue-500 shrink-0 mt-0.5" />
+                                                <CheckCircle2 size={15} className="text-theme-primary shrink-0 mt-0.5" />
                                             )}
                                         </span>
 

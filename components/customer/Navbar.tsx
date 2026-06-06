@@ -10,6 +10,7 @@ import { motion } from "motion/react";
 import { RootState } from "@/lib/store";
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { useNavbarData } from "@/hooks/useNavbarData";
+import { useThemeData } from "@/hooks/useThemeData";
 import { SearchBar } from './SearchBar';
 import { BackButton } from '../ui/back-button';
 
@@ -30,6 +31,7 @@ const navReducer = (state: NavState, action: NavAction): NavState => {
 
 export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks: propMenuLinks }: { styles?: string, logoUrl?: string, menuLinks?: { [key: string]: string | null }[] }) {
     const { menuLinks: dynamicLinks } = useNavbarData();
+    const { themeData } = useThemeData();
     const menuLinks = propMenuLinks || dynamicLinks;
 
     const { items } = useAppSelector((state: RootState) => state.cart);
@@ -60,28 +62,34 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks: propMenuLinks 
     if (!state.isMounted) return <nav className="h-16" />;
 
     if (isTabletOrMobile) {
+        const navPosCls = themeData.navbar_position === 'sticky' ? 'sticky top-0 z-50' : 'relative';
         return (
-            <nav className="flex justify-between items-center px-4 py-1 bg-white border-b border-gray-200 shadow-sm">
+            <nav className={`flex justify-between items-center px-4 py-1.5 bg-navbar text-navbar-foreground border-b border-gray-200 shadow-sm ${navPosCls} ${styles}`}>
                 {isHome ? null : <BackButton />}
                 <Link href="/">
                     <img src={logoUrl} alt="brand logo" className="h-6 object-contain" />
                 </Link>
-                <button className="p-2 -mr-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors relative">
+                <button className="p-2 -mr-2 text-current hover:bg-black/5 rounded-md transition-colors relative">
                     <Bell strokeWidth={1.5} size={22} />
                 </button>
             </nav>
         );
     }
 
+    const navPosCls = themeData.navbar_position === 'sticky' ? 'sticky top-0 z-50' : 'relative';
+    const logoAlignCls = themeData.logo_alignment === 'center' ? 'order-2 flex-1 flex justify-center' : 'order-1 flex-1';
+    const linksAlignCls = themeData.logo_alignment === 'center' ? 'order-1 flex-1 justify-start' : 'order-2 flex-1 justify-center';
+    const actionsAlignCls = 'order-3 flex-1 flex justify-end';
+
     return (
-        <nav className={`bg-white text-gray-900 flex justify-between items-center xl:px-16 lg:px-8 md:px-4 py-3 border-b border-gray-200 shadow-sm ${styles}`}>
-            <div className="flex-1">
+        <nav className={`bg-navbar text-navbar-foreground flex justify-between items-center xl:px-16 lg:px-8 md:px-4 py-3 border-b border-gray-200 shadow-sm ${navPosCls} ${styles}`}>
+            <div className={logoAlignCls}>
                 <Link href="/">
                     <img src={logoUrl} alt="brand logo" className="h-14 font-black object-contain" />
                 </Link>
             </div>
 
-            <ul className="flex space-x-8 md:text-sm lg:text-sm font-medium items-center justify-center flex-1">
+            <ul className={`flex space-x-8 md:text-sm lg:text-sm font-medium items-center ${linksAlignCls}`}>
                 {menuLinks.map((item, idx) => {
                     let label: string;
                     let href: string;
@@ -100,14 +108,14 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks: propMenuLinks 
                         <li key={`nav-${label}-${idx}`} className="relative py-1">
                             <Link
                                 href={href || '#'}
-                                className={`relative z-10 transition-colors duration-200 ${isActive ? 'text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-900'}`}
+                                className={`relative z-10 transition-colors duration-200 ${isActive ? 'text-current font-bold' : 'text-navbar-foreground/70 hover:text-navbar-foreground'}`}
                             >
                                 {label}
                             </Link>
                             {isActive && (
                                 <motion.div
                                     layoutId="nav-underline"
-                                    className="absolute -bottom-4 left-0 right-0 h-[2px] bg-gray-900 z-0"
+                                    className="absolute -bottom-4 left-0 right-0 h-[2px] bg-current z-0"
                                 />
                             )}
                         </li>
@@ -115,7 +123,7 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks: propMenuLinks 
                 })}
             </ul>
 
-            <div className="flex-1 flex justify-end">
+            <div className={actionsAlignCls}>
                 {path === '/customerRegister' || path === '/customerLogin' ? null : (
                     <div className="flex gap-5 items-center">
                         <div className="relative flex items-center">
@@ -136,16 +144,16 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks: propMenuLinks 
                                     />
                                 </div>
                             ) : (
-                                <button onClick={() => dispatchState({ type: 'TOGGLE_SEARCH', payload: true })} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+                                <button onClick={() => dispatchState({ type: 'TOGGLE_SEARCH', payload: true })} className="p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors">
                                     <Search size={20} strokeWidth={1.5} />
                                 </button>
                             )}
                         </div>
 
                         {user && (
-                            <Link href={'/customer' + (`/${user?.id}`) + '/wishlist'} className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+                            <Link href={'/customer' + (`/${user?.id}`) + '/wishlist'} className="relative p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors">
                                 {wishlistCount > 0 && (
-                                    <span className="absolute 1 top-0 right-0 text-[10px] font-bold bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
+                                    <span className="absolute top-0 right-0 text-[10px] font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4 h-4 flex items-center justify-center border-2 border-navbar">
                                         {wishlistCount}
                                     </span>
                                 )}
@@ -153,16 +161,16 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks: propMenuLinks 
                             </Link>
                         )}
 
-                        <button onClick={() => dispatch(toggleCartSidebar('open'))} className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+                        <button onClick={() => dispatch(toggleCartSidebar('open'))} className="relative p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors">
                             {state.isMounted && items.length > 0 && (
-                                <span className="absolute 1 top-0 right-0 text-[10px] font-bold bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
+                                <span className="absolute top-0 right-0 text-[10px] font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4 h-4 flex items-center justify-center border-2 border-navbar">
                                     {items.length}
                                 </span>
                             )}
                             <ShoppingBag size={20} strokeWidth={1.5} />
                         </button>
 
-                        <Link href={user?.id ? '/customer' : '/auth/customerLogin'} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+                        <Link href={user?.id ? '/customer' : '/auth/customerLogin'} className="p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors">
                             <User size={20} strokeWidth={1.5} />
                         </Link>
                     </div>

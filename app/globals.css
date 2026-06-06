@@ -27,6 +27,14 @@ select:-webkit-autofill {
         --brand-secondary: oklch(71.425% 0.12825 240.977);
         --brand-secondary-foreground: oklch(20% 0.06 237.323);
 
+        /* --- Semantic Theme Variables --- */
+        --theme-primary: var(--brand-primary);
+        --theme-primary-foreground: var(--brand-primary-foreground);
+        --theme-secondary: var(--brand-secondary);
+        --theme-accent: var(--brand-secondary);
+        --theme-background: var(--background);
+        --theme-text: var(--foreground);
+
         /* --- Backgrounds & Surfaces --- */
         --background: oklch(1 0 0);
         --foreground: oklch(0.145 0 0);
@@ -134,6 +142,14 @@ select:-webkit-autofill {
     --color-brand-primary-foreground: var(--brand-primary-foreground);
     --color-brand-secondary: var(--brand-secondary);
     --color-brand-secondary-foreground: var(--brand-secondary-foreground);
+
+    /* --- Theme Override --- */
+    --color-theme-primary: var(--theme-primary);
+    --color-theme-primary-foreground: var(--theme-primary-foreground);
+    --color-theme-secondary: var(--theme-secondary);
+    --color-theme-accent: var(--theme-accent);
+    --color-theme-background: var(--theme-background);
+    --color-theme-text: var(--theme-text);
 
     /* --- Backgrounds --- */
     --color-background: var(--background);
