@@ -208,7 +208,7 @@ export function useInvoiceDownload() {
       // Fetch the payload from the new backend endpoint
       const res = await fetch(`${BASE_API_URL}/v1/invoice/payload/${orderId}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });

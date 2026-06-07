@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
 import { ContactPageContent, ContactList } from '@/constants/customer';
+import { getCachedData, cacheData, subscribeLocaleChange } from '@/utils/cache';
 
 const CONTACT_CACHE_KEY = 'techsonance_cms_contact';
 const LANG_KEY = 'techsonance_locale';
@@ -11,23 +12,28 @@ export function useContactData() {
   const [contactList, setContactList] = useState<any[]>(ContactList);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Initialize lang and subscribe to changes without polling
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedLang = localStorage.getItem(LANG_KEY) || 'en';
       setLang(savedLang);
     }
+    const unsubscribe = subscribeLocaleChange((newLang) => {
+      setLang(newLang);
+    });
+    return unsubscribe;
   }, []);
 
   const fetchContact = useCallback(async (currentLang: string) => {
     setIsLoading(true);
-    if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem(`${CONTACT_CACHE_KEY}_${currentLang}`);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        setHeroContent(parsed.hero || ContactPageContent);
-        setContactList(parsed.list || ContactList);
-      }
+    const cached = getCachedData(`${CONTACT_CACHE_KEY}_${currentLang}`);
+    if (cached) {
+      setHeroContent(cached.hero || ContactPageContent);
+      setContactList(cached.list || ContactList);
+      setIsLoading(false);
+      return;
     }
+
     try {
       const res = await AxiosAPI.get(`/v1/cms/contact?lang=${currentLang}`);
       const cmsRow = res.data?.data ?? res.data;
@@ -41,7 +47,7 @@ export function useContactData() {
         const list = parsed.list || ContactList;
         setHeroContent(hero);
         setContactList(list);
-        localStorage.setItem(`${CONTACT_CACHE_KEY}_${currentLang}`, JSON.stringify({ hero, list }));
+        cacheData(`${CONTACT_CACHE_KEY}_${currentLang}`, { hero, list });
       }
     } catch (err) {
       console.warn('Using default static Contact content');
@@ -49,19 +55,6 @@ export function useContactData() {
       setIsLoading(false);
     }
   }, []);
-
-  // Sync state if user changes locale via homepage pill
-  useEffect(() => {
-    const checkLocale = setInterval(() => {
-      if (typeof window !== 'undefined') {
-        const currentSaved = localStorage.getItem(LANG_KEY) || 'en';
-        if (currentSaved !== lang) {
-          setLang(currentSaved);
-        }
-      }
-    }, 1000);
-    return () => clearInterval(checkLocale);
-  }, [lang]);
 
   useEffect(() => {
     fetchContact(lang);

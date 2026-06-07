@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 import { useEffect, Suspense, useReducer, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { calculateCouponDiscount, formatCurrency, getMinOrderAmount } from "@/lib/utils";
 import { SelectedPaymentMethod } from "@/components/customer/SelectedPaymentMethod";
@@ -31,7 +31,9 @@ import { Separator } from "@/components/ui/separator";
 interface State {
   isAddressAdded: boolean;
   isModalOpen: boolean;
-  modalMode: AddressOperationEnum; editAddressId: string | null; selectedPaymentMethodState: string;
+  modalMode: AddressOperationEnum;
+  editAddressId: string | null;
+  selectedPaymentMethodState: string;
   isProcessing: boolean;
   checkoutError: string | null;
   selectedAddressId: string | null;
@@ -51,10 +53,97 @@ interface State {
   lastTaxAddressId: string;
 }
 
-// ─── Reducer (unchanged logic) ────────────────────────────────────────────────
+type Action =
+  | { type: 'SET_ADDRESS_ADDED'; payload: boolean }
+  | { type: 'OPEN_ADDRESS_MODAL'; payload: { mode: AddressOperationEnum; editId: string | null } }
+  | { type: 'CLOSE_ADDRESS_MODAL' }
+  | { type: 'SET_PAYMENT_METHOD'; payload: string }
+  | { type: 'SET_PROCESSING'; payload: boolean }
+  | { type: 'SET_CHECKOUT_ERROR'; payload: string | null }
+  | { type: 'SET_SELECTED_ADDRESS'; payload: string | null }
+  | { type: 'LOAD_ORDER_START' }
+  | { type: 'LOAD_ORDER_SUCCESS'; payload: { cartItems: CartItemDisplay[]; cartItemsForTax: any[]; productIds: string[] } }
+  | { type: 'LOAD_QUICK_BUY_SUCCESS'; payload: { variant: VariantDetails; cartItemsForTax: any[]; productIds: string[] } }
+  | { type: 'LOAD_ORDER_ERROR'; payload: string }
+  | { type: 'SET_LOADING_ORDER'; payload: boolean }
+  | { type: 'SET_CART_ITEMS_FOR_TAX'; payload: any[] }
+  | { type: 'SET_QUICK_BUY_QTY'; payload: number }
+  | { type: 'SET_COUPON_CODE'; payload: string }
+  | { type: 'START_COUPON_VALIDATION' }
+  | { type: 'APPLY_COUPON'; payload: AppliedPromotion }
+  | { type: 'SET_COUPON_ERROR'; payload: string | null }
+  | { type: 'SET_COUPON_VALIDATING_STATE'; payload: boolean }
+  | { type: 'REMOVE_COUPON' }
+  | { type: 'SET_TAX_LOADING'; payload: { isTaxLoading: boolean; lastTaxAddressId: string } }
+  | { type: 'SET_TAX_LOADING_STATE'; payload: boolean }
+  | { type: 'SET_TAX_BREAKDOWN'; payload: TaxBreakdown | null }
+  | { type: 'SET_TAX_ERROR'; payload: string | null };
 
-function reducer(state: State, action: any): State {
-  return { ...state, ...action };
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'SET_ADDRESS_ADDED':
+      return { ...state, isAddressAdded: action.payload };
+    case 'OPEN_ADDRESS_MODAL':
+      return { ...state, isModalOpen: true, modalMode: action.payload.mode, editAddressId: action.payload.editId };
+    case 'CLOSE_ADDRESS_MODAL':
+      return { ...state, isModalOpen: false };
+    case 'SET_PAYMENT_METHOD':
+      return { ...state, selectedPaymentMethodState: action.payload };
+    case 'SET_PROCESSING':
+      return { ...state, isProcessing: action.payload };
+    case 'SET_CHECKOUT_ERROR':
+      return { ...state, checkoutError: action.payload };
+    case 'SET_SELECTED_ADDRESS':
+      return { ...state, selectedAddressId: action.payload };
+    case 'LOAD_ORDER_START':
+      return { ...state, isLoadingOrder: true, checkoutError: null };
+    case 'LOAD_ORDER_SUCCESS':
+      return {
+        ...state,
+        isLoadingOrder: false,
+        cartItems: action.payload.cartItems,
+        cartItemsForTax: action.payload.cartItemsForTax,
+        productIds: action.payload.productIds,
+      };
+    case 'LOAD_QUICK_BUY_SUCCESS':
+      return {
+        ...state,
+        isLoadingOrder: false,
+        quickBuyVariant: action.payload.variant,
+        cartItemsForTax: action.payload.cartItemsForTax,
+        productIds: action.payload.productIds,
+      };
+    case 'LOAD_ORDER_ERROR':
+      return { ...state, isLoadingOrder: false, checkoutError: action.payload };
+    case 'SET_LOADING_ORDER':
+      return { ...state, isLoadingOrder: action.payload };
+    case 'SET_CART_ITEMS_FOR_TAX':
+      return { ...state, cartItemsForTax: action.payload };
+    case 'SET_QUICK_BUY_QTY':
+      return { ...state, quickBuyQty: action.payload };
+    case 'SET_COUPON_CODE':
+      return { ...state, couponCode: action.payload };
+    case 'START_COUPON_VALIDATION':
+      return { ...state, isCouponValidating: true, couponError: null };
+    case 'APPLY_COUPON':
+      return { ...state, isCouponValidating: false, couponApplied: action.payload, couponCode: '', couponError: null };
+    case 'SET_COUPON_ERROR':
+      return { ...state, isCouponValidating: false, couponError: action.payload };
+    case 'SET_COUPON_VALIDATING_STATE':
+      return { ...state, isCouponValidating: action.payload };
+    case 'REMOVE_COUPON':
+      return { ...state, couponApplied: null, couponError: null, couponCode: '' };
+    case 'SET_TAX_LOADING':
+      return { ...state, isTaxLoading: action.payload.isTaxLoading, lastTaxAddressId: action.payload.lastTaxAddressId, taxError: null };
+    case 'SET_TAX_LOADING_STATE':
+      return { ...state, isTaxLoading: action.payload };
+    case 'SET_TAX_BREAKDOWN':
+      return { ...state, taxBreakdown: action.payload };
+    case 'SET_TAX_ERROR':
+      return { ...state, taxError: action.payload };
+    default:
+      return state;
+  }
 }
 
 // ─── Mobile Summary Sheet ─────────────────────────────────────────────────────
@@ -372,11 +461,11 @@ function CheckoutClientInner() {
   });
 
   const openAdd = () => {
-    dispatch({ modalMode: AddressOperationEnum.ADD, isModalOpen: true });
+    dispatch({ type: 'OPEN_ADDRESS_MODAL', payload: { mode: AddressOperationEnum.ADD, editId: null } });
   };
 
   const openEdit = async (addressId: string) => {
-    dispatch({ modalMode: AddressOperationEnum.EDIT, isModalOpen: true, editAddressId: addressId });
+    dispatch({ type: 'OPEN_ADDRESS_MODAL', payload: { mode: AddressOperationEnum.EDIT, editId: addressId } });
   };
   const subtotal = isQuickBuy
     ? (Number(state.quickBuyVariant?.price) || 0) * state.quickBuyQty
@@ -393,25 +482,28 @@ function CheckoutClientInner() {
   useEffect(() => {
     if (!checkoutType || !id || !token) return;
     const load = async () => {
-      dispatch({ isLoadingOrder: true, checkoutError: null });
+      dispatch({ type: 'LOAD_ORDER_START' });
       try {
         if (couponId) {
           AxiosAPI.get(`/v1/coupon/${couponId}`)
-            .then(res => { if (res.data?.data) dispatch({ couponApplied: res.data.data }); })
+            .then(res => { if (res.data?.data) dispatch({ type: 'APPLY_COUPON', payload: res.data.data }); })
             .catch(() => toast.error("Couldn't restore coupon. Apply it manually."));
         }
         const checkAddress = await checkAddressExistence(user?.id!, token);
         if (!checkAddress.hasAddresses || checkAddress.count === 0) {
-          dispatch({ selectedAddressId: null });
+          dispatch({ type: 'SET_SELECTED_ADDRESS', payload: null });
         }
         if (isQuickBuy) {
           const res = await fetchProductVariantDetails(id);
           if (!res.data) throw new Error("Product not found.");
           const price = parseFloat(res.data.price) || 0;
           dispatch({
-            quickBuyVariant: res.data as VariantDetails,
-            cartItemsForTax: [{ variantId: res.data.id, quantity: state.quickBuyQty, price }],
-            productIds: [res.data.product_id ?? res.data.id]
+            type: 'LOAD_QUICK_BUY_SUCCESS',
+            payload: {
+              variant: res.data as VariantDetails,
+              cartItemsForTax: [{ variantId: res.data.id, quantity: state.quickBuyQty, price }],
+              productIds: [res.data.product_id ?? res.data.id]
+            }
           });
         } else {
           const res = await fetchGetCartList(user?.id || '', token);
@@ -422,12 +514,19 @@ function CheckoutClientInner() {
             quantity: item.quantity,
             price: Number(item.productVariant.price),
           }));
-          dispatch({ cartItems: items, cartItemsForTax: mapped, productIds: items.map((item: CartItemDisplay) => item.productVariant.product_id) });
+          dispatch({
+            type: 'LOAD_ORDER_SUCCESS',
+            payload: {
+              cartItems: items,
+              cartItemsForTax: mapped,
+              productIds: items.map((item: CartItemDisplay) => item.productVariant.product_id)
+            }
+          });
         }
       } catch (err: any) {
-        dispatch({ checkoutError: err.message ?? "Failed to load order details." });
+        dispatch({ type: 'LOAD_ORDER_ERROR', payload: err.message ?? "Failed to load order details." });
       } finally {
-        dispatch({ isLoadingOrder: false });
+        dispatch({ type: 'SET_LOADING_ORDER', payload: false });
       }
     };
     load();
@@ -440,13 +539,14 @@ function CheckoutClientInner() {
       const liveQty = reduxCartItems.find(i => i.productVariantId === item.product_variant_id)?.quantity ?? item.quantity;
       return { variantId: item.product_variant_id, quantity: liveQty, price: Number(item.productVariant.price) };
     });
-    dispatch({ cartItemsForTax: updated });
+    dispatch({ type: 'SET_CART_ITEMS_FOR_TAX', payload: updated });
   }, [reduxCartItems, state.cartItems, isQuickBuy]);
 
   useEffect(() => {
     if (!isQuickBuy || !state.quickBuyVariant) return;
     dispatch({
-      cartItemsForTax: [{
+      type: 'SET_CART_ITEMS_FOR_TAX',
+      payload: [{
         variantId: state.quickBuyVariant.id,
         quantity: state.quickBuyQty,
         price: Number(state.quickBuyVariant.price),
@@ -457,7 +557,7 @@ function CheckoutClientInner() {
   // ─── fetchTaxBreakdown (unchanged) ─────────────────────────────────────────
   const fetchTaxBreakdown = async (addressId: string) => {
     if (!addressId || !state.cartItemsForTax.length || addressId === state.lastTaxAddressId) return;
-    dispatch({ isTaxLoading: true, taxError: null, lastTaxAddressId: addressId });
+    dispatch({ type: 'SET_TAX_LOADING', payload: { isTaxLoading: true, lastTaxAddressId: addressId } });
     try {
       const res = await AxiosAPI.post('/v1/finances/calculate-order-taxes', {
         customerAddressId: addressId,
@@ -465,7 +565,8 @@ function CheckoutClientInner() {
       }, { headers: { Authorization: `Bearer ${token}` } });
       const data = res.data?.data;
       dispatch({
-        taxBreakdown: {
+        type: 'SET_TAX_BREAKDOWN',
+        payload: {
           subtotal: Number(data.subTotal ?? data.subtotal ?? subtotal),
           totalCgst: Number(data.totalCgst ?? 0),
           totalSgst: Number(data.totalSgst ?? 0),
@@ -478,9 +579,9 @@ function CheckoutClientInner() {
         }
       });
     } catch {
-      dispatch({ taxBreakdown: null });
+      dispatch({ type: 'SET_TAX_BREAKDOWN', payload: null });
     } finally {
-      dispatch({ isTaxLoading: false });
+      dispatch({ type: 'SET_TAX_LOADING_STATE', payload: false });
     }
   };
 
@@ -493,7 +594,7 @@ function CheckoutClientInner() {
 
   useEffect(() => {
     if (state.selectedAddressId && state.selectedAddressId !== state.lastTaxAddressId) {
-      dispatch({ taxBreakdown: null });
+      dispatch({ type: 'SET_TAX_BREAKDOWN', payload: null });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.selectedAddressId]);
@@ -502,7 +603,7 @@ function CheckoutClientInner() {
   const handleCouponApply = async () => {
     const code = state.couponCode.trim().toUpperCase();
     if (!code) return;
-    dispatch({ couponError: null, isCouponValidating: true });
+    dispatch({ type: 'START_COUPON_VALIDATION' });
     try {
       const res = await AxiosAPI.post('/v1/coupon/validate', {
         userId: user?.id,
@@ -514,23 +615,23 @@ function CheckoutClientInner() {
       if (data?.code) {
         const minOrder = Number(data.min_order_amount ?? 0);
         if (minOrder > 0 && subtotal < minOrder) {
-          dispatch({ couponError: `Add ₹${formatCurrency(minOrder - subtotal)} more to use this coupon.` });
+          dispatch({ type: 'SET_COUPON_ERROR', payload: `Add ₹${formatCurrency(minOrder - subtotal)} more to use this coupon.` });
         } else {
-          dispatch({ couponApplied: data as AppliedPromotion, couponCode: '' });
+          dispatch({ type: 'APPLY_COUPON', payload: data as AppliedPromotion });
           toast.success("Coupon applied!");
         }
       } else {
-        dispatch({ couponError: data?.message ?? "Invalid coupon code." });
+        dispatch({ type: 'SET_COUPON_ERROR', payload: data?.message ?? "Invalid coupon code." });
       }
     } catch (err: any) {
-      dispatch({ couponError: err?.response?.data?.message ?? err?.message ?? "Failed to apply coupon." });
+      dispatch({ type: 'SET_COUPON_ERROR', payload: err?.response?.data?.message ?? err?.message ?? "Failed to apply coupon." });
     } finally {
-      dispatch({ isCouponValidating: false });
+      dispatch({ type: 'SET_COUPON_VALIDATING_STATE', payload: false });
     }
   };
 
   const handleCouponRemove = () => {
-    dispatch({ couponApplied: null, couponError: null, couponCode: '' });
+    dispatch({ type: 'REMOVE_COUPON' });
   };
 
   // ─── Payment handler (unchanged) ───────────────────────────────────────────
@@ -540,7 +641,8 @@ function CheckoutClientInner() {
       return;
     }
     if (!id || !token) return;
-    dispatch({ isProcessing: true, checkoutError: null });
+    dispatch({ type: 'SET_PROCESSING', payload: true });
+    dispatch({ type: 'SET_CHECKOUT_ERROR', payload: null });
     try {
       const initPayload = {
         paymentMethod: state.selectedPaymentMethodState,
@@ -550,11 +652,11 @@ function CheckoutClientInner() {
       };
       const initData = await fetchInitCheckout(user?.id || '', initPayload, token);
       if (!initData?.success && initData?.status === 500) {
-        dispatch({ checkoutError: initData?.message ?? "Failed to initiate order." });
+        dispatch({ type: 'SET_CHECKOUT_ERROR', payload: initData?.message ?? "Failed to initiate order." });
         return;
       }
       if (initData?.status === 400) {
-        dispatch({ checkoutError: initData?.message ?? "Invalid request. Please check your order details." });
+        dispatch({ type: 'SET_CHECKOUT_ERROR', payload: initData?.message ?? "Invalid request. Please check your order details." });
         toast.error(initData?.message ?? "Invalid request. Please check your order details.");
         return;
       }
@@ -582,9 +684,9 @@ function CheckoutClientInner() {
         router.push(`/customer/checkout/${initData.data.orderId}?status=failed&message=${encodeURIComponent(errorMsg)}`);
       }
     } catch {
-      dispatch({ checkoutError: "An unexpected error occurred. Please try again." });
+      dispatch({ type: 'SET_CHECKOUT_ERROR', payload: "An unexpected error occurred. Please try again." });
     } finally {
-      dispatch({ isProcessing: false });
+      dispatch({ type: 'SET_PROCESSING', payload: false });
     }
   };
 
@@ -669,13 +771,13 @@ function CheckoutClientInner() {
               cartItems={state.cartItems}
               quickBuyVariant={state.quickBuyVariant}
               quickBuyQty={state.quickBuyQty}
-              onQuickBuyQtyChange={(qty) => dispatch({ quickBuyQty: qty })}
+              onQuickBuyQtyChange={(qty) => dispatch({ type: 'SET_QUICK_BUY_QTY', payload: qty })}
             />
 
             {/* Address selector */}
             <AddressSelector
               userId={user?.id || ''}
-              onSelect={(id) => dispatch({ selectedAddressId: id })}
+              onSelect={(id) => dispatch({ type: 'SET_SELECTED_ADDRESS', payload: id })}
               selectedAddressId={state.selectedAddressId}
               addNewAddress={openAdd}
               onEditAddress={openEdit}
@@ -698,7 +800,7 @@ function CheckoutClientInner() {
                     key={method.id}
                     method={method.label}
                     selectedMethod={state.selectedPaymentMethodState}
-                    onSelect={(m) => dispatch({ selectedPaymentMethodState: m })}
+                    onSelect={(m) => dispatch({ type: 'SET_PAYMENT_METHOD', payload: m })}
                     description={method.description}
                   />
                 ))}
@@ -741,7 +843,10 @@ function CheckoutClientInner() {
                             type="text"
                             placeholder="COUPON CODE"
                             value={state.couponCode}
-                            onChange={e => dispatch({ couponCode: e.target.value.toUpperCase(), couponError: null })}
+                            onChange={e => {
+                              dispatch({ type: 'SET_COUPON_CODE', payload: e.target.value.toUpperCase() });
+                              dispatch({ type: 'SET_COUPON_ERROR', payload: null });
+                            }}
                             onKeyDown={e => e.key === 'Enter' && handleCouponApply()}
                             className="pl-8 h-9 text-xs font-mono tracking-widest uppercase border-gray-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
                           />
@@ -882,7 +987,10 @@ function CheckoutClientInner() {
         couponCode={state.couponCode}
         couponError={state.couponError}
         isCouponValidating={state.isCouponValidating}
-        onCouponCodeChange={(val) => dispatch({ couponCode: val, couponError: null })}
+        onCouponCodeChange={(val) => {
+          dispatch({ type: 'SET_COUPON_CODE', payload: val });
+          dispatch({ type: 'SET_COUPON_ERROR', payload: null });
+        }}
         onCouponApply={handleCouponApply}
         onCouponRemove={handleCouponRemove}
         onCouponKeyDown={(e) => e.key === 'Enter' && handleCouponApply()}
@@ -903,8 +1011,8 @@ function CheckoutClientInner() {
             user={user}
             operation={state.modalMode}
             addressId={state.editAddressId}
-            onClose={() => dispatch({ isModalOpen: false })}
-            onSuccess={(val) => dispatch({ isAddressAdded: val })}
+            onClose={() => dispatch({ type: 'CLOSE_ADDRESS_MODAL' })}
+            onSuccess={(val) => dispatch({ type: 'SET_ADDRESS_ADDED', payload: val })}
           />
         )}
       </AnimatePresence>

@@ -93,7 +93,7 @@ export default function Home() {
               <div>
                 <h2 className="text-3xl font-serif tracking-tight text-gray-900">Categories</h2>
               </div>
-              <Link href="/shopping" className="text-xs font-semibold uppercase tracking-wider text-black border-b border-black pb-1 hover:opacity-70 transition-opacity">
+              <Link href="/store" className="text-xs font-semibold uppercase tracking-wider text-black border-b border-black pb-1 hover:opacity-70 transition-opacity">
                 View All
               </Link>
             </div>
@@ -104,7 +104,7 @@ export default function Home() {
                 ))
                 : categories.map((cat, idx) => (
                   <div key={idx} className="flex flex-col">
-                    <Link href={`/shopping?search=${encodeURIComponent(cat.title)}`} className="group relative h-96 overflow-hidden bg-gray-100 rounded-md ">
+                    <Link href={`/store?search=${encodeURIComponent(cat.title)}`} className="group relative h-96 overflow-hidden bg-gray-100 rounded-md ">
                       {cat.url ? <Image src={cat.url} alt={cat.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" /> : null}
                     </Link>
                     <div className=" text-black bg-white py-2">
@@ -164,7 +164,7 @@ export default function Home() {
                   <span className="text-xs uppercase tracking-[0.3em] font-bold text-white/90 mb-4 block">{getField('middle_banner_subtitle')}</span>
                   <h2 className="text-4xl font-serif mb-4 tracking-tight">{getField('middle_banner_title')}</h2>
                   <p className="text-sm text-white/80 font-light max-w-md mx-auto mb-6">{getField('middle_banner_desc')}</p>
-                  <Link href="/shopping">
+                  <Link href="/store">
                     <button className="bg-white text-black hover:bg-black hover:text-white transition-all duration-300 px-6 py-2.5 text-xs uppercase tracking-widest rounded-none font-semibold">
                       {getField('middle_banner_btn_text')}
                     </button>
@@ -199,7 +199,7 @@ export default function Home() {
                       <span className="text-xs uppercase tracking-widest font-bold text-white/85 mb-2 block">{getField('new_arrivals_left_subtitle')}</span>
                       <h3 className="text-3xl font-serif mb-3 tracking-tight">{getField('new_arrivals_left_title')}</h3>
                       <p className="text-sm text-white/80 font-light max-w-sm mb-6">{getField('new_arrivals_left_desc')}</p>
-                      <Link href="/shopping">
+                      <Link href="/store">
                         <button className="border border-white hover:bg-white hover:text-black transition-colors px-6 py-2 text-xs uppercase tracking-wider">{getField('new_arrivals_left_btn_text')}</button>
                       </Link>
                     </div>
@@ -244,12 +244,12 @@ export default function Home() {
                     onChange={(e) => setEmailInput(e.target.value)}
                     className="bg-transparent border-none text-white text-sm focus:outline-none w-full placeholder-gray-500 font-light"
                   />
-                  <button type="submit" className="text-xs uppercase tracking-widest font-bold ml-4 text-white hover:text-gray-300 transition-colors">
+                  <button type="submit" className="text-xs p-2 uppercase tracking-wider font-bold ml-4 border border-gray-200 text-white hover:text-gray-200 transition-colors">
                     {getField('newsletter_btn_text')}
                   </button>
                 </form>
               )}
-              <p className="text-[10px] text-gray-500 mt-6 font-light">
+              <p className="text-[10px] text-gray-200 mt-6 font-light">
                 By subscribing you agree to our Terms of Use and Privacy Policy.
               </p>
             </div>
@@ -283,16 +283,16 @@ export default function Home() {
         );
       case 'categories':
         return (
-          <section key="m-categories" className="lg:py-8 py-6 px-4 lg:mt-0 mt-2">
+          <section key="m-categories" className="lg:py-8 py-6 px-4 lg:mt-0 mt-[18vh]">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-base font-bold text-gray-900 uppercase tracking-wide">Explore Essentials</h2>
-              <Link href="/shopping" className="text-xs text-theme-primary font-semibold">
+              <Link href="/store" className="text-xs text-theme-primary font-semibold">
                 View All
               </Link>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-2 snap-x scrollbar-none">
               {categories.map((cat, idx) => (
-                <Link href={`/shopping?category=${cat.title}`} key={idx} className="flex flex-col items-center min-w-[76px] snap-center">
+                <Link href={`/store?category=${cat.title}`} key={idx} className="flex flex-col items-center min-w-[76px] snap-center">
                   <div className="relative w-16 h-16 rounded-full overflow-hidden border border-gray-100 bg-gray-50 shadow-sm">
                     {cat.url ? (
                       <Image
@@ -341,7 +341,7 @@ export default function Home() {
                 </span>
                 <h3 className="text-xl font-bold tracking-tight mb-1">Summer Sale</h3>
                 <p className="text-xs text-gray-300 font-light mb-4">Up to 40% Off Select Lines</p>
-                <Link href="/shopping">
+                <Link href="/store">
                   <button className="bg-theme-primary text-theme-primary-foreground hover:bg-theme-secondary transition-colors px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
                     Shop Now
                   </button>
@@ -355,19 +355,19 @@ export default function Home() {
           <section key="m-new_arrivals" className="py-6 px-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-base font-bold text-gray-900 uppercase tracking-wide">New Arrivals</h2>
-              <Link href="/shopping" className="text-xs text-theme-primary font-semibold flex items-center gap-0.5">
+              <Link href="/store" className="text-xs text-theme-primary font-semibold flex items-center gap-0.5">
                 Discover <ChevronRight size={14} />
               </Link>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-none">
               {newArrivals.map((arr) => (
-                <div key={arr.id} className="min-w-[150px] snap-center flex flex-col bg-white border border-gray-100 p-2.5 rounded-xl">
-                  <div className="relative h-36 w-full overflow-hidden bg-gray-100 rounded-lg mb-2">
+                <div key={arr.id} className="min-w-[150px] snap-center flex flex-col bg-white border border-gray-200 p-2.5 rounded-xl shadow-lg">
+                  <div className="relative h-36 w-full overflow-hidden rounded-lg mb-2">
                     <Image
                       src={arr.variants?.[0]?.images?.[0]?.image_url || 'https://placehold.net/400x500.png'}
                       alt={arr.name}
                       fill
-                      className="object-cover"
+                      className="object-contain  rounded-lg "
                     />
                   </div>
                   <h3 className="text-[11px] font-bold text-gray-800 line-clamp-1">{arr.name}</h3>
@@ -407,7 +407,7 @@ export default function Home() {
             <Globe size={18} />
             <span className="text-[9px] font-bold mt-1 uppercase">Home</span>
           </Link>
-          <Link href="/shopping" className="flex flex-col items-center text-muted-foreground hover:text-foreground">
+          <Link href="/store" className="flex flex-col items-center text-muted-foreground hover:text-foreground">
             <Search size={18} />
             <span className="text-[9px] font-medium mt-1 uppercase">Search</span>
           </Link>

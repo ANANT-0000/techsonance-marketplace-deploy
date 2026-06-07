@@ -40,7 +40,7 @@ export function AddressSelector({
 }: {
     userId: string;
     selectedAddressId: string | null;
-    onSelect: Dispatch<SetStateAction<string | null>>;
+    onSelect: (id: string) => void;
     addNewAddress: () => void; onEditAddress: (id: string) => void; loadingAddresses?: boolean;
 }) {
     const token = authToken();

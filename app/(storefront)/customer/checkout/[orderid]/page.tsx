@@ -283,7 +283,7 @@ export default function OrderDetailPage() {
                 </Link>
               </Button>
               <Button asChild variant="outline" className="flex-1 bg-white hover:bg-gray-50 h-12 rounded-xl text-sm font-bold border-gray-300 transition-all text-gray-700">
-                <Link href="/shopping">
+                <Link href="/store">
                   Continue Shopping
                 </Link>
               </Button>
@@ -382,7 +382,7 @@ export default function OrderDetailPage() {
                 return (
                   <Link 
                     key={product.id} 
-                    href={`/shopping?search=${encodeURIComponent(product.name)}`}
+                    href={`/store?search=${encodeURIComponent(product.name)}`}
                     className="flex flex-col bg-white border border-gray-200/80 rounded-xl overflow-hidden p-3 hover:shadow-md transition-shadow group"
                   >
                     <div className="relative aspect-[4/5] bg-gray-50 rounded-lg overflow-hidden mb-3">

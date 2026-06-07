@@ -12,9 +12,9 @@ import { fetchGetCartList } from "@/utils/customerApiClient";
 import { BuyBtnMode } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
 import { X, ShoppingBag, ArrowRight, Package, Tag, ChevronRight } from "lucide-react";
- 
+
 import { loadCart } from "@/lib/features/Cart";
-import { CartItemListResponse } from "@/app/(shop)/customer/cart/CartClient";
+import { CartItemListResponse } from "@/app/(storefront)/customer/cart/CartClient";
 
 // ─── Skeleton for cart items while loading ────────────────────────────────────
 const CartItemSkeleton = () => (

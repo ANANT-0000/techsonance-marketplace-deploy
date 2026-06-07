@@ -23,14 +23,14 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.03, duration: 0.25 }}
-            className={`group flex flex-col cursor-pointer overflow-hidden transition-all duration-300 relative h-full rounded-[var(--radius)] ${cardCls}`}
+            className={`group flex flex-col cursor-pointer overflow-hidden transition-all duration-300 relative h-full rounded-[var(--radius)] ${cardCls} shadow`}
         >
             <div className="relative aspect-square md:aspect-[4/5] bg-black/5 overflow-hidden">
-                <WishListBtn productVariantId={variantId} styles="absolute top-3 right-3 z-10 w-9 h-9 bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center rounded-full text-gray-600 hover:text-red-500 transition-colors" />
-                <Link href={`/shopping/${product.id}`} className="block w-full h-full p-4">
+                <WishListBtn productVariantId={variantId} styles="absolute md:top-3 top-0 md:right-3 right-1 z-10 md:w-9 md:h-9 w-7 h-7 bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center rounded-full text-gray-600 hover:text-red-500 transition-colors" />
+                <Link href={`/store/${product.id}`} className="block w-full h-full p-4">
                     <img
                         loading="lazy"
-                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500 rounded-xl"
                         src={primaryImage}
                         alt={product.name?.trim()}
                     />
@@ -41,7 +41,7 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
                 <div className="mb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide truncate">
                     {product.category?.name || 'Category'}
                 </div>
-                <Link href={`/shopping/${product.id}`} className="block">
+                <Link href={`/store/${product.id}`} className="block">
                     <h3 className="font-semibold text-gray-900 text-sm lg:text-[15px] leading-tight mb-3 line-clamp-2">
                         {product.name}
                     </h3>

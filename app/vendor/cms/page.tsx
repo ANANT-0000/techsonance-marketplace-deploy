@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef, useReducer } from 'react';
 import { Save, Loader2, Plus, Trash2, Globe, Languages, CheckCircle, ArrowUp, ArrowDown, Palette, LayoutGrid, Upload, Image as ImageIcon } from 'lucide-react';
 import AxiosAPI from '@/lib/axios';
 
-type PageType = 'home' | 'navbar' | 'footer' | 'about' | 'contact' | 'shopping' | 'theme';
+type PageType = 'home' | 'navbar' | 'footer' | 'about' | 'contact' | 'store' | 'theme';
 type LangType = 'en' | 'es';
 
 interface CmsState {
@@ -69,11 +69,11 @@ function cmsReducer(state: CmsState, action: CmsAction): CmsState {
   }
 }
 
-const PAGES: PageType[] = ['home', 'navbar', 'footer', 'about', 'contact', 'shopping', 'theme'];
+const PAGES: PageType[] = ['home', 'navbar', 'footer', 'about', 'contact', 'store', 'theme'];
 
 const PAGE_LABELS: Record<PageType, string> = {
   home: 'Home Page', navbar: 'Navbar', footer: 'Footer',
-  about: 'About Us', contact: 'Contact', shopping: 'Promotions',
+  about: 'About Us', contact: 'Contact', store: 'Store',
   theme: 'Storefront Theme & Layout',
 };
 
@@ -135,8 +135,8 @@ function ImageUploadField({ label, value, onChange }: { label: string; value: st
       const res = await AxiosAPI.post('/v1/cms/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      if (res.data?.secure_url) {
-        onChange(res.data.secure_url);
+      if (res.data?.data?.secure_url) {
+        onChange(res.data.data.secure_url);
       } else {
         throw new Error('Upload succeeded but no URL returned.');
       }
@@ -347,7 +347,7 @@ function SlideQueryPicker({ value, onChange }: { value: string; onChange: (v: st
               </button>
             </div>
             <p className="text-[10px] text-emerald-600 mt-2 font-mono">
-              ↳ /shopping?search={encodeURIComponent(selected.join(' '))}
+              ↳ /store?search={encodeURIComponent(selected.join(' '))}
             </p>
           </>
         )}
@@ -480,7 +480,6 @@ export default function CmsManagementPage() {
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
-
       {/* Tab + Lang selectors */}
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 mb-8 flex flex-col lg:flex-row gap-4">
         <div className="flex-1">
@@ -754,9 +753,9 @@ export default function CmsManagementPage() {
             </>
           )}
 
-          {/* SHOPPING */}
-          {page === 'shopping' && (
-            <Section title="Shopping Page Promotional Banner">
+          {/* storefront */}
+          {page === 'store' && (
+            <Section title="Store Page Promotional Banner">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Banner Title" value={data.promo_banner_title || ''} onChange={(v: string) => set('promo_banner_title', v)} />
                 <Field label="Banner Action Link (URL)" value={data.promo_banner_link || ''} onChange={(v: string) => set('promo_banner_link', v)} mono />

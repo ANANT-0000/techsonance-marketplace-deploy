@@ -2,10 +2,40 @@ import { Navbar } from "@/components/customer/Navbar";
 import { Footer } from "@/components/customer/Footer";
 import { CartSidebar } from "@/components/customer/CartSidebar";
 import { TabNavBar } from "@/components/customer/TabNavBar";
-import { StorefrontThemeStyles } from "@/components/customer/StorefrontThemeStyles";
 import { ThemeProvider } from "@/components/customer/ThemeProvider";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { BASE_API_URL } from "@/constants";
+import { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+    const companyDomain = await getCompanyDomain();
+    
+    let storeName = "Marketplace Store";
+    if (companyDomain) {
+        const namePart = companyDomain.split('.')[0] || "";
+        if (namePart) {
+            storeName = namePart.charAt(0).toUpperCase() + namePart.slice(1) + " Store";
+        }
+    }
+
+    return {
+        title: {
+            template: `%s | ${storeName}`,
+            default: storeName,
+        },
+        description: `Welcome to ${storeName}. Discover a curated selection of premium products, handcrafted items, and exclusive deals.`,
+        openGraph: {
+            title: storeName,
+            description: `Welcome to ${storeName}. Discover a curated selection of premium products, handcrafted items, and exclusive deals.`,
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: storeName,
+            description: `Welcome to ${storeName}. Discover a curated selection of premium products, handcrafted items, and exclusive deals.`,
+        }
+    };
+}
  
 export default async function ShopLayout({ children }: { children: React.ReactNode }) {
     const companyDomain = await getCompanyDomain();
@@ -33,7 +63,6 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
 
     return (
         <ThemeProvider theme={themeData}>
-            <StorefrontThemeStyles />
             <Navbar styles="bg-navbar" />
             <CartSidebar />
             {children}

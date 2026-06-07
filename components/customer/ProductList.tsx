@@ -102,7 +102,7 @@ function ProductCard({ product, isMobile }: { product: Product, isMobile: boolea
             <div className="flex flex-col h-full">
                 <WishListBtn productVariantId={product?.id} styles="absolute top-2 right-6 z-10" />
 
-                <Link href={`/shopping/${product.id}`} className="block overflow-hidden rounded-lg">
+                <Link href={`/store/${product.id}`} className="block overflow-hidden rounded-lg">
                     <img
                         className="w-full object-cover lg:aspect-9/14 aspect-9/12 rounded-lg mb-4 transform hover:scale-105 transition-transform duration-300"
                         src={product.variants[0]?.images && product.variants[0].images.length > 0 ? product.variants[0].images[0].image_url : "https://placehold.net/10.png"}

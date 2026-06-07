@@ -73,7 +73,7 @@ export function SearchBar({ value, onChange, onSearch, onClose, placeholder = 'S
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             setShowSuggestions(false);
-            onSearch(value);
+            onSearch(value.trim());
         }
         if (e.key === 'Escape') {
             setShowSuggestions(false);
@@ -170,14 +170,15 @@ export function SearchBar({ value, onChange, onSearch, onClose, placeholder = 'S
 
 
 function SuggestionText({ text, query }: { text: string; query: string }) {
-    if (!query) return <span>{text}</span>;
-    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) return <span>{text}</span>;
+    const idx = text.toLowerCase().indexOf(trimmedQuery.toLowerCase());
     if (idx === -1) return <span>{text}</span>;
     return (
         <span>
             {text.slice(0, idx)}
-            <mark className="bg-theme-primary/10 text-theme-primary rounded-sm">{text.slice(idx, idx + query.length)}</mark>
-            {text.slice(idx + query.length)}
+            <mark className="bg-theme-primary/10 text-theme-primary rounded-sm">{text.slice(idx, idx + trimmedQuery.length)}</mark>
+            {text.slice(idx + trimmedQuery.length)}
         </span>
     );
 }

@@ -1,5 +1,5 @@
 'use client';
-import { ShoppingCart, Plus, Minus } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Loader2 } from "lucide-react";
 import type { RootState } from "@/lib/store";
 import { addToCart, removeFromCart, loadCart } from "@/lib/features/Cart";
 import { toggleCartSidebar } from "@/lib/features/CartSidebar";
@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { fetchAddToCart, fetchRemoveFromCart } from "@/utils/customerApiClient";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { authToken } from "@/utils/authToken";
 
 interface AddToCartProps {
@@ -32,6 +32,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     const router = useRouter();
     const token = authToken();
 
+    const [isSyncing, setIsSyncing] = useState(false);
     const syncingRef = useRef(false);
     const rollbackRef = useRef<{ quantity: number; cartItemId?: string; cartId?: string } | null>(null);
 
@@ -49,7 +50,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
             router.push('/auth/customerLogin');
             return;
         }
-        if (syncingRef.current) return;
+        if (isSyncing || syncingRef.current) return;
 
         const prevQuantity = quantity;
         const prevCartItemId = cartItem?.cartItemId;
@@ -67,6 +68,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
             dispatch(toggleCartSidebar('open'));
         }
 
+        setIsSyncing(true);
         syncingRef.current = true;
         rollbackRef.current = { quantity: prevQuantity, cartItemId: prevCartItemId, cartId: prevCartId };
 
@@ -96,6 +98,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                 }));
             }
         } finally {
+            setIsSyncing(false);
             syncingRef.current = false;
             rollbackRef.current = null;
         }
@@ -103,7 +106,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
 
     const handleDecrement = async () => {
         if (!user?.id || !cartItem || !token) return;
-        if (syncingRef.current) return;
+        if (isSyncing || syncingRef.current) return;
 
         const prevQuantity = quantity;
         const prevCartItemId = cartItem.cartItemId;
@@ -115,6 +118,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
             dispatch(removeFromCart({ productVariantId, quantity: prevQuantity - 1 }));
         }
 
+        setIsSyncing(true);
         syncingRef.current = true;
         rollbackRef.current = { quantity: prevQuantity, cartItemId: prevCartItemId, cartId: prevCartId };
 
@@ -141,6 +145,7 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                 quantity: prevQuantity,
             }));
         } finally {
+            setIsSyncing(false);
             syncingRef.current = false;
             rollbackRef.current = null;
         }
@@ -157,10 +162,15 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.15 }}
                         onClick={handleIncrement}
-                        whileTap={{ scale: 0.97 }}
-                        className="flex h-full w-full items-center justify-center gap-2 px-2"
+                        disabled={isSyncing}
+                        whileTap={isSyncing ? {} : { scale: 0.97 }}
+                        className="flex h-full w-full items-center justify-center gap-2 px-2 disabled:opacity-50"
                     >
-                        <ShoppingCart className="w-4 h-4 shrink-0" />
+                        {isSyncing ? (
+                            <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+                        ) : (
+                            <ShoppingCart className="w-4 h-4 shrink-0" />
+                        )}
                         <span className="text-[12px] sm:text-[13px] font-semibold tracking-wide whitespace-nowrap">Add</span>
                     </motion.button>
                 ) : (
@@ -172,11 +182,11 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                         transition={{ duration: 0.15 }}
                         className="absolute inset-0 flex items-center justify-between bg-theme-primary text-theme-primary-foreground px-1 py-1 w-full h-full"
                     >
-                        {/* Using h-full aspect-square ensures it never overflows the container's height */}
                         <motion.button
-                            whileTap={{ scale: 0.82 }}
+                            whileTap={isSyncing ? {} : { scale: 0.82 }}
                             onClick={handleDecrement}
-                            className="h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors "
+                            disabled={isSyncing}
+                            className="h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors disabled:opacity-50"
                             aria-label="Remove one"
                         >
                             <Minus size={15} strokeWidth={2.5} />
@@ -196,9 +206,10 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
                         </AnimatePresence>
 
                         <motion.button
-                            whileTap={{ scale: 0.82 }}
+                            whileTap={isSyncing ? {} : { scale: 0.82 }}
                             onClick={handleIncrement}
-                            className="h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors "
+                            disabled={isSyncing}
+                            className="h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors disabled:opacity-50"
                             aria-label="Add one more"
                         >
                             <Plus size={15} strokeWidth={2.5} />

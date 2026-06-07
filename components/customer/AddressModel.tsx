@@ -39,7 +39,7 @@ export const AddressModal = ({
     addressList?: Address[];
     operation: AddressOperationEnum;
     onClose: () => void;
-    onSuccess?: Dispatch<SetStateAction<boolean>>;
+    onSuccess?: (val: boolean) => void;
 }) => {
     // ─── useReducer replaces useState for fetchError ──────────────────────────
     const [fetchError, dispatchFetchError] = useReducer(fetchErrorReducer, {

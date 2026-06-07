@@ -26,7 +26,7 @@ export function WishListBtn({
     const token = authToken();
 
     const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
-    const iconSizeValue = iconSize ?? (isMobile ? 28 : 32);
+    const iconSizeValue = iconSize ?? (isMobile ? 24 : 32);
 
     // Prevent stacking concurrent requests for the same item
     const syncingRef = useRef(false);

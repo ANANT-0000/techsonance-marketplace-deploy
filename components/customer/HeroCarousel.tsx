@@ -11,7 +11,7 @@ export interface HeroSlide {
   title?: string;
   subtitle?: string;
   btn_text?: string;
-  /** Search query that gets passed to /shopping?search= */
+  /** Search query that gets passed to /store?search= */
   search_query?: string;
   /** Optional full override URL (used if no search_query) */
   link_url?: string;
@@ -63,8 +63,8 @@ export function HeroCarousel({ slides, autoPlayMs = 5000, isLoading }: HeroCarou
 
   // Build the CTA href
   const ctaHref = slide.search_query
-    ? `/shopping?search=${encodeURIComponent(slide.search_query)}`
-    : slide.link_url || '/shopping';
+    ? `/store?search=${encodeURIComponent(slide.search_query)}`
+    : slide.link_url || '/store';
 
   return (
     <section

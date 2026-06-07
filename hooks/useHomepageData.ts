@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
+import { getCachedData, cacheData, dispatchLocaleChange, subscribeLocaleChange } from '@/utils/cache';
 
 const CMS_CACHE_KEY = 'techsonance_cms_home';
 const BANNERS_CACHE_KEY = 'techsonance_banners_home';
@@ -28,34 +29,46 @@ export function useHomepageData() {
   const [heroSlides, setHeroSlides] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Initialize lang from localStorage
+  // Initialize lang and subscribe to changes without polling
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedLang = localStorage.getItem(LANG_KEY) || 'en';
       setLangState(savedLang);
     }
+    const unsubscribe = subscribeLocaleChange((newLang) => {
+      setLangState(newLang);
+    });
+    return unsubscribe;
   }, []);
 
   const setLang = useCallback((newLang: string) => {
     setLangState(newLang);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(LANG_KEY, newLang);
-    }
+    dispatchLocaleChange(newLang);
   }, []);
 
   const fetchData = useCallback(async (currentLang: string) => {
     setIsLoading(true);
     console.log(`[useHomepageData] Starting fetch for lang: ${currentLang}`);
 
+    // Try finding in cache first
+    const cachedCms = getCachedData(`${CMS_CACHE_KEY}_${currentLang}`);
+    if (cachedCms) {
+      console.log('[useHomepageData] Found fresh CMS cache:', cachedCms);
+      setCmsContent(cachedCms);
+      if (Array.isArray(cachedCms.hero_slides) && cachedCms.hero_slides.length > 0) {
+        setHeroSlides(cachedCms.hero_slides);
+      }
+      // If we have cache, we don't block loader for API fetch
+      setIsLoading(false);
+    }
+
     try {
-      // 1. Fetch CMS Home Page content (fresh from API first — don't pre-load stale cache)
+      // 1. Fetch CMS Home Page content (fresh from API first)
       try {
         console.log(`[useHomepageData] Fetching CMS page: /v1/cms/home?lang=${currentLang}`);
         const cmsRes = await AxiosAPI.get(`/v1/cms/home?lang=${currentLang}`);
         console.log('[useHomepageData] CMS API raw response:', cmsRes.data);
 
-        // The backend wraps all responses: { data: { content: '...' }, status, message }
-        // so the actual CMS row is at cmsRes.data.data, not cmsRes.data.
         const cmsRow = cmsRes.data?.data ?? cmsRes.data;
         const rawContent = cmsRow?.content;
 
@@ -65,33 +78,39 @@ export function useHomepageData() {
             : rawContent;
           console.log('[useHomepageData] CMS content parsed successfully:', parsedContent);
           setCmsContent(parsedContent);
-          // Extract hero slides if present
           if (Array.isArray(parsedContent.hero_slides) && parsedContent.hero_slides.length > 0) {
             setHeroSlides(parsedContent.hero_slides);
           }
-          // Bust the cache so next visit also gets fresh data
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(`${CMS_CACHE_KEY}_${currentLang}`, JSON.stringify(parsedContent));
-          }
+          cacheData(`${CMS_CACHE_KEY}_${currentLang}`, parsedContent);
         } else {
-          console.warn('[useHomepageData] CMS API returned no content — using hardcoded fallbacks. Response was:', cmsRes.data);
-          // Hydrate from stale cache only as last resort
-          if (typeof window !== 'undefined') {
-            const cachedCms = localStorage.getItem(`${CMS_CACHE_KEY}_${currentLang}`);
-            if (cachedCms) {
-              console.log('[useHomepageData] Loading stale CMS cache as fallback');
-              setCmsContent(JSON.parse(cachedCms));
+          console.warn('[useHomepageData] CMS API returned no content — using cached or fallbacks.');
+          if (!cmsContent) {
+            const staleCached = localStorage.getItem(`${CMS_CACHE_KEY}_${currentLang}`);
+            if (staleCached) {
+              try {
+                const parsed = JSON.parse(staleCached);
+                const val = parsed?.value ?? parsed;
+                setCmsContent(val);
+                if (Array.isArray(val?.hero_slides) && val.hero_slides.length > 0) {
+                  setHeroSlides(val.hero_slides);
+                }
+              } catch {}
             }
           }
         }
       } catch (err: any) {
-        console.error('[useHomepageData] CMS fetch FAILED — storefront will show hardcoded fallbacks.', err?.response?.data || err?.message || err);
-        // Try stale cache
-        if (typeof window !== 'undefined') {
-          const cachedCms = localStorage.getItem(`${CMS_CACHE_KEY}_${currentLang}`);
-          if (cachedCms) {
-            console.log('[useHomepageData] Loading stale CMS cache after fetch error');
-            setCmsContent(JSON.parse(cachedCms));
+        console.error('[useHomepageData] CMS fetch FAILED — storefront will show fallbacks.', err);
+        if (!cmsContent) {
+          const staleCached = localStorage.getItem(`${CMS_CACHE_KEY}_${currentLang}`);
+          if (staleCached) {
+            try {
+              const parsed = JSON.parse(staleCached);
+              const val = parsed?.value ?? parsed;
+              setCmsContent(val);
+              if (Array.isArray(val?.hero_slides) && val.hero_slides.length > 0) {
+                setHeroSlides(val.hero_slides);
+              }
+            } catch {}
           }
         }
       }

@@ -145,7 +145,7 @@ export default function WishlistPage() {
 
                                     {/* Product Image */}
                                     <Link 
-                                        href={`/shopping/${item.productVariant.product_id}`} 
+                                        href={`/store/${item.productVariant.product_id}`} 
                                         className="shrink-0 w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden block"
                                     >
                                         <img 
@@ -159,7 +159,7 @@ export default function WishlistPage() {
                                     <div className="flex-1 flex flex-col justify-between py-1">
                                         <div className="flex justify-between items-start gap-4 pr-6 sm:pr-0">
                                             <div>
-                                                <Link href={`/shopping/${item.productVariant.product_id}`}>
+                                                <Link href={`/store/${item.productVariant.product_id}`}>
                                                     <h3 className="font-bold text-gray-900 text-base sm:text-lg line-clamp-2 leading-snug hover:text-indigo-600 transition-colors">
                                                         {item.productVariant.variant_name}
                                                     </h3>

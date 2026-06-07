@@ -302,7 +302,7 @@ export function useWarrantyDownload() {
       // 1. Fetch the structured warranty payload from the backend
       const res = await AxiosAPI.get(`/v1/product-policies/warranty-payload/${orderId}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
         },
       });
 

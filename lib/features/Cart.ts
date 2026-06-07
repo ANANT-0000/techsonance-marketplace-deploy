@@ -1,4 +1,4 @@
-import { CartItemListResponse } from "@/app/(shop)/customer/cart/CartClient";
+import { CartItemListResponse } from "@/app/(storefront)/customer/cart/CartClient";
 import { companyDomain } from "@/config";
 import { CART_KEY, CartItem, IS_AUTHENTICATED_KEY, USER_STORAGE_KEY } from "@/constants";
 import { authToken } from "@/utils/authToken";

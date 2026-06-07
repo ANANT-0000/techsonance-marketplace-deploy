@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useReducer } from "react";
 import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Separator } from "../ui/separator";
 
@@ -153,7 +153,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                     <div className="flex gap-5">
 
                         <Link
-                            href={`/shopping?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
+                            href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
                             className="shrink-0"
                         >
                             <div className="w-28 h-28 rounded-2xl border bg-muted/30 p-3">
@@ -173,7 +173,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                         <div className="flex-1 min-w-0">
 
                             <Link
-                                href={`/shopping?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
+                                href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
                             >
                                 <h3 className="md:text-lg text-base font-bold line-clamp-2">
                                     {item.variant.variant_name}
@@ -206,7 +206,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                                 </Link>
                             </Button>
                             {isDelivered ?
-                                <Link href={`/shopping?productId=${item.variant.product_id}&variantId=${item.variant.id}`} className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex items-center justify-center">
+                                <Link href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`} className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex items-center justify-center">
                                     {"Buy Again"}
                                 </Link>
                                 :
@@ -245,7 +245,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                 <div className="flex gap-3">
 
                     <Link
-                        href={`/shopping?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
+                        href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
                         className="shrink-0"
                     >
                         <div className="w-20 h-20 rounded-xl border bg-muted/30 p-2">
@@ -265,7 +265,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                     <div className="flex-1 min-w-0">
 
                         <Link
-                            href={`/shopping?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
+                            href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
                         >
                             <h3 className="font-bold text-base leading-tight line-clamp-2">
                                 {item.variant.variant_name}
@@ -298,7 +298,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                         </Link>
                     </Button>
                     {isDelivered ?
-                        <Link href={`/shopping?productId=${item.variant.product_id}&variantId=${item.variant.id}`} className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex items-center justify-center">
+                        <Link href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`} className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex items-center justify-center">
                             {"Buy Again"}
                         </Link>
                         :

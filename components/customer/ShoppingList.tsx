@@ -3,7 +3,7 @@ import { useReducer, useEffect, useCallback, useRef } from 'react';
 import { AddToCart } from './AddToCart';
 import { BuyBtn } from './BuyBtn';
 import { WishListBtn } from './WishListBtn';
-import { useShoppingCmsData } from "@/hooks/useShoppingCmsData";
+import { useStoreFrontCmsData } from "@/hooks/useStoreFrontCmsData";
 import { Pagination } from '../common/Pagination';
 import Link from 'next/link';
 import { FilterSidebar, FilterState } from './FilterSidebar';
@@ -30,10 +30,10 @@ interface ShoppingListProps {
     initialSearchParams?: {
         search?: string;
         category_id?: string;
-        min_price?: string;
-        max_price?: string;
+        min_price?: number;
+        max_price?: number;
         sort_by?: string;
-        page?: string;
+        page?: number;
     };
     styles?: string;
 }
@@ -46,7 +46,7 @@ interface State {
     total: number;
     page: number;
     search: string;
-    committedSearch: string;
+    // committedSearch: string;
     sortBy: SortBy;
     isSortOpen: boolean;
     filters: FilterState;
@@ -57,7 +57,7 @@ enum ActionType {
     SET_LOADING = 'SET_LOADING',
     SET_PAGE = 'SET_PAGE',
     SET_SEARCH = 'SET_SEARCH',
-    SET_COMMITTED_SEARCH = 'SET_COMMITTED_SEARCH',
+    // SET_COMMITTED_SEARCH = 'SET_COMMITTED_SEARCH',
     SET_SORT_BY = 'SET_SORT_BY',
     SET_SORT_OPEN = 'SET_SORT_OPEN',
     SET_FILTERS = 'SET_FILTERS'
@@ -68,7 +68,7 @@ type Action =
     | { type: ActionType.SET_LOADING; payload: boolean }
     | { type: ActionType.SET_PAGE; payload: number }
     | { type: ActionType.SET_SEARCH; payload: string }
-    | { type: ActionType.SET_COMMITTED_SEARCH; payload: string }
+    // | { type: ActionType.SET_COMMITTED_SEARCH; payload: string }
     | { type: ActionType.SET_SORT_BY; payload: SortBy }
     | { type: ActionType.SET_SORT_OPEN; payload: boolean }
     | { type: ActionType.SET_FILTERS; payload: FilterState };
@@ -86,7 +86,7 @@ function reducer(state: State, action: Action): State {
         case ActionType.SET_LOADING: return { ...state, isLoading: action.payload };
         case ActionType.SET_PAGE: return { ...state, page: action.payload };
         case ActionType.SET_SEARCH: return { ...state, search: action.payload };
-        case ActionType.SET_COMMITTED_SEARCH: return { ...state, committedSearch: action.payload };
+        // case ActionType.SET_COMMITTED_SEARCH: return { ...state, committedSearch: action.payload };
         case ActionType.SET_SORT_BY: return { ...state, sortBy: action.payload };
         case ActionType.SET_SORT_OPEN: return { ...state, isSortOpen: action.payload };
         case ActionType.SET_FILTERS: return { ...state, filters: action.payload };
@@ -95,7 +95,7 @@ function reducer(state: State, action: Action): State {
 }
 
 export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps) {
-    const { promoContent } = useShoppingCmsData();
+    const { promoContent } = useStoreFrontCmsData();
     console.log(initialSearchParams)
     const [state, dispatch] = useReducer(reducer, {
         products: [],
@@ -105,7 +105,7 @@ export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps)
         total: 0,
         page: Number(initialSearchParams?.page || 1),
         search: initialSearchParams?.search || '',
-        committedSearch: initialSearchParams?.search || '',
+        // committedSearch: initialSearchParams?.search || '',
         sortBy: (initialSearchParams?.sort_by as SortBy) || 'newest',
         isSortOpen: false,
         filters: {
@@ -136,7 +136,7 @@ export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps)
         try {
             const category_id = state.filters.selectedCategories[0];
             const response = await fetchProductVendorProducts({
-                search: state.committedSearch || undefined,
+                search: state.search || undefined,
                 category_id,
                 min_price: state.filters.minPrice > 0 ? state.filters.minPrice : undefined,
                 max_price: state.filters.maxPrice < 50000 ? state.filters.maxPrice : undefined,
@@ -174,7 +174,7 @@ export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps)
         } finally {
             dispatch({ type: ActionType.SET_LOADING, payload: false });
         }
-    }, [state.committedSearch, state.filters, state.sortBy, state.page, state.categories]);
+    }, [state.search, state.filters, state.sortBy, state.page, state.categories]);
 
     useEffect(() => {
         fetchProducts();
@@ -186,7 +186,7 @@ export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps)
     };
 
     const handleSearch = (value: string) => {
-        dispatch({ type: ActionType.SET_COMMITTED_SEARCH, payload: value });
+        dispatch({ type: ActionType.SET_SEARCH, payload: value });
         dispatch({ type: ActionType.SET_PAGE, payload: 1 });
     };
 
@@ -302,7 +302,7 @@ export function ShoppingList({ initialSearchParams, styles }: ShoppingListProps)
                             </motion.div>
                         ) : (
                             <motion.ul
-                                key={`products-${state.page}-${state.committedSearch}-${state.sortBy}`}
+                                key={`products-${state.page}-${state.search}-${state.sortBy}`}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
@@ -342,7 +342,7 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
         >
             <div className="relative aspect-square md:aspect-[4/5] bg-[#F8F9FA] overflow-hidden">
                 <WishListBtn productVariantId={variantId} styles="absolute top-3 right-3 z-10 w-9 h-9 bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center rounded-full text-gray-600 hover:text-red-500 transition-colors" />
-                <Link href={`/shopping/${product.id}`} className="block w-full h-full p-4">
+                <Link href={`/store/${product.id}`} className="block w-full h-full p-4">
                     <img
                         loading="lazy"
                         className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
@@ -356,7 +356,7 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
                 <div className="mb-1 text-xs font-semibold text-gray-500 uppercase tracking-wide truncate">
                     {product.category?.name || 'Category'}
                 </div>
-                <Link href={`/shopping/${product.id}`} className="block">
+                <Link href={`/store/${product.id}`} className="block">
                     <h3 className="font-semibold text-gray-900 text-sm lg:text-[15px] leading-tight mb-3 line-clamp-2">
                         {product.name}
                     </h3>

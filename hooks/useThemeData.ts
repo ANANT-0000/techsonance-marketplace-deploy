@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
+import { getCachedData, cacheData } from '@/utils/cache';
 
 const THEME_CACHE_KEY = 'techsonance_cms_theme';
 
@@ -43,14 +44,13 @@ export function useThemeData() {
 
   const fetchTheme = useCallback(async () => {
     setIsLoading(true);
-    if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem(THEME_CACHE_KEY);
-      if (cached) {
-        try {
-          setThemeData(JSON.parse(cached));
-        } catch {}
-      }
+    const cached = getCachedData(THEME_CACHE_KEY);
+    if (cached) {
+      setThemeData(cached);
+      setIsLoading(false);
+      return;
     }
+
     try {
       const res = await AxiosAPI.get('/v1/cms/theme?lang=en');
       const cmsRow = res.data?.data ?? res.data;
@@ -63,7 +63,7 @@ export function useThemeData() {
         if (parsed && typeof parsed === 'object' && parsed.primary_color) {
           const merged = { ...DEFAULT_THEME, ...parsed };
           setThemeData(merged);
-          localStorage.setItem(THEME_CACHE_KEY, JSON.stringify(merged));
+          cacheData(THEME_CACHE_KEY, merged);
         }
       }
     } catch (err) {
