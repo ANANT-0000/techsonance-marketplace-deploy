@@ -85,7 +85,8 @@ export function HeroCarousel({ slides, autoPlayMs = 5000, isLoading }: HeroCarou
             fill
             className="object-cover object-center"
             priority={i === 0}
-            sizes="100vw"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            loading="eager"
           />
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />

@@ -80,14 +80,16 @@ function CategoryCard({ cat, idx }: { cat: { title: string; url: string }; idx: 
       href={`/store?category=${encodeURIComponent(cat.title)}`}
       className="group flex flex-col"
     >
-      <div className={`relative ${sizes[idx % 4]} w-full overflow-hidden bg-gray-100 rounded-2xl`}>
+      <div className={`relative ${sizes[idx % 4]} shadow-md   border border-gray-200  w-full overflow-hidden  rounded-2xl`}>
         {cat.url && (
           <Image
             src={cat.url}
             alt={cat.title}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            sizes="(max-width: 768px) 50vw, 25vw"
+            width={1500}
+            height={1500}
+            className="w-full h-full object-contain     transition-transform duration-700 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            loading='eager'
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -170,8 +172,7 @@ function PromoBannerMobile({ imageUrl, title, desc, btnText }: {
   );
 }
 
-// ── New Arrivals Desktop ──────────────────────────────────────────────────────
-function NewArrivalsDesktop({ getField }: { getField: (k: string) => string }) {
+export function NewArrivalsDesktop({ getField }: { getField: (k: string) => string }) {
   const leftImg = getField('new_arrivals_left_image_url');
   const rightTopImg = getField('new_arrivals_right_top_image_url');
   const rightBottomImg = getField('new_arrivals_right_bottom_image_url');
@@ -179,16 +180,23 @@ function NewArrivalsDesktop({ getField }: { getField: (k: string) => string }) {
   return (
     <section className="py-20 px-6 lg:px-16 xl:px-24 bg-white">
       <SectionHeader eyebrow="Just Dropped" title="New Arrivals" href="/store" />
-      <div className="grid grid-cols-5 gap-4 h-[600px]">
+      
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        
         {/* Left — large hero card */}
-        <Link href="/store" className="col-span-3 relative overflow-hidden rounded-2xl group bg-gray-100">
+        <Link 
+          href="/store" 
+          className="lg:col-span-3 aspect-[4/3] relative overflow-hidden rounded-2xl group bg-gray-100"
+        >
           {leftImg && (
             <Image
               src={leftImg}
               alt={getField('new_arrivals_left_title')}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-              sizes="60vw"
+              sizes="(max-width: 1024px) 100vw, 60vw"
+              quality={100} // <-- FIX: Force 100% quality for the hero image
+              priority // <-- FIX: Preload this image so it doesn't load blurry
             />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
@@ -196,7 +204,9 @@ function NewArrivalsDesktop({ getField }: { getField: (k: string) => string }) {
             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/70 block mb-2">
               {getField('new_arrivals_left_subtitle')}
             </span>
-            <h3 className="text-2xl font-serif tracking-tight mb-2">{getField('new_arrivals_left_title')}</h3>
+            <h3 className="text-2xl font-serif tracking-tight mb-2">
+              {getField('new_arrivals_left_title')}
+            </h3>
             <p className="text-sm text-white/70 font-light mb-5 max-w-xs line-clamp-2">
               {getField('new_arrivals_left_desc')}
             </p>
@@ -207,19 +217,24 @@ function NewArrivalsDesktop({ getField }: { getField: (k: string) => string }) {
         </Link>
 
         {/* Right — two stacked cards */}
-        <div className="col-span-2 flex flex-col gap-4">
+        <div className="lg:col-span-2 flex flex-col gap-4">
           {[
             { img: rightTopImg, title: getField('new_arrivals_right_top_title') },
             { img: rightBottomImg, title: getField('new_arrivals_right_bottom_title') },
           ].map(({ img, title }) => (
-            <Link key={title} href="/store" className="relative flex-1 overflow-hidden rounded-2xl group bg-gray-100">
+            <Link 
+              key={title} 
+              href="/store" 
+              className="relative flex-1 overflow-hidden rounded-2xl group bg-gray-100"
+            >
               {img && (
                 <Image
                   src={img}
                   alt={title}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  sizes="40vw"
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  quality={90} // <-- FIX: Bump quality up from default 75
                 />
               )}
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
@@ -232,11 +247,11 @@ function NewArrivalsDesktop({ getField }: { getField: (k: string) => string }) {
             </Link>
           ))}
         </div>
+
       </div>
     </section>
   );
 }
-
 // ── Newsletter Desktop ────────────────────────────────────────────────────────
 function NewsletterDesktop({ getField }: { getField: (k: string) => string }) {
   const [email, setEmail] = useState('');

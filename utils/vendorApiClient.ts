@@ -176,6 +176,8 @@ export const updateProductVariantStatus = async (productVariantId: string, nextS
 export const fetchVendorProducts = async (offset: number, limit: number,status: string | null,search: string | null, categoryId: string | null, token: string) => {
     try {
         const companyDomain = await getCompanyDomain();
+        console.log("companyDomain", companyDomain);
+        console.log("token", token);
         const response = await fetch(`${BASE_API_URL}/v1/products/all?offset=${offset}&limit=${limit}&search=${search??null}&category_id=${categoryId??null}&status=${status ?? null}`, {
             method: 'GET',
             // cache: 'force-cache',

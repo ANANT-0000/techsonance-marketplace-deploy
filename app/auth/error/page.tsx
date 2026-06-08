@@ -17,7 +17,7 @@ function AuthErrorHandler() {
     const email = rawEmail && rawEmail !== 'undefined' ? rawEmail : null;
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="min-h-screen flex items-center justify-center  ">
             <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4">
                 <div className="text-center animate-in fade-in zoom-in duration-300">
                     

@@ -5,7 +5,7 @@
 import { CountryCompliance, Product } from "@/utils/Types";
 
 export const BRAND_LOGO = "/assets/e-commerce_brand_logo.png";
-export const CUSTOMER_LOGIN_POSTER = "/assets/customer form poster 2.png";
+export const CUSTOMER_LOGIN_POSTER = "/assets/customer form poster 2.svg";
 export const TS_LOGO = "/assets/TS_Logo.png";
 export const BAR_TOGGLE_ICON = "/assets/bar toggle icon.png";
 export const CUSTOMER_REGISTRATION_POSTER = "/assets/customer form poster.png";
