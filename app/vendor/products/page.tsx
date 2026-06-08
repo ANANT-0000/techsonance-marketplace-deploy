@@ -11,6 +11,7 @@ import { Product } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getCompanyDomain } from "@/lib/get-domain";
 
 interface ProductsPageProps {
     setIsLoadingProducts: (loading: boolean) => void;
@@ -55,6 +56,8 @@ export default function Products() {
 
     const [isLoadingCategories, setIsLoadingCategories] = useState(false);
     const loadProduct = async () => {
+        const domain = await getCompanyDomain();
+        console.log("the domain", domain);
         setIsLoadingProducts(true);
         const response = await fetchVendorProducts(offset, itemsPerPage, selectedStatus, debouncedSearchTerm, selectedCategory, token ?? '');
         if (response.status !== 200) {
@@ -218,7 +221,7 @@ export default function Products() {
                                         {/* Variant */}
                                         <TableCell className="px-4 py-3">
                                             {item.variants && item.variants.length > 0 ? (
- 
+
                                                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 py-1.5 px-3 rounded-full transition-colors whitespace-nowrap"
                                                     title="View Variants"
                                                 >
