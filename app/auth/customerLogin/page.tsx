@@ -66,7 +66,12 @@ export default function CustomerLoginPage() {
 
             if (response.status === 200) {
                 dispatch(loginSuccess(response?.data));
-                router.push('/');
+                const redirect = searchParams.get('redirect');
+                if (redirect) {
+                    router.push(redirect);
+                } else {
+                    router.push('/');
+                }
             } else if (response.status === 423) {
                 console.log('resonse statsu', response)
                 dispatch(loginFailure(response?.message));
@@ -94,6 +99,10 @@ export default function CustomerLoginPage() {
             const domain = await getCompanyDomain();
             if (domain == null) {
                 throw new Error("Company domain not found");
+            }
+            const redirect = searchParams.get('redirect');
+            if (redirect) {
+                sessionStorage.setItem('oauth_redirect', redirect);
             }
             window.location.href = `${BASE_API_URL}/v1/auth/google?domain=${encodeURIComponent(domain)}`;
         } catch (error) {

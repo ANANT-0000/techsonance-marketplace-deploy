@@ -8,7 +8,7 @@ import { useMediaQuery } from "react-responsive";
 import { RootState } from "@/lib/store";
 import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { fetchGetCartList } from "@/utils/customerApiClient";
+ 
 import { BuyBtnMode } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
 import { X, ShoppingBag, ArrowRight, Package, Tag, ChevronRight } from "lucide-react";
@@ -87,18 +87,17 @@ const MobileToast = ({ item }: { item: CartItemListResponse | undefined }) => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function CartSidebar() {
     const { isCartOpen } = useAppSelector((state: RootState) => state.cartSidebar);
-    const isMobile = useMediaQuery({ maxWidth: 768 });
-    const { user } = useAppSelector((state: RootState) => state.auth);
+    const isMobile = useMediaQuery({ maxWidth: 768 }); 
     const { itemList, loading: isLoading, cartId } = useAppSelector((state: RootState) => state.cart);
     const dispatch = useAppDispatch();
     const token = authToken();
 
     // Fetch cart list whenever sidebar opens
     useEffect(() => {
-        if (isCartOpen && user?.id && token) {
+        if (isCartOpen) {
             dispatch(loadCart());
         }
-    }, [isCartOpen, user?.id, dispatch]);
+    }, [isCartOpen, dispatch]);
 
     // Auto-dismiss mobile toast after 2.5 s
     useEffect(() => {
@@ -281,7 +280,7 @@ export function CartSidebar() {
 
                                 {/* View full cart link */}
                                 <Link
-                                    href={`/customer/${user?.id}/cart`}
+                                    href="/customer/cart"
                                     onClick={() => dispatch(toggleCartSidebar('close'))}
                                     className="flex items-center justify-between w-full px-4 py-3 rounded-2xl border border-gray-200 hover:border-gray-400 hover:bg-gray-50 transition-all group"
                                 >

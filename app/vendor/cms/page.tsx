@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef, useReducer } from 'react';
 import { Save, Loader2, Plus, Trash2, Globe, Languages, CheckCircle, ArrowUp, ArrowDown, Palette, LayoutGrid, Upload, Image as ImageIcon } from 'lucide-react';
 import AxiosAPI from '@/lib/axios';
 import { authToken } from '@/utils/authToken';
+import { BrandingTab } from '@/components/vendor/BrandingTab';
 
 type PageType = 'home' | 'navbar' | 'footer' | 'about' | 'contact' | 'store' | 'theme';
 type LangType = 'en' | 'es';
@@ -364,7 +365,13 @@ export default function CmsManagementPage() {
   const [state, dispatch] = useReducer(cmsReducer, initialState);
   const { page, lang, loading, saving, msg, data } = state;
 
+  const token = authToken() || '';
+
   const load = async () => {
+    if (page === 'theme') {
+      dispatch({ type: 'FETCH_SUCCESS', payload: {} });
+      return;
+    }
     dispatch({ type: 'FETCH_START' });
     try {
       const res = await AxiosAPI.get(`/v1/cms/${page}?lang=${lang}`);
@@ -373,49 +380,9 @@ export default function CmsManagementPage() {
       const cmsRow = res.data?.data ?? res.data;
       const raw = cmsRow?.content;
       let parsed = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {});
-      if (page === 'theme' && (!parsed || Object.keys(parsed).length === 0)) {
-        parsed = {
-          primary_color: "#2563eb",
-          secondary_color: "#4f46e5",
-          background_color: "#f8fafc",
-          text_color: "#0f172a",
-          navbar_bg: "#ffffff",
-          navbar_fg: "#0f172a",
-          footer_bg: "#0f172a",
-          footer_fg: "#ffffff",
-          navbar_position: "sticky",
-          logo_alignment: "left",
-          footer_style: "detailed",
-          border_radius: "md",
-          card_style: "standard",
-          homepage_layout: ["hero", "categories", "products", "promo", "new_arrivals", "newsletter"]
-        };
-      }
       dispatch({ type: 'FETCH_SUCCESS', payload: parsed });
     } catch {
-      if (page === 'theme') {
-        dispatch({
-          type: 'FETCH_SUCCESS',
-          payload: {
-            primary_color: "#2563eb",
-            secondary_color: "#4f46e5",
-            background_color: "#f8fafc",
-            text_color: "#0f172a",
-            navbar_bg: "#ffffff",
-            navbar_fg: "#0f172a",
-            footer_bg: "#0f172a",
-            footer_fg: "#ffffff",
-            navbar_position: "sticky",
-            logo_alignment: "left",
-            footer_style: "detailed",
-            border_radius: "md",
-            card_style: "standard",
-            homepage_layout: ["hero", "categories", "products", "promo", "new_arrivals", "newsletter"]
-          }
-        });
-      } else {
-        dispatch({ type: 'FETCH_SUCCESS', payload: {} });
-      }
+      dispatch({ type: 'FETCH_SUCCESS', payload: {} });
     }
   };
 
@@ -497,17 +464,19 @@ export default function CmsManagementPage() {
             ))}
           </div>
         </div>
-        <div>
-          <p className="text-xs font-bold text-gray-400 uppercase mb-2">Language</p>
-          <div className="flex gap-1.5">
-            {(['en', 'es'] as LangType[]).map(l => (
-              <button key={l} onClick={() => dispatch({ type: 'SET_LANG', payload: l })}
-                className={`flex items-center gap-1 px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${lang === l ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                {l === 'en' ? <><Globe size={12} /> English</> : <><Languages size={12} /> Español</>}
-              </button>
-            ))}
+        {page !== 'theme' && (
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase mb-2">Language</p>
+            <div className="flex gap-1.5">
+              {(['en', 'es'] as LangType[]).map(l => (
+                <button key={l} onClick={() => dispatch({ type: 'SET_LANG', payload: l })}
+                  className={`flex items-center gap-1 px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${lang === l ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                  {l === 'en' ? <><Globe size={12} /> English</> : <><Languages size={12} /> Español</>}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {msg && (
@@ -519,6 +488,10 @@ export default function CmsManagementPage() {
       {loading ? (
         <div className="bg-white rounded-2xl border p-20 flex items-center justify-center">
           <Loader2 size={36} className="animate-spin text-purple-600" />
+        </div>
+      ) : page === 'theme' ? (
+        <div className="space-y-6">
+          <BrandingTab token={token} />
         </div>
       ) : (
         <form onSubmit={save} className="space-y-6">
@@ -605,6 +578,218 @@ export default function CmsManagementPage() {
                   <Field label="Title" value={data.newsletter_title || ''} onChange={(v: string) => set('newsletter_title', v)} />
                   <Field label="Button Text" value={data.newsletter_btn_text || ''} onChange={(v: string) => set('newsletter_btn_text', v)} />
                   <div className="md:col-span-2"><Field label="Description" value={data.newsletter_desc || ''} onChange={(v: string) => set('newsletter_desc', v)} /></div>
+                </div>
+              </Section>
+
+              <Section title="Interactive Hero Options (Enhanced)">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <SelectField
+                    label="Banner Display Type"
+                    value={data.hero_banner_type || 'carousel'}
+                    onChange={(v: string) => set('hero_banner_type', v)}
+                    options={[
+                      { value: 'carousel', label: 'Image Carousel Slider' },
+                      { value: 'video', label: 'Video Background Banner' }
+                    ]}
+                  />
+                  <Field label="Video Background URL (MP4 Format)" value={data.hero_video_url || ''} onChange={(v: string) => set('hero_video_url', v)} mono />
+                </div>
+              </Section>
+
+              <Section title="Shoppable Lookbook Section">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Lookbook Section Title" value={data.lookbook_title || ''} onChange={(v: string) => set('lookbook_title', v)} />
+                  <Field label="Lookbook Subtitle / Description" value={data.lookbook_subtitle || ''} onChange={(v: string) => set('lookbook_subtitle', v)} />
+                  <div className="md:col-span-2">
+                    <ImageUploadField label="Main Lookbook Image" value={data.lookbook_image_url || ''} onChange={(v: string) => set('lookbook_image_url', v)} />
+                  </div>
+                </div>
+
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase">Interactive Hotspots</h4>
+                    <AddBtn
+                      onClick={() => set('lookbook_hotspots', [...(data.lookbook_hotspots || []), { id: Date.now(), x: 50, y: 50, productId: '' }])}
+                      label="Add Hotspot"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    {(data.lookbook_hotspots || []).map((hs: any, hIdx: number) => (
+                      <div key={hs.id || hIdx} className="flex gap-3 items-end bg-gray-50 p-4 rounded-xl border border-gray-150 relative">
+                        <button
+                          type="button"
+                          onClick={() => set('lookbook_hotspots', data.lookbook_hotspots.filter((h: any) => h.id !== hs.id))}
+                          className="absolute right-3 top-3 text-red-400 hover:text-red-600"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                        <div className="flex-1 grid grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-400 mb-1">X Coord (%)</label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={hs.x}
+                              onChange={(e) => set('lookbook_hotspots', data.lookbook_hotspots.map((h: any) => h.id === hs.id ? { ...h, x: parseFloat(e.target.value) || 0 } : h))}
+                              className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-400 mb-1">Y Coord (%)</label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={hs.y}
+                              onChange={(e) => set('lookbook_hotspots', data.lookbook_hotspots.map((h: any) => h.id === hs.id ? { ...h, y: parseFloat(e.target.value) || 0 } : h))}
+                              className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                            />
+                          </div>
+                          <div className="col-span-1">
+                            <label className="block text-[10px] font-bold text-gray-400 mb-1">Product ID</label>
+                            <input
+                              type="text"
+                              placeholder="Product UUID"
+                              value={hs.productId}
+                              onChange={(e) => set('lookbook_hotspots', data.lookbook_hotspots.map((h: any) => h.id === hs.id ? { ...h, productId: e.target.value } : h))}
+                              className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-mono focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {!(data.lookbook_hotspots || []).length && (
+                      <p className="text-center text-xs text-gray-400 py-3">No hotspots added. Press Add Hotspot to place interactive tags.</p>
+                    )}
+                  </div>
+                </div>
+              </Section>
+
+              <Section title="Scarcity & Urgency Timer Block">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Timer Heading Title" value={data.scarcity_timer_title || ''} onChange={(v: string) => set('scarcity_timer_title', v)} />
+                  <Field label="Expiration Date & Time (ISO/Local String)" value={data.scarcity_expires_at || ''} onChange={(v: string) => set('scarcity_expires_at', v)} placeholder="e.g. 2026-06-30T18:00:00Z" mono />
+                  <Field label="CTA Action Button Text" value={data.scarcity_btn_text || ''} onChange={(v: string) => set('scarcity_btn_text', v)} />
+                  <Field label="CTA Action Button Link (URL)" value={data.scarcity_btn_link || ''} onChange={(v: string) => set('scarcity_btn_link', v)} mono />
+                  
+                  <div className="md:col-span-2">
+                    <Field label="Marketing Alert Text Message" value={data.scarcity_alert_text || ''} onChange={(v: string) => set('scarcity_alert_text', v)} />
+                  </div>
+                  
+                  <ColorField label="Alert Bar Background Color" value={data.scarcity_alert_bg} onChange={(v: string) => set('scarcity_alert_bg', v)} />
+                  <ColorField label="Alert Bar Text Color" value={data.scarcity_alert_text_color} onChange={(v: string) => set('scarcity_alert_text_color', v)} />
+                </div>
+              </Section>
+
+              <Section title="Trust & Social Proof Section">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Social Proof Header Title" value={data.social_proof_title || ''} onChange={(v: string) => set('social_proof_title', v)} />
+                  <Field label="Eyebrow Tag / Subtext" value={data.social_proof_eyebrow || ''} onChange={(v: string) => set('social_proof_eyebrow', v)} />
+                </div>
+
+                <div className="mt-5 border-t border-gray-100 pt-5">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase">Customer Testimonials</h4>
+                    <AddBtn
+                      onClick={() => set('social_proof_testimonials', [...(data.social_proof_testimonials || []), { id: Date.now(), name: '', role: '', text: '', rating: 5, avatar: '' }])}
+                      label="Add Testimonial"
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    {(data.social_proof_testimonials || []).map((t: any, tIdx: number) => (
+                      <div key={t.id || tIdx} className="bg-gray-50 border border-gray-100 rounded-xl p-4 relative">
+                        <button
+                          type="button"
+                          onClick={() => set('social_proof_testimonials', data.social_proof_testimonials.filter((x: any) => x.id !== t.id))}
+                          className="absolute right-3 top-3 text-red-400 hover:text-red-600"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Field label="Customer Name" value={t.name} onChange={(v: string) => set('social_proof_testimonials', data.social_proof_testimonials.map((x: any) => x.id === t.id ? { ...x, name: v } : x))} />
+                          <Field label="Role / Designation" value={t.role} onChange={(v: string) => set('social_proof_testimonials', data.social_proof_testimonials.map((x: any) => x.id === t.id ? { ...x, role: v } : x))} />
+                          <div>
+                            <label className="block text-xs font-bold text-gray-500 mb-1.5">Rating (1-5)</label>
+                            <input
+                              type="number"
+                              min="1"
+                              max="5"
+                              value={t.rating}
+                              onChange={(e) => set('social_proof_testimonials', data.social_proof_testimonials.map((x: any) => x.id === t.id ? { ...x, rating: parseInt(e.target.value) || 5 } : x))}
+                              className="w-full bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none"
+                            />
+                          </div>
+                          <Field label="Avatar Image URL (Optional)" value={t.avatar} onChange={(v: string) => set('social_proof_testimonials', data.social_proof_testimonials.map((x: any) => x.id === t.id ? { ...x, avatar: v } : x))} />
+                          <div className="md:col-span-2">
+                            <Field label="Testimonial Quote / Text" value={t.text} onChange={(v: string) => set('social_proof_testimonials', data.social_proof_testimonials.map((x: any) => x.id === t.id ? { ...x, text: v } : x))} textarea />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-5 border-t border-gray-100 pt-5">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase">Trust Badge Strip</h4>
+                    <AddBtn
+                      onClick={() => set('social_proof_badges', [...(data.social_proof_badges || []), { id: Date.now(), icon: 'Shield', title: '', desc: '' }])}
+                      label="Add Trust Badge"
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    {(data.social_proof_badges || []).map((bg: any, bIdx: number) => (
+                      <div key={bg.id || bIdx} className="flex gap-3 items-end bg-gray-50 p-4 rounded-xl border border-gray-150 relative">
+                        <button
+                          type="button"
+                          onClick={() => set('social_proof_badges', data.social_proof_badges.filter((x: any) => x.id !== bg.id))}
+                          className="absolute right-3 top-3 text-red-400 hover:text-red-600"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                        <div className="flex-1 grid grid-cols-3 gap-3">
+                          <Field label="Lucide Icon Name" value={bg.icon} onChange={(v: string) => set('social_proof_badges', data.social_proof_badges.map((x: any) => x.id === bg.id ? { ...x, icon: v } : x))} mono />
+                          <Field label="Badge Title" value={bg.title} onChange={(v: string) => set('social_proof_badges', data.social_proof_badges.map((x: any) => x.id === bg.id ? { ...x, title: v } : x))} />
+                          <Field label="Short Description" value={bg.desc} onChange={(v: string) => set('social_proof_badges', data.social_proof_badges.map((x: any) => x.id === bg.id ? { ...x, desc: v } : x))} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Section>
+
+              <Section title="Curated Discovery Products Slider">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Discovery Section Heading" value={data.curated_title || ''} onChange={(v: string) => set('curated_title', v)} />
+                  <Field label="Subtitle / Tagline" value={data.curated_subtitle || ''} onChange={(v: string) => set('curated_subtitle', v)} />
+                  
+                  <SelectField
+                    label="Curation Category Type"
+                    value={data.curated_type || 'trending'}
+                    onChange={(v: string) => set('curated_type', v)}
+                    options={[
+                      { value: 'trending', label: 'Trending Masterpieces' },
+                      { value: 'new_arrivals', label: 'New Arrivals' },
+                      { value: 'curated', label: 'Curated Custom Products (IDs Below)' }
+                    ]}
+                  />
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1.5">
+                      Curated Product UUIDs (Comma separated, for 'Curated Custom' option)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000, ..."
+                      value={Array.isArray(data.curated_product_ids) ? data.curated_product_ids.join(', ') : (data.curated_product_ids || '')}
+                      onChange={(e) => {
+                        const ids = e.target.value.split(',').map((id: string) => id.trim()).filter(Boolean);
+                        set('curated_product_ids', ids);
+                      }}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-purple-400 font-mono"
+                    />
+                  </div>
                 </div>
               </Section>
             </>
@@ -769,133 +954,7 @@ export default function CmsManagementPage() {
             </Section>
           )}
 
-          {/* STOREFRONT THEME & LAYOUT CUSTOMIZER */}
-          {page === 'theme' && (
-            <>
-              <Section title="Storefront Color Palette & Theme">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  <ColorField label="Primary Accent Color" value={data.primary_color} onChange={(v: string) => set('primary_color', v)} />
-                  <ColorField label="Secondary Accent Color" value={data.secondary_color} onChange={(v: string) => set('secondary_color', v)} />
-                  <ColorField label="Page Background Color" value={data.background_color} onChange={(v: string) => set('background_color', v)} />
-                  <ColorField label="Text Primary Color" value={data.text_color} onChange={(v: string) => set('text_color', v)} />
-                </div>
-              </Section>
 
-              <Section title="Header & Footer Branding Colors">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  <ColorField label="Navbar Background" value={data.navbar_bg} onChange={(v: string) => set('navbar_bg', v)} />
-                  <ColorField label="Navbar Text/Links" value={data.navbar_fg} onChange={(v: string) => set('navbar_fg', v)} />
-                  <ColorField label="Footer Background" value={data.footer_bg} onChange={(v: string) => set('footer_bg', v)} />
-                  <ColorField label="Footer Text/Links" value={data.footer_fg} onChange={(v: string) => set('footer_fg', v)} />
-                </div>
-              </Section>
-
-              <Section title="Component Layout Choices">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <SelectField
-                    label="Navbar Layout Type"
-                    value={data.navbar_position || 'sticky'}
-                    onChange={(v: string) => set('navbar_position', v)}
-                    options={[
-                      { value: 'sticky', label: 'Sticky / Fixed (Scrolls with page)' },
-                      { value: 'static', label: 'Static (Remains at the top)' },
-                    ]}
-                  />
-                  <SelectField
-                    label="Navbar Logo Position"
-                    value={data.logo_alignment || 'left'}
-                    onChange={(v: string) => set('logo_alignment', v)}
-                    options={[
-                      { value: 'left', label: 'Left Aligned' },
-                      { value: 'center', label: 'Center Aligned' },
-                    ]}
-                  />
-                  <SelectField
-                    label="Footer Layout Style"
-                    value={data.footer_style || 'detailed'}
-                    onChange={(v: string) => set('footer_style', v)}
-                    options={[
-                      { value: 'detailed', label: 'Detailed Columns & Links' },
-                      { value: 'simple', label: 'Minimal Simple Row' },
-                    ]}
-                  />
-                  <SelectField
-                    label="Borders Roundedness"
-                    value={data.border_radius || 'md'}
-                    onChange={(v: string) => set('border_radius', v)}
-                    options={[
-                      { value: 'none', label: 'Sharp Corners (0px)' },
-                      { value: 'sm', label: 'Soft Corners (4px)' },
-                      { value: 'md', label: 'Medium Corners (8px)' },
-                      { value: 'lg', label: 'Rounded Corners (12px)' },
-                      { value: 'xl', label: 'Highly Rounded (16px)' },
-                      { value: 'full', label: 'Pill / Fully Round (24px)' },
-                    ]}
-                  />
-                  <SelectField
-                    label="Product Card Style"
-                    value={data.card_style || 'standard'}
-                    onChange={(v: string) => set('card_style', v)}
-                    options={[
-                      { value: 'standard', label: 'Standard Clean Border' },
-                      { value: 'glassmorphic', label: 'Glassmorphic (Blur & Shadow)' },
-                    ]}
-                  />
-                </div>
-              </Section>
-
-              <Section title="Homepage Section Layout Order (Position Customization)">
-                <p className="text-xs text-gray-400 mb-4 font-medium">
-                  Rearrange the display order of the storefront homepage panels. Click the arrows to shift positions.
-                </p>
-                <div className="space-y-2.5 bg-gray-50 p-4 rounded-2xl border border-gray-150 max-w-2xl">
-                  {(data.homepage_layout || []).map((sectionKey: string, idx: number) => {
-                    const labels: Record<string, string> = {
-                      hero: 'Hero Slider / Banner',
-                      categories: 'Shop Categories Grid',
-                      products: 'Featured Products Grid',
-                      promo: 'Middle Promo Card',
-                      new_arrivals: 'New Arrivals Block',
-                      newsletter: 'Newsletter Subscription Banner',
-                    };
-                    return (
-                      <div
-                        key={sectionKey}
-                        className="flex items-center justify-between p-3.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-purple-250 transition-all"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="w-6 h-6 rounded-full bg-purple-50 flex items-center justify-center text-xs font-bold text-purple-700">
-                            {idx + 1}
-                          </span>
-                          <span className="text-xs font-bold text-gray-800 uppercase tracking-wide">
-                            {labels[sectionKey] || sectionKey}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            disabled={idx === 0}
-                            onClick={() => moveItem(idx, 'up')}
-                            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 disabled:opacity-30 transition-colors"
-                          >
-                            <ArrowUp size={14} />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={idx === (data.homepage_layout || []).length - 1}
-                            onClick={() => moveItem(idx, 'down')}
-                            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 disabled:opacity-30 transition-colors"
-                          >
-                            <ArrowDown size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Section>
-            </>
-          )}
 
           {/* Footer Actions */}
           <div className="flex justify-end gap-4 bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">

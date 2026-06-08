@@ -19,6 +19,7 @@ export interface StorefrontTheme {
   border_radius: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
   card_style: 'standard' | 'glassmorphic';
   homepage_layout: string[];
+  font_family?: string;
 }
 
 const DEFAULT_THEME: StorefrontTheme = {
@@ -35,7 +36,8 @@ const DEFAULT_THEME: StorefrontTheme = {
   footer_style: "detailed",
   border_radius: "md",
   card_style: "standard",
-  homepage_layout: ["hero", "categories", "products", "promo", "new_arrivals", "newsletter"]
+  homepage_layout: ["hero", "categories", "products", "promo", "new_arrivals", "newsletter"],
+  font_family: "Inter"
 };
 
 export function useThemeData() {
@@ -52,19 +54,24 @@ export function useThemeData() {
     }
 
     try {
-      const res = await AxiosAPI.get('/v1/cms/theme?lang=en');
-      const cmsRow = res.data?.data ?? res.data;
-      const rawContent = cmsRow?.content;
-      if (rawContent) {
-        const parsed = typeof rawContent === 'string'
-          ? JSON.parse(rawContent)
-          : rawContent;
-        
-        if (parsed && typeof parsed === 'object' && parsed.primary_color) {
-          const merged = { ...DEFAULT_THEME, ...parsed };
-          setThemeData(merged);
-          cacheData(THEME_CACHE_KEY, merged);
+      const res = await AxiosAPI.get('/v1/company-identity/branding');
+      const branding = res.data?.data ?? res.data;
+      if (branding && typeof branding === 'object' && branding.primary_color) {
+        let homepageLayout = branding.homepage_layout;
+        if (typeof homepageLayout === 'string') {
+          try {
+            homepageLayout = JSON.parse(homepageLayout);
+          } catch {
+            homepageLayout = homepageLayout.split(',').map((s: string) => s.trim());
+          }
         }
+        const parsed = {
+          ...branding,
+          homepage_layout: homepageLayout || DEFAULT_THEME.homepage_layout,
+        };
+        const merged = { ...DEFAULT_THEME, ...parsed };
+        setThemeData(merged);
+        cacheData(THEME_CACHE_KEY, merged);
       }
     } catch (err) {
       console.warn('Using default theme layout configurations');

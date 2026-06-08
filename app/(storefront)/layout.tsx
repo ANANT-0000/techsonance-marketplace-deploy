@@ -43,7 +43,7 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
 
     let themeData: any = {};
     try {
-        const res = await fetch(`${BASE_API_URL}/v1/cms/theme?lang=en`, {
+        const res = await fetch(`${BASE_API_URL}/v1/company-identity/branding`, {
             headers: {
                 'company-domain': companyDomain || '',
             },
@@ -51,10 +51,20 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
         });
         if (res.ok) {
             const result = await res.json();
-            const cmsRow = result?.data ?? result;
-            const rawContent = cmsRow?.content;
-            if (rawContent) {
-                themeData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
+            const branding = result?.data ?? result;
+            if (branding && typeof branding === 'object') {
+                let homepageLayout = branding.homepage_layout;
+                if (typeof homepageLayout === 'string') {
+                    try {
+                        homepageLayout = JSON.parse(homepageLayout);
+                    } catch {
+                        homepageLayout = homepageLayout.split(',').map((s: string) => s.trim());
+                    }
+                }
+                themeData = {
+                    ...branding,
+                    homepage_layout: homepageLayout || undefined
+                };
             }
         }
     } catch (err) {

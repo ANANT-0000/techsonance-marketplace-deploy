@@ -126,9 +126,22 @@ export function ThemeProvider({ theme: initialTheme, children }: ThemeProviderPr
     if (correctedTheme.border_radius) {
       styles['--radius'] = radii[correctedTheme.border_radius] || '0.5rem';
     }
+    if (correctedTheme.font_family) {
+      styles['--font-family'] = `'${correctedTheme.font_family}', sans-serif`;
+    }
     
     return styles as React.CSSProperties;
   }, [correctedTheme]);
+
+  const fontLink = useMemo(() => {
+    if (!correctedTheme.font_family) return null;
+    const font = correctedTheme.font_family;
+    const systemFonts = ['Arial', 'Helvetica', 'Times New Roman', 'Courier New', 'Georgia', 'Verdana', 'Trebuchet MS', 'System-UI', 'sans-serif', 'serif', 'monospace'];
+    if (systemFonts.includes(font)) return null;
+
+    const formattedFont = font.replace(/\s+/g, '+');
+    return `https://fonts.googleapis.com/css2?family=${formattedFont}:wght@300;400;500;600;700&display=swap`;
+  }, [correctedTheme.font_family]);
 
   const cssText = useMemo(() => {
     return `
@@ -137,11 +150,15 @@ export function ThemeProvider({ theme: initialTheme, children }: ThemeProviderPr
           .map(([key, value]) => `${key}: ${value} !important;`)
           .join('\n')}
       }
+      body {
+        font-family: var(--font-family, 'Inter', sans-serif) !important;
+      }
     `;
   }, [inlineStyles]);
 
   return (
     <ThemeContext.Provider value={{ theme: correctedTheme }}>
+      {fontLink && <link rel="stylesheet" href={fontLink} />}
       <style dangerouslySetInnerHTML={{ __html: cssText }} />
       <div style={inlineStyles} className="min-h-screen flex flex-col w-full">
         {children}

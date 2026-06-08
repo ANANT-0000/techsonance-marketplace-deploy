@@ -172,7 +172,7 @@ export default function ReturnReplaceClient() {
 
     if (!state.targetItem) return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#f8fafc]">
-            <PackageSearch className="w-10 h-10 text-indigo-400 animate-pulse mb-4" />
+            <PackageSearch className="w-10 h-10 text-theme-primary animate-pulse mb-4" />
             <p className="text-gray-500 font-medium tracking-wide">Loading item details...</p>
         </div>
     );
@@ -183,15 +183,9 @@ export default function ReturnReplaceClient() {
 
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-6 sm:mb-8">
-                    <button
-                        onClick={() => router.back()}
-                        className="p-2 sm:p-2.5 bg-white border border-gray-200 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-all shadow-sm"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Initiate a Request</h1>
-                        <p className="text-sm font-medium text-gray-500 mt-1">Order #{orderId}</p>
+                        {orderId && <p className="text-sm font-medium text-gray-500 mt-1">Order #{orderId}</p>}
                     </div>
                 </div>
 
@@ -240,18 +234,18 @@ export default function ReturnReplaceClient() {
                                         key={type}
                                         onClick={() => dispatch({ type: "SET_REQUEST_TYPE", payload: type as ReturnReplaceTypeEnum })}
                                         className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 ${isSelected
-                                                ? 'border-indigo-600 bg-indigo-50/50 shadow-sm'
-                                                : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                                            ? 'border-theme-primary/90 bg-white shadow-sm'
+                                            : 'border-gray-200 hover:border-theme-primary/90 hover:bg-theme-primary/5'
                                             }`}
                                     >
                                         <div className="absolute top-5 right-5">
-                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? "border-indigo-600 bg-indigo-600" : "border-gray-300"
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? "border-theme-primary bg-theme-primary" : "border-gray-300"
                                                 }`}>
                                                 {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                                             </div>
                                         </div>
 
-                                        <p className={`font-bold text-base sm:text-lg mb-1 pr-8 ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>
+                                        <p className={`font-bold text-base sm:text-lg mb-1 pr-8 ${isSelected ? 'text-theme-primary-foreground' : 'text-theme-primary-foreground/80'}`}>
                                             {type === ReturnReplaceTypeEnum.REPLACEMENT ? 'Replace Item' : 'Return Item'}
                                         </p>
                                         <p className="text-xs sm:text-sm font-medium text-gray-500">
@@ -277,7 +271,7 @@ export default function ReturnReplaceClient() {
                             <select
                                 value={state.selectedReason}
                                 onChange={(e) => dispatch({ type: "SET_REASON", payload: e.target.value })}
-                                className="w-full text-sm sm:text-base px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all appearance-none font-medium text-gray-700 cursor-pointer"
+                                className="w-full text-sm sm:text-base px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-theme-primary/90 focus:border-theme-primary-foreground/90 outline-none transition-all appearance-none font-medium text-gray-700 cursor-pointer"
                             >
                                 <option value="" disabled>Select a reason...</option>
                                 {RETURN_REASONS.map(reason => (
@@ -323,7 +317,7 @@ export default function ReturnReplaceClient() {
                             ))}
 
                             {state.proofFiles.length < 3 && (
-                                <label className="w-20 h-20 sm:w-28 sm:h-28 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/50 hover:text-indigo-600 transition-all">
+                                <label className="w-20 h-20 sm:w-28 sm:h-28 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-theme-primary-foreground cursor-pointer hover:border-theme-primary hover:bg-theme-primary/10 hover:text-theme-primary-foreground/90 transition-all">
                                     <UploadCloud size={24} className="mb-1 sm:mb-2" />
                                     <span className="text-[10px] sm:text-xs font-semibold">Upload Photo</span>
                                     <input
@@ -351,7 +345,7 @@ export default function ReturnReplaceClient() {
                             value={state.comments}
                             onChange={(e) => dispatch({ type: "SET_COMMENTS", payload: e.target.value })}
                             placeholder="Please describe the issue in detail..."
-                            className="w-full p-4 text-sm sm:text-base bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none resize-none transition-all"
+                            className="w-full p-4 text-sm sm:text-base bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-theme-primary/90 focus:border-theme-primary/90 outline-none resize-none transition-all"
                         />
                     </div>
 
@@ -367,9 +361,9 @@ export default function ReturnReplaceClient() {
                         <button
                             type="submit"
                             disabled={state.isSubmitting}
-                            className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 shadow-sm ${state.isSubmitting
-                                    ? "bg-indigo-400 cursor-not-allowed"
-                                    : "bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] shadow-indigo-600/20"
+                            className={`w-full sm:w-auto px-8 py-3 text-theme-primary-foreground rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-sm ${state.isSubmitting
+                                ? "bg-theme-primary cursor-not-allowed"
+                                : "bg-theme-primary hover:bg-theme-primary active:scale-[0.98] shadow-theme-primary/20"
                                 }`}
                         >
                             {state.isSubmitting ? (

@@ -133,7 +133,7 @@ export default function OrderDetailsPage() {
         if (!orderId || !token) return;
         fetchOrderDetails(orderId, token)
             .then((data) => setOrder(data.data))
-            .catch((err) => console.error("Error fetching order details:", err));
+            .catch((err) => toast.error("Error fetching order details:"));
     }, [orderId, token]);
     console.log('order', order);
     const handleCancelItem = (id: string) => router.push(`/customer/orders/${orderId}/cancel/${id}`);
@@ -148,13 +148,13 @@ export default function OrderDetailsPage() {
 
     // Totals
     const itemsTotal = order?.items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0) ?? 0;
-    const taxAmount = 35.04; // Placeholder: Replace with order.tax_amount when mapped
-    const totalAmount = itemsTotal + taxAmount; // Adjusted to include tax per mockup
+    const totalAmount = itemsTotal;
 
     if (!order) return null; // Or a loading skeleton
 
     return (
         <div className="min-h-screen pb-12 font-sans rounded-2xl bg-gray-50/30">
+            <Toaster />
             <div className="mx-auto lg:px-8 py-4 md:py-8">
 
                 {/* ── Desktop Breadcrumb / Header ── */}
@@ -266,6 +266,8 @@ export default function OrderDetailsPage() {
                                 {order.items.map((item, index) => {
                                     const status = item.order_status.toLowerCase();
                                     const isCancellable = ["pending", "processing"].includes(status);
+                                    const isReturnable = ["delivered"].includes(status);
+
 
                                     return (
                                         <div key={item.id} className={`p-2 md:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 ${index !== order.items.length - 1 ? 'border-b border-border' : ''}`}>
@@ -310,6 +312,16 @@ export default function OrderDetailsPage() {
                                                             className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 h-7 text-xs rounded-md"
                                                         >
                                                             Cancel Item
+                                                        </Button>
+                                                    )}
+                                                    {isReturnable && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => router.push(`/customer/support/return/${item.id}`)}
+                                                            className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 h-7 text-xs rounded-md"
+                                                        >
+                                                            Return/Replace Item
                                                         </Button>
                                                     )}
                                                 </div>

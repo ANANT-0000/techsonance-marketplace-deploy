@@ -14,7 +14,7 @@ export function Footer({ styles }: { styles?: string }) {
     console.log("footer content", footerContent);
     useEffect(() => {
         setHeaderCount(footerContent.length);
-    }, [footerContent]);
+    }, []);
     // Skip footer for admin/vendor routes
     if (path.startsWith('/admin') || path.startsWith('/vendor')) {
         return <></>;

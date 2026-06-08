@@ -47,7 +47,20 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
 
     const handleIncrement = async () => {
         if (!user?.id || !token) {
-            router.push('/auth/customerLogin');
+            const prevQuantity = quantity;
+            const optimisticQuantity = prevQuantity + 1;
+
+            dispatch(addToCart({
+                cartId: '',
+                cartItemId: '',
+                productVariantId,
+                quantity: optimisticQuantity,
+            }));
+
+            if (!path.includes("cart") && !path.includes("wishlist")) {
+                dispatch(toggleCartSidebar('open'));
+            }
+            dispatch(loadCart());
             return;
         }
         if (isSyncing || syncingRef.current) return;
@@ -105,7 +118,18 @@ export function AddToCart({ productVariantId, styles }: AddToCartProps) {
     };
 
     const handleDecrement = async () => {
-        if (!user?.id || !cartItem || !token) return;
+        if (!user?.id || !token) {
+            if (!cartItem) return;
+            const prevQuantity = quantity;
+            if (prevQuantity <= 1) {
+                dispatch(removeFromCart({ productVariantId, quantity: 0 }));
+            } else {
+                dispatch(removeFromCart({ productVariantId, quantity: prevQuantity - 1 }));
+            }
+            dispatch(loadCart());
+            return;
+        }
+        if (!cartItem) return;
         if (isSyncing || syncingRef.current) return;
 
         const prevQuantity = quantity;

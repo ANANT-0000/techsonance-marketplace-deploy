@@ -80,7 +80,13 @@ function AuthSuccessHandler() {
                     setStatus(LoginStatusEnum.SUCCESS);
 
                     setTimeout(() => {
-                        router.push('/');
+                        const oauthRedirect = sessionStorage.getItem('oauth_redirect');
+                        if (oauthRedirect) {
+                            sessionStorage.removeItem('oauth_redirect');
+                            router.push(oauthRedirect);
+                        } else {
+                            router.push('/');
+                        }
                     }, 1000);
                 } catch (decodeError) {
                     console.error('Token decode error:', decodeError);

@@ -22,18 +22,21 @@ export async function generateMetadata(
     const search = resolvedParams?.search || "";
     const categoryId = resolvedParams?.category_id || "";
 
-    let title = "Products Catalogue | Store";
-    let description = "Browse our full catalogue of high-quality products. Filter by category, price, and find exactly what you are looking for.";
+    let title = "Shop High-Quality Tech, Electronics & Hardware | Techsonance Store";
+    let description = "Explore Techsonance Store for high-quality electronics, components, devices, and accessories. Get premium products at unbeatable prices with secure delivery.";
 
     if (search) {
-        title = `Search Results for "${search}" | Store`;
-        description = `Find the best deals and search results for "${search}" in our store. Browse high-quality products today.`;
+        // Clean capitalize helper
+        const formattedSearch = search.trim().replace(/\b\w/g, c => c.toUpperCase());
+        title = `Buy ${formattedSearch} Online at Best Prices | Techsonance Store`;
+        description = `Looking to buy ${formattedSearch} online? Check out the latest models, verified customer reviews, and top-rated deals on ${formattedSearch} at Techsonance Marketplace.`;
     } else if (categoryId) {
         try {
             const category = await fetchCategory(categoryId);
             if (category && category.name) {
-                title = `${category.name} | Store`;
-                description = category.description || `Explore our wide range of products in the ${category.name} category. Find top quality items at the best prices.`;
+                const catName = category.name.trim();
+                title = `Buy ${catName} Online - Best Deals & Discounts | Techsonance Store`;
+                description = category.description || `Shop the latest ${catName} products online at Techsonance. Discover premium quality items, exclusive discounts, and fast delivery.`;
             }
         } catch (error) {
             console.error("Failed to fetch category metadata for SEO:", error);

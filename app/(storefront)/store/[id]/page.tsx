@@ -25,12 +25,17 @@ export async function generateMetadata(
         // Extract the main image from the first variant if available
         const mainImage = product.variants?.[0]?.images?.[0]?.image_url;
 
+        const seoTitle = `${product.name} - Buy Online at Best Prices | Techsonance Store`;
+        const seoDescription = product.description 
+            ? `${product.description.slice(0, 150)}... Buy ${product.name} at Techsonance Store.`
+            : `Check out full specifications, prices, customer reviews, and features for ${product.name} at Techsonance Store.`;
+
         return {
-            title: product.name || 'Product Details',
-            description: product.description ? product.description.slice(0, 160) : 'View details, specifications, and reviews for this product',
+            title: seoTitle,
+            description: seoDescription,
             openGraph: {
-                title: product.name,
-                description: product.description ? product.description.slice(0, 160) : 'View details, specifications, and reviews for this product',
+                title: seoTitle,
+                description: seoDescription,
                 images: mainImage ? [mainImage] : [],
             },
         };

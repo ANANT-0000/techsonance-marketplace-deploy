@@ -2,8 +2,121 @@ import { useState, useCallback } from 'react';
 import { BASE_API_URL } from '@/constants';
 import { renderPdfInIframe } from '@/lib/renderPdf';
 
+export interface InvoicePayload {
+  meta: Meta;
+  branding: Branding;
+  seller: Party;
+  customer: Customer;
+  legal: Legal;
+  items: InvoiceItem[];
+  totals: Totals;
+  payment: Payment;
+  footer: Footer;
+}
+
+export interface Meta {
+  invoiceNumber: string;
+  invoiceDate: string;
+  orderNumber: string;
+  orderDate: string;
+  templateId: string;
+}
+
+export interface Branding {
+  logoUrl: string;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  watermarkUrl: string;
+  fontFamily: string;
+}
+
+export interface Party {
+  legalName: string;
+  address: Address;
+  taxIds: TaxId[];
+  supportEmail: string;
+  supportPhone: string;
+  websiteUrl: string;
+}
+
+export interface Customer {
+  name: string;
+  email: string;
+  billingAddress: Address;
+  shippingAddress: Address;
+  placeOfSupply: string;
+  placeOfDelivery: string;
+}
+
+export interface Legal {
+  legalName: string;
+  supportEmail: string;
+  supportPhone: string;
+  websiteUrl: string;
+  taxIds: TaxId[];
+}
+
+export interface Address {
+  recipientName: string;
+  addressLine1: string;
+  addressLine2?: string;
+  street: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  stateCode?: string;
+}
+
+export interface TaxId {
+  key: string;
+  value: string;
+}
+
+export interface InvoiceItem {
+  name: string;
+  sku: string;
+  quantity: number;
+  unitPrice: number;
+  discount: number;
+  netAmount: number;
+  taxRate: number;
+  taxType: "CGST" | "SGST" | "IGST" | string;
+  taxAmount: number;
+  totalAmount: number;
+}
+
+export interface Totals {
+  subTotal: number;
+  totalDiscount: number;
+  netAmount: number;
+  totalCgst: number;
+  totalSgst: number;
+  totalIgst: number;
+  totalTax: number;
+  grandTotal: number;
+  currency: string;
+  grandTotalInWords: string;
+  reverseCharge: boolean;
+}
+
+export interface Payment {
+  transactionId: string;
+  paymentMethod: string;
+  invoiceValue: number;
+  paidAt: string;
+}
+
+export interface Footer {
+  termsAndConditions: string;
+  notes: string;
+  signatoryName: string;
+  signatoryDesignation: string;
+  signatorySignatureDataUri: string;
+}
 // ── Build invoice HTML string (same function from before, no changes needed) ──
-function buildInvoiceHtml(payload: any): string {
+function buildInvoiceHtml(payload:  InvoicePayload): string {
   const { meta, branding, seller, customer, items, totals, footer } = payload;
   const sym = totals.currency === 'INR' ? '₹' : '$';
   const fc = (n: number) => `${sym}${Number(n).toFixed(2)}`;
@@ -16,14 +129,16 @@ function buildInvoiceHtml(payload: any): string {
   const hasCgst = totals.totalCgst > 0;
   const hasIgst = totals.totalIgst > 0;
   const primaryColor = branding.primaryColor || '#131921';
+  const fontFamily = branding.fontFamily || 'Arial, sans-serif';
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily.split(',')[0])}:wght@400;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 1.5; color: #111; background: #fff; }
+  body { font-family: '${fontFamily}', Arial, Helvetica, sans-serif; font-size: 11px; line-height: 1.5; color: #111; background: #fff; }
   .page { padding: 28px 36px; max-width: 800px; margin: 0 auto; }
   .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid ${primaryColor}; padding-bottom: 12px; margin-bottom: 14px; }
   .header h1 { font-size: 18px; font-weight: 700; color: ${primaryColor}; text-transform: uppercase; }
@@ -119,7 +234,7 @@ function buildInvoiceHtml(payload: any): string {
         <th style="width:26px">#</th>
         <th>Description</th>
         <th>Unit Price</th>
-        <th>Discount</th>
+        <th>Discount </th>
         <th style="text-align:center">Qty</th>
         <th>Net Amount</th>
         <th>Tax Rate</th>
@@ -129,14 +244,13 @@ function buildInvoiceHtml(payload: any): string {
       </tr>
     </thead>
     <tbody>
-      ${items.map((item: any, i: number) => {
+      ${items.map((item: InvoiceItem, i: number) => {
         const isCgstSgst = item.taxType === 'CGST+SGST';
         const half = isCgstSgst ? item.taxAmount / 2 : 0;
         return `<tr>
           <td><span style="color:#888;font-size:8.5px">${i + 1}</span></td>
           <td>
             <div class="item-name">${item.name}</div>
-            ${item.hsnCode ? `<div style="font-size:8px;color:#777">HSN: ${item.hsnCode}</div>` : ''}
             ${item.sku ? `<div style="font-size:8px;color:#999">SKU: ${item.sku}</div>` : ''}
           </td>
           <td>${fc(item.unitPrice)}</td>
@@ -219,7 +333,7 @@ export function useInvoiceDownload() {
       }
 
       const { data: payload } = await res.json();
-
+      console.log("payload for invoice", payload);
       // Build HTML string and render to PDF in isolated iframe
       const html = buildInvoiceHtml(payload);
       const filename = `invoice-${payload.meta.invoiceNumber}.pdf`;

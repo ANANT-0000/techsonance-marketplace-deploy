@@ -1,4 +1,4 @@
-﻿import * as z from 'zod'
+import * as z from 'zod'
 import { BannerPlacement, ProductStatusEnum, PromotionType } from './Types';
 import { COMPLIANCE_REGEX } from '@/app/auth/vendorRegister/page';
 export const passwordValidation = new RegExp(
@@ -490,6 +490,18 @@ export const brandingSchema = z.object({
   secondary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').optional().or(z.literal('')),
   accent_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').optional().or(z.literal('')),
   font_family: z.string().min(1, 'Required').default('Inter'),
+  background_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').default('#f8fafc'),
+  text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').default('#0f172a'),
+  navbar_bg: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').default('#ffffff'),
+  navbar_fg: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').default('#0f172a'),
+  footer_bg: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').default('#0f172a'),
+  footer_fg: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').default('#ffffff'),
+  navbar_position: z.string().optional().default('sticky'),
+  logo_alignment: z.string().optional().default('left'),
+  footer_style: z.string().optional().default('detailed'),
+  border_radius: z.string().optional().default('md'),
+  card_style: z.string().optional().default('standard'),
+  homepage_layout: z.array(z.string()).optional().default(['hero', 'categories', 'products', 'promo', 'new_arrivals', 'newsletter']),
 });
 
 export const legalSchema = z.object({

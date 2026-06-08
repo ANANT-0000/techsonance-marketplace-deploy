@@ -39,6 +39,10 @@ interface WarrantyPayload {
   branding: {
     companyName: string;
     logoUrl?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
+    fontFamily?: string;
   };
 }
 
@@ -75,17 +79,23 @@ function buildWarrantyHtml(p: WarrantyPayload): string {
   const policy = p.policy;
   const endDateText = policy.endDate ? fmtDate(policy.endDate) : 'Lifetime / No Expiry';
 
+  const primaryColor = p.branding.primaryColor || '#131921';
+  const secondaryColor = p.branding.secondaryColor || '#555555';
+  const accentColor = p.branding.accentColor || '#ff9900';
+  const fontFamily = p.branding.fontFamily || 'Arial, sans-serif';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Warranty Certificate</title>
+  <link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily.split(',')[0])}:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Arial', 'Helvetica Neue', sans-serif;
+      font-family: '${fontFamily}', 'Arial', 'Helvetica Neue', sans-serif;
       font-size: 12px;
       line-height: 1.4;
       color: #000;
@@ -103,12 +113,12 @@ function buildWarrantyHtml(p: WarrantyPayload): string {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      border-bottom: 2px solid #000;
+      border-bottom: 2px solid ${primaryColor};
       padding-bottom: 15px;
       margin-bottom: 20px;
     }
     .header-logo { max-height: 50px; margin-bottom: 10px; }
-    .header-title { font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    .header-title { font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: ${primaryColor}; }
     .header-meta { text-align: right; font-size: 11px; color: #333; }
     .header-meta strong { color: #000; }
 
@@ -119,40 +129,40 @@ function buildWarrantyHtml(p: WarrantyPayload): string {
       margin-bottom: 25px;
     }
     .details-box { width: 48%; }
-    .details-box h4 { font-size: 11px; text-transform: uppercase; color: #555; margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 3px; }
+    .details-box h4 { font-size: 11px; text-transform: uppercase; color: ${secondaryColor}; margin-bottom: 5px; border-bottom: 1px solid ${primaryColor}; padding-bottom: 3px; }
     .details-box p { margin-bottom: 2px; }
 
     /* --- Product Table --- */
     table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-    th, td { border: 1px solid #000; padding: 10px; text-align: left; }
-    th { background-color: #f8f8f8; font-size: 11px; text-transform: uppercase; }
+    th, td { border: 1px solid ${primaryColor}; padding: 10px; text-align: left; }
+    th { background-color: ${primaryColor}; color: #fff; font-size: 11px; text-transform: uppercase; }
     .col-qty { width: 60px; text-align: center; }
     .col-price { width: 100px; text-align: right; }
 
     /* --- Policy Terms Box --- */
     .policy-section {
-      border: 1px solid #000;
+      border: 1px solid ${primaryColor};
       padding: 15px;
       margin-bottom: 25px;
       background-color: #fafafa;
     }
-    .policy-header { font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+    .policy-header { font-size: 16px; font-weight: bold; color: ${primaryColor}; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
     .policy-grid { display: flex; flex-wrap: wrap; gap: 15px; }
     .policy-item { flex: 1 1 45%; }
-    .policy-item span { display: block; font-size: 10px; text-transform: uppercase; color: #666; margin-bottom: 2px; }
+    .policy-item span { display: block; font-size: 10px; text-transform: uppercase; color: ${secondaryColor}; margin-bottom: 2px; }
     .policy-item strong { display: block; font-size: 13px; }
 
     .policy-description { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc; }
-    .policy-description h5 { font-size: 11px; text-transform: uppercase; margin-bottom: 4px; }
+    .policy-description h5 { font-size: 11px; text-transform: uppercase; color: ${primaryColor}; margin-bottom: 4px; }
     .policy-description p { font-size: 11px; color: #333; margin-bottom: 10px; }
 
     /* --- Support / Claims --- */
     .support-box {
-      border: 1px dashed #000;
+      border: 1px dashed ${primaryColor};
       padding: 15px;
       margin-bottom: 30px;
     }
-    .support-box h4 { margin-bottom: 5px; font-size: 13px; }
+    .support-box h4 { margin-bottom: 5px; font-size: 13px; color: ${primaryColor}; }
     .support-box p { margin-bottom: 4px; }
 
     /* --- Footer --- */

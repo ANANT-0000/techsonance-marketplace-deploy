@@ -12,7 +12,6 @@ import { AddressOperationEnum, Address } from "@/utils/Types";
 import { fetchDeleteUserAddress } from "@/utils/customerApiClient-SA";
 import { authToken } from "@/utils/authToken";
 import { ActionType, ConfirmationModal } from "@/components/common/ConfirmationModal";
-import { Button } from "@/components/ui/button";
 
 // [Reducer code remains 100% UNTOUCHED as requested]
 interface State {
@@ -157,9 +156,9 @@ export default function AddressesClient() {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         onClick={openAdd}
-                        className="flex flex-col items-center justify-center h-full min-h-[260px] rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/50 hover:bg-gray-100/80 transition-colors text-center p-6 group cursor-pointer"
+                        className="flex flex-col items-center justify-center h-full min-h-[260px] rounded-2xl border-2 border-dashed border-theme-primary hover:border-theme-secondary bg-gray-50/50 hover:bg-gray-100/80 transition-colors text-center p-6 group cursor-pointer"
                     >
-                        <div className="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <div className="w-14 h-14 rounded-full bg-theme-primary/5 text-theme-primary hover:bg-theme-secondary/50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                             <MapPinPlus size={24} strokeWidth={2} />
                         </div>
                         <h3 className="font-bold text-foreground text-lg">Add New Address</h3>

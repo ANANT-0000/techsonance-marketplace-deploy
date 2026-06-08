@@ -29,7 +29,7 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                         <div className="flex items-center gap-2 text-primary">
                             <Icon size={20} strokeWidth={2.5} />
                             <h3 className="font-bold text-lg text-foreground tracking-tight">
-                                {title}
+                                {title.trim()}
                             </h3>
                         </div>
                         {address.is_default && (
@@ -64,7 +64,7 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => onEdit(address.id)}
-                                className="flex items-center gap-1.5 text-sm font-medium text-theme-primary hover:text-theme-secondary transition-colors"
+                                className="flex items-center gap-1.5 text-sm font-medium text-theme-secondary hover:text-theme-secondary/80 transition-colors"
                             >
                                 <Pen size={14} /> Edit
                             </button>
@@ -80,7 +80,7 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                             <Button 
                                 variant="outline" 
                                 size="sm" 
-                                className="rounded-full h-8 px-4 text-xs font-semibold text-foreground border-border hover:bg-gray-50"
+                                className="rounded-full h-8 px-4 text-xs font-semibold text-theme-secondary border-theme-primary-foreground/90 hover:bg-theme-primary-foreground/10"
                                 onClick={() => onSetDefault(address.user_id, address.id)}
                             >
                                 Set as Default

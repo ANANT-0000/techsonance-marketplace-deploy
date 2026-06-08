@@ -153,7 +153,7 @@ export function Navbar({ styles, logoUrl = BRAND_LOGO, menuLinks: propMenuLinks 
                         </div>
 
                         {user && (
-                            <Link href={'/customer' + (`/${user?.id}`) + '/wishlist'} className="relative p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors">
+                            <Link href={'/customer/wishlist'} className="relative p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors">
                                 {wishlistCount > 0 && (
                                     <span className="absolute top-0 right-0 text-[10px] font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4 h-4 flex items-center justify-center border-2 border-navbar">
                                         {wishlistCount}

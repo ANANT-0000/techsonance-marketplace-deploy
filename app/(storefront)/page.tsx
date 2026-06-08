@@ -8,6 +8,11 @@ import { useHomepageData } from '@/hooks/useHomepageData';
 import { useThemeData } from '@/hooks/useThemeData';
 import { HeroCarousel } from '@/components/customer/HeroCarousel';
 import { ProductCard } from '@/components/customer/ProductCard';
+import { InteractiveHero } from '@/components/customer/InteractiveHero';
+import { ShoppableLookbook } from '@/components/customer/ShoppableLookbook';
+import { ScarcityBlock } from '@/components/customer/ScarcityBlock';
+import { TestimonialSlider } from '@/components/customer/TestimonialSlider';
+import { CuratedDiscovery } from '@/components/customer/CuratedDiscovery';
 import AxiosAPI from '@/lib/axios';
 
 function Sk({ w = 'w-full', h = 'h-4', rounded = 'rounded', className = '' }: {
@@ -441,10 +446,70 @@ export default function Home() {
         return (
           <div key="hero">
             {isLoading
-              ? <div className="w-full h-[85vh] bg-gray-100 animate-pulse" />
-              : <HeroCarousel slides={heroSlides} />
+              ? <div className="w-full h-[60vh] bg-gray-100 animate-pulse" />
+              : (
+                <InteractiveHero
+                  banner_type={getField('hero_banner_type') || 'carousel'}
+                  video_url={getField('hero_video_url')}
+                  slides={heroSlides.map((slide: any) => ({
+                    image_url: slide.image_url,
+                    title: slide.title,
+                    subtitle: slide.subtitle,
+                    btn_text: slide.btn_text,
+                    btn_link: slide.search_query ? `/store?search=${encodeURIComponent(slide.search_query)}` : '/store'
+                  }))}
+                  fallback_image_url={getField('hero_image_url')}
+                />
+              )
             }
           </div>
+        );
+
+      case 'lookbook':
+        return (
+          <ShoppableLookbook
+            key="lookbook"
+            title={getField('lookbook_title')}
+            subtitle={getField('lookbook_subtitle')}
+            image_url={getField('lookbook_image_url')}
+            hotspots={getField('lookbook_hotspots')}
+          />
+        );
+
+      case 'scarcity':
+        return (
+          <ScarcityBlock
+            key="scarcity"
+            timer_title={getField('scarcity_timer_title')}
+            expires_at={getField('scarcity_expires_at')}
+            alert_text={getField('scarcity_alert_text')}
+            alert_bg={getField('scarcity_alert_bg')}
+            alert_text_color={getField('scarcity_alert_text_color')}
+            btn_text={getField('scarcity_btn_text')}
+            btn_link={getField('scarcity_btn_link')}
+          />
+        );
+
+      case 'social_proof':
+        return (
+          <TestimonialSlider
+            key="social_proof"
+            title={getField('social_proof_title')}
+            eyebrow={getField('social_proof_eyebrow')}
+            testimonials={getField('social_proof_testimonials')}
+            badges={getField('social_proof_badges')}
+          />
+        );
+
+      case 'curated':
+        return (
+          <CuratedDiscovery
+            key="curated"
+            title={getField('curated_title')}
+            subtitle={getField('curated_subtitle')}
+            type={getField('curated_type')}
+            product_ids={getField('curated_product_ids')}
+          />
         );
 
       case 'categories':
@@ -535,9 +600,69 @@ export default function Home() {
           <div key="m-hero" className="h-[52vh]">
             {isLoading
               ? <div className="w-full h-full bg-gray-100 animate-pulse" />
-              : <HeroCarousel slides={heroSlides} isLoading={isLoading} />
+              : (
+                <InteractiveHero
+                  banner_type={getField('hero_banner_type') || 'carousel'}
+                  video_url={getField('hero_video_url')}
+                  slides={heroSlides.map((slide: any) => ({
+                    image_url: slide.image_url,
+                    title: slide.title,
+                    subtitle: slide.subtitle,
+                    btn_text: slide.btn_text,
+                    btn_link: slide.search_query ? `/store?search=${encodeURIComponent(slide.search_query)}` : '/store'
+                  }))}
+                  fallback_image_url={getField('hero_image_url')}
+                />
+              )
             }
           </div>
+        );
+
+      case 'lookbook':
+        return (
+          <ShoppableLookbook
+            key="m-lookbook"
+            title={getField('lookbook_title')}
+            subtitle={getField('lookbook_subtitle')}
+            image_url={getField('lookbook_image_url')}
+            hotspots={getField('lookbook_hotspots')}
+          />
+        );
+
+      case 'scarcity':
+        return (
+          <ScarcityBlock
+            key="m-scarcity"
+            timer_title={getField('scarcity_timer_title')}
+            expires_at={getField('scarcity_expires_at')}
+            alert_text={getField('scarcity_alert_text')}
+            alert_bg={getField('scarcity_alert_bg')}
+            alert_text_color={getField('scarcity_alert_text_color')}
+            btn_text={getField('scarcity_btn_text')}
+            btn_link={getField('scarcity_btn_link')}
+          />
+        );
+
+      case 'social_proof':
+        return (
+          <TestimonialSlider
+            key="m-social_proof"
+            title={getField('social_proof_title')}
+            eyebrow={getField('social_proof_eyebrow')}
+            testimonials={getField('social_proof_testimonials')}
+            badges={getField('social_proof_badges')}
+          />
+        );
+
+      case 'curated':
+        return (
+          <CuratedDiscovery
+            key="m-curated"
+            title={getField('curated_title')}
+            subtitle={getField('curated_subtitle')}
+            type={getField('curated_type')}
+            product_ids={getField('curated_product_ids')}
+          />
         );
 
       case 'categories':
@@ -658,17 +783,25 @@ export default function Home() {
       <div className="hidden lg:block">
         {layout.map((key) => renderDesktop(key))}
 
-        {/* Always-rendered supplementary sections */}
-        <TrustStrip />
-        <TestimonialsDesktop />
+        {/* Always-rendered supplementary sections (only if not already placed via layout key) */}
+        {!layout.includes('social_proof') && (
+          <>
+            <TrustStrip />
+            <TestimonialsDesktop />
+          </>
+        )}
         <BrandHighlight getField={getField} />
       </div>
 
       {/* ── MOBILE ──────────────────────────────────────────────────────────── */}
       <div className="block lg:hidden min-h-screen bg-background">
         {layout.map((key) => renderMobile(key))}
-        <TrustStrip />
-        <TestimonialsMobile />
+        {!layout.includes('social_proof') && (
+          <>
+            <TrustStrip />
+            <TestimonialsMobile />
+          </>
+        )}
         <div className="h-20" />
       </div>
 

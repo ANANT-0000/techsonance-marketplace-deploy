@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AddToCart } from "@/components/customer/AddToCart";
 import { BuyBtn } from "@/components/customer/BuyBtn";
 import { useEffect, useReducer, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
     CheckCircle2, ChevronLeft,
     Tag, X, ShoppingBag, ShieldCheck, CreditCard, Lock, Truck
@@ -181,7 +181,9 @@ const OrderSummary = ({
     onCouponOpen: () => void;
     onCouponRemove: () => void;
 }) => {
-    const finalPrice = Math.max(0, totalPrice - couponDiscountAmount);
+    const shippingFee = totalPrice >= 500 || totalPrice === 0 ? 0 : 50;
+    const estimatedTax = totalPrice - (totalPrice / 1.18);
+    const finalPrice = Math.max(0, totalPrice + shippingFee - couponDiscountAmount);
 
     return (
         <div className="space-y-4">
@@ -196,7 +198,15 @@ const OrderSummary = ({
                         </div>
                         <div className="flex justify-between">
                             <span>Estimated Shipping</span>
-                            <span className="text-foreground">Calculated at next step</span>
+                            {shippingFee === 0 ? (
+                                <span className="text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full text-xs">Free</span>
+                            ) : (
+                                <span className="text-foreground">₹{formatCurrency(shippingFee)}</span>
+                            )}
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Estimated GST (18% Included)</span>
+                            <span className="text-foreground">₹{formatCurrency(estimatedTax)}</span>
                         </div>
 
                         <AnimatePresence>
@@ -316,13 +326,22 @@ export default function CartClient() {
         selectedCoupon: null
     });
 
+    const searchParams = useSearchParams();
+
     useEffect(() => {
-        if (!user?.id || !token) {
-            setTimeout(() => router.push('/auth/customerLogin'), 1000);
-            return;
-        }
         dispatchRedux(loadCart());
-    }, [user?.id, dispatchRedux, token, router]);
+    }, [dispatchRedux]);
+
+    useEffect(() => {
+        const checkoutParam = searchParams.get('checkout');
+        if (checkoutParam === 'true' && user?.id && token && itemList.length > 0) {
+            const cartId = itemList[0]?.cart_id;
+            if (cartId) {
+                const couponIdParam = searchParams.get('couponId') ? `&couponId=${searchParams.get('couponId')}` : '';
+                router.push(`/customer/checkout?type=cart&id=${cartId}${couponIdParam}`);
+            }
+        }
+    }, [itemList, user?.id, token, searchParams, router]);
 
     const totalPrice = itemList.reduce((total, item) => {
         return total + (Number(item.productVariant.price) || 0) * item.quantity;
@@ -356,15 +375,9 @@ export default function CartClient() {
     };
 
     return (
-        <main className="min-h-screen bg-gray-50/30 pb-24 md:pb-12">
+        <main className="min-h-screen bg-gray-50/30 ">
             {/* Cleaner Mobile header */}
             <div className="flex items-center gap-3 px-4 pt-6 pb-4 sm:hidden">
-                <button
-                    onClick={() => router.back()}
-                    className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors shrink-0 shadow-sm"
-                >
-                    <ChevronLeft size={18} />
-                </button>
                 <h1 className="font-bold text-xl text-foreground">Your Cart</h1>
                 {totalItemCount > 0 && (
                     <span className="ml-auto text-sm font-medium text-muted-foreground">({totalItemCount})</span>
