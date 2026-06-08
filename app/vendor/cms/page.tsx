@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef, useReducer } from 'react';
 import { Save, Loader2, Plus, Trash2, Globe, Languages, CheckCircle, ArrowUp, ArrowDown, Palette, LayoutGrid, Upload, Image as ImageIcon } from 'lucide-react';
 import AxiosAPI from '@/lib/axios';
+import { authToken } from '@/utils/authToken';
 
 type PageType = 'home' | 'navbar' | 'footer' | 'about' | 'contact' | 'store' | 'theme';
 type LangType = 'en' | 'es';
@@ -115,7 +116,7 @@ function ColorField({ label, value, onChange }: any) {
 function ImageUploadField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const token = authToken()
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -133,8 +134,12 @@ function ImageUploadField({ label, value, onChange }: { label: string; value: st
 
     try {
       const res = await AxiosAPI.post('/v1/cms/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        },
       });
+      console.log("THE RESPONSE", res.data);
       if (res.data?.data?.secure_url) {
         onChange(res.data.data.secure_url);
       } else {
@@ -210,13 +215,13 @@ function SelectField({ label, value, onChange, options }: any) {
 // Fetches real categories + product names from the server and presents them
 // as clickable tag chips.  No typing = no typos.  Vendor just clicks.
 function SlideQueryPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const [categories, setCategories]   = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [productTags, setProductTags] = useState<string[]>([]);
-  const [selected, setSelected]       = useState<string[]>(() =>
+  const [selected, setSelected] = useState<string[]>(() =>
     value ? value.split(' ').filter(Boolean) : []
   );
   const [fetching, setFetching] = useState(true);
-  const [search, setSearch]     = useState('');
+  const [search, setSearch] = useState('');
   const didFetch = useRef(false);
 
   // Fetch categories + product names once
@@ -314,11 +319,10 @@ function SlideQueryPicker({ value, onChange }: { value: string; onChange: (v: st
                 key={tag}
                 type="button"
                 onClick={() => toggle(tag)}
-                className={`px-3 py-1 rounded-full text-[11px] font-semibold border transition-all duration-150 ${
-                  active
-                    ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300 hover:text-purple-700'
-                }`}
+                className={`px-3 py-1 rounded-full text-[11px] font-semibold border transition-all duration-150 ${active
+                  ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300 hover:text-purple-700'
+                  }`}
               >
                 {active ? '✓ ' : ''}{tag}
               </button>
@@ -388,7 +392,7 @@ export default function CmsManagementPage() {
         };
       }
       dispatch({ type: 'FETCH_SUCCESS', payload: parsed });
-    } catch { 
+    } catch {
       if (page === 'theme') {
         dispatch({
           type: 'FETCH_SUCCESS',
