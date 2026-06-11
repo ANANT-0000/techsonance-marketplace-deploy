@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { fetchProductSuggestions } from '@/utils/commonAPiClient';
+import { SEARCH_BAR_TEXT } from '@/constants/customerText';
 
 interface SearchBarProps {
     value: string;
@@ -12,7 +13,7 @@ interface SearchBarProps {
     placeholder?: string;
 }
 
-export function SearchBar({ value, onChange, onSearch, onClose, placeholder = 'Search products...' }: SearchBarProps) {
+export function SearchBar({ value, onChange, onSearch, onClose, placeholder = SEARCH_BAR_TEXT.PLACEHOLDER }: SearchBarProps) {
     const [suggestions, setSuggestions] = useState<{ id: string; name: string }[]>([]);
     const [isFocused, setIsFocused] = useState(false);
     const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);

@@ -6,6 +6,7 @@ import {
   PRODUCT_FORM_FIELDS,
   PRODUCT_FORM_PRICING_FIELDS,
 } from "@/constants";
+import { PRODUCT_FORM_TEXT } from "@/constants/vendorText";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { usePreviewUrls } from "@/lib/clientUtils";
 import { authToken } from "@/utils/authToken";
@@ -35,47 +36,7 @@ import { redirect, useRouter } from "next/navigation";
 import { useEffect, useCallback, useState, use } from "react";
 import { FieldErrors, useFieldArray, useForm } from "react-hook-form";
 
-const FILE_UPLOAD_FIELD_LABELS = [
-  {
-    label: "Product Thumbnail",
-    fieldName: "productMedia" as keyof ProductFormValuesType,
-    limit: 1,
-    hint: "We highly recommend a square image (1:1 ratio) for the best display on the marketplace.",
-  },
-  {
-    label: "Feature / Specification Media",
-    fieldName: "featureMedia" as keyof ProductFormValuesType,
-    limit: 5,
-    hint: "Upload detailed shots or videos to showcase features. You can upload up to 5 files.",
-  },
-] as const;
-const PRODUCT_FORM_GENERAL_FIELDS = [
-  {
-    name: "productName",
-    label: "Product Name",
-    placeholder: "e.g. Classic Cotton T-Shirt",
-    type: "text",
-  },
-  {
-    name: "description",
-    label: "Description",
-    placeholder: "Write a detailed description of the product...",
-    type: "textarea",
-  },
-] as const;
-const PRODUCT_FORM_PAGE_LABELS = {
-  headerTitle: "Create New Product",
-  headerDesc: "Fill in the details below to list a new product.",
-  draftButton: "Save Draft",
-  submitButton: "Publish Product",
-};
-const PRODUCT_UPDATE_FORM_PAGE_LABELS = {
-  headerTitle: "Update Product",
-  headerDesc: "Update the details below to modify the product.",
-  draftButton: "Save Draft",
-  submitButton: "Update Product",
-};
-
+// Replaced constants
 export function ProductForm({
   categoryOptions,
   warehouseOptions,
@@ -126,7 +87,6 @@ export function ProductForm({
   const categoryName = watch("category");
   // Auto-generate SKU when variant details change, ONLY if the user hasn't manually typed a custom SKU
   const [isAutoGenerating, setIsAutoGenerating] = useState(true);
-  console.log("existingData", existingData);
   useEffect(() => {
     if (isAutoGenerating && productName) {
       const newSku = generateSKU({
@@ -139,8 +99,8 @@ export function ProductForm({
     }
   }, [isAutoGenerating, attributes, productName, categoryName, setValue]);
   const formPageLabels = isUpdate
-    ? PRODUCT_UPDATE_FORM_PAGE_LABELS
-    : PRODUCT_FORM_PAGE_LABELS;
+    ? PRODUCT_FORM_TEXT.PAGE.UPDATE
+    : PRODUCT_FORM_TEXT.PAGE.CREATE;
   const {
     fields: featureFields,
     append: appendFeature,
@@ -171,7 +131,6 @@ export function ProductForm({
 
   // Populate form when editing an existing product
   useEffect(() => {
-    console.log("existingData in effect", existingData);
     if (!isUpdate || !existingData) return;
     reset({
       productName: existingData.productName || "",
@@ -261,15 +220,12 @@ export function ProductForm({
     if (!token) {
       redirect("/auth/vendorLogin");
     }
-    console.log(token);
     // On create, both image sets must have at least one file
     if (!isUpdate && (productFiles.length === 0 || featureFiles.length === 0)) {
-      console.warn("Product or feature files are missing.");
       return;
     }
 
     if (!user || ("vendor_id" in user && !user.vendor_id) || !user.company_id) {
-      console.warn("User vendor and company information is missing.");
       return;
     }
 
@@ -323,16 +279,10 @@ export function ProductForm({
         response = await createProduct(formData, vendorId, token);
       }
       if (response.status !== 201 && response.status !== 200) {
-        console.error(
-          "Submission failed:",
-          response?.status,
-          response?.statusText,
-        );
         return;
       }
       router.push("/vendor/products");
     } catch (error) {
-      console.error("Error occurred while submitting product:", error);
     }
   };
 
@@ -343,7 +293,7 @@ export function ProductForm({
         onClick={() => router.back()}
         className="flex items-center gap-4 py-2 px-3 mb-2 bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-slate-100 hover:text-slate-800 transition shadow-sm"
       >
-        <ArrowLeft size={18} /> Back
+        <ArrowLeft size={18} /> {PRODUCT_FORM_TEXT.ACTIONS.BACK}
       </button>
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {/* ── HEADER ── */}
@@ -368,11 +318,11 @@ export function ProductForm({
               className="text-indigo-500"
             />
             <h2 className="text-base font-semibold text-slate-800">
-              General Information
+              {PRODUCT_FORM_TEXT.SECTIONS.GENERAL}
             </h2>
           </div>
           <div className="p-6 space-y-5">
-            {PRODUCT_FORM_GENERAL_FIELDS.map((field, idx) => (
+            {PRODUCT_FORM_TEXT.GENERAL_FIELDS.map((field, idx) => (
               <div key={idx}>
                 <label className="form_label">
                   {field.label} <span className="text-red-400">*</span>
@@ -415,7 +365,7 @@ export function ProductForm({
             <div className="pt-2 border-t border-slate-100">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm font-semibold text-slate-700">
-                  Product Features
+                  {PRODUCT_FORM_TEXT.SECTIONS.FEATURES}
                 </h3>
                 <button
                   type="button"
@@ -423,7 +373,7 @@ export function ProductForm({
                   className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
                 >
                   <DynamicIcon fallback={() => <p></p>} name="plus" size={14} />{" "}
-                  Add Feature
+                  {PRODUCT_FORM_TEXT.ACTIONS.ADD_FEATURE}
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -445,12 +395,12 @@ export function ProductForm({
                     </button>
                     <div className="mb-3">
                       <label className="block text-xs font-semibold text-slate-600 mb-1">
-                        Feature Title
+                        {PRODUCT_FORM_TEXT.LABELS.FEAT_TITLE}
                       </label>
                       <input
                         type="text"
                         className="form_input"
-                        placeholder="e.g. Waterproof"
+                        placeholder={PRODUCT_FORM_TEXT.LABELS.FEAT_TITLE_PH}
                         {...register(`features.${index}.title`, {
                           required: "Feature title is required",
                         })}
@@ -458,12 +408,12 @@ export function ProductForm({
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 mb-1">
-                        Details
+                        {PRODUCT_FORM_TEXT.LABELS.DETAILS}
                       </label>
                       <textarea
                         rows={2}
                         className="form_input"
-                        placeholder="Feature description…"
+                        placeholder={PRODUCT_FORM_TEXT.LABELS.FEAT_DESC_PH}
                         {...register(`features.${index}.description`, {
                           required: "Feature description is required",
                         })}
@@ -478,7 +428,7 @@ export function ProductForm({
             <div className="pt-2 border-t border-slate-100">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm font-semibold text-slate-700">
-                  Product Attributes
+                  {PRODUCT_FORM_TEXT.SECTIONS.ATTRIBUTES}
                 </h3>
                 <button
                   type="button"
@@ -486,7 +436,7 @@ export function ProductForm({
                   className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
                 >
                   <DynamicIcon fallback={() => <p></p>} name="plus" size={14} />{" "}
-                  Add Attribute
+                  {PRODUCT_FORM_TEXT.ACTIONS.ADD_ATTRIBUTE}
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -508,12 +458,12 @@ export function ProductForm({
                     </button>
                     <div className="mb-3">
                       <label className="block text-xs font-semibold text-slate-600 mb-1">
-                        Attribute Title
+                        {PRODUCT_FORM_TEXT.LABELS.ATTR_TITLE}
                       </label>
                       <input
                         type="text"
                         className="form_input"
-                        placeholder="e.g. Material Type"
+                        placeholder={PRODUCT_FORM_TEXT.LABELS.ATTR_TITLE_PH}
                         {...register(`attributes.${index}.name`, {
                           required: "Attribute title is required",
                         })}
@@ -521,12 +471,12 @@ export function ProductForm({
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 mb-1">
-                        Details
+                        {PRODUCT_FORM_TEXT.LABELS.DETAILS}
                       </label>
                       <textarea
                         rows={2}
                         className="form_input"
-                        placeholder="e.g. 100% Cotton"
+                        placeholder={PRODUCT_FORM_TEXT.LABELS.ATTR_DESC_PH}
                         {...register(`attributes.${index}.value`, {
                           required: "Attribute value is required",
                         })}
@@ -549,7 +499,7 @@ export function ProductForm({
               className="text-blue-500"
             />
             <h2 className="text-base font-semibold text-slate-800">
-              Pricing & Inventory
+              {PRODUCT_FORM_TEXT.SECTIONS.PRICING}
             </h2>
           </div>
           <div className="p-6">
@@ -595,7 +545,7 @@ export function ProductForm({
               className="text-indigo-500"
             />
             <h2 className="text-base font-semibold text-slate-800">
-              Media & Assets
+              {PRODUCT_FORM_TEXT.SECTIONS.MEDIA}
             </h2>
           </div>
 
@@ -609,15 +559,13 @@ export function ProductForm({
                 className="text-indigo-500 mt-0.5 shrink-0"
               />
               <p className="text-xs text-indigo-700 leading-relaxed">
-                <strong>Image Guidelines:</strong> For optimal performance and
-                visual consistency, please upload high-resolution images under
-                10MB. Keep the main product centered with a clean background.
+                <strong>{PRODUCT_FORM_TEXT.MEDIA_GUIDE.TITLE}</strong> {PRODUCT_FORM_TEXT.MEDIA_GUIDE.DESC}
               </p>
             </div>
           </div>
 
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {FILE_UPLOAD_FIELD_LABELS.map(
+            {PRODUCT_FORM_TEXT.FILE_UPLOAD_LABELS.map(
               ({ label, fieldName, limit, hint }) => {
                 const { files, setFiles } =
                   fileStateMap[fieldName as keyof typeof fileStateMap];
@@ -656,7 +604,7 @@ export function ProductForm({
                             setFiles as React.Dispatch<
                               React.SetStateAction<FileOrProductImage[]>
                             >,
-                            fieldName,
+                            fieldName as "productMedia" | "featureMedia",
                           )
                         }
                       />
@@ -667,10 +615,10 @@ export function ProductForm({
                         className="text-blue-400 group-hover:text-blue-600 transition mb-2"
                       />
                       <p className="text-sm font-semibold text-blue-600 group-hover:text-blue-700">
-                        Click to browse files
+                        {PRODUCT_FORM_TEXT.MEDIA_GUIDE.BROWSE}
                       </p>
                       <p className="text-[11px] text-slate-400 mt-1">
-                        PNG, JPG, MP4 up to 10MB
+                        {PRODUCT_FORM_TEXT.MEDIA_GUIDE.LIMITS}
                       </p>
                     </label>
 
@@ -699,7 +647,7 @@ export function ProductForm({
                                     setFiles as React.Dispatch<
                                       React.SetStateAction<FileOrProductImage[]>
                                     >,
-                                    fieldName,
+                                    fieldName as "productMedia" | "featureMedia",
                                     (file as { id?: string }).id ?? undefined,
                                   );
                                 }}
@@ -734,14 +682,14 @@ export function ProductForm({
               className="text-blue-500"
             />
             <h2 className="text-base font-semibold text-slate-800">
-              Product Category & Taxation (GST)
+              {PRODUCT_FORM_TEXT.SECTIONS.CATEGORY_TAX}
             </h2>
           </div>
           <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Category */}
             <div>
               <label className="form_label">
-                Category <span className="text-red-400">*</span>
+                {PRODUCT_FORM_TEXT.LABELS.CATEGORY} <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <select
@@ -749,7 +697,7 @@ export function ProductForm({
                   className="form_input appearance-none pr-9"
                 >
                   <option value="" disabled>
-                    Select Category
+                    {PRODUCT_FORM_TEXT.LABELS.SELECT_CATEGORY}
                   </option>
                   {categoryOptions.map((c, idx) => (
                     <option key={idx} value={c.value}>
@@ -777,7 +725,7 @@ export function ProductForm({
             </div>
             <div>
               <label className="form_label">
-                Tax Rate <span className="text-red-400">*</span>
+                {PRODUCT_FORM_TEXT.LABELS.TAX_RATE} <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <select
@@ -785,7 +733,7 @@ export function ProductForm({
                   className="form_input appearance-none pr-9"
                 >
                   <option value="" disabled>
-                    Select Tax Rate
+                    {PRODUCT_FORM_TEXT.LABELS.SELECT_TAX}
                   </option>
                   {taxSlabsOptions.map((t, idx) => (
                     <option key={idx} value={t.value}>
@@ -814,7 +762,7 @@ export function ProductForm({
 
             <div>
               <label className="form_label">
-                Warehouse <span className="text-red-400">*</span>
+                {PRODUCT_FORM_TEXT.LABELS.WAREHOUSE} <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <select
@@ -822,7 +770,7 @@ export function ProductForm({
                   className="form_input appearance-none pr-9"
                 >
                   <option value="" disabled>
-                    Select Warehouse
+                    {PRODUCT_FORM_TEXT.LABELS.SELECT_WAREHOUSE}
                   </option>
                   {warehouseOptions &&
                     warehouseOptions.map((v) => (

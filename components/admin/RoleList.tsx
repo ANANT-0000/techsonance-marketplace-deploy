@@ -1,10 +1,11 @@
-﻿'use client';
+'use client';
 
 import { redirect, useRouter } from "next/navigation";
 import { handleDeleteRole, handleRemovePermission } from "@/utils/adminApiClients";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { authToken } from "@/utils/authToken";
+import { ROLES_TEXT } from "@/constants/adminText";
 
 export default function RoleList({ roles, adminId }: { roles: any[]; adminId: string }) {
     const { user, role } = useAppSelector((state: RootState) => state.auth);
@@ -39,7 +40,7 @@ export default function RoleList({ roles, adminId }: { roles: any[]; adminId: st
                                 onClick={() => onDelete(role.id)}
                                 className="text-xs text-red-400 hover:text-red-600"
                             >
-                                Delete
+                                {ROLES_TEXT.DELETE}
                             </button>
                         )}
                     </div>

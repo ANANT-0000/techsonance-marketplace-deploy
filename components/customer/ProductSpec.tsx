@@ -1,6 +1,7 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, CheckCircle2, Info } from 'lucide-react';
+import { PRODUCT_SPEC_TEXT } from '@/constants/customerText';
 
 interface ProductFeature {
     title: string;
@@ -10,7 +11,7 @@ interface ProductFeature {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const formatValue = (val: string | boolean): string => {
-    if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+    if (typeof val === 'boolean') return val ? PRODUCT_SPEC_TEXT.YES : PRODUCT_SPEC_TEXT.NO;
     return val;
 };
 
@@ -21,8 +22,8 @@ const isBooleanLike = (val: string | boolean) => typeof val === 'boolean';
 const EmptySpecs = () => (
     <div className="flex flex-col items-center justify-center py-14 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
         <Info size={28} className="text-gray-300 mb-3" strokeWidth={1.5} />
-        <p className="text-gray-500 font-semibold text-sm">No specifications available</p>
-        <p className="text-gray-400 text-xs mt-1">Technical details will appear here once added.</p>
+        <p className="text-gray-500 font-semibold text-sm">{PRODUCT_SPEC_TEXT.EMPTY_TITLE}</p>
+        <p className="text-gray-400 text-xs mt-1">{PRODUCT_SPEC_TEXT.EMPTY_DESC}</p>
     </div>
 );
 
@@ -43,10 +44,10 @@ export const ProductSpecifications = ({ product }: { product: ProductFeature[] }
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">
-                    Specifications
+                    {PRODUCT_SPEC_TEXT.HEADER}
                 </h3>
                 <span className="text-xs text-gray-400 font-medium">
-                    {product.length} {product.length === 1 ? 'attribute' : 'attributes'}
+                    {product.length} {product.length === 1 ? PRODUCT_SPEC_TEXT.ATTRIBUTE : PRODUCT_SPEC_TEXT.ATTRIBUTES}
                 </span>
             </div>
 
@@ -117,7 +118,7 @@ export const ProductSpecifications = ({ product }: { product: ProductFeature[] }
                     className="flex items-center gap-2 w-full justify-center py-3 rounded-2xl border border-gray-200 hover:border-gray-400 text-sm font-semibold text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 group"
                     aria-expanded={expanded}
                 >
-                    <span>{expanded ? 'Show less' : `Show all ${product.length} specifications`}</span>
+                    <span>{expanded ? PRODUCT_SPEC_TEXT.SHOW_LESS : `${PRODUCT_SPEC_TEXT.SHOW_ALL} ${product.length} ${PRODUCT_SPEC_TEXT.SPECIFICATIONS_LOWER}`}</span>
                     <motion.span
                         animate={{ rotate: expanded ? 180 : 0 }}
                         transition={{ duration: 0.25 }}

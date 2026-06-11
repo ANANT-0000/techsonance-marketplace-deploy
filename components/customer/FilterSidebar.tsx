@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import type { Category } from '@/utils/Types';
 import { SortBy } from '@/utils/commonAPiClient';
 import { SORT_OPTIONS } from './ShoppingList';
+import { FILTER_SIDEBAR_TEXT } from '@/constants/customerText';
 
 export interface FilterState {
     minPrice: number;
@@ -54,7 +55,7 @@ function DesktopSidebarContent({
             {/* Desktop Categories (Left-Aligned Checkboxes) */}
             {categories.length > 0 && (
                 <section>
-                    <h2 className="text-[15px] font-bold text-gray-900 mb-4">Category</h2>
+                    <h2 className="text-[15px] font-bold text-gray-900 mb-4">{FILTER_SIDEBAR_TEXT.CATEGORY}</h2>
                     <div className="flex flex-col gap-3">
                         {categories.map((cat) => {
                             const isSelected = filters.selectedCategories.includes(cat.id);
@@ -87,7 +88,7 @@ function DesktopSidebarContent({
                     onClick={() => setIsPriceOpen(!isPriceOpen)}
                     className="flex items-center justify-between w-full mb-4 group"
                 >
-                    <h2 className="text-[15px] font-bold text-gray-900">Price Range</h2>
+                    <h2 className="text-[15px] font-bold text-gray-900">{FILTER_SIDEBAR_TEXT.PRICE_RANGE}</h2>
                     {isPriceOpen ? <ChevronUp size={16} className="text-gray-400 group-hover:text-gray-600" /> : <ChevronDown size={16} className="text-gray-400 group-hover:text-gray-600" />}
                 </button>
 
@@ -109,7 +110,7 @@ function DesktopSidebarContent({
                                         className="w-full bg-transparent outline-none text-sm font-medium text-gray-900"
                                     />
                                 </div>
-                                <span className="text-gray-400 text-sm">to</span>
+                                <span className="text-gray-400 text-sm">{FILTER_SIDEBAR_TEXT.TO}</span>
                                 <div className="flex-1 flex items-center border border-gray-200 rounded-lg px-3 py-2 bg-white focus-within:border-gray-400 transition-colors">
                                     <span className="text-gray-500 mr-1 text-[13px]">$</span>
                                     <input
@@ -165,12 +166,12 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
 
             {/* Mobile Filter Button (Top Right of product grid) */}
             <div className="lg:hidden absolute top-13 right-0 z-10   pr-4">
-               <button
+                <button
                     onClick={() => setIsOpen(true)}
                     className="bg-[#0A0A0B] text-white px-4 py-1.5 rounded-full flex items-center gap-2 shadow-md hover:bg-black transition-colors"
                 >
                     <SlidersHorizontal size={14} />
-                    <span className="font-semibold text-sm">Filter</span>
+                    <span className="font-semibold text-sm">{FILTER_SIDEBAR_TEXT.FILTER}</span>
                 </button>
             </div>
 
@@ -199,9 +200,9 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                             <div className="flex-shrink-0 pt-3 pb-4 px-6 border-b border-gray-100 flex flex-col items-center relative bg-white">
                                 <div className="w-10 h-1 bg-gray-300 rounded-full mb-5" />
                                 <div className="w-full flex items-center justify-between">
-                                    <h2 className="text-xl font-bold text-gray-900">Filters</h2>
+                                    <h2 className="text-xl font-bold text-gray-900">{FILTER_SIDEBAR_TEXT.FILTERS}</h2>
                                     <button onClick={handleClearAll} className="text-[15px] font-semibold text-theme-primary hover:text-theme-secondary transition-colors">
-                                        Clear all
+                                        {FILTER_SIDEBAR_TEXT.CLEAR_ALL}
                                     </button>
                                 </div>
                             </div>
@@ -210,7 +211,7 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8 pb-32">
                                 {/* Sort By Pills */}
                                 <section>
-                                    <h3 className="text-[16px] font-bold text-gray-900 mb-4">Sort By</h3>
+                                    <h3 className="text-[16px] font-bold text-gray-900 mb-4">{FILTER_SIDEBAR_TEXT.SORT_BY}</h3>
                                     <div className="flex flex-wrap gap-2.5">
                                         {SORT_OPTIONS.map((opt) => (
                                             <button
@@ -230,7 +231,7 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
 
                                 {/* Price Range Visual */}
                                 <section>
-                                    <h3 className="text-[16px] font-bold text-gray-900 mb-5">Price Range</h3>
+                                    <h3 className="text-[16px] font-bold text-gray-900 mb-5">{FILTER_SIDEBAR_TEXT.PRICE_RANGE}</h3>
                                     <div className="w-full bg-theme-primary/10 h-2.5 rounded-full mb-4 relative">
                                         <div 
                                             className="absolute h-full bg-theme-primary rounded-full"
@@ -248,7 +249,7 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
 
                                 {/* Category (Right-Aligned Checkboxes) */}
                                 <section>
-                                    <h3 className="text-[16px] font-bold text-gray-900 mb-4">Category</h3>
+                                    <h3 className="text-[16px] font-bold text-gray-900 mb-4">{FILTER_SIDEBAR_TEXT.CATEGORY}</h3>
                                     <div className="flex flex-col gap-5">
                                         {categories.map((cat) => {
                                             const isSelected = filters.selectedCategories.includes(cat.id);
@@ -277,7 +278,7 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                                     onClick={() => setIsOpen(false)}
                                     className="w-full bg-[#0A0A0B] hover:bg-black text-white font-semibold py-4 rounded-[12px] text-[15px] transition-colors"
                                 >
-                                    Apply {totalResults} Results
+                                    {FILTER_SIDEBAR_TEXT.APPLY} {totalResults} {FILTER_SIDEBAR_TEXT.RESULTS}
                                 </button>
                             </div>
                         </motion.div>

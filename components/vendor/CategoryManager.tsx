@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { CATEGORY_MANAGER_TEXT } from "@/constants/vendorText";
 
 export default function CategoryManager({ categories, setCheckChange }: any) {
   const { user } = useAppSelector((state) => state.auth);
@@ -17,7 +18,7 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const handleCreateCategory = async (formData: FormData) => {
     if (!token) {
-      toast.error("Authentication Token not found! Try to Login Again!");
+      toast.error(CATEGORY_MANAGER_TEXT.ERRORS.NO_TOKEN);
       setTimeout(() => {
         router.push("/auth/vendorLogin");
       }, 2000);
@@ -29,16 +30,14 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
       const categoryData = { name, description };
       setIsLoading(true);
       const response = await createVendorProductCategory(categoryData, token);
-      console.log(response, "\n", response.status);
       if (response?.status === 201 || response?.status === 200) {
-        toast.success("Category created successfully");
+        toast.success(CATEGORY_MANAGER_TEXT.SUCCESS.CREATED);
         setCheckChange((prev: boolean) => !prev);
       } else {
         toast.error(response.message);
       }
     } catch (error) {
-      console.error("Error creating category:", error);
-      toast.error("Failed to create category. Please try again.");
+      toast.error(CATEGORY_MANAGER_TEXT.ERRORS.CREATE_FAIL);
     } finally {
       setIsLoading(false);
     }
@@ -48,14 +47,14 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
       {/* LEFT: Stats & Add Form */}
       <div className="md:col-span-1 space-y-6 ">
         <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-          <p className="text-blue-600 text-sm font-medium">Total Categories</p>
+          <p className="text-blue-600 text-sm font-medium">{CATEGORY_MANAGER_TEXT.STATS.TOTAL}</p>
           <p className="text-3xl font-bold text-blue-900">
             {categories.length}
           </p>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-          <h3 className="font-semibold mb-4 text-gray-700">Add New Category</h3>
+          <h3 className="font-semibold mb-4 text-gray-700">{CATEGORY_MANAGER_TEXT.FORM.TITLE}</h3>
           <form
             action={handleCreateCategory}
             id="add-form"
@@ -63,24 +62,24 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
           >
             <div>
               <label className="text-xs font-medium text-gray-500">
-                Category Name
+                {CATEGORY_MANAGER_TEXT.FORM.NAME_LABEL}
               </label>
               <input
                 name="name"
                 required
                 className="w-full mt-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="e.g. Electronics"
+                placeholder={CATEGORY_MANAGER_TEXT.FORM.NAME_PLACEHOLDER}
               />
             </div>
             <div>
               <label className="text-xs font-medium text-gray-500">
-                Description
+                {CATEGORY_MANAGER_TEXT.FORM.DESC_LABEL}
               </label>
               <textarea
                 name="description"
                 rows={3}
                 className="w-full mt-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="Briefly describe what goes here..."
+                placeholder={CATEGORY_MANAGER_TEXT.FORM.DESC_PLACEHOLDER}
               />
             </div>
             <button
@@ -88,7 +87,7 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
               disabled={false}
               className="w-full bg-gray-900 text-white py-2 rounded-xl text-sm font-medium hover:bg-black disabled:opacity-50 cursor-pointer"
             >
-              {isLoading ? "Creating..." : "Create Category"}
+              {isLoading ? CATEGORY_MANAGER_TEXT.FORM.BTN_LOADING : CATEGORY_MANAGER_TEXT.FORM.BTN_DEFAULT}
             </button>
           </form>
         </div>
@@ -101,13 +100,13 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 font-semibold text-gray-700">
-                  Category
+                  {CATEGORY_MANAGER_TEXT.TABLE.HEADERS.CATEGORY}
                 </th>
                 <th className="px-6 py-4 font-semibold text-gray-700">
-                  Description
+                  {CATEGORY_MANAGER_TEXT.TABLE.HEADERS.DESCRIPTION}
                 </th>
                 <th className="px-6 py-4 text-right font-semibold text-gray-700">
-                  Actions
+                  {CATEGORY_MANAGER_TEXT.TABLE.HEADERS.ACTIONS}
                 </th>
               </tr>
             </thead>
@@ -115,7 +114,7 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
               <Suspense
                 fallback={
                   <p className="px-6 py-10 text-center text-gray-400">
-                    Loading categories...
+                    {CATEGORY_MANAGER_TEXT.TABLE.LOADING}
                   </p>
                 }
               >
@@ -133,7 +132,7 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
                       </td>
                       <td className="px-6 py-4 text-right space-x-3">
                         <button className="bg-blue-50 px-2 py-1 rounded-lg text-blue-600 hover:underline font-medium cursor-pointer">
-                          Edit
+                          {CATEGORY_MANAGER_TEXT.TABLE.BTN_EDIT}
                         </button>
                         <button
                           className="bg-red-50 px-2 py-1 rounded-lg text-red-600 hover:underline font-medium cursor-pointer"
@@ -146,7 +145,7 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
                             )
                           }
                         >
-                          Delete
+                          {CATEGORY_MANAGER_TEXT.TABLE.BTN_DELETE}
                         </button>
                       </td>
                     </tr>
@@ -157,7 +156,7 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
                       colSpan={3}
                       className="px-6 py-10 text-center text-gray-400"
                     >
-                      No categories found. Create your first one to get started!
+                      {CATEGORY_MANAGER_TEXT.TABLE.NO_DATA}
                     </td>
                   </tr>
                 )}

@@ -1,6 +1,7 @@
 'use client';
 import { motion } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { PAGINATION_TEXT } from "@/constants/commonText";
 
 
 interface PaginationProps {
@@ -40,14 +41,14 @@ export function Pagination({ setCount, count,  totalPages, style, onPageChange }
                         : 'hover:bg-gray-100 active:bg-gray-200'}`}
             >
                 <ChevronLeft className={`w-4 h-4 ${count === 1 ? 'text-gray-500' : 'text-gray-700'}`} />
-                Previous
+                {PAGINATION_TEXT.PREVIOUS}
             </motion.button>
 
             <div className="flex items-center gap-2 text-sm font-semibold">
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-primary text-white">
                     {count}
                 </span>
-                <span className="text-gray-400 font-normal">of</span>
+                <span className="text-gray-400 font-normal">{PAGINATION_TEXT.OF}</span>
                 <span className="text-gray-700">{totalPages}</span>
             </div>
 
@@ -60,7 +61,7 @@ export function Pagination({ setCount, count,  totalPages, style, onPageChange }
                         ? 'opacity-30 cursor-not-allowed grayscale'
                         : 'hover:bg-gray-100 active:bg-gray-200'}`}
             >
-                Next
+                {PAGINATION_TEXT.NEXT}
                 <ChevronRight className={`w-4 h-4 ${count === totalPages ? 'text-gray-500' : 'text-gray-700'}`} />
             </motion.button>
         </div>

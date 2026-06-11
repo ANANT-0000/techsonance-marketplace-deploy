@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { legalSchema } from "@/utils/validation";
 import { fetchCompanyLegalProfile, fetchGetCompanyLocations, upsertCompanyLegalProfile } from "@/utils/vendorApiClient";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,6 +10,7 @@ import { Input } from "./Input";
 import { Select } from "./Select";
 import { COUNTRIES } from "@/constants";
 import { Globe, Mail, Phone } from "lucide-react";
+import { LEGAL_PROFILE_TAB_TEXT } from "@/constants/vendorText";
 import { SaveButton } from "./SaveButton";
 
 export function LegalProfileTab({ token }: { token: string }) {
@@ -55,18 +56,18 @@ export function LegalProfileTab({ token }: { token: string }) {
       <section>
         <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
-          Legal Identity
+          {LEGAL_PROFILE_TAB_TEXT.SECTIONS.LEGAL_ID}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Legal Name *" error={errors.legal_name?.message}
-            hint="Must match your tax registration documents exactly">
-            <Input {...register('legal_name')} placeholder="ACME PRIVATE LIMITED" />
+          <Field label={LEGAL_PROFILE_TAB_TEXT.FIELDS.LEGAL_NAME} error={errors.legal_name?.message}
+            hint={LEGAL_PROFILE_TAB_TEXT.FIELDS.LEGAL_NAME_HINT}>
+            <Input {...register('legal_name')} placeholder={LEGAL_PROFILE_TAB_TEXT.FIELDS.LEGAL_NAME_PH} />
           </Field>
-          <Field label="Trade / Brand Name" error={errors.trade_name?.message}
-            hint="The name customers see (can differ from legal name)">
-            <Input {...register('trade_name')} placeholder="Acme Store" />
+          <Field label={LEGAL_PROFILE_TAB_TEXT.FIELDS.TRADE_NAME} error={errors.trade_name?.message}
+            hint={LEGAL_PROFILE_TAB_TEXT.FIELDS.TRADE_NAME_HINT}>
+            <Input {...register('trade_name')} placeholder={LEGAL_PROFILE_TAB_TEXT.FIELDS.TRADE_NAME_PH} />
           </Field>
-          <Field label="Country of Incorporation *" error={errors.country_code?.message}>
+          <Field label={LEGAL_PROFILE_TAB_TEXT.FIELDS.COUNTRY} error={errors.country_code?.message}>
             <Select {...register('country_code')}>
               {COUNTRIES.map(c => (
                 <option key={c.country_code} value={c.country_code}>
@@ -75,7 +76,7 @@ export function LegalProfileTab({ token }: { token: string }) {
               ))}
             </Select>
           </Field>
-          <Field label="Company Locations" error={errors.registered_address_id?.message}>
+          <Field label={LEGAL_PROFILE_TAB_TEXT.FIELDS.LOCATIONS} error={errors.registered_address_id?.message}>
             <Select {...register('registered_address_id')}>
               {companyLocations.map((location) => (
                 <option key={location.id} value={location.id}>
@@ -90,25 +91,25 @@ export function LegalProfileTab({ token }: { token: string }) {
       <section>
         <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
-          Contact Printed on Document Footer
+          {LEGAL_PROFILE_TAB_TEXT.SECTIONS.CONTACT}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Field label="Support Email" error={errors.support_email?.message}>
+          <Field label={LEGAL_PROFILE_TAB_TEXT.FIELDS.EMAIL} error={errors.support_email?.message}>
             <div className="relative">
               <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
-              <Input {...register('support_email')} placeholder="support@example.com" className="pl-8" />
+              <Input {...register('support_email')} placeholder={LEGAL_PROFILE_TAB_TEXT.FIELDS.EMAIL_PH} className="pl-8" />
             </div>
           </Field>
-          <Field label="Support Phone" error={errors.support_phone?.message}>
+          <Field label={LEGAL_PROFILE_TAB_TEXT.FIELDS.PHONE} error={errors.support_phone?.message}>
             <div className="relative">
               <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
-              <Input {...register('support_phone')} placeholder="+91 98765 43210" className="pl-8" />
+              <Input {...register('support_phone')} placeholder={LEGAL_PROFILE_TAB_TEXT.FIELDS.PHONE_PH} className="pl-8" />
             </div>
           </Field>
-          <Field label="Website URL" error={errors.website_url?.message}>
+          <Field label={LEGAL_PROFILE_TAB_TEXT.FIELDS.WEBSITE} error={errors.website_url?.message}>
             <div className="relative">
               <Globe size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
-              <Input {...register('website_url')} placeholder="https://example.com" className="pl-8" />
+              <Input {...register('website_url')} placeholder={LEGAL_PROFILE_TAB_TEXT.FIELDS.WEBSITE_PH} className="pl-8" />
             </div>
           </Field>
         </div>

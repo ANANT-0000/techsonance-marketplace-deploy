@@ -14,16 +14,17 @@ import { SearchBar } from "./SearchBar";
 import { Product, Category } from "@/utils/Types";
 
 import { fetchProductVendorProducts, SortBy } from "@/utils/commonAPiClient";
+import { SHOPPING_LIST_TEXT } from "@/constants/customerText";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 12;
 
 export const SORT_OPTIONS: { label: string; value: SortBy }[] = [
-  { label: "Newest", value: "newest" },
-  { label: "Price: Low to High", value: "price_asc" },
-  { label: "Price: High to Low", value: "price_desc" },
-  { label: "Most Popular", value: "discount" },
+  { label: SHOPPING_LIST_TEXT.SORT_NEWEST, value: "newest" },
+  { label: SHOPPING_LIST_TEXT.SORT_PRICE_ASC, value: "price_asc" },
+  { label: SHOPPING_LIST_TEXT.SORT_PRICE_DESC, value: "price_desc" },
+  { label: SHOPPING_LIST_TEXT.SORT_POPULAR, value: "discount" },
 ];
 
 const DEFAULT_FILTERS: FilterState = {
@@ -190,7 +191,6 @@ export function ShoppingList({ styles }: ShoppingListProps) {
           },
         });
       } catch (e) {
-        console.error("Failed to fetch products", e);
         if (!cancelled) {
           dispatch({
             type: ActionType.SET_PRODUCTS_DATA,
@@ -254,7 +254,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
   };
 
   const currentSortLabel =
-    SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Newest";
+    SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? SHOPPING_LIST_TEXT.SORT_NEWEST;
 
   return (
     <motion.section
@@ -281,14 +281,14 @@ export function ShoppingList({ styles }: ShoppingListProps) {
               {/* Mobile count */}
               <div className="lg:hidden w-full flex justify-between items-center">
                 <p className="text-sm text-gray-500 mt-1">
-                  Showing {state.total} items
+                  {SHOPPING_LIST_TEXT.SHOWING} {state.total} {SHOPPING_LIST_TEXT.ITEMS}
                 </p>
               </div>
 
               {/* Desktop search + sort */}
               <div className="hidden lg:flex w-full items-center justify-between">
                 <div className="text-sm text-gray-500 font-medium">
-                  Showing {state.total} products
+                  {SHOPPING_LIST_TEXT.SHOWING} {state.total} {SHOPPING_LIST_TEXT.PRODUCTS}
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-72">
@@ -298,7 +298,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
                         pushParams({ search: val || null, page: 1 })
                       }
                       onSearch={handleSearch}
-                      placeholder="Search brands, styles..."
+                      placeholder={SHOPPING_LIST_TEXT.SEARCH_PLACEHOLDER}
                     />
                   </div>
                   <div ref={sortRef} className="relative">
@@ -311,7 +311,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
                       }
                       className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-full text-sm font-medium text-gray-700 bg-white hover:border-gray-300 transition-colors"
                     >
-                      Sort by: {currentSortLabel}
+                      {SHOPPING_LIST_TEXT.SORT_BY} {currentSortLabel}
                       <ChevronDown
                         size={16}
                         className={`text-gray-400 transition-transform ${state.isSortOpen ? "rotate-180" : ""}`}
@@ -375,11 +375,11 @@ export function ShoppingList({ styles }: ShoppingListProps) {
                   />
                   <div className="text-center">
                     <p className="text-base font-medium text-gray-600">
-                      No products found
+                      {SHOPPING_LIST_TEXT.NO_PRODUCTS_FOUND}
                     </p>
                     {search && (
                       <p className="text-sm text-gray-400 mt-1">
-                        Try a different keyword or clear the filter
+                        {SHOPPING_LIST_TEXT.TRY_DIFFERENT_KEYWORD}
                       </p>
                     )}
                   </div>

@@ -20,6 +20,7 @@ import { Calendar, Megaphone, Tag } from "lucide-react";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { PromotionConfigurator } from "./PromotionConfigurator";
+import { CAMPAIGN_FORM_TEXT } from "@/constants/vendorText";
 
 // ─────────────────────────────────────────────
 // Styles (keep in sync with PromotionConfigurator)
@@ -402,11 +403,11 @@ export default function CampaignForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validFrom) {
-      toast.error("Valid From date is required");
+      toast.error(CAMPAIGN_FORM_TEXT.TOASTS.VALID_FROM_REQ);
       return;
     }
     if (!name.trim()) {
-      toast.error("Campaign name is required");
+      toast.error(CAMPAIGN_FORM_TEXT.TOASTS.NAME_REQ);
       return;
     }
 
@@ -451,18 +452,18 @@ export default function CampaignForm({
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        toast.success("Campaign updated");
+        toast.success(CAMPAIGN_FORM_TEXT.TOASTS.UPDATED);
       } else {
         await AxiosAPI.post(`/v1/promotions/${userId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        toast.success("Campaign created");
+        toast.success(CAMPAIGN_FORM_TEXT.TOASTS.CREATED);
       }
 
       router.push(`/vendor/marketing/campaigns`);
     } catch (err: any) {
       toast.error(
-        err.response?.data?.message ?? "Failed to save campaign"
+        err.response?.data?.message ?? CAMPAIGN_FORM_TEXT.TOASTS.ERR_SAVE
       );
     } finally {
       setLoading(false);
@@ -478,10 +479,10 @@ export default function CampaignForm({
         </div>
         <div>
           <h2 className="text-base font-bold text-gray-800">
-            {isEdit ? "Edit Campaign" : "Create New Campaign"}
+            {isEdit ? CAMPAIGN_FORM_TEXT.HEADER.EDIT : CAMPAIGN_FORM_TEXT.HEADER.CREATE}
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            Configure your promotion details, rules, and scheduling.
+            {CAMPAIGN_FORM_TEXT.HEADER.DESC}
           </p>
         </div>
       </div>
@@ -491,30 +492,30 @@ export default function CampaignForm({
         <section className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className={labelBase}>Campaign Name *</label>
+              <label className={labelBase}>{CAMPAIGN_FORM_TEXT.BASIC_INFO.NAME}</label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                placeholder="e.g. Summer Sale 20% Off"
+                placeholder={CAMPAIGN_FORM_TEXT.BASIC_INFO.NAME_PH}
                 className={fieldBase}
               />
             </div>
             <div>
-              <label className={labelBase}>Status</label>
+              <label className={labelBase}>{CAMPAIGN_FORM_TEXT.BASIC_INFO.STATUS}</label>
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger className={fieldBase}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={PromotionStatus.DRAFT}>
-                    Draft
+                    {CAMPAIGN_FORM_TEXT.STATUS_OPTIONS.DRAFT}
                   </SelectItem>
                   <SelectItem value={PromotionStatus.ACTIVE}>
-                    Active (publish now)
+                    {CAMPAIGN_FORM_TEXT.STATUS_OPTIONS.ACTIVE}
                   </SelectItem>
                   <SelectItem value={PromotionStatus.PENDING_REVIEW}>
-                    Submit for Review
+                    {CAMPAIGN_FORM_TEXT.STATUS_OPTIONS.REVIEW}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -522,30 +523,30 @@ export default function CampaignForm({
           </div>
 
           <div>
-            <label className={labelBase}>Description</label>
+            <label className={labelBase}>{CAMPAIGN_FORM_TEXT.BASIC_INFO.DESC_LBL}</label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
-              placeholder="Customer-facing description shown at checkout"
+              placeholder={CAMPAIGN_FORM_TEXT.BASIC_INFO.DESC_PH}
               className={fieldBase}
             />
           </div>
 
           <div>
-            <label className={labelBase}>Internal Note</label>
+            <label className={labelBase}>{CAMPAIGN_FORM_TEXT.BASIC_INFO.INTERNAL_NOTE_LBL}</label>
             <Textarea
               value={internalNote}
               onChange={(e) => setInternalNote(e.target.value)}
               rows={2}
-              placeholder="Internal team notes (not visible to customers)"
+              placeholder={CAMPAIGN_FORM_TEXT.BASIC_INFO.INTERNAL_NOTE_PH}
               className={fieldBase}
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className={labelBase}>Priority</label>
+              <label className={labelBase}>{CAMPAIGN_FORM_TEXT.BASIC_INFO.PRIORITY}</label>
               <Input
                 type="number"
                 value={priority}
@@ -554,8 +555,7 @@ export default function CampaignForm({
                 className={fieldBase}
               />
               <p className="mt-1 text-xs text-gray-400">
-                Higher number = applied first when multiple promos are
-                active.
+                {CAMPAIGN_FORM_TEXT.BASIC_INFO.PRIORITY_HINT}
               </p>
             </div>
 
@@ -568,10 +568,10 @@ export default function CampaignForm({
                   className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm font-medium text-gray-700">
-                  Auto-apply
+                  {CAMPAIGN_FORM_TEXT.BASIC_INFO.AUTO_APPLY}
                 </span>
                 <span className="text-xs text-gray-400">
-                  (no coupon code needed)
+                  {CAMPAIGN_FORM_TEXT.BASIC_INFO.AUTO_APPLY_HINT}
                 </span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
@@ -582,10 +582,10 @@ export default function CampaignForm({
                   className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm font-medium text-gray-700">
-                  Exclusive
+                  {CAMPAIGN_FORM_TEXT.BASIC_INFO.EXCLUSIVE}
                 </span>
                 <span className="text-xs text-gray-400">
-                  (cannot stack with other promos)
+                  {CAMPAIGN_FORM_TEXT.BASIC_INFO.EXCLUSIVE_HINT}
                 </span>
               </label>
             </div>
@@ -596,7 +596,7 @@ export default function CampaignForm({
         <section className={sectionContainer}>
           <div className="flex items-center gap-2 mb-4 text-gray-800 font-bold text-sm">
             <Tag size={16} />
-            Discount Configuration
+            {CAMPAIGN_FORM_TEXT.DISCOUNT_CONFIG}
           </div>
           <PromotionConfigurator
             promoType={promoType}
@@ -615,11 +615,11 @@ export default function CampaignForm({
         <section className={sectionContainer}>
           <div className="flex items-center gap-2 mb-4 text-gray-800 font-bold text-sm">
             <Calendar size={16} />
-            Schedule &amp; Usage
+            {CAMPAIGN_FORM_TEXT.SCHEDULE_USAGE.TITLE}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className={labelBase}>Valid From *</label>
+              <label className={labelBase}>{CAMPAIGN_FORM_TEXT.SCHEDULE_USAGE.VALID_FROM}</label>
               <Input
                 type="datetime-local"
                 value={validFrom}
@@ -629,7 +629,7 @@ export default function CampaignForm({
               />
             </div>
             <div>
-              <label className={labelBase}>Valid To</label>
+              <label className={labelBase}>{CAMPAIGN_FORM_TEXT.SCHEDULE_USAGE.VALID_TO}</label>
               <Input
                 type="datetime-local"
                 value={validTo}
@@ -637,21 +637,20 @@ export default function CampaignForm({
                 className={fieldBase}
               />
               <p className="mt-1 text-xs text-gray-400">
-                Leave blank for no expiry.
+                {CAMPAIGN_FORM_TEXT.SCHEDULE_USAGE.VALID_TO_HINT}
               </p>
             </div>
             <div>
-              <label className={labelBase}>Global Use Cap</label>
+              <label className={labelBase}>{CAMPAIGN_FORM_TEXT.SCHEDULE_USAGE.GLOBAL_CAP}</label>
               <Input
                 type="number"
                 value={maxUsesTotal}
                 onChange={(e) => setMaxUsesTotal(e.target.value)}
-                placeholder="Leave blank = unlimited"
+                placeholder={CAMPAIGN_FORM_TEXT.SCHEDULE_USAGE.GLOBAL_CAP_PH}
                 className={fieldBase}
               />
               <p className="mt-1 text-xs text-gray-400">
-                Total times this promo can be redeemed across all
-                customers.
+                {CAMPAIGN_FORM_TEXT.SCHEDULE_USAGE.GLOBAL_CAP_HINT}
               </p>
             </div>
           </div>
@@ -664,7 +663,7 @@ export default function CampaignForm({
             onClick={() => router.back()}
             className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:text-gray-800"
           >
-            Cancel
+            {CAMPAIGN_FORM_TEXT.FOOTER.CANCEL}
           </button>
           <Button
             type="submit"
@@ -672,10 +671,10 @@ export default function CampaignForm({
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-2.5 font-bold shadow-md shadow-blue-100"
           >
             {loading
-              ? "Saving…"
+              ? CAMPAIGN_FORM_TEXT.FOOTER.SAVING
               : isEdit
-              ? "Update Campaign"
-              : "Create Campaign"}
+              ? CAMPAIGN_FORM_TEXT.FOOTER.UPDATE
+              : CAMPAIGN_FORM_TEXT.FOOTER.CREATE}
           </Button>
         </div>
       </form>

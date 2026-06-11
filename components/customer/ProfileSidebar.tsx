@@ -7,15 +7,16 @@ import type { RootState } from '@/lib/store';
 import { logOut } from '@/lib/features/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { ChevronLeft } from 'lucide-react';
+import { PROFILE_SIDEBAR_TEXT } from '@/constants/customerText';
 
 const ProfileSidebarLink = [
-    { name: 'Profile Overview', path: '/customer', icon: 'user' },
-    { name: 'My Orders', path: '/orders', icon: 'shopping-bag' },
-    { name: 'My Cart', path: '/cart', icon: 'shopping-cart' },
-    { name: 'Wishlist', path: '/wishlist', icon: 'heart' },
-    { name: 'My Addresses', path: '/addresses', icon: 'map-pin' },
-    { name: 'Customer Support', path: '/support', icon: 'headphones' },
-    { name: 'Logout', path: '/logout', icon: 'log-out', isDanger: true }
+    { name: PROFILE_SIDEBAR_TEXT.LINKS.OVERVIEW, path: '/customer', icon: 'user' },
+    { name: PROFILE_SIDEBAR_TEXT.LINKS.ORDERS, path: '/orders', icon: 'shopping-bag' },
+    { name: PROFILE_SIDEBAR_TEXT.LINKS.CART, path: '/cart', icon: 'shopping-cart' },
+    { name: PROFILE_SIDEBAR_TEXT.LINKS.WISHLIST, path: '/wishlist', icon: 'heart' },
+    { name: PROFILE_SIDEBAR_TEXT.LINKS.ADDRESSES, path: '/addresses', icon: 'map-pin' },
+    { name: PROFILE_SIDEBAR_TEXT.LINKS.SUPPORT, path: '/support', icon: 'headphones' },
+    { name: PROFILE_SIDEBAR_TEXT.LINKS.LOGOUT, path: '/logout', icon: 'log-out', isDanger: true }
 ];
 
 type SidebarState = { isMounted: boolean; isMobile: boolean };

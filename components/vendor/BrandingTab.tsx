@@ -14,152 +14,16 @@ import { Select } from "./Select";
 import { SaveButton } from "./SaveButton";
 import { z } from "zod";
 import { ArrowUp, ArrowDown } from "lucide-react";
+import { BRANDING_TAB_TEXT } from "@/constants/vendorText";
 
-interface ThemePreset {
-  name: string;
-  primary_color: string;
-  secondary_color: string;
-  accent_color: string;
-  background_color: string;
-  text_color: string;
-  navbar_bg: string;
-  navbar_fg: string;
-  footer_bg: string;
-  footer_fg: string;
-  card_style: "standard" | "glassmorphic";
-  border_radius: "none" | "sm" | "md" | "lg" | "xl" | "full";
-}
-const HOME_SECTION_FIELDS: { key: string; label: string; desc: string }[] = [
-  {
-    key: "hero",
-    label: "Interactive Hero Banner",
-    desc: "Promotional slider or video background",
-  },
-  {
-    key: "lookbook",
-    label: "Shoppable Lookbook",
-    desc: "Image with interactive hotspots",
-  },
-  {
-    key: "scarcity",
-    label: "Scarcity & Urgency Timer",
-    desc: "Flash sales countdown and active promo alerts",
-  },
-  {
-    key: "social_proof",
-    label: "Trust & Social Proof",
-    desc: "Customer testimonials slider and trust badges",
-  },
-  {
-    key: "curated",
-    label: "Curated Discovery Slider",
-    desc: "Horizontal scrollable product showcase lists",
-  },
-  {
-    key: "categories",
-    label: "Shop Categories Grid",
-    desc: "Grid layout of shop categories",
-  },
-  {
-    key: "products",
-    label: "Featured Products Grid",
-    desc: "Grid layout of featured master products",
-  },
-  {
-    key: "promo",
-    label: "Middle Promo Card",
-    desc: "Mid-page promotional banner card",
-  },
-  {
-    key: "new_arrivals",
-    label: "New Arrivals Block",
-    desc: "Showcase of recently launched items",
-  },
-  {
-    key: "newsletter",
-    label: "Newsletter Subscription Banner",
-    desc: "Signup banner at the footer area",
-  },
-];
-const PRESETS: ThemePreset[] = [
-  {
-    name: "Techsonance Classic",
-    primary_color: "#2563eb",
-    secondary_color: "#4f46e5",
-    accent_color: "#3b82f6",
-    background_color: "#f8fafc",
-    text_color: "#0f172a",
-    navbar_bg: "#ffffff",
-    navbar_fg: "#0f172a",
-    footer_bg: "#0f172a",
-    footer_fg: "#ffffff",
-    card_style: "standard",
-    border_radius: "md",
-  },
-  {
-    name: "Emerald Eco",
-    primary_color: "#059669",
-    secondary_color: "#10b981",
-    accent_color: "#34d399",
-    background_color: "#f0fdf4",
-    text_color: "#064e3b",
-    navbar_bg: "#ffffff",
-    navbar_fg: "#064e3b",
-    footer_bg: "#064e3b",
-    footer_fg: "#ffffff",
-    card_style: "standard",
-    border_radius: "lg",
-  },
-  {
-    name: "Sunset Orange",
-    primary_color: "#ea580c",
-    secondary_color: "#f97316",
-    accent_color: "#fb923c",
-    background_color: "#fff7ed",
-    text_color: "#431407",
-    navbar_bg: "#ffffff",
-    navbar_fg: "#431407",
-    footer_bg: "#431407",
-    footer_fg: "#ffffff",
-    card_style: "standard",
-    border_radius: "md",
-  },
-  {
-    name: "Midnight Premium",
-    primary_color: "#3b82f6",
-    secondary_color: "#60a5fa",
-    accent_color: "#93c5fd",
-    background_color: "#0f172a",
-    text_color: "#f8fafc",
-    navbar_bg: "#1e293b",
-    navbar_fg: "#f8fafc",
-    footer_bg: "#0f172a",
-    footer_fg: "#f8fafc",
-    card_style: "glassmorphic",
-    border_radius: "xl",
-  },
-  {
-    name: "Luxury Rose",
-    primary_color: "#be185d",
-    secondary_color: "#db2777",
-    accent_color: "#f472b6",
-    background_color: "#fdf2f8",
-    text_color: "#500724",
-    navbar_bg: "#ffffff",
-    navbar_fg: "#500724",
-    footer_bg: "#500724",
-    footer_fg: "#ffffff",
-    card_style: "glassmorphic",
-    border_radius: "full",
-  },
-];
+// Replaced constants
 
 export function BrandingTab({ token }: { token: string }) {
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [files, setFiles] = useState<Record<string, File>>({});
 
-  const applyPreset = (preset: ThemePreset) => {
+  const applyPreset = (preset: any) => {
     setValue("primary_color", preset.primary_color);
     setValue("secondary_color", preset.secondary_color);
     setValue("accent_color", preset.accent_color);
@@ -294,79 +158,54 @@ export function BrandingTab({ token }: { token: string }) {
   const footerBg = watch("footer_bg");
   const footerFg = watch("footer_fg");
 
-  const FONT_OPTIONS = [
-    "Inter",
-    "Plus Jakarta Sans",
-    "DM Sans",
-    "Outfit",
-    "Nunito",
-    "Poppins",
-    "Raleway",
-    "Lato",
-    "Source Sans Pro",
-    "IBM Plex Sans",
-  ];
-
-  const SECTION_LABELS: Record<string, string> = {
-    hero: "Interactive Hero Banner",
-    lookbook: "Shoppable Lookbook (Hotspots)",
-    scarcity: "Scarcity & Urgency (Countdown)",
-    social_proof: "Trust & Social Proof (Testimonials)",
-    curated: "Curated Discovery Slider",
-    categories: "Shop Categories Grid",
-    products: "Featured Products Grid",
-    promo: "Middle Promo Card",
-    new_arrivals: "New Arrivals Block",
-    newsletter: "Newsletter Subscription Banner",
-  };
+// Replaced FONT_OPTIONS and SECTION_LABELS
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-8 pb-10 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-h-[70vh] overflow-y-auto pr-2"
     >
-      {/* Logos section */}
       <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
         <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
           <span className="w-1.5 h-4 bg-blue-600 rounded-full" />
-          Logos & Brand Assets
+          {BRANDING_TAB_TEXT.SECTIONS.LOGOS}
         </h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <LogoUploadField
-            label="Primary Logo"
+            label={BRANDING_TAB_TEXT.FIELDS.PRIMARY_LOGO_LBL}
             fieldName="logo"
             value={watch("logo_url")}
             onFileSelect={(name, file) =>
               setFiles((prev) => ({ ...prev, [name]: file }))
             }
-            hint="Used in headers and invoices"
+            hint={BRANDING_TAB_TEXT.FIELDS.PRIMARY_LOGO_HINT}
           />
           <LogoUploadField
-            label="Dark Variant"
+            label={BRANDING_TAB_TEXT.FIELDS.DARK_VARIANT_LBL}
             fieldName="logo_dark"
             value={watch("logo_dark_url")}
             onFileSelect={(name, file) =>
               setFiles((prev) => ({ ...prev, [name]: file }))
             }
-            hint="For dark-themed PDF documents"
+            hint={BRANDING_TAB_TEXT.FIELDS.DARK_VARIANT_HINT}
           />
           <LogoUploadField
-            label="Watermark"
+            label={BRANDING_TAB_TEXT.FIELDS.WATERMARK_LBL}
             fieldName="watermark"
             value={watch("watermark_url")}
             onFileSelect={(name, file) =>
               setFiles((prev) => ({ ...prev, [name]: file }))
             }
-            hint="Faint stamp printed behind content"
+            hint={BRANDING_TAB_TEXT.FIELDS.WATERMARK_HINT}
           />
           <LogoUploadField
-            label="Favicon"
+            label={BRANDING_TAB_TEXT.FIELDS.FAVICON_LBL}
             fieldName="favicon"
             value={watch("favicon_url")}
             onFileSelect={(name, file) =>
               setFiles((prev) => ({ ...prev, [name]: file }))
             }
-            hint="Appears on browser tabs/emails"
+            hint={BRANDING_TAB_TEXT.FIELDS.FAVICON_HINT}
           />
         </div>
       </section>
@@ -375,15 +214,15 @@ export function BrandingTab({ token }: { token: string }) {
       <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-6">
         <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
           <span className="w-1.5 h-4 bg-blue-600 rounded-full" />
-          Color Theme Customization
+          {BRANDING_TAB_TEXT.SECTIONS.COLORS}
         </h3>
 
         <div className="border-b border-gray-100 pb-4">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2.5">
-            Quick Style Presets
+            {BRANDING_TAB_TEXT.FIELDS.QUICK_PRESETS}
           </span>
           <div className="flex flex-wrap gap-2">
-            {PRESETS.map((preset) => (
+            {BRANDING_TAB_TEXT.PRESETS.map((preset) => (
               <button
                 key={preset.name}
                 type="button"
@@ -402,23 +241,23 @@ export function BrandingTab({ token }: { token: string }) {
 
         <div>
           <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Accent Palette
+            {BRANDING_TAB_TEXT.FIELDS.ACCENT_PALETTE}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <ColorField
-              label="Primary Accent"
+              label={BRANDING_TAB_TEXT.FIELDS.PRIMARY_ACCENT}
               value={primaryColor || ""}
               onChange={(v) => setValue("primary_color", v)}
               error={errors.primary_color?.message}
             />
             <ColorField
-              label="Secondary Accent"
+              label={BRANDING_TAB_TEXT.FIELDS.SECONDARY_ACCENT}
               value={secondaryColor || ""}
               onChange={(v) => setValue("secondary_color", v)}
               error={errors.secondary_color?.message}
             />
             <ColorField
-              label="Accent Color"
+              label={BRANDING_TAB_TEXT.FIELDS.ACCENT_COLOR}
               value={accentColor || ""}
               onChange={(v) => setValue("accent_color", v)}
               error={errors.accent_color?.message}
@@ -428,17 +267,17 @@ export function BrandingTab({ token }: { token: string }) {
 
         <div>
           <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Layout Background & Text
+            {BRANDING_TAB_TEXT.FIELDS.LAYOUT_BG_TEXT}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ColorField
-              label="Page Background Color"
+              label={BRANDING_TAB_TEXT.FIELDS.PAGE_BG_COLOR}
               value={backgroundColor || ""}
               onChange={(v) => setValue("background_color", v)}
               error={errors.background_color?.message}
             />
             <ColorField
-              label="Text Color"
+              label={BRANDING_TAB_TEXT.FIELDS.TEXT_COLOR}
               value={textColor || ""}
               onChange={(v) => setValue("text_color", v)}
               error={errors.text_color?.message}
@@ -448,29 +287,29 @@ export function BrandingTab({ token }: { token: string }) {
 
         <div>
           <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Navbar & Footer Palette
+            {BRANDING_TAB_TEXT.FIELDS.NAVBAR_FOOTER_PALETTE}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <ColorField
-              label="Navbar Background"
+              label={BRANDING_TAB_TEXT.FIELDS.NAVBAR_BG}
               value={navbarBg || ""}
               onChange={(v) => setValue("navbar_bg", v)}
               error={errors.navbar_bg?.message}
             />
             <ColorField
-              label="Navbar Text/Foreground"
+              label={BRANDING_TAB_TEXT.FIELDS.NAVBAR_FG}
               value={navbarFg || ""}
               onChange={(v) => setValue("navbar_fg", v)}
               error={errors.navbar_fg?.message}
             />
             <ColorField
-              label="Footer Background"
+              label={BRANDING_TAB_TEXT.FIELDS.FOOTER_BG}
               value={footerBg || ""}
               onChange={(v) => setValue("footer_bg", v)}
               error={errors.footer_bg?.message}
             />
             <ColorField
-              label="Footer Text/Foreground"
+              label={BRANDING_TAB_TEXT.FIELDS.FOOTER_FG}
               value={footerFg || ""}
               onChange={(v) => setValue("footer_fg", v)}
               error={errors.footer_fg?.message}
@@ -483,16 +322,16 @@ export function BrandingTab({ token }: { token: string }) {
       <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-6">
         <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
           <span className="w-1.5 h-4 bg-blue-600 rounded-full" />
-          Storefront Layout & Typography
+          {BRANDING_TAB_TEXT.SECTIONS.TYPOGRAPHY}
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <Field
-            label="Typography Font Family"
-            hint="Loaded dynamically on storefront"
+            label={BRANDING_TAB_TEXT.FIELDS.TYPO_FONT_FAMILY}
+            hint={BRANDING_TAB_TEXT.FIELDS.TYPO_HINT}
           >
             <Select {...register("font_family")}>
-              {FONT_OPTIONS.map((f) => (
+              {BRANDING_TAB_TEXT.FONT_OPTIONS.map((f) => (
                 <option key={f} value={f}>
                   {f}
                 </option>
@@ -500,45 +339,45 @@ export function BrandingTab({ token }: { token: string }) {
             </Select>
           </Field>
 
-          <Field label="Navbar Position" hint="Header behaviour on scroll">
+          <Field label={BRANDING_TAB_TEXT.FIELDS.NAVBAR_POS} hint={BRANDING_TAB_TEXT.FIELDS.NAVBAR_POS_HINT}>
             <Select {...register("navbar_position")}>
-              <option value="sticky">Sticky (Follow scroll)</option>
-              <option value="static">Static (Stay at top)</option>
+              <option value="sticky">{BRANDING_TAB_TEXT.FIELDS.NAVBAR_STICKY}</option>
+              <option value="static">{BRANDING_TAB_TEXT.FIELDS.NAVBAR_STATIC}</option>
             </Select>
           </Field>
 
           <Field
-            label="Header Logo Alignment"
-            hint="Brand positioning in navbar"
+            label={BRANDING_TAB_TEXT.FIELDS.LOGO_ALIGN}
+            hint={BRANDING_TAB_TEXT.FIELDS.LOGO_ALIGN_HINT}
           >
             <Select {...register("logo_alignment")}>
-              <option value="left">Left Aligned</option>
-              <option value="center">Center Aligned</option>
+              <option value="left">{BRANDING_TAB_TEXT.FIELDS.LEFT_ALIGNED}</option>
+              <option value="center">{BRANDING_TAB_TEXT.FIELDS.CENTER_ALIGNED}</option>
             </Select>
           </Field>
 
-          <Field label="Footer Style" hint="Amount of details in footer">
+          <Field label={BRANDING_TAB_TEXT.FIELDS.FOOTER_STYLE} hint={BRANDING_TAB_TEXT.FIELDS.FOOTER_STYLE_HINT}>
             <Select {...register("footer_style")}>
-              <option value="detailed">Detailed Multi-Column</option>
-              <option value="simple">Simple Center Row</option>
+              <option value="detailed">{BRANDING_TAB_TEXT.FIELDS.DETAILED_FOOTER}</option>
+              <option value="simple">{BRANDING_TAB_TEXT.FIELDS.SIMPLE_FOOTER}</option>
             </Select>
           </Field>
 
-          <Field label="Border Radius" hint="Curves on buttons, inputs & cards">
+          <Field label={BRANDING_TAB_TEXT.FIELDS.BORDER_RADIUS} hint={BRANDING_TAB_TEXT.FIELDS.BORDER_RADIUS_HINT}>
             <Select {...register("border_radius")}>
-              <option value="none">Sharp Corners (0px)</option>
-              <option value="sm">Small (4px)</option>
-              <option value="md">Medium (8px)</option>
-              <option value="lg">Large (12px)</option>
-              <option value="xl">Extra Large (16px)</option>
-              <option value="full">Rounded / Pill (24px)</option>
+              <option value="none">{BRANDING_TAB_TEXT.FIELDS.SHARP_CORNERS}</option>
+              <option value="sm">{BRANDING_TAB_TEXT.FIELDS.SMALL_CORNERS}</option>
+              <option value="md">{BRANDING_TAB_TEXT.FIELDS.MEDIUM_CORNERS}</option>
+              <option value="lg">{BRANDING_TAB_TEXT.FIELDS.LARGE_CORNERS}</option>
+              <option value="xl">{BRANDING_TAB_TEXT.FIELDS.XL_CORNERS}</option>
+              <option value="full">{BRANDING_TAB_TEXT.FIELDS.ROUNDED_CORNERS}</option>
             </Select>
           </Field>
 
-          <Field label="Card Display Style" hint="Aesthetic styling of cards">
+          <Field label={BRANDING_TAB_TEXT.FIELDS.CARD_STYLE} hint={BRANDING_TAB_TEXT.FIELDS.CARD_STYLE_HINT}>
             <Select {...register("card_style")}>
-              <option value="standard">Standard Flat Bordered</option>
-              <option value="glassmorphic">Glassmorphic Blur</option>
+              <option value="standard">{BRANDING_TAB_TEXT.FIELDS.STANDARD_CARD}</option>
+              <option value="glassmorphic">{BRANDING_TAB_TEXT.FIELDS.GLASSMORPHIC_CARD}</option>
             </Select>
           </Field>
         </div>
@@ -549,16 +388,15 @@ export function BrandingTab({ token }: { token: string }) {
         <div>
           <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
             <span className="w-1.5 h-4 bg-blue-600 rounded-full" />
-            Homepage Section Manager
+            {BRANDING_TAB_TEXT.SECTIONS.HOMEPAGE}
           </h3>
           <p className="text-xs text-gray-500 mt-1">
-            Toggle which modular sections are active on your home page, and
-            order them to design your custom landing page.
+            {BRANDING_TAB_TEXT.FIELDS.HOMEPAGE_DESC}
           </p>
         </div>
 
         <div className="space-y-3 max-w-2xl">
-          {HOME_SECTION_FIELDS.map((section) => {
+          {BRANDING_TAB_TEXT.HOME_SECTION_FIELDS.map((section) => {
             const isEnabled = homepageLayout.includes(section.key);
             const activeIdx = homepageLayout.indexOf(section.key);
 
@@ -602,11 +440,11 @@ export function BrandingTab({ token }: { token: string }) {
                     </span>
                     {isEnabled ? (
                       <span className="px-2 py-0.5 text-[9px] font-black tracking-wider uppercase bg-green-500/10 text-green-600 border border-green-500/25 rounded-md">
-                        Active (Pos: {activeIdx + 1})
+                        {BRANDING_TAB_TEXT.FIELDS.ACTIVE_POS}{activeIdx + 1})
                       </span>
                     ) : (
                       <span className="px-2 py-0.5 text-[9px] font-black tracking-wider uppercase bg-gray-200/50 text-gray-500 rounded-md">
-                        Inactive
+                        {BRANDING_TAB_TEXT.FIELDS.INACTIVE}
                       </span>
                     )}
                   </div>
@@ -624,7 +462,7 @@ export function BrandingTab({ token }: { token: string }) {
                         onClick={() => moveItemByKey(section.key, "up")}
                         disabled={activeIdx === 0}
                         className="p-1.5 rounded bg-white hover:bg-gray-50 text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-200 shadow-sm transition-all cursor-pointer"
-                        title="Move Up"
+                        title={BRANDING_TAB_TEXT.FIELDS.MOVE_UP}
                       >
                         <ArrowUp size={14} />
                       </button>
@@ -633,7 +471,7 @@ export function BrandingTab({ token }: { token: string }) {
                         onClick={() => moveItemByKey(section.key, "down")}
                         disabled={activeIdx === homepageLayout.length - 1}
                         className="p-1.5 rounded bg-white hover:bg-gray-50 text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-200 shadow-sm transition-all cursor-pointer"
-                        title="Move Down"
+                        title={BRANDING_TAB_TEXT.FIELDS.MOVE_DOWN}
                       >
                         <ArrowDown size={14} />
                       </button>

@@ -3,6 +3,7 @@ import { User, VendorUser } from "@/constants";
 import { useAppDispatch } from "@/hooks/reduxHooks";
 import { logOut } from "@/lib/features/auth/authSlice";
 import { useEffect, useRef, useState } from "react";
+import { SIDEBAR_FOOTER_TEXT } from "@/constants/commonText";
 
 
 export const UserMenu = ({
@@ -70,7 +71,7 @@ const onLogout = () => {
               </p>
               <p className="text-[11px] text-white/35 flex items-center gap-1 mt-0.5">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                Active workspace
+                {SIDEBAR_FOOTER_TEXT.ACTIVE_WORKSPACE}
               </p>
             </div>
           </div>}
@@ -117,7 +118,7 @@ const onLogout = () => {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400/70 shrink-0">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9"/>
             </svg>
-            Sign out
+            {SIDEBAR_FOOTER_TEXT.SIGN_OUT}
           </button>
         </div>
       </div>

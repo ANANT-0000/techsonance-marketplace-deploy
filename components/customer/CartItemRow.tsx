@@ -1,9 +1,10 @@
-﻿'use client';
+'use client';
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/utils";
 import { AddToCart } from "./AddToCart";
 import { CartItemDisplay } from "@/utils/Types";
+import { CART_ITEM_ROW_TEXT } from "@/constants/customerText";
 
 export function CartItemRow({ item }: { item: CartItemDisplay }) {
   const { items } = useAppSelector((s) => s.cart);
@@ -33,7 +34,7 @@ export function CartItemRow({ item }: { item: CartItemDisplay }) {
           {item.productVariant.variant_name}
         </p>
         <p className="text-xs text-blue-600 font-bold mt-0.5">
-          ₹{formatCurrency(Number(item.productVariant.price))} each
+          ₹{formatCurrency(Number(item.productVariant.price))} {CART_ITEM_ROW_TEXT.EACH}
         </p>
       </div>
 

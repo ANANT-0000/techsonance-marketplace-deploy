@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
+import { SEGMENT_FORM_TEXT } from "@/constants/vendorText";
 
 // ── Reusable Styles ──
 const fieldBase =
@@ -24,19 +25,9 @@ const labelBase =
 const buttonBase =
   "flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-100 px-5 py-2.5 transition-all";
 
-const FIELD_OPTIONS = [
-  { value: "total_orders", label: "Total Orders" },
-  { value: "total_spent", label: "Total Spent (₹)" },
-  { value: "average_order_value", label: "Average Order Value (₹)" },
-  { value: "registered_days_ago", label: "Days Since Registration" },
-  { value: "last_order_days_ago", label: "Days Since Last Order" },
-];
+const FIELD_OPTIONS = SEGMENT_FORM_TEXT.FIELD_OPTIONS;
 
-const OPERATOR_OPTIONS = [
-  { value: "gte", label: "≥ (at least)" },
-  { value: "lte", label: "≤ (at most)" },
-  { value: "eq", label: "= (exactly)" },
-];
+const OPERATOR_OPTIONS = SEGMENT_FORM_TEXT.OPERATOR_OPTIONS;
 
 interface Criterion {
   field: string;
@@ -52,10 +43,10 @@ const fetchSegmentData = async (
     const response = await AxiosAPI.get(`/v1/audiences/${segmentId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return response.data;
-  } catch (err) {
-    toast.error("Failed to fetch segment data");
-  }
+      return response.data;
+    } catch (err) {
+      toast.error(SEGMENT_FORM_TEXT.TOASTS.ERR_FETCH);
+    }
 };
 
 export default function SegmentForm({
@@ -67,7 +58,6 @@ export default function SegmentForm({
   const vendorId = user && "vendor_id" in user ? user.vendor_id : "";
   const router = useRouter();
   const token = authToken();
-  console.log("segmentId", segmentId);
   const isEdit = segmentId !== null;
   const [existingData, setExistingData] = useState<any>(null);
   const [name, setName] = useState("");
@@ -82,10 +72,8 @@ export default function SegmentForm({
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     if (isEdit) {
-      console.log(isEdit);
       const loadData = async () => {
         const data = await fetchSegmentData(segmentId, token!).then((data) => {
-          console.log("data existing", data);
           if (data) {
             setExistingData(data.data);
             setName(data.data.name);
@@ -121,11 +109,11 @@ export default function SegmentForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!criteria.length) {
-      toast.error("Add at least one criterion");
+      toast.error(SEGMENT_FORM_TEXT.TOASTS.ERR_NO_CRITERIA);
       return;
     }
     if (criteria.some((c) => !c.value)) {
-      toast.error("All criteria need a value");
+      toast.error(SEGMENT_FORM_TEXT.TOASTS.ERR_VAL_REQ);
       return;
     }
 
@@ -146,16 +134,16 @@ export default function SegmentForm({
         await AxiosAPI.patch(`/v1/audiences/${existingData.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        toast.success("Segment updated");
+        toast.success(SEGMENT_FORM_TEXT.TOASTS.UPDATED);
       } else {
         await AxiosAPI.post("/v1/audiences", payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        toast.success("Segment created");
+        toast.success(SEGMENT_FORM_TEXT.TOASTS.CREATED);
       }
       router.push(`/vendor/marketing/audiences`);
     } catch (err: any) {
-      toast.error(err.response?.data?.message ?? "Failed to save segment");
+      toast.error(err.response?.data?.message ?? SEGMENT_FORM_TEXT.TOASTS.ERR_SAVE);
     } finally {
       setLoading(false);
     }
@@ -170,10 +158,10 @@ export default function SegmentForm({
         </div>
         <div>
           <h2 className="text-base font-bold text-gray-800">
-            {isEdit ? "Edit Customer Segment" : "Create New Segment"}
+            {isEdit ? SEGMENT_FORM_TEXT.HEADER.EDIT : SEGMENT_FORM_TEXT.HEADER.CREATE}
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            Define dynamic groups based on customer behavior.
+            {SEGMENT_FORM_TEXT.HEADER.DESC}
           </p>
         </div>
       </div>
@@ -181,17 +169,17 @@ export default function SegmentForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelBase}>Segment Name *</label>
+            <label className={labelBase}>{SEGMENT_FORM_TEXT.FIELDS.NAME_LBL}</label>
             <input
               className={fieldBase}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              placeholder="e.g. High-Value Buyers"
+              placeholder={SEGMENT_FORM_TEXT.FIELDS.NAME_PH}
             />
           </div>
           <div>
-            <label className={labelBase}>Match Logic</label>
+            <label className={labelBase}>{SEGMENT_FORM_TEXT.FIELDS.MATCH_LOGIC_LBL}</label>
             <Select
               value={operator}
               onValueChange={(v) => setOperator(v as "AND" | "OR")}
@@ -201,10 +189,10 @@ export default function SegmentForm({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="AND">
-                  ALL criteria must match (AND)
+                  {SEGMENT_FORM_TEXT.FIELDS.MATCH_AND}
                 </SelectItem>
                 <SelectItem value="OR">
-                  ANY criterion must match (OR)
+                  {SEGMENT_FORM_TEXT.FIELDS.MATCH_OR}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -212,25 +200,25 @@ export default function SegmentForm({
         </div>
 
         <div>
-          <label className={labelBase}>Description</label>
+          <label className={labelBase}>{SEGMENT_FORM_TEXT.FIELDS.DESC_LBL}</label>
           <textarea
             className={`${fieldBase} min-h-[80px]`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Optional note about this segment"
+            placeholder={SEGMENT_FORM_TEXT.FIELDS.DESC_PH}
           />
         </div>
 
         {/* Criteria Section */}
         <div className="border border-gray-100 rounded-2xl p-5 bg-gray-50/50">
           <div className="flex items-center justify-between mb-4">
-            <label className={labelBase}>Criteria</label>
+            <label className={labelBase}>{SEGMENT_FORM_TEXT.FIELDS.CRITERIA_LBL}</label>
             <button
               type="button"
               onClick={addCriterion}
               className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 rounded-lg px-3 py-1.5 transition-colors"
             >
-              <Plus size={13} /> Add Criteria
+              <Plus size={13} /> {SEGMENT_FORM_TEXT.FIELDS.ADD_CRITERIA}
             </button>
           </div>
 
@@ -301,10 +289,10 @@ export default function SegmentForm({
             onClick={() => router.back()}
             className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:text-gray-800 transition-colors"
           >
-            Cancel
+            {SEGMENT_FORM_TEXT.FOOTER.CANCEL}
           </button>
           <Button type="submit" disabled={loading} className={buttonBase}>
-            {loading ? "Saving…" : isEdit ? "Update Segment" : "Create Segment"}
+            {loading ? SEGMENT_FORM_TEXT.FOOTER.SAVING : isEdit ? SEGMENT_FORM_TEXT.FOOTER.UPDATE : SEGMENT_FORM_TEXT.FOOTER.CREATE}
           </Button>
         </div>
       </form>

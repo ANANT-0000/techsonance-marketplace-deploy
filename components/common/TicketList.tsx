@@ -1,11 +1,12 @@
-﻿import { SupportTicketType } from "@/utils/Types";
+import { SupportTicketType } from "@/utils/Types";
+import { TICKET_LIST_TEXT } from "@/constants/commonText";
 
 export const TicketList = ({ tickets, onSelect, activeId }: { tickets: SupportTicketType[]; onSelect: (ticket: SupportTicketType) => void; activeId: string }) => {
     return (
         <section className="flex flex-col">
             <div className="header w-full flex flex-col bg-gray-100 pb-2 pt-4 pl-4 pr-2">
-                <h1 className="font-bold">Active Tickets({tickets.length})</h1>
-                <input type="search" className="form_input py-1" placeholder="Filter Status..." />
+                <h1 className="font-bold">{TICKET_LIST_TEXT.ACTIVE_TICKETS_PREFIX}{tickets.length}{TICKET_LIST_TEXT.ACTIVE_TICKETS_SUFFIX}</h1>
+                <input type="search" className="form_input py-1" placeholder={TICKET_LIST_TEXT.FILTER_STATUS} />
             </div>
             <div className="ticket_list_container pl-4">
                 {tickets.map((ticket) => (

@@ -1,7 +1,8 @@
-﻿'use client';
+'use client';
 import { formatDate, formatStructure, isImageUrl, isPdfUrl } from "@/lib/utils";
 import { VendorDocument } from "@/utils/Types";
 import { ExternalLink, FileText, ImageIcon } from "lucide-react";
+import { DOCUMENT_MODAL_TEXT } from "@/constants/adminText";
 
 export function DocumentModal({
     doc,
@@ -43,7 +44,7 @@ export function DocumentModal({
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-xs text-blue-600 hover:underline px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
                         >
-                            <ExternalLink size={13} /> Open Original
+                            <ExternalLink size={13} /> {DOCUMENT_MODAL_TEXT.OPEN_ORIGINAL}
                         </a>
                         <button
                             onClick={onClose}
@@ -73,14 +74,14 @@ export function DocumentModal({
                     {!isImage && !isPdf && (
                         <div className="flex flex-col items-center gap-3 py-12 text-gray-500">
                             <FileText size={40} className="text-gray-300" />
-                            <p className="text-sm">Preview not available for this file type.</p>
+                            <p className="text-sm">{DOCUMENT_MODAL_TEXT.PREVIEW_NOT_AVAILABLE}</p>
                             <a
                                 href={doc.document_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 text-sm hover:underline"
                             >
-                                Open file ↗
+                                {DOCUMENT_MODAL_TEXT.OPEN_FILE}
                             </a>
                         </div>
                     )}

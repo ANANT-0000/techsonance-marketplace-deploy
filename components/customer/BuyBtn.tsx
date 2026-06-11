@@ -8,6 +8,7 @@ import { BuyBtnMode, Coupon } from '@/utils/Types';
 import { createCheckoutSession } from '@/hooks/UseCheckoutSession';
 import { authToken } from '@/utils/authToken';
 import { CreditCard } from 'lucide-react';
+import { BUY_BTN_TEXT } from '@/constants/customerText';
 
 export function BuyBtn({ id, styles, iconStyles, mode, selectedCoupon, quantity }: { id?: string, styles?: string, iconStyles?: string, mode?: BuyBtnMode, selectedCoupon?: Coupon | null, quantity?: number }) {
   const { user } = useAppSelector((state: RootState) => state.auth);
@@ -44,7 +45,7 @@ export function BuyBtn({ id, styles, iconStyles, mode, selectedCoupon, quantity 
       className={`flex items-center justify-center gap-2 whitespace-nowrap select-none ${styles}`}
     >
       <CreditCard size={16} className={iconStyles || 'text-white'} />
-      <span className="text-[13px] font-semibold tracking-wide ">Buy Now</span>
+      <span className="text-[13px] font-semibold tracking-wide ">{BUY_BTN_TEXT.BUY_NOW}</span>
     </motion.button>
   );
 }

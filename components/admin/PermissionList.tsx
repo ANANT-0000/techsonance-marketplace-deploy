@@ -1,6 +1,7 @@
-﻿import { handleDeletePermission } from "@/utils/adminApiClients";
+import { handleDeletePermission } from "@/utils/adminApiClients";
 import { authToken } from "@/utils/authToken";
 import { redirect } from "next/navigation";
+import { PERMISSIONS_TEXT } from "@/constants/adminText";
 
 interface Permission { id: string; permission_name: string; }
 export const PermissionList = ({ permissions, adminId }: { permissions: Permission[]; adminId: string }) => {
@@ -20,7 +21,7 @@ export const PermissionList = ({ permissions, adminId }: { permissions: Permissi
                         onClick={() => onDeletePermission(p.id)}
                         className="text-xs text-red-400 hover:text-red-600"
                     >
-                        Delete
+                        {PERMISSIONS_TEXT.DELETE}
                     </button>
                 </div>
             ))}

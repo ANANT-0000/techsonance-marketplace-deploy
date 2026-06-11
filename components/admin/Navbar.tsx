@@ -7,6 +7,7 @@ import { logOut } from "@/lib/features/auth/authSlice";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, ChevronDown, LogOut, Mail } from "lucide-react";
+import { NAVBAR_TEXT } from "@/constants/adminText";
 
 export function Navbar({ title }: { title: string }) {
     const dispatch = useAppDispatch()
@@ -54,7 +55,7 @@ export function Navbar({ title }: { title: string }) {
                 </div>
                 <div className="nav_right flex items-center gap-4">
                     <div className={`border-2  text-[.8rem] border-black/40 rounded-full flex items-center px-3  gap-2  filter ${theme == 'light' ? '' : 'invert'}  `}>
-                        <input type="text" name="search" placeholder="Search system..." className="focus:outline-none text-[1rem] px-2
+                        <input type="text" name="search" placeholder={NAVBAR_TEXT.SEARCH_SYSTEM} className="focus:outline-none text-[1rem] px-2
                         w-30 py-1" /> <button className="focus:outline-none">
                             <img src={searchImgDark} alt="" className="h-4 w-4" />
                         </button>
@@ -112,7 +113,7 @@ export function Navbar({ title }: { title: string }) {
                                         </div>
                                         <div>
                                             <p className="text-sm font-semibold text-gray-900">{adminDetails.id}</p>
-                                            <p className="text-xs text-gray-500">Active workspace</p>
+                                            <p className="text-xs text-gray-500">{NAVBAR_TEXT.ACTIVE_WORKSPACE}</p>
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
@@ -131,7 +132,7 @@ export function Navbar({ title }: { title: string }) {
                                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                                 >
                                     <LogOut size={15} />
-                                    <span>Logout</span>
+                                    <span>{NAVBAR_TEXT.LOGOUT}</span>
                                 </button>
                             </div>
                         )}

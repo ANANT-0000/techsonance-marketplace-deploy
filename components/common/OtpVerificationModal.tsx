@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from 'react';
 import { Mail, X, ShieldAlert } from 'lucide-react';
+import { OTP_VERIFICATION_TEXT } from '@/constants/commonText';
 
 interface OtpVerificationModalProps {
     isOpen: boolean;
@@ -116,10 +117,10 @@ export function OtpVerificationModal({
                         </div>
                         
                         <h3 className="text-xl font-bold text-gray-900 mb-2">
-                            Security Verification
+                            {OTP_VERIFICATION_TEXT.SECURITY_VERIFICATION}
                         </h3>
                         <p className="text-sm text-gray-500 mb-6 px-2">
-                            To complete this action, please enter the 6-digit verification code sent to <span className="font-semibold text-gray-800">{emailMasked}</span>
+                            {OTP_VERIFICATION_TEXT.MESSAGE_PREFIX} <span className="font-semibold text-gray-800">{emailMasked}</span>
                         </p>
 
                         <form onSubmit={handleSubmit} className="w-full">
@@ -150,25 +151,25 @@ export function OtpVerificationModal({
                                 {isLoading ? (
                                     <>
                                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                        Verifying...
+                                        {OTP_VERIFICATION_TEXT.VERIFYING}
                                     </>
                                 ) : (
-                                    "Verify & Continue"
+                                    OTP_VERIFICATION_TEXT.VERIFY_BUTTON
                                 )}
                             </button>
                         </form>
 
                         <div className="mt-6 text-sm text-gray-500">
-                            Didn't receive the code?{" "}
+                            {OTP_VERIFICATION_TEXT.DIDNT_RECEIVE}{" "}
                             {timeLeft > 0 ? (
-                                <span className="font-medium text-gray-400">Resend in {timeLeft}s</span>
+                                <span className="font-medium text-gray-400">{OTP_VERIFICATION_TEXT.RESEND_IN}{timeLeft}{OTP_VERIFICATION_TEXT.SECONDS_SUFFIX}</span>
                             ) : (
                                 <button 
                                     onClick={handleResendClick} 
                                     disabled={isLoading}
                                     className="font-semibold text-blue-600 hover:text-blue-700"
                                 >
-                                    Resend OTP
+                                    {OTP_VERIFICATION_TEXT.RESEND_OTP}
                                 </button>
                             )}
                         </div>

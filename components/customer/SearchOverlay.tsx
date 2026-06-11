@@ -28,6 +28,7 @@ import { createPortal } from 'react-dom';
 import { Search, X, Clock, TrendingUp, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { fetchProductSuggestions } from '@/utils/commonAPiClient';
+import { SEARCH_OVERLAY_TEXT } from '@/constants/customerText';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -190,7 +191,7 @@ function OverlayBody({ onClose, initialQuery = '' }: OverlayBodyProps) {
                     value={state.query}
                     onChange={(e) => dispatch({ type: OA.SET_QUERY, payload: e.target.value })}
                     onKeyDown={handleKeyDown}
-                    placeholder="Search vendor stores, products..."
+                    placeholder={SEARCH_OVERLAY_TEXT.PLACEHOLDER}
                     className="flex-1 text-[15px] text-gray-900 placeholder:text-gray-400 outline-none bg-transparent"
                 />
                 <div className="flex items-center gap-2 shrink-0">
@@ -219,11 +220,11 @@ function OverlayBody({ onClose, initialQuery = '' }: OverlayBodyProps) {
                             transition={{ duration: 0.12 }}
                         >
                             <p className="px-5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                Suggested products
+                                {SEARCH_OVERLAY_TEXT.SUGGESTED_PRODUCTS}
                             </p>
                             {state.suggestions.length === 0 && !state.isLoading ? (
                                 <p className="px-5 py-6 text-sm text-gray-400 text-center">
-                                    No matches — press <kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-gray-600">Enter</kbd> to search anyway
+                                    {SEARCH_OVERLAY_TEXT.NO_MATCHES} <kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-gray-600">Enter</kbd> {SEARCH_OVERLAY_TEXT.TO_SEARCH_ANYWAY}
                                 </p>
                             ) : (
                                 state.suggestions.map((s) => (
@@ -253,7 +254,7 @@ function OverlayBody({ onClose, initialQuery = '' }: OverlayBodyProps) {
                             transition={{ duration: 0.12 }}
                         >
                             <p className="px-5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                Recent searches
+                                {SEARCH_OVERLAY_TEXT.RECENT_SEARCHES}
                             </p>
                             {state.recent.map((term) => (
                                 <button
@@ -285,7 +286,7 @@ function OverlayBody({ onClose, initialQuery = '' }: OverlayBodyProps) {
                             className="px-5 py-6 flex flex-col items-center gap-2 text-center"
                         >
                             <TrendingUp className="w-8 h-8 text-gray-200" />
-                            <p className="text-sm text-gray-400">Start typing to search products & stores</p>
+                            <p className="text-sm text-gray-400">{SEARCH_OVERLAY_TEXT.START_TYPING}</p>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -396,7 +397,7 @@ function MobileDrawer({ open, onClose }: MobileDrawerProps) {
                     >
                         {/* Drag handle */}
                         <div className="flex items-center justify-between px-5 pt-4 pb-1">
-                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Search</span>
+                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{SEARCH_OVERLAY_TEXT.SEARCH_UPPER}</span>
                             <button
                                 onClick={onClose}
                                 className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
@@ -441,7 +442,7 @@ export function SearchTrigger({ className }: { className?: string }) {
                 aria-label="Open search"
             >
                 <Search className="w-4 h-4 text-gray-400" />
-                <span>Search…</span>
+                <span>{SEARCH_OVERLAY_TEXT.SEARCH_TRIGGER}</span>
                 <kbd className="ml-auto text-[10px] font-mono bg-white border border-gray-200 px-1.5 py-0.5 rounded text-gray-400">
                     ⌘K
                 </kbd>

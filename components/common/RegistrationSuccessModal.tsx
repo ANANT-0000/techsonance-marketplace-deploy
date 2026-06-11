@@ -1,5 +1,6 @@
-﻿import { CheckCircle2, Mail, Clock, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Mail, Clock, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { REGISTRATION_SUCCESS_MODAL_TEXT } from '@/constants/commonText';
 interface RegistrationSuccessModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -23,11 +24,10 @@ export const RegistrationSuccessModal = ({ isOpen, onClose }: RegistrationSucces
             <CheckCircle2 className="w-11 h-11 text-emerald-500" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Registration Submitted!
+            {REGISTRATION_SUCCESS_MODAL_TEXT.TITLE}
           </h2>
           <p className="text-gray-500 text-sm mb-7 text-balance">
-            Your business application is now under review by our team. We'll
-            send your login credentials once approved.
+            {REGISTRATION_SUCCESS_MODAL_TEXT.DESCRIPTION}
           </p>
           <div className="w-full space-y-3 mb-6">
             <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 text-left">
@@ -36,10 +36,10 @@ export const RegistrationSuccessModal = ({ isOpen, onClose }: RegistrationSucces
               </div>
               <div>
                 <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                  Estimated Review Time
+                  {REGISTRATION_SUCCESS_MODAL_TEXT.ESTIMATED_REVIEW}
                 </p>
                 <p className="text-sm font-semibold text-gray-700">
-                  2 – 4 Business Days
+                  {REGISTRATION_SUCCESS_MODAL_TEXT.DAYS}
                 </p>
               </div>
             </div>
@@ -49,10 +49,10 @@ export const RegistrationSuccessModal = ({ isOpen, onClose }: RegistrationSucces
               </div>
               <div>
                 <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                  Credentials Delivery
+                  {REGISTRATION_SUCCESS_MODAL_TEXT.CREDENTIALS_DELIVERY}
                 </p>
                 <p className="text-sm font-semibold text-gray-700">
-                  Sent to your registered email
+                  {REGISTRATION_SUCCESS_MODAL_TEXT.SENT_TO_EMAIL}
                 </p>
               </div>
             </div>
@@ -61,10 +61,10 @@ export const RegistrationSuccessModal = ({ isOpen, onClose }: RegistrationSucces
             onClick={onClose}
             className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-2xl transition-colors text-sm"
           >
-            Back to Home <ArrowRight size={16} />
+            {REGISTRATION_SUCCESS_MODAL_TEXT.BACK_TO_HOME} <ArrowRight size={16} />
           </button>
           <p className="text-xs text-gray-400 mt-4">
-            Need help?{" "}
+            {REGISTRATION_SUCCESS_MODAL_TEXT.NEED_HELP}{" "}
             <a href="mailto:support@platform.com" className="underline">
               support@platform.com
             </a>

@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { useRef, useState, useEffect } from 'react';
 import { LogOut, Building2, Mail, ChevronDown } from 'lucide-react';
 import { logOut } from '@/lib/features/auth/authSlice';
+import { VENDOR_NAVBAR_TEXT } from '@/constants/vendorText';
 import { useRouter } from 'next/navigation';
 
 export default function Navbar({ title }: { title?: string }) {
@@ -107,7 +108,7 @@ export default function Navbar({ title }: { title?: string }) {
                                         </div>
                                         <div>
                                             <p className="text-sm font-semibold text-gray-900">{vendorDetails.first_name} {vendorDetails.last_name}</p>
-                                            <p className="text-xs text-gray-500">Active workspace</p>
+                                            <p className="text-xs text-gray-500">{VENDOR_NAVBAR_TEXT.ACTIVE_WORKSPACE}</p>
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
@@ -126,7 +127,7 @@ export default function Navbar({ title }: { title?: string }) {
                                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                                 >
                                     <LogOut size={15} />
-                                    <span>Logout</span>
+                                    <span>{VENDOR_NAVBAR_TEXT.LOGOUT}</span>
                                 </button>
                             </div>
                         )}

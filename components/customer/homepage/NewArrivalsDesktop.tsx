@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 
 import { useImageColors } from "@/hooks/useImageColors";
 import { SectionHeader } from "./SectionHeader";
+import { NEW_ARRIVALS_TEXT } from "@/constants/customerText";
 
 function ArrivalCard({
   card,
@@ -51,7 +52,7 @@ function ArrivalCard({
           {card.title}
         </h4>
         <div className="flex items-center gap-1 text-xs font-medium text-white/90 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-          View Product <ChevronRight size={14} />
+          {NEW_ARRIVALS_TEXT.VIEW_PRODUCT} <ChevronRight size={14} />
         </div>
       </div>
     </Link>
@@ -67,7 +68,7 @@ export function NewArrivalsDesktop({
   // Map out your 4 cards, including CMS bg color per card
   const cardsData = [1, 2, 3, 4].map((num) => ({
     id: num,
-    title: getField(`new_arrivals_card_${num}_title`) || `New Arrival ${num}`,
+    title: getField(`new_arrivals_card_${num}_title`) || `${NEW_ARRIVALS_TEXT.NEW_ARRIVAL_PREFIX} ${num}`,
     img: getField(`new_arrivals_card_${num}_image_url`),
     subtitle: getField(`new_arrivals_card_${num}_subtitle`),
     bgColor: getField(`new_arrivals_card_${num}_bg_color`) || undefined,
@@ -76,8 +77,8 @@ export function NewArrivalsDesktop({
   return (
     <section className="new_arrivals_desktop py-20 px-6 lg:px-16 xl:px-24 bg-white">
       <SectionHeader
-        eyebrow="Just Dropped"
-        title="New Arrivals"
+        eyebrow={NEW_ARRIVALS_TEXT.JUST_DROPPED}
+        title={NEW_ARRIVALS_TEXT.NEW_ARRIVALS}
         href="/store"
       />
 

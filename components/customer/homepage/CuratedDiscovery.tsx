@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { ProductCard } from "../ProductCard";
 import AxiosAPI from "@/lib/axios";
 import { fetchHomepageProducts } from "@/utils/commonAPiClient";
+import { CURATED_DISCOVERY_TEXT } from "@/constants/customerText";
 
 export enum CuratedType {
   TRENDING = "trending",
@@ -80,19 +81,21 @@ export function CuratedDiscovery({
   return (
     <section
       className="curated_desktop py-16 px-6 lg:px-16 xl:px-24"
-      style={{ background: bg_color || 'rgba(248, 250, 252, 0.5)' }}
+      style={{ background: bg_color || "rgba(248, 250, 252, 0.5)" }}
     >
       <div className="max-w-screen-xl mx-auto flex flex-col gap-8">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-[0.25em] text-purple-600 uppercase mb-2">
-              <Sparkles size={12} /> Live Curation
+              <Sparkles size={12} /> {CURATED_DISCOVERY_TEXT.LIVE_CURATION}
             </span>
             <h2 className="text-3xl font-serif tracking-tight text-gray-900 leading-tight">
               {displayTitle}
             </h2>
-            <p className="text-xs text-gray-400 mt-2 max-w-lg">{displaySubtitle}</p>
+            <p className="text-xs text-gray-400 mt-2 max-w-lg">
+              {displaySubtitle}
+            </p>
           </div>
 
           {/* Navigation Controls */}
@@ -128,14 +131,12 @@ export function CuratedDiscovery({
             ))
           ) : products.length === 0 ? (
             <div className="w-full text-center py-12 text-slate-450 bg-white border border-dashed border-slate-200 rounded-3xl">
-              <p className="text-sm">
-                No items configured for this curated list.
-              </p>
+              <p className="text-sm">{CURATED_DISCOVERY_TEXT.NO_ITEMS}</p>
               <Link
                 href="/store"
                 className="text-xs text-purple-600 font-bold hover:underline mt-2 inline-block"
               >
-                View All Catalog Products
+                {CURATED_DISCOVERY_TEXT.VIEW_ALL}
               </Link>
             </div>
           ) : (

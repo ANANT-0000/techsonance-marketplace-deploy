@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Upload, X, ImageIcon } from "lucide-react";
+import { SIGNATURE_UPLOAD_TEXT } from "@/constants/vendorText";
 
 interface SignatureUploadProps {
   existingUrl?: string;
@@ -85,7 +86,7 @@ export function SignatureUpload({ existingUrl, onChange, onRemoveExisting }: Sig
         type="button"
         onClick={(e) => { e.stopPropagation(); onRemove(); }}
         className="shrink-0 p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-        aria-label="Remove signature"
+        aria-label={SIGNATURE_UPLOAD_TEXT.REMOVE}
       >
         <X size={14} />
       </button>
@@ -100,7 +101,7 @@ export function SignatureUpload({ existingUrl, onChange, onRemoveExisting }: Sig
       {showExisting && (
         <PreviewCard
           src={existingUrl!}
-          label="Current Signature"
+          label={SIGNATURE_UPLOAD_TEXT.CURRENT}
           onRemove={handleRemoveExisting}
         />
       )}
@@ -132,9 +133,9 @@ export function SignatureUpload({ existingUrl, onChange, onRemoveExisting }: Sig
         >
           <Upload size={18} className="text-gray-400" />
           <p className="text-xs text-gray-400">
-            <span className="font-semibold text-gray-600">Click to upload</span> or drag & drop
+            <span className="font-semibold text-gray-600">{SIGNATURE_UPLOAD_TEXT.CLICK_UPLOAD}</span> {SIGNATURE_UPLOAD_TEXT.OR_DRAG}
           </p>
-          <p className="text-[10px] text-gray-300">PNG with transparent background recommended</p>
+          <p className="text-[10px] text-gray-300">{SIGNATURE_UPLOAD_TEXT.HINT}</p>
 
           <input
             ref={inputRef}

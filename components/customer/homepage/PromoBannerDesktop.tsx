@@ -1,6 +1,7 @@
 import { useImageColors } from "@/hooks/useImageColors";
 import Image from "next/image";
 import Link from "next/link";
+import { PROMO_BANNER_TEXT } from "@/constants/customerText";
 
 export function PromoBannerDesktop({
   imageUrl,
@@ -48,7 +49,7 @@ export function PromoBannerDesktop({
             )}
             <Link href="/store">
               <button className="bg-white text-black hover:bg-gray-100 transition-all duration-300 px-8 py-3 text-[11px] uppercase tracking-[0.2em] font-bold">
-                {btnText || "Shop Now"}
+                {btnText || PROMO_BANNER_TEXT.SHOP_NOW}
               </button>
             </Link>
           </div>

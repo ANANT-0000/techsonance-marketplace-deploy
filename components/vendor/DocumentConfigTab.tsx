@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { docConfigSchema } from "@/utils/validation";
 import {
   fetchCompanyDocumentConfig,
@@ -16,6 +16,7 @@ import { SaveButton } from "./SaveButton";
 import { SignatureUpload } from "./SignatureUpload";
 import { z } from "zod";
 import { SequenceResetSelect } from "./SequenceResetSelect";
+import { DOCUMENT_CONFIG_TAB_TEXT } from "@/constants/vendorText";
 
 export function DocumentConfigTab({ token }: { token: string }) {
   const [isPending, startTransition] = useTransition();
@@ -49,7 +50,6 @@ export function DocumentConfigTab({ token }: { token: string }) {
 
   useEffect(() => {
     fetchCompanyDocumentConfig(token).then((res) => {
-      console.log(res.data);
       if (res?.data) {
         const d = res.data;
         if (d.signatory_signature_url) {
@@ -93,28 +93,16 @@ export function DocumentConfigTab({ token }: { token: string }) {
       } else if (existingSignatureUrl) {
         payload.append("signatory_signature_url", existingSignatureUrl);
       }
-      console.log("data", data);
-      Object.entries(data).forEach(([k, v]) => {
-        console.log(payload.getAll(k));
-      });
+      
       const res = await upsertCompanyDocumentConfig(payload, token);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     });
   };
 
-  const TIMEZONES = [
-    "Asia/Kolkata",
-    "UTC",
-    "America/New_York",
-    "America/Los_Angeles",
-    "Europe/London",
-    "Europe/Paris",
-    "Asia/Dubai",
-    "Asia/Singapore",
-  ];
-  const DATE_FORMATS = ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD", "DD-MM-YYYY"];
-  const CURRENCIES = ["INR", "USD", "GBP", "EUR", "AED", "SGD"];
+  const TIMEZONES = DOCUMENT_CONFIG_TAB_TEXT.TIMEZONES;
+  const DATE_FORMATS = DOCUMENT_CONFIG_TAB_TEXT.DATE_FORMATS;
+  const CURRENCIES = DOCUMENT_CONFIG_TAB_TEXT.CURRENCIES;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -122,13 +110,13 @@ export function DocumentConfigTab({ token }: { token: string }) {
       <section>
         <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
-          Invoice Numbering
+          {DOCUMENT_CONFIG_TAB_TEXT.SECTIONS.INVOICE_NUMBERING}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field
-            label="Prefix"
+            label={DOCUMENT_CONFIG_TAB_TEXT.INVOICE_NUMBERING.PREFIX_LABEL}
             error={errors.invoice_number_prefix?.message}
-            hint="e.g. INV, TAX-INV, SINV"
+            hint={DOCUMENT_CONFIG_TAB_TEXT.INVOICE_NUMBERING.PREFIX_HINT}
           >
             <Input
               {...register("invoice_number_prefix")}
@@ -137,9 +125,9 @@ export function DocumentConfigTab({ token }: { token: string }) {
             />
           </Field>
           <Field
-            label="Format String"
+            label={DOCUMENT_CONFIG_TAB_TEXT.INVOICE_NUMBERING.FORMAT_LABEL}
             error={errors.invoice_number_format?.message}
-            hint="Tokens: {PREFIX} {YYYY} {YY} {MM} {DD} {SEQ8} {SEQ6}"
+            hint={DOCUMENT_CONFIG_TAB_TEXT.INVOICE_NUMBERING.FORMAT_HINT}
           >
             <Input
               {...register("invoice_number_format")}
@@ -147,7 +135,10 @@ export function DocumentConfigTab({ token }: { token: string }) {
               className="font-mono"
             />
           </Field>
-          <Field label="Sequence Reset" hint="Auto-detected from your timezone">
+          <Field 
+            label={DOCUMENT_CONFIG_TAB_TEXT.INVOICE_NUMBERING.SEQ_RESET_LABEL} 
+            hint={DOCUMENT_CONFIG_TAB_TEXT.INVOICE_NUMBERING.SEQ_RESET_HINT}
+          >
             <SequenceResetSelect
               name="invoice_sequence_reset"
               value={watch("invoice_sequence_reset")}
@@ -167,7 +158,7 @@ export function DocumentConfigTab({ token }: { token: string }) {
             <Hash size={13} className="text-gray-400 shrink-0" />
             <div>
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
-                Preview
+                {DOCUMENT_CONFIG_TAB_TEXT.INVOICE_NUMBERING.PREVIEW}
               </p>
               <code className="text-sm font-mono font-bold text-gray-800">
                 {previewNumber}
@@ -181,27 +172,27 @@ export function DocumentConfigTab({ token }: { token: string }) {
       <section>
         <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
-          Authorized Signatory
+          {DOCUMENT_CONFIG_TAB_TEXT.SECTIONS.SIGNATORY}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Signatory Name">
+          <Field label={DOCUMENT_CONFIG_TAB_TEXT.SIGNATORY.NAME_LABEL}>
             <Input
               {...register("signatory_name")}
-              placeholder="e.g. Rahul Sharma"
+              placeholder={DOCUMENT_CONFIG_TAB_TEXT.SIGNATORY.NAME_PH}
             />
           </Field>
-          <Field label="Designation">
+          <Field label={DOCUMENT_CONFIG_TAB_TEXT.SIGNATORY.DESIG_LABEL}>
             <Input
               {...register("signatory_designation")}
-              placeholder="e.g. Managing Director"
+              placeholder={DOCUMENT_CONFIG_TAB_TEXT.SIGNATORY.DESIG_PH}
             />
           </Field>
 
           {/* Replaced: old <Input type="file" /> → new SignatureUpload */}
           <div className="sm:col-span-2">
             <Field
-              label="Signature Image"
-              hint="PNG with transparent background recommended"
+              label={DOCUMENT_CONFIG_TAB_TEXT.SIGNATORY.SIG_LABEL}
+              hint={DOCUMENT_CONFIG_TAB_TEXT.SIGNATORY.SIG_HINT}
             >
               <SignatureUpload
                 existingUrl={existingSignatureUrl}
@@ -216,26 +207,26 @@ export function DocumentConfigTab({ token }: { token: string }) {
       <section>
         <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
-          Invoice Footer & Terms
+          {DOCUMENT_CONFIG_TAB_TEXT.SECTIONS.FOOTER_TERMS}
         </h3>
         <div className="space-y-4">
           <Field
-            label="Footer Text"
-            hint="Printed at the bottom of every invoice page"
+            label={DOCUMENT_CONFIG_TAB_TEXT.FOOTER.TEXT_LABEL}
+            hint={DOCUMENT_CONFIG_TAB_TEXT.FOOTER.TEXT_HINT}
           >
             <Input
               {...register("invoice_footer_text")}
-              placeholder="Thank you for shopping with us. All disputes subject to Surat jurisdiction."
+              placeholder={DOCUMENT_CONFIG_TAB_TEXT.FOOTER.TEXT_PH}
             />
           </Field>
           <Field
-            label="Terms & Conditions"
-            hint="Printed on last page or as a section"
+            label={DOCUMENT_CONFIG_TAB_TEXT.FOOTER.TERMS_LABEL}
+            hint={DOCUMENT_CONFIG_TAB_TEXT.FOOTER.TERMS_HINT}
           >
             <Textarea
               {...register("invoice_terms_and_conditions")}
               rows={4}
-              placeholder="1. All sales are final unless otherwise specified…"
+              placeholder={DOCUMENT_CONFIG_TAB_TEXT.FOOTER.TERMS_PH}
             />
           </Field>
         </div>
@@ -245,10 +236,10 @@ export function DocumentConfigTab({ token }: { token: string }) {
       <section>
         <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
-          Output Locale
+          {DOCUMENT_CONFIG_TAB_TEXT.SECTIONS.LOCALE}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Field label="Default Currency">
+          <Field label={DOCUMENT_CONFIG_TAB_TEXT.LOCALE.CURRENCY_LABEL}>
             <Select {...register("default_currency")}>
               {CURRENCIES.map((c) => (
                 <option key={c} value={c}>
@@ -257,7 +248,7 @@ export function DocumentConfigTab({ token }: { token: string }) {
               ))}
             </Select>
           </Field>
-          <Field label="Timezone">
+          <Field label={DOCUMENT_CONFIG_TAB_TEXT.LOCALE.TZ_LABEL}>
             <Select {...register("default_timezone")}>
               {TIMEZONES.map((t) => (
                 <option key={t} value={t}>
@@ -266,7 +257,7 @@ export function DocumentConfigTab({ token }: { token: string }) {
               ))}
             </Select>
           </Field>
-          <Field label="Date Format">
+          <Field label={DOCUMENT_CONFIG_TAB_TEXT.LOCALE.DATE_FORMAT_LABEL}>
             <Select {...register("date_format")}>
               {DATE_FORMATS.map((f) => (
                 <option key={f} value={f}>

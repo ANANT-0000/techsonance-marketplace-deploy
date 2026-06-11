@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, Info, ShieldCheck } from "lucide-react";
 import { COMPLIANCE_REGEX } from "@/app/auth/vendorRegister/page";
+import { FINANCIAL_COMPLIANCE_TEXT } from "@/constants/vendorText";
 
 export interface ComplianceField {
   value: string;
@@ -52,7 +53,7 @@ export default function FinancialCompliance({
     return (
       <div className="mt-4 flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-400 text-sm">
         <Info size={16} className="shrink-0" />
-        Select a country above to load the required compliance fields.
+        {FINANCIAL_COMPLIANCE_TEXT.EMPTY_STATE}
       </div>
     );
   }
@@ -66,11 +67,11 @@ export default function FinancialCompliance({
         <div className="flex items-center gap-2">
           <ShieldCheck size={17} className="text-blue-500" />
           <h3 className="font-semibold text-gray-800 text-sm">
-            Financial & Tax Compliance
+            {FINANCIAL_COMPLIANCE_TEXT.HEADER}
           </h3>
         </div>
         <span className="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1 rounded-full font-medium">
-          {requiredCount} required
+          {requiredCount} {FINANCIAL_COMPLIANCE_TEXT.REQUIRED_COUNT}
         </span>
       </div>
 
@@ -91,7 +92,7 @@ export default function FinancialCompliance({
           const errorMsg =
             extError ||
             (state === "empty-required"
-              ? `${field.label} is required`
+              ? `${field.label} ${FINANCIAL_COMPLIANCE_TEXT.FIELD_REQUIRED}`
               : rule?.message ?? "");
 
           return (
@@ -103,7 +104,7 @@ export default function FinancialCompliance({
                 )}
                 {!field.required && (
                   <span className="text-[10px] text-gray-400 font-normal normal-case tracking-normal ml-1 bg-gray-100 px-1.5 py-0.5 rounded">
-                    optional
+                    {FINANCIAL_COMPLIANCE_TEXT.OPTIONAL}
                   </span>
                 )}
               </label>
@@ -160,7 +161,7 @@ export default function FinancialCompliance({
               {/* Format hint when typing (not yet touched) */}
               {!isTouched && rule && val.length > 0 && (
                 <p className="mt-1 text-xs text-blue-500">
-                  Format check will run on blur
+                  {FINANCIAL_COMPLIANCE_TEXT.FORMAT_HINT}
                 </p>
               )}
             </div>

@@ -5,6 +5,8 @@ export * from "./vendor";
 export * from "./customer";
 export * from "./dynamicFields";
 export * from "./storefront";
+export * from "./authText";
+export * from "./vendorText";
 
 export const CMS_CACHE_KEY = 'techsonance_cms_home';
 export const BANNERS_CACHE_KEY = 'techsonance_banners_home';

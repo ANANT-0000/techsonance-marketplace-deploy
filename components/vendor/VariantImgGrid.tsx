@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
 import { ProductImage  } from "@/utils/Types";
 import { ImageOff } from "lucide-react";
 import Image from "next/image";
 import { useState, useMemo } from "react";
+import { VARIANT_IMG_GRID_TEXT } from "@/constants/vendorText";
 
 export const VariantImgGrid = ({
   variantImages
@@ -39,7 +40,7 @@ export const VariantImgGrid = ({
             >
               <Image
                 src={img.image_url}
-                alt={img?.alt_text || "Variant Image"}
+                alt={img?.alt_text || VARIANT_IMG_GRID_TEXT.ALT_TEXT}
                 fill
                 className="object-cover"
               />
@@ -53,7 +54,7 @@ export const VariantImgGrid = ({
         {activeImage ? (
           <Image
             src={activeImage.image_url}
-            alt={activeImage?.alt_text || "Variant Image"}
+            alt={activeImage?.alt_text || VARIANT_IMG_GRID_TEXT.ALT_TEXT}
             fill
             priority
             className="object-contain p-2"

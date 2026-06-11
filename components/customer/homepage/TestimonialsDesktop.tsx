@@ -1,13 +1,14 @@
 import { Star } from "lucide-react";
 import { SectionHeader } from "./SectionHeader";
 import { TESTIMONIALS_DEFAULT } from "@/constants/storefront";
+import { TESTIMONIALS_TEXT } from "@/constants/customerText";
 
 export function TestimonialsDesktop({ getField }: { getField: (k: string) => any }) {
   const cmsTestimonials = getField ? getField("social_proof_testimonials") : null;
   const testimonials = Array.isArray(cmsTestimonials) && cmsTestimonials.length > 0 ? cmsTestimonials : TESTIMONIALS_DEFAULT;
 
-  const eyebrow = (getField && getField("social_proof_eyebrow")) || "Customer Stories";
-  const title = (getField && getField("social_proof_title")) || "What Our Customers Say";
+  const eyebrow = (getField && getField("social_proof_eyebrow")) || TESTIMONIALS_TEXT.CUSTOMER_STORIES;
+  const title = (getField && getField("social_proof_title")) || TESTIMONIALS_TEXT.WHAT_CUSTOMERS_SAY;
 
   return (
     <section className="testimonials_desktop py-20 px-6 lg:px-16 xl:px-24 bg-[#faf9f6]">

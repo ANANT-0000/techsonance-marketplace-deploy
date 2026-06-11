@@ -2,7 +2,7 @@
 import { BestSellingProductType } from "@/utils/Types";
 import { motion, useInView } from "motion/react";
 import { useRef, useEffect, useState } from "react";
-
+import { BEST_SELLING_TEXT } from "@/constants/customerText";
 
 export function BestSelling({
   product, styles
@@ -60,7 +60,7 @@ export function BestSelling({
             {isInView ? <Counter value={parseInt(product?.satisfaction || "0")} /> : "0"}%
           </span>
           <p className="uppercase text-xs font-bold tracking-widest text-primary">
-            Customer Satisfaction
+            {BEST_SELLING_TEXT.CUSTOMER_SATISFACTION}
           </p>
         </div>
       </motion.div>

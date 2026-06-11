@@ -1,6 +1,7 @@
 import { useImageColors } from "@/hooks/useImageColors";
 import { Link } from "lucide-react";
 import Image from "next/image";
+import { PROMO_BANNER_TEXT } from "@/constants/customerText";
 
 export function PromoBannerMobile({
   imageUrl,
@@ -36,7 +37,7 @@ export function PromoBannerMobile({
         )}
         <Link href="/store">
           <button className="self-start bg-white text-black text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full">
-            {btnText || "Shop Now"}
+            {btnText || PROMO_BANNER_TEXT.SHOP_NOW}
           </button>
         </Link>
       </div>

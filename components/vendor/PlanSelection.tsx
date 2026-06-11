@@ -1,8 +1,9 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import { Check, Minus, Rocket, Zap, Building } from 'lucide-react';
 import { BASE_API_URL } from '@/constants';
 import { PLAN_FEATURES } from '@/constants/dynamicFields';
+import { PLAN_SELECTION_TEXT, BadgeVariant } from '@/constants/vendorText';
 
 interface Plan {
   id: string;
@@ -20,14 +21,14 @@ interface Props {
 
 const PLAN_META: Record<string, {
   badge: string;
-  badgeVariant: 'info' | 'success' | 'warning';
+  badgeVariant: BadgeVariant;
   icon: React.ReactNode;
   featured: boolean;
   ctaLabel: string;
 }> = {
-  starter: { badge: 'Free to start', badgeVariant: 'success', icon: <Zap size={14} />, featured: false, ctaLabel: 'Start free trial' },
-  pro: { badge: 'Most popular', badgeVariant: 'info', icon: <Rocket size={14} />, featured: true, ctaLabel: 'Start free trial' },
-  enterprise: { badge: 'Contact sales', badgeVariant: 'warning', icon: <Building size={14} />, featured: false, ctaLabel: 'Contact sales' },
+  starter: { badge: PLAN_SELECTION_TEXT.META.STARTER_BADGE, badgeVariant: BadgeVariant.SUCCESS, icon: <Zap size={14} />, featured: false, ctaLabel: PLAN_SELECTION_TEXT.META.STARTER_CTA },
+  pro: { badge: PLAN_SELECTION_TEXT.META.PRO_BADGE, badgeVariant: BadgeVariant.INFO, icon: <Rocket size={14} />, featured: true, ctaLabel: PLAN_SELECTION_TEXT.META.PRO_CTA },
+  enterprise: { badge: PLAN_SELECTION_TEXT.META.ENT_BADGE, badgeVariant: BadgeVariant.WARNING, icon: <Building size={14} />, featured: false, ctaLabel: PLAN_SELECTION_TEXT.META.ENT_CTA },
 };
 
 const BADGE_STYLES: Record<string, string> = {
@@ -64,8 +65,7 @@ export default function PlanSelectionStep({ selectedPlanId, onChange }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-500">
-        All plans start with a {plans[0]?.trial_days ?? 14}-day free trial.
-        No credit card required.
+        {PLAN_SELECTION_TEXT.MESSAGES.SUBTITLE_PREFIX}{plans[0]?.trial_days ?? 14}{PLAN_SELECTION_TEXT.MESSAGES.SUBTITLE_SUFFIX}
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -98,10 +98,10 @@ export default function PlanSelectionStep({ selectedPlanId, onChange }: Props) {
 
               <p className="text-2xl font-semibold text-gray-900 mt-2">
                 {Number(plan.price_monthly) === 0
-                  ? 'Free'
+                  ? PLAN_SELECTION_TEXT.MESSAGES.FREE
                   : `₹${Number(plan.price_monthly).toLocaleString()}`}
                 {Number(plan.price_monthly) > 0 && (
-                  <span className="text-sm font-normal text-gray-400"> / mo after trial</span>
+                  <span className="text-sm font-normal text-gray-400">{PLAN_SELECTION_TEXT.MESSAGES.AFTER_TRIAL}</span>
                 )}
               </p>
 
@@ -121,7 +121,7 @@ export default function PlanSelectionStep({ selectedPlanId, onChange }: Props) {
       </div>
 
       <p className="text-xs text-gray-400 text-center">
-        You won't be charged during your {plans[0]?.trial_days ?? 14}-day trial. Cancel anytime.
+        {PLAN_SELECTION_TEXT.MESSAGES.FOOTER_PREFIX}{plans[0]?.trial_days ?? 14}{PLAN_SELECTION_TEXT.MESSAGES.FOOTER_SUFFIX}
       </p>
     </div>
   );

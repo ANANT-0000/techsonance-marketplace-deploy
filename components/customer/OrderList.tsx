@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Separator } from "../ui/separator";
+import { ORDER_LIST_TEXT } from "@/constants/customerText";
 
 // --- TYPES ---
 export interface ProductImageType { image_url: string; }
@@ -71,7 +72,7 @@ const orderReducer = (state: OrderState, action: OrderAction): OrderState => {
 // --- HELPER COMPONENTS ---
 function ItemStatusBadge({ status }: { status: string }) {
     const s = status?.toLowerCase();
-    if (s === 'delivered') return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 text-[10px] uppercase font-bold tracking-wider"><CheckCircle2 size={10} />Delivered</Badge>;
+    if (s === 'delivered') return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 text-[10px] uppercase font-bold tracking-wider"><CheckCircle2 size={10} />{ORDER_LIST_TEXT.DELIVERED}</Badge>;
     if (s === 'shipped' || s === 'in transit') return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 gap-1 text-[10px] uppercase font-bold tracking-wider"><Truck size={10} />{status}</Badge>;
     if (s === 'pending' || s === 'processing') return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 gap-1 text-[10px] uppercase font-bold tracking-wider"><Package size={10} />{status}</Badge>;
     if (s === 'cancelled') return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 gap-1 text-[10px] uppercase font-bold tracking-wider"><XCircle size={10} />Cancelled</Badge>;
@@ -115,7 +116,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
 
                             <div>
                                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                    Order ID
+                                    {ORDER_LIST_TEXT.ORDER_ID}
                                 </p>
                                 <p className="mt-1 font-bold">
                                     #{item.order.id.split("-")[0].toUpperCase()}
@@ -124,7 +125,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
 
                             <div>
                                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                    Placed On
+                                    {ORDER_LIST_TEXT.PLACED_ON}
                                 </p>
                                 <p className="mt-1">
                                     {formattedDate}
@@ -133,7 +134,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
 
                             <div>
                                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                    Total Amount
+                                    {ORDER_LIST_TEXT.TOTAL_AMOUNT}
                                 </p>
                                 <p className="mt-1 font-bold text-primary">
                                     ₹{formatCurrency(Number(item.order.total_amount))}
@@ -181,15 +182,15 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                             </Link>
 
                             <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-                                <span>Qty {item.quantity}</span>
+                                <span>{ORDER_LIST_TEXT.QTY} {item.quantity}</span>
                                 <span>•</span>
                                 <span>
-                                    Unit ₹{formatCurrency(Number(item.price))}
+                                    {ORDER_LIST_TEXT.UNIT} ₹{formatCurrency(Number(item.price))}
                                 </span>
                             </div>
 
                             <p className="mt-2 text-sm text-muted-foreground">
-                                Ordered on {formattedDate} at {formattedTime}
+                                {ORDER_LIST_TEXT.ORDERED_ON} {formattedDate} {ORDER_LIST_TEXT.AT} {formattedTime}
                             </p>
 
                         </div>
@@ -202,16 +203,16 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                                 className=" rounded-xl"
                             >
                                 <Link href={`/customer/orders/${item.order.id}`}>
-                                    View Details
+                                    {ORDER_LIST_TEXT.VIEW_DETAILS}
                                 </Link>
                             </Button>
                             {isDelivered ?
                                 <Link href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`} className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex items-center justify-center">
-                                    {"Buy Again"}
+                                    {ORDER_LIST_TEXT.BUY_AGAIN}
                                 </Link>
                                 :
                                 <Link href={`/customer/orders/${item.order.id}`} className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex  items-center justify-center">
-                                    {"Track Order"}
+                                    {ORDER_LIST_TEXT.TRACK_ORDER}
                                 </Link>
                             }
 
@@ -233,7 +234,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
 
                     <div>
                         <p className="text-sm text-muted-foreground">
-                            Order #{item.order.id.split("-")[0].toUpperCase()}
+                            {ORDER_LIST_TEXT.ORDER} #{item.order.id.split("-")[0].toUpperCase()}
                         </p>
                     </div>
 
@@ -294,16 +295,16 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                         className=" rounded-xl"
                     >
                         <Link href={`/customer/orders/${item.order.id}`}>
-                            View Details
+                            {ORDER_LIST_TEXT.VIEW_DETAILS}
                         </Link>
                     </Button>
                     {isDelivered ?
                         <Link href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`} className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex items-center justify-center">
-                            {"Buy Again"}
+                            {ORDER_LIST_TEXT.BUY_AGAIN}
                         </Link>
                         :
                         <Link href={`/customer/orders/${item.order.id}`} className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex  items-center justify-center">
-                            {"Track Order"}
+                            {ORDER_LIST_TEXT.TRACK_ORDER}
                         </Link>
                     }
 
@@ -387,21 +388,21 @@ export function OrdersList({
                     className={`rounded-full h-8 text-xs font-semibold px-4 shrink-0 ${status === null && state.dateFilter === 'all' ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                     onClick={() => { setStatus(null); dispatch({ type: 'SET_DATE_FILTER', payload: 'all' }); }}
                 >
-                    All Orders
+                    {ORDER_LIST_TEXT.ALL_ORDERS}
                 </Button>
                 <Button
                     variant={state.dateFilter === 'last30' ? "default" : "secondary"}
                     className={`rounded-full h-8 text-xs font-semibold px-4 shrink-0 ${state.dateFilter === 'last30' ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                     onClick={() => { setStatus(null); dispatch({ type: 'SET_DATE_FILTER', payload: 'last30' }); }}
                 >
-                    Last 30 Days
+                    {ORDER_LIST_TEXT.LAST_30_DAYS}
                 </Button>
                 <Button
                     variant={status === OrderStatusEnum.DELIVERED ? "default" : "secondary"}
                     className={`rounded-full h-8 text-xs font-semibold px-4 shrink-0 ${status === OrderStatusEnum.DELIVERED ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                     onClick={() => setStatus(OrderStatusEnum.DELIVERED)}
                 >
-                    Delivered
+                    {ORDER_LIST_TEXT.DELIVERED}
                 </Button>
             </div>
 
@@ -420,7 +421,7 @@ export function OrdersList({
                     {state.items.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3 border border-dashed border-border rounded-2xl bg-gray-50/50">
                             <Package size={40} className="text-gray-300" />
-                            <p className="text-sm font-medium text-gray-500">No order items found.</p>
+                            <p className="text-sm font-medium text-gray-500">{ORDER_LIST_TEXT.NO_ORDER_ITEMS}</p>
                         </div>
                     )}
 
@@ -436,7 +437,7 @@ export function OrdersList({
                                 className="w-full md:w-auto px-8 h-12 md:h-10 rounded-full bg-blue-50/50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 font-semibold border border-blue-100/50 shadow-sm"
                                 disabled={state.isLoading}
                             >
-                                {state.isLoading ? "Loading..." : "Load Previous Orders"}
+                                {state.isLoading ? ORDER_LIST_TEXT.LOADING : ORDER_LIST_TEXT.LOAD_PREVIOUS}
                             </Button>
                         </div>
                     )}

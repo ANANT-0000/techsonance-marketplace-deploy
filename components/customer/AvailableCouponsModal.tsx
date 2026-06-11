@@ -4,6 +4,7 @@ import AxiosAPI from '@/lib/axios';
 import { authToken } from '@/utils/authToken';
 import toast, { Toaster } from 'react-hot-toast';
 import { Coupon } from '@/utils/Types';
+import { AVAILABLE_COUPONS_MODAL_TEXT } from '@/constants/customerText';
 
 interface AvailableCouponsModalProps {
     isOpen: boolean;
@@ -29,8 +30,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                     });
                     setCoupons(res.data.data || []);
                 } catch (error) {
-                    console.error("Failed to fetch coupons", error);
-                    toast.error("Could not load coupons.");
+                    toast.error(AVAILABLE_COUPONS_MODAL_TEXT.ERR_LOAD);
                 } finally {
                     setIsLoading(false);
                 }
@@ -55,7 +55,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                 <div className="p-4 sm:p-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
                     <div className="flex items-center gap-2">
                         <Tag className="text-theme-primary" size={20} />
-                        <h3 className="font-bold text-gray-900 text-base sm:text-lg">Available Offers</h3>
+                        <h3 className="font-bold text-gray-900 text-base sm:text-lg">{AVAILABLE_COUPONS_MODAL_TEXT.TITLE}</h3>
                     </div>
                     <button onClick={onClose} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-500 hover:text-gray-800 transition-colors shadow-sm">
                         <X size={18} />
@@ -67,15 +67,15 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center lg:py-12 py-6 gap-3">
                             <Loader2 className="animate-spin text-theme-primary" size={32} />
-                            <p className="text-sm text-gray-500 font-medium">Finding the best offers...</p>
+                            <p className="text-sm text-gray-500 font-medium">{AVAILABLE_COUPONS_MODAL_TEXT.FINDING}</p>
                         </div>
                     ) :coupons && Array.isArray(coupons) &&  coupons.length === 0 ? (
                         <div className="text-center lg:py-12 py-6">
                             <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Tag className="text-gray-400" size={28} />
                             </div>
-                            <h4 className="text-gray-800 font-bold mb-1">No offers right now</h4>
-                            <p className="text-gray-500 text-sm">Check back later for exciting discounts.</p>
+                            <h4 className="text-gray-800 font-bold mb-1">{AVAILABLE_COUPONS_MODAL_TEXT.NO_OFFERS}</h4>
+                            <p className="text-gray-500 text-sm">{AVAILABLE_COUPONS_MODAL_TEXT.NO_OFFERS_DESC}</p>
                         </div>
                     ) : (
                   coupons && Array.isArray(coupons) &&       coupons.map((coupon) => {
@@ -99,8 +99,8 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                         <div className="flex flex-col">
                                             <span className={`text-xl sm:text-2xl font-black tracking-tight leading-tight ${isLocked ? 'text-gray-600' : 'text-theme-primary'}`}>
                                                 {coupon.discount_type === 'percentage' 
-                                                    ? `${coupon.discount_value}% OFF` 
-                                                    : `₹${coupon.discount_value} OFF`}
+                                                    ? `${coupon.discount_value}% ${AVAILABLE_COUPONS_MODAL_TEXT.OFF}` 
+                                                    : `₹${coupon.discount_value} ${AVAILABLE_COUPONS_MODAL_TEXT.OFF}`}
                                             </span>
                                             
                                             <div className="flex items-center gap-2 mt-1">
@@ -119,7 +119,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                                     : 'bg-gray-900 text-white hover:bg-black hover:shadow-md active:scale-95'
                                             }`}
                                         >
-                                            {isLocked ? 'Locked' : 'Apply'}
+                                            {isLocked ? AVAILABLE_COUPONS_MODAL_TEXT.BTN_LOCKED : AVAILABLE_COUPONS_MODAL_TEXT.BTN_APPLY}
                                         </button>
                                     </div>
 
@@ -137,10 +137,10 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                                 <AlertCircle size={14} className={`flex-shrink-0 mt-0.5 sm:mt-0 ${isLocked ? "text-amber-500" : "text-gray-400"}`} />
                                                 {isLocked ? (
                                                     <span className="text-amber-600 font-semibold">
-                                                        Add ₹{remainingForUnlock} more to unlock
+                                                        {AVAILABLE_COUPONS_MODAL_TEXT.UNLOCK_PROMPT_1}{remainingForUnlock}{AVAILABLE_COUPONS_MODAL_TEXT.UNLOCK_PROMPT_2}
                                                     </span>
                                                 ) : (
-                                                    <span>Valid on orders above ₹{coupon.min_order_amount}</span>
+                                                    <span>{AVAILABLE_COUPONS_MODAL_TEXT.VALID_ABOVE}{coupon.min_order_amount}</span>
                                                 )}
                                             </div>
                                         )}
@@ -149,13 +149,13 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                         <div className="col-span-1 sm:col-span-2 flex flex-wrap gap-2 mt-1">
                                             {coupon.max_discount_amount && (
                                                 <div className="flex-1 min-w-[100px] text-[10px] sm:text-[11px] text-gray-500 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100">
-                                                    <span className="font-semibold text-gray-700">Max Discount:</span><br/>
+                                                    <span className="font-semibold text-gray-700">{AVAILABLE_COUPONS_MODAL_TEXT.MAX_DISCOUNT}</span><br/>
                                                     ₹{coupon.max_discount_amount}
                                                 </div>
                                             )}
                                             <div className="flex-1 min-w-[100px] text-[10px] sm:text-[11px] text-gray-500 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100">
                                                 <span className="font-semibold text-gray-700 flex items-center gap-1">
-                                                    <Clock size={10} className="flex-shrink-0" /> Valid Till:
+                                                    <Clock size={10} className="flex-shrink-0" /> {AVAILABLE_COUPONS_MODAL_TEXT.VALID_TILL}
                                                 </span>
                                                 {formatDate(coupon.valid_to)}
                                             </div>

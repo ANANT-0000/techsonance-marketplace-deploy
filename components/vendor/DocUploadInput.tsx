@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { DOC_UPLOAD_TEXT } from "@/constants/vendorText";
 
 export interface DocField {
   value: string;
@@ -76,7 +77,6 @@ export function DocUploadInput({
     return fileMap.find((entry) => entry.index === fi)?.file !== null;
   }).length;
 
-  console.log("fileMap",fileMap)
   return (
     <div className="mt-6 border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
       {/* Header */}
@@ -92,10 +92,10 @@ export function DocUploadInput({
           <div className="text-left">
             <p className="font-semibold text-gray-800 text-sm">{title}</p>
             <p className="text-xs text-gray-400 mt-0.5">
-              {uploadedCount} of {typeList.length} uploaded
+              {uploadedCount} {DOC_UPLOAD_TEXT.STATUS.OF} {typeList.length} {DOC_UPLOAD_TEXT.STATUS.UPLOADED}
               {requiredFields.length > 0 && (
                 <span className="ml-2 text-red-500">
-                  · {requiredFields.length - requiredUploaded} required missing
+                  · {requiredFields.length - requiredUploaded} {DOC_UPLOAD_TEXT.STATUS.REQUIRED_MISSING}
                 </span>
               )}
             </p>
@@ -121,7 +121,7 @@ export function DocUploadInput({
         <div className="px-5 py-3 bg-red-50 border-b border-red-100">
           <p className="text-xs font-semibold text-red-600 mb-1 flex items-center gap-1">
             <AlertCircle size={12} />
-            Required documents missing:
+            {DOC_UPLOAD_TEXT.ERRORS.MISSING_HEADER}
           </p>
           <ul className="list-disc list-inside space-y-0.5">
             {missingDocs.map((label) => (
@@ -176,11 +176,11 @@ export function DocUploadInput({
                     </p>
                     {isRequired ? (
                       <span className="text-[10px] text-red-500 font-medium bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">
-                        required
+                        {DOC_UPLOAD_TEXT.LABELS.REQUIRED}
                       </span>
                     ) : (
                       <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
-                        optional
+                        {DOC_UPLOAD_TEXT.LABELS.OPTIONAL}
                       </span>
                     )}
                   </div>
@@ -206,7 +206,7 @@ export function DocUploadInput({
                         type="button"
                         onClick={() => removeFile(index)}
                         className="text-gray-400 hover:text-red-500 transition-colors"
-                        aria-label="Remove file"
+                        aria-label={DOC_UPLOAD_TEXT.ACTIONS.REMOVE_FILE}
                       >
                         <X size={14} />
                       </button>
@@ -215,7 +215,7 @@ export function DocUploadInput({
                     <label className="cursor-pointer flex items-center gap-2 border-2 border-dashed border-gray-200 hover:border-blue-300 rounded-xl px-4 py-2.5 transition-colors group">
                       <Upload size={14} className="text-gray-400 group-hover:text-blue-500 transition-colors shrink-0" />
                       <span className="text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
-                        Click to upload — PDF, JPG, PNG (max 10MB)
+                        {DOC_UPLOAD_TEXT.ACTIONS.UPLOAD_HINT}
                       </span>
                       <input
                         type="file"

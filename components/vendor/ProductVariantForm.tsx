@@ -25,17 +25,8 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { generateSKU } from "@/utils/generateSku";
 import { authToken } from "@/utils/authToken";
-const FILE_UPLOAD_FIELD_LABELS = [
-  {
-    label: "Product Images / Thumbnail",
-    fieldName: "variantMediaMain" as keyof VariantFormValues,
-  },
-  {
-    label: "Feature / Specification Media",
-    fieldName: "variantMediaGallery" as keyof VariantFormValues,
-  },
-] as const;
-
+import { PRODUCT_VARIANT_FORM_TEXT } from "@/constants/vendorText";
+// Replaced constants
 export const ProductVariantForm = ({
   vendorId,
   productId,
@@ -117,7 +108,6 @@ export const ProductVariantForm = ({
   // ── Populate form when editing ──
   useEffect(() => {
     if (!existVariant) return;
-    // console.log("existVariant", existVariant)
     reset({
       variantName: existVariant.variantName,
       attributes: existVariant.attributes?.length
@@ -209,7 +199,6 @@ export const ProductVariantForm = ({
     [setValue, revokeOne],
   );
 
-  // console.log("deletedImgs", deletedImgs)
   // ── Submit ──
   const onSubmit = async (data: ProductVariantFormValuesType) => {
     if (user && "vendor_id" in user && user.vendor_id && !user.company_id)
@@ -243,20 +232,14 @@ export const ProductVariantForm = ({
         redirect("/auth/vendorLogin");
       }
       if (variantId && existVariant?.productId) {
-        console.log("updating");
         return await updateProductVariant(
           formData,
           existVariant.productId,
           variantId,
           token,
-        ).then((res) => {
-          console.log("[update response]", res);
-          return res;
-        });
+        );
       } else {
-        console.log("creating");
         if (!productId) {
-          console.error("Product ID is required to create a variant");
           return;
         }
         return await createProductVariant(formData, productId, token);
@@ -275,14 +258,14 @@ export const ProductVariantForm = ({
         onClick={() => router.back()}
         className="flex items-center gap-4 p-2.5 mb-2 bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-slate-100 hover:text-slate-800 transition shadow-sm"
       >
-        <ArrowLeft size={18} /> Back
+        <ArrowLeft size={18} /> {PRODUCT_VARIANT_FORM_TEXT.ACTIONS.BACK}
       </button>
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {/* ── HEADER ── */}
         <header className="flex flex-wrap justify-between items-center mb-8 gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              {isEditMode ? "Edit Product Variant" : "Add Product Variant"}
+              {isEditMode ? PRODUCT_VARIANT_FORM_TEXT.PAGE.UPDATE.TITLE : PRODUCT_VARIANT_FORM_TEXT.PAGE.CREATE.TITLE}
             </h1>
             <p className="text-sm text-slate-500 mt-0.5">
               {isEditMode
@@ -302,19 +285,19 @@ export const ProductVariantForm = ({
               className="text-indigo-500"
             />
             <h2 className="text-base font-semibold text-slate-800">
-              Variant Details
+              {PRODUCT_VARIANT_FORM_TEXT.SECTIONS.DETAILS}
             </h2>
           </div>
           <div className="p-6 space-y-5">
             {/* Variant Name */}
             <div>
               <label className="block mb-1.5 text-sm font-semibold text-slate-700">
-                Variant Name <span className="text-red-400">*</span>
+                {PRODUCT_VARIANT_FORM_TEXT.LABELS.NAME} <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
                 className="w-full border border-slate-200 rounded-lg px-4 py-2.5 bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-sm"
-                placeholder="e.g. Red - Medium"
+                placeholder={PRODUCT_VARIANT_FORM_TEXT.LABELS.NAME_PH}
                 {...register("variantName", {
                   required: "Variant name is required",
                 })}
@@ -335,7 +318,7 @@ export const ProductVariantForm = ({
             <div className="pt-2 border-t border-slate-100">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm font-semibold text-slate-700">
-                  Variant Attributes
+                  {PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_TITLE}
                 </h3>
                 <button
                   type="button"
@@ -343,7 +326,7 @@ export const ProductVariantForm = ({
                   className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
                 >
                   <DynamicIcon fallback={() => <p></p>} name="plus" size={14} />{" "}
-                  Add Attribute
+                  {PRODUCT_VARIANT_FORM_TEXT.ACTIONS.ADD_ATTR}
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -365,12 +348,12 @@ export const ProductVariantForm = ({
                     </button>
                     <div className="mb-3">
                       <label className="block text-xs font-semibold text-slate-600 mb-1">
-                        Attribute (e.g. Color, Size)
+                        {PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_NAME}
                       </label>
                       <input
                         type="text"
                         className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder="e.g. Size"
+                        placeholder={PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_NAME_PH}
                         {...register(`attributes.${index}.name`, {
                           required: "Required",
                         })}
@@ -378,12 +361,12 @@ export const ProductVariantForm = ({
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 mb-1">
-                        Value
+                        {PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_VAL}
                       </label>
                       <input
                         type="text"
                         className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder="e.g. Large"
+                        placeholder={PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_VAL_PH}
                         {...register(`attributes.${index}.value`, {
                           required: "Required",
                         })}
@@ -406,7 +389,7 @@ export const ProductVariantForm = ({
               className="text-blue-500"
             />
             <h2 className="text-base font-semibold text-slate-800">
-              Pricing & Inventory
+              {PRODUCT_VARIANT_FORM_TEXT.SECTIONS.PRICING}
             </h2>
           </div>
           <div className="p-6">
@@ -446,7 +429,7 @@ export const ProductVariantForm = ({
                 ))}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
-                  Warehouse
+                  {PRODUCT_VARIANT_FORM_TEXT.LABELS.WAREHOUSE}
                 </label>
                 <select
                   className="form_input w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
@@ -455,7 +438,7 @@ export const ProductVariantForm = ({
                     { required: "Please select a warehouse" },
                   )}
                 >
-                  <option value="">Select warehouse</option>
+                  <option value="">{PRODUCT_VARIANT_FORM_TEXT.LABELS.SELECT_WAREHOUSE}</option>
                   {warehouseOptions?.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
@@ -477,11 +460,11 @@ export const ProductVariantForm = ({
               className="text-indigo-500"
             />
             <h2 className="text-base font-semibold text-slate-800">
-              Variant Images
+              {PRODUCT_VARIANT_FORM_TEXT.SECTIONS.MEDIA}
             </h2>
           </div>
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {FILE_UPLOAD_FIELD_LABELS.map(({ label, fieldName }) => {
+            {PRODUCT_VARIANT_FORM_TEXT.FILE_UPLOAD_LABELS.map(({ label, fieldName }) => {
               const { files, setFiles } =
                 fileStateMap[fieldName as keyof typeof fileStateMap];
               return (
@@ -507,7 +490,7 @@ export const ProductVariantForm = ({
                           setFiles as React.Dispatch<
                             React.SetStateAction<FileOrProductImage[]>
                           >,
-                          fieldName,
+                          fieldName as "variantMediaMain" | "variantMediaGallery",
                         )
                       }
                     />
@@ -518,10 +501,10 @@ export const ProductVariantForm = ({
                       className="text-blue-400 group-hover:text-blue-600 transition mb-2"
                     />
                     <p className="text-xs font-semibold text-blue-500 group-hover:text-blue-700">
-                      Click to upload
+                      {PRODUCT_VARIANT_FORM_TEXT.ACTIONS.UPLOAD}
                     </p>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      PNG, JPG, MP4 up to 10MB
+                      {PRODUCT_VARIANT_FORM_TEXT.MEDIA_GUIDE.LIMITS}
                     </p>
                   </label>
 
@@ -547,7 +530,7 @@ export const ProductVariantForm = ({
                                 setFiles as React.Dispatch<
                                   React.SetStateAction<FileOrProductImage[]>
                                 >,
-                                fieldName,
+                                fieldName as "variantMediaMain" | "variantMediaGallery",
                                 "id" in file ? file.id : "",
                               )
                             }
@@ -577,7 +560,7 @@ export const ProductVariantForm = ({
             onClick={() => router.back()}
             className="border border-slate-300 bg-white text-slate-700 text-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-slate-50 transition shadow-sm"
           >
-            Cancel
+            {PRODUCT_VARIANT_FORM_TEXT.ACTIONS.CANCEL}
           </button>
           <button
             type="submit"
@@ -592,12 +575,12 @@ export const ProductVariantForm = ({
                   className="animate-spin"
                   fallback={() => <p />}
                 />
-                Saving…
+                {PRODUCT_VARIANT_FORM_TEXT.ACTIONS.SAVING}
               </>
             ) : isEditMode ? (
-              "Update Variant"
+              PRODUCT_VARIANT_FORM_TEXT.ACTIONS.UPDATE
             ) : (
-              "Save Variant"
+              PRODUCT_VARIANT_FORM_TEXT.ACTIONS.SAVE
             )}
           </button>
         </div>

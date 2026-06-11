@@ -4,6 +4,7 @@ import { deleteProduct, deleteProductVariant } from '@/utils/vendorApiClient';
 import { Delete, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
+import { DELETE_BTN_TEXT } from '@/constants/vendorText';
 type DeleteBtnProps =
     | { id: string; toDelete: "PRODUCT"; style?: string; vendorId: string }
     | { id: string; toDelete: "VARIANT"; style?: string; vendorId: string; variantId: string }
@@ -13,21 +14,17 @@ export const DeleteBtn = (props: DeleteBtnProps) => {
     const handleDelete = async (productId: string) => {
         const token = authToken();
         if (!token) {
-            toast.error("Authentication not found! Try to Login Again!");
+            toast.error(DELETE_BTN_TEXT.ERR_AUTH);
             setTimeout(() => {
                 router.push('/auth/vendorLogin');
             }, 2000);
             return;
         }
         if (props.toDelete === "VARIANT") {
-            console.log(props.id, props?.variantId)
             const result = await deleteProductVariant(productId, props.variantId, token);
-            console.log(result)
             return;
         } else if (props.toDelete === "PRODUCT") {
-            
             const result = await deleteProduct(productId, token);
-            console.log(result)
             return;
         }
     }
@@ -36,7 +33,7 @@ export const DeleteBtn = (props: DeleteBtnProps) => {
         <>
             
         <button onClick={(() => handleDelete(props.id))} className={props.style} >
-            <Trash2 />Delete
+            <Trash2 />{DELETE_BTN_TEXT.DELETE}
         </button>
             <Toaster />
         </>

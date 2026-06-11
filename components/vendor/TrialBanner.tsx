@@ -1,14 +1,15 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import { Clock, AlertTriangle, Lock, X } from 'lucide-react';
 import { BASE_API_URL } from '@/constants';
 import { authToken } from '@/utils/authToken';
 import { getCompanyDomain } from '@/lib/get-domain';
+import { TRIAL_BANNER_TEXT, BannerUrgency } from '@/constants/vendorText';
 
 interface SubscriptionStatus {
   show_banner: boolean;
   days_remaining: number | null;
-  banner_urgency: 'info' | 'warning' | 'danger';
+  banner_urgency: BannerUrgency;
   in_grace_period: boolean;
   is_expired: boolean;
 }
@@ -21,11 +22,11 @@ const CONFIG = {
 
 function getBannerMessage(status: SubscriptionStatus): string {
   if (status.in_grace_period) {
-    return 'Your trial expired. You have a 3-day grace period remaining.';
+    return TRIAL_BANNER_TEXT.GRACE_PERIOD;
   }
   const d = status.days_remaining ?? 0;
-  if (d <= 0) return 'Your trial has ended.';
-  return `Your free trial ends in ${d} day${d !== 1 ? 's' : ''}.`;
+  if (d <= 0) return TRIAL_BANNER_TEXT.ENDED;
+  return TRIAL_BANNER_TEXT.ENDS_IN(d);
 }
 
 interface Props {
@@ -73,17 +74,17 @@ export function TrialBanner({ vendorId }: Props) {
           <a
             href={`/vendor/${vendorId}/settings/billing`}
             className="font-semibold underline underline-offset-2">
-            {status.in_grace_period ? 'Upgrade to restore access' : 'Upgrade now'} →
+            {status.in_grace_period ? TRIAL_BANNER_TEXT.UPGRADE_RESTORE : TRIAL_BANNER_TEXT.UPGRADE_NOW} →
           </a>
         </span>
       </div>
 
       {/* Only allow dismissal on info urgency — warning/danger stay visible */}
-      {status.banner_urgency === 'info' && (
+      {status.banner_urgency === BannerUrgency.INFO && (
         <button
           onClick={() => setDismissed(true)}
           className="p-0.5 rounded opacity-60 hover:opacity-100 transition-opacity"
-          aria-label="Dismiss banner"
+          aria-label={TRIAL_BANNER_TEXT.DISMISS}
         >
           <X size={14} />
         </button>

@@ -1,5 +1,6 @@
 "use client"
 import { getVendorInnerSidebarLinks } from "@/constants"
+import { INNER_SIDEBAR_TEXT } from "@/constants/vendorText"
 import { AnimatePresence } from "framer-motion";
 import { DynamicIcon, IconName } from "lucide-react/dynamic"
 import Link from "next/link"
@@ -73,7 +74,7 @@ export const InnerSideBar = ({
                     <button
                         onClick={() => setIsClosed((v) => !v)}
                         className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                        aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
+                        aria-label={expanded ? INNER_SIDEBAR_TEXT.ARIA_COLLAPSE : INNER_SIDEBAR_TEXT.ARIA_EXPAND}
                     >
                         <DynamicIcon name={!expanded ? "panel-left-open" : "panel-left-close"} size={24} />
                     </button>

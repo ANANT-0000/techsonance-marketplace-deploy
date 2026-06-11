@@ -32,7 +32,6 @@ const saveCartToLocalStorage = (
     localStorage.setItem(CART_KEY, JSON.stringify({ cartId, items, itemList }));
     const savedCart = localStorage.getItem(CART_KEY);
   } catch (e) {
-    console.error("Could not save cart to localStorage", e);
   }
 };
 
@@ -57,12 +56,6 @@ const loadCartFromLocalOrServer = async (): Promise<
         localStorage.getItem(USER_STORAGE_KEY) as string,
       )?.id;
     }
-    console.log(
-      "[cart] loadCart - customerId:",
-      customerId,
-      "navigator.onLine:",
-      typeof window !== "undefined" ? navigator.onLine : "N/A",
-    );
 
     // 1. If logged in and online, merge local offline cart updates to server
     if (
@@ -73,11 +66,6 @@ const loadCartFromLocalOrServer = async (): Promise<
       navigator.onLine
     ) {
       try {
-        console.log(
-          "[cart] loadCart - logged in & online, fetching server cart for customerId:",
-          customerId,
-        );
-
         // Get current server cart items
         let dbItems: any[] = [];
         const dbCartResponse = await fetchGetCartList(customerId, token);
@@ -96,28 +84,15 @@ const loadCartFromLocalOrServer = async (): Promise<
             localItems = parsedCart.items;
           }
         }
-        console.log(
-          "[cart] loadCart - localItems from localStorage:",
-          localItems,
-        );
 
         // Sync local changes to server (if any)
         if (localItems.length > 0) {
-          console.log(
-            "[cart] loadCart - localItems.length > 0, merging to server...",
-          );
           const syncPromises = localItems.map(async (localItem) => {
             const dbMatch = dbItems.find(
               (item: any) =>
                 item.product_variant_id === localItem.productVariantId,
             );
             if (!dbMatch || dbMatch.quantity !== localItem.quantity) {
-              console.log(
-                "[cart] loadCart - syncing local item:",
-                localItem.productVariantId,
-                "quantity:",
-                localItem.quantity,
-              );
               await fetchAddToCart(
                 localItem.productVariantId,
                 localItem.quantity,
@@ -130,10 +105,6 @@ const loadCartFromLocalOrServer = async (): Promise<
 
           // Re-fetch final server cart
           const updatedDbResponse = await fetchGetCartList(customerId, token);
-          console.log(
-            "[cart] loadCart - updatedDbResponse:",
-            updatedDbResponse,
-          );
           if (
             updatedDbResponse &&
             updatedDbResponse.success &&
@@ -152,24 +123,13 @@ const loadCartFromLocalOrServer = async (): Promise<
             productVariantId: item.product_variant_id,
           }));
           const cartId = itemList[0]?.cart_id ?? "";
-          console.log(
-            "[cart] loadCart - returning populated server cart and saving local:",
-            items,
-          );
           saveCartToLocalStorage(cartId, items, itemList);
           return { cartId, items, itemList };
         } else {
-          console.log(
-            "[cart] loadCart - server cart empty, clearing local storage",
-          );
           saveCartToLocalStorage("", [], []);
           return { cartId: "", items: [], itemList: [] };
         }
       } catch (serverError) {
-        console.error(
-          "[cart] Failed to sync/fetch cart from server, trying local fallback:",
-          serverError,
-        );
       }
     }
 
@@ -178,12 +138,6 @@ const loadCartFromLocalOrServer = async (): Promise<
     if (parsedCart && Array.isArray(parsedCart.items)) {
       const items: CartItem[] = parsedCart.items;
       let itemList: CartItemListResponse[] = parsedCart.itemList || [];
-      console.log(
-        "[cart] loadCart - local fallback loaded items:",
-        items,
-        "itemList:",
-        itemList,
-      );
 
       // Fetch details if missing and we are online
       if (
@@ -334,7 +288,6 @@ export const syncCartAfterLogin = createAsyncThunk(
       // 4. Reload the cart state from database
       dispatch(loadCart());
     } catch (error) {
-      console.error("Error during cart sync after login:", error);
     }
   },
 );
@@ -391,12 +344,6 @@ const CartSlice = createSlice({
           productVariant: action.payload.productVariant,
         });
       }
-      console.log(
-        "[cart] after add to cart",
-        state.cartId,
-        current(state.items),
-        current(state.itemList),
-      );
       saveCartToLocalStorage(
         state.cartId,
         current(state.items),

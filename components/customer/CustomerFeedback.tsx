@@ -2,6 +2,7 @@
 import { motion } from 'motion/react';
 import { Quote } from 'lucide-react';
 import { Feedback } from '@/utils/Types';
+import { CUSTOMER_FEEDBACK_TEXT } from '@/constants/customerText';
 
 export function CustomerFeedback({
     FEEDBACK_LIST, styles
@@ -47,7 +48,7 @@ export function CustomerFeedback({
                 viewport={{ once: true }}
                 className="text-3xl text-center font-bold mt-12 mb-10"
             >
-                Customer Feedback
+                {CUSTOMER_FEEDBACK_TEXT.TITLE}
             </motion.h2>
 
             <motion.div

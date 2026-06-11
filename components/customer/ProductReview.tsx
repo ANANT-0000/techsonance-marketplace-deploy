@@ -1,7 +1,8 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, MessageSquareQuote, ThumbsUp, ChevronDown, User } from 'lucide-react';
 import { fetchReviews } from '@/utils/customerApiClient';
+import { PRODUCT_REVIEW_TEXT } from '@/constants/customerText';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -128,8 +129,8 @@ export const ProductReview = ({ productId }: { productId: string }) => {
         return (
             <div className="py-16 flex flex-col items-center justify-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
                 <MessageSquareQuote size={36} className="text-gray-300 mb-3" strokeWidth={1.5} />
-                <p className="text-gray-700 font-semibold text-base">No reviews yet</p>
-                <p className="text-gray-400 text-sm mt-1">Be the first to share your experience.</p>
+                <p className="text-gray-700 font-semibold text-base">{PRODUCT_REVIEW_TEXT.NO_REVIEWS_TITLE}</p>
+                <p className="text-gray-400 text-sm mt-1">{PRODUCT_REVIEW_TEXT.NO_REVIEWS_DESC}</p>
             </div>
         );
     }
@@ -149,7 +150,7 @@ export const ProductReview = ({ productId }: { productId: string }) => {
                             </span>
                             <StarRow rating={Math.round(avg)} size={18} />
                             <span className="text-xs text-gray-400 font-medium mt-1">
-                                Based on {total} {total === 1 ? 'review' : 'reviews'}
+                                {PRODUCT_REVIEW_TEXT.BASED_ON} {total} {total === 1 ? PRODUCT_REVIEW_TEXT.REVIEW : PRODUCT_REVIEW_TEXT.REVIEWS}
                             </span>
                         </>
                     )}
@@ -184,7 +185,7 @@ export const ProductReview = ({ productId }: { productId: string }) => {
                       ))
                     : visibleReviews.map((review, idx) => {
                         const fullName = [review.user?.first_name, review.user?.last_name]
-                            .filter(Boolean).join(' ') || 'Anonymous';
+                            .filter(Boolean).join(' ') || PRODUCT_REVIEW_TEXT.ANONYMOUS;
                         const date = new Date(review.created_at).toLocaleDateString(undefined, {
                             year: 'numeric', month: 'short', day: 'numeric',
                         });
@@ -225,7 +226,7 @@ export const ProductReview = ({ productId }: { productId: string }) => {
                                 <div className="flex items-center gap-1.5 pt-1 border-t border-gray-50">
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                                     <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">
-                                        Verified Purchase
+                                        {PRODUCT_REVIEW_TEXT.VERIFIED_PURCHASE}
                                     </span>
                                 </div>
                             </motion.div>
@@ -247,7 +248,7 @@ export const ProductReview = ({ productId }: { productId: string }) => {
                             onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
                             className="flex items-center gap-2 px-6 py-3 rounded-2xl border-2 border-gray-200 hover:border-gray-900 text-sm font-bold text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 group"
                         >
-                            Load more reviews
+                            {PRODUCT_REVIEW_TEXT.LOAD_MORE}
                             <ChevronDown
                                 size={15}
                                 className="text-gray-400 group-hover:text-gray-900 group-hover:translate-y-0.5 transition-all"

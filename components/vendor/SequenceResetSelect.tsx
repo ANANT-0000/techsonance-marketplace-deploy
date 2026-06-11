@@ -1,7 +1,8 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useMemo, useState } from "react";
 import { Globe } from "lucide-react";
+import { SEQUENCE_RESET_SELECT_TEXT } from "@/constants/vendorText";
 
 // ─── Fiscal year data by timezone region ─────────────────────────────────────
 
@@ -13,43 +14,7 @@ interface FiscalOption {
   countries: string;   // tooltip hint
 }
 
-const ALL_OPTIONS: FiscalOption[] = [
-  {
-    value: "APRIL",
-    label: "Indian / UK Financial Year (Apr 1)",
-    month: 4,
-    day: 1,
-    countries: "India, UK, Canada, New Zealand",
-  },
-  {
-    value: "JANUARY",
-    label: "Calendar Year (Jan 1)",
-    month: 1,
-    day: 1,
-    countries: "Most of EU, China, Brazil, Russia",
-  },
-  {
-    value: "JULY",
-    label: "Australian Financial Year (Jul 1)",
-    month: 7,
-    day: 1,
-    countries: "Australia, Pakistan, Bangladesh, Egypt",
-  },
-  {
-    value: "OCTOBER",
-    label: "US Federal Fiscal Year (Oct 1)",
-    month: 10,
-    day: 1,
-    countries: "United States (federal), Myanmar",
-  },
-  {
-    value: "MARCH",
-    label: "Japanese Fiscal Year (Apr 1 / Mar 31)",
-    month: 4,
-    day: 1,
-    countries: "Japan (same April start as India)",
-  },
-];
+const ALL_OPTIONS: FiscalOption[] = SEQUENCE_RESET_SELECT_TEXT.ALL_OPTIONS;
 
 // Timezone prefix → likely fiscal year start month
 const TZ_TO_FISCAL: Record<string, number> = {
@@ -184,14 +149,14 @@ export function SequenceResetSelect({ value, onChange, name }: SequenceResetSele
         <div className="flex items-center gap-1.5">
           <Globe size={11} className="text-gray-400 shrink-0" />
           <span>
-            Detected timezone:{" "}
+            {SEQUENCE_RESET_SELECT_TEXT.DETECTED_TZ}{" "}
             <span className="font-semibold text-gray-700 font-mono">
-              {detectedTz || "unknown"}
+              {detectedTz || SEQUENCE_RESET_SELECT_TEXT.UNKNOWN}
             </span>
             {autoSelected && (
               <span className="ml-1.5 bg-blue-50 text-blue-600 border border-blue-100
                                px-1.5 py-0.5 rounded text-[10px] font-semibold">
-                auto-selected
+                {SEQUENCE_RESET_SELECT_TEXT.AUTO_SELECTED}
               </span>
             )}
           </span>
@@ -199,11 +164,11 @@ export function SequenceResetSelect({ value, onChange, name }: SequenceResetSele
 
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <span>
-            Used by:{" "}
+            {SEQUENCE_RESET_SELECT_TEXT.USED_BY}{" "}
             <span className="text-gray-600">{selectedOption.countries}</span>
           </span>
           <span className="shrink-0">
-            Next reset:{" "}
+            {SEQUENCE_RESET_SELECT_TEXT.NEXT_RESET}{" "}
             <span className="font-semibold text-gray-700">
               {getNextResetDate(selectedOption)}
             </span>

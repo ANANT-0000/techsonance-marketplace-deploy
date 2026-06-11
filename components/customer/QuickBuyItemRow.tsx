@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
 import { motion } from "motion/react";
 import { formatCurrency } from "@/lib/utils";
 import { Minus, Plus } from "lucide-react";
 import { VariantDetails } from "@/utils/Types";
+import { QUICK_BUY_ITEM_ROW_TEXT } from "@/constants/customerText";
 
 export function QuickBuyItemRow({
   variant,
@@ -41,7 +42,7 @@ export function QuickBuyItemRow({
           {variant.variant_name}
         </p>
         <p className="text-xs text-blue-600 font-bold mt-0.5">
-          ₹{formatCurrency(Number(variant.price))} each
+          ₹{formatCurrency(Number(variant.price))} {QUICK_BUY_ITEM_ROW_TEXT.EACH}
         </p>
       </div>
 
@@ -78,7 +79,7 @@ export function QuickBuyItemRow({
         </p>
 
         {qty >= maxStock && (
-          <p className="text-[9px] text-amber-500 font-medium">Max stock</p>
+          <p className="text-[9px] text-amber-500 font-medium">{QUICK_BUY_ITEM_ROW_TEXT.MAX_STOCK}</p>
         )}
       </div>
     </motion.div>

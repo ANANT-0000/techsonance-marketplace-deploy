@@ -14,6 +14,7 @@ export interface ScarcityBlockProps {
 }
 
 import { SCARCITY_BLOCK_DEFAULTS } from "@/constants/storefront";
+import { SCARCITY_BLOCK_TEXT } from "@/constants/customerText";
 
 export function ScarcityBlock({
   timer_title,
@@ -125,8 +126,7 @@ export function ScarcityBlock({
                   </h3>
                 )}
                 <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
-                  Limited stock available. Secure your favorites before time
-                  runs out.
+                  {SCARCITY_BLOCK_TEXT.LIMITED_STOCK}
                 </p>
               </div>
             </div>
@@ -134,10 +134,10 @@ export function ScarcityBlock({
             {/* Right Side: Timer Digits */}
             <div className="flex items-start justify-center gap-1.5 sm:gap-3 select-none">
               {[
-                { label: "DAYS", val: timeLeft.days },
-                { label: "HRS", val: timeLeft.hours },
-                { label: "MINS", val: timeLeft.minutes },
-                { label: "SECS", val: timeLeft.seconds },
+                { label: SCARCITY_BLOCK_TEXT.DAYS, val: timeLeft.days },
+                { label: SCARCITY_BLOCK_TEXT.HRS, val: timeLeft.hours },
+                { label: SCARCITY_BLOCK_TEXT.MINS, val: timeLeft.minutes },
+                { label: SCARCITY_BLOCK_TEXT.SECS, val: timeLeft.seconds },
               ].map((item, idx) => (
                 <div
                   key={item.label}

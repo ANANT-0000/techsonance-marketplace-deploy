@@ -2,6 +2,7 @@
 
 import React, { Dispatch, SetStateAction } from 'react';
 import { AlertTriangle, ShieldAlert, CheckCircle2, X } from 'lucide-react';
+import { CONFIRMATION_MODAL_TEXT } from '@/constants/commonText';
 
 export type ActionType = 'suspend' | 'deactivate' | 'activate' | 'approve' | 'danger';
 
@@ -24,8 +25,8 @@ export function ConfirmationModal({
     title,
     message,
     actionType,
-    confirmText = "Confirm",
-    cancelText = "Cancel",
+    confirmText = CONFIRMATION_MODAL_TEXT.CONFIRM,
+    cancelText = CONFIRMATION_MODAL_TEXT.CANCEL,
     isLoading = false
 }: ConfirmationModalProps) {
     if (!isOpen) return null;
@@ -93,7 +94,7 @@ export function ConfirmationModal({
                             {isLoading ? (
                                 <>
                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    Processing...
+                                    {CONFIRMATION_MODAL_TEXT.PROCESSING}
                                 </>
                             ) : (
                                 confirmText

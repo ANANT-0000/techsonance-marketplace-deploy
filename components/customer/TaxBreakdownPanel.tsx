@@ -1,7 +1,8 @@
-﻿import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { ChevronDown, ChevronUp, Info, Loader2 } from "lucide-react";
 import { useReducer } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { TAX_BREAKDOWN_TEXT } from "@/constants/customerText";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -45,7 +46,7 @@ export function TaxBreakdownPanel({
     return (
       <div className="flex items-center gap-2 py-2.5 px-3 rounded-xl bg-amber-50/70 border border-amber-100 text-[11px] text-amber-700">
         <Info size={12} className="shrink-0" />
-        <span>Select a delivery address to see applicable taxes (GST).</span>
+        <span>{TAX_BREAKDOWN_TEXT.SELECT_ADDRESS}</span>
       </div>
     );
   }
@@ -61,14 +62,14 @@ export function TaxBreakdownPanel({
         className="w-full flex items-center justify-between px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/80 transition-colors text-left"
       >
         <div className="flex items-center gap-2">
-          <span className="text-[12px] font-semibold text-gray-700">Tax (GST)</span>
+          <span className="text-[12px] font-semibold text-gray-700">{TAX_BREAKDOWN_TEXT.TAX_GST}</span>
           {tax.isIntraState ? (
             <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-              Intra-state · CGST + SGST
+              {TAX_BREAKDOWN_TEXT.INTRA_STATE}
             </span>
           ) : (
             <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-              Inter-state · IGST
+              {TAX_BREAKDOWN_TEXT.INTER_STATE}
             </span>
           )}
         </div>
@@ -99,13 +100,13 @@ export function TaxBreakdownPanel({
                 <div className="flex gap-4 text-[10px] text-gray-400 pb-2 border-b border-dashed border-gray-100">
                   {tax.vendorState && (
                     <span>
-                      Seller:{' '}
+                      {TAX_BREAKDOWN_TEXT.SELLER}{' '}
                       <span className="font-semibold text-gray-600 capitalize">{tax.vendorState}</span>
                     </span>
                   )}
                   {tax.customerState && (
                     <span>
-                      Delivery:{' '}
+                      {TAX_BREAKDOWN_TEXT.DELIVERY}{' '}
                       <span className="font-semibold text-gray-600 capitalize">{tax.customerState}</span>
                     </span>
                   )}
@@ -114,18 +115,18 @@ export function TaxBreakdownPanel({
 
               <div className="space-y-1.5">
                 <div className="flex justify-between text-[12px]">
-                  <span className="text-gray-500">Taxable amount</span>
+                  <span className="text-gray-500">{TAX_BREAKDOWN_TEXT.TAXABLE_AMOUNT}</span>
                   <span className="font-medium text-gray-700 tabular-nums">₹{formatCurrency(tax.subtotal)}</span>
                 </div>
 
                 {hasCgstSgst && (
                   <>
                     <div className="flex justify-between text-[12px]">
-                      <span className="text-gray-500">CGST</span>
+                      <span className="text-gray-500">{TAX_BREAKDOWN_TEXT.CGST}</span>
                       <span className="font-medium text-gray-700 tabular-nums">₹{formatCurrency(tax.totalCgst)}</span>
                     </div>
                     <div className="flex justify-between text-[12px]">
-                      <span className="text-gray-500">SGST</span>
+                      <span className="text-gray-500">{TAX_BREAKDOWN_TEXT.SGST}</span>
                       <span className="font-medium text-gray-700 tabular-nums">₹{formatCurrency(tax.totalSgst)}</span>
                     </div>
                   </>
@@ -133,13 +134,13 @@ export function TaxBreakdownPanel({
 
                 {hasIgst && (
                   <div className="flex justify-between text-[12px]">
-                    <span className="text-gray-500">IGST</span>
+                    <span className="text-gray-500">{TAX_BREAKDOWN_TEXT.IGST}</span>
                     <span className="font-medium text-gray-700 tabular-nums">₹{formatCurrency(tax.totalIgst)}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between text-[12px] pt-1.5 border-t border-gray-100">
-                  <span className="font-semibold text-gray-700">Total Tax</span>
+                  <span className="font-semibold text-gray-700">{TAX_BREAKDOWN_TEXT.TOTAL_TAX}</span>
                   <span className="font-bold text-gray-900 tabular-nums">₹{formatCurrency(tax.totalTax)}</span>
                 </div>
               </div>
@@ -157,7 +158,7 @@ export function TaxLoadingSkeleton() {
   return (
     <div className="flex items-center gap-2 py-2.5 px-3 rounded-xl bg-blue-50/70 border border-blue-100 text-[11px] text-blue-600">
       <Loader2 size={12} className="shrink-0 animate-spin" />
-      <span>Calculating taxes for your address…</span>
+      <span>{TAX_BREAKDOWN_TEXT.CALCULATING}</span>
     </div>
   );
 }

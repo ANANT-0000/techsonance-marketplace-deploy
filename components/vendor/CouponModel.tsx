@@ -1,4 +1,4 @@
-﻿import AxiosAPI from '@/lib/axios';
+import AxiosAPI from '@/lib/axios';
 import { authToken } from '@/utils/authToken';
 import { Coupon, PromotionType, PromotionRuleType } from '@/utils/Types';
 import { couponSchema } from '@/utils/validation';
@@ -7,6 +7,7 @@ import { Loader2, X, Plus, Trash2, Tag, ChevronDown } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast, { Toaster } from 'react-hot-toast';
+import { COUPON_MODEL_TEXT } from '@/constants/vendorText';
 
 // ─── API Methods ─────────────────────────────────────────────────────────────
 
@@ -88,14 +89,14 @@ function buildRuleConfig(row: RuleRow): Record<string, unknown> {
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const RULE_TYPE_LABELS: Record<PromotionRuleType, string> = {
-  [PromotionRuleType.MIN_CART_VALUE]: 'Min cart value (₹)',
-  [PromotionRuleType.MIN_QTY]: 'Min quantity',
-  [PromotionRuleType.CUSTOMER_SEGMENT]: 'Customer segment',
-  [PromotionRuleType.FIRST_ORDER_ONLY]: 'First order only',
-  [PromotionRuleType.PRODUCT_IN_CART]: 'Product in cart',
-  [PromotionRuleType.NEW_CUSTOMER]: 'New customer (days)',
-  [PromotionRuleType.DATE_RANGE]: 'Day-of-week range',
-  [PromotionRuleType.MAX_USES_PER_USER]: 'Max uses per user',
+  [PromotionRuleType.MIN_CART_VALUE]: COUPON_MODEL_TEXT.RULE_LABELS.MIN_CART,
+  [PromotionRuleType.MIN_QTY]: COUPON_MODEL_TEXT.RULE_LABELS.MIN_QTY,
+  [PromotionRuleType.CUSTOMER_SEGMENT]: COUPON_MODEL_TEXT.RULE_LABELS.SEGMENT,
+  [PromotionRuleType.FIRST_ORDER_ONLY]: COUPON_MODEL_TEXT.RULE_LABELS.FIRST_ORDER,
+  [PromotionRuleType.PRODUCT_IN_CART]: COUPON_MODEL_TEXT.RULE_LABELS.PRODUCT,
+  [PromotionRuleType.NEW_CUSTOMER]: COUPON_MODEL_TEXT.RULE_LABELS.NEW_CUST,
+  [PromotionRuleType.DATE_RANGE]: COUPON_MODEL_TEXT.RULE_LABELS.DATE_RANGE,
+  [PromotionRuleType.MAX_USES_PER_USER]: COUPON_MODEL_TEXT.RULE_LABELS.MAX_USES,
 };
 
 function hydrateRule(raw: {
@@ -204,7 +205,7 @@ export const CouponModel = ({
         const res = await fetchAllProductOptions(token as string);
         setProductOptions(res.data.data ?? []);
       } catch {
-        toast.error('Failed to load product options.');
+        toast.error(COUPON_MODEL_TEXT.TOASTS.ERR_LOAD_PRODUCTS);
       }
     };
 
@@ -248,7 +249,7 @@ export const CouponModel = ({
             setRules(c.rules.map(hydrateRule));
           }
         } catch {
-          toast.error('Failed to load coupon details.');
+          toast.error(COUPON_MODEL_TEXT.TOASTS.ERR_LOAD_COUPON);
         }
       })();
     } else {
@@ -367,15 +368,15 @@ export const CouponModel = ({
             prev.map((c) => (c.id === id ? response.data.data : c))
           );
         }
-        toast.success('Coupon updated successfully!');
+        toast.success(COUPON_MODEL_TEXT.TOASTS.SUCCESS_UPDATE);
       } else {
         const response = await createNewCoupon(
           payload,
           userId as string,
           token as string
         );
-toast.success('Coupon created successfully!');
-setIsModalOpen(false);
+        toast.success(COUPON_MODEL_TEXT.TOASTS.SUCCESS_CREATE);
+        setIsModalOpen(false);
 setRules([]);
 if (onSuccess) onSuccess();
 reset();
@@ -385,8 +386,7 @@ reset();
       if (onSuccess) onSuccess();
       reset();
     } catch (error) {
-      console.error(error);
-      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} coupon.`);
+      toast.error(isEditMode ? COUPON_MODEL_TEXT.TOASTS.ERR_UPDATE : COUPON_MODEL_TEXT.TOASTS.ERR_CREATE);
     } finally {
       setIsSubmitting(false);
     }
@@ -411,12 +411,12 @@ reset();
             </div>
             <div>
               <h2 className="text-base font-bold text-gray-800">
-                {isEditMode ? 'Edit Coupon' : 'New Coupon'}
+                {isEditMode ? COUPON_MODEL_TEXT.HEADER.EDIT : COUPON_MODEL_TEXT.HEADER.NEW}
               </h2>
               <p className="text-xs text-gray-400 mt-0.5">
                 {isEditMode
-                  ? 'Update the promo code details below.'
-                  : 'Fill in the details to create a new promo code.'}
+                  ? COUPON_MODEL_TEXT.HEADER.EDIT_DESC
+                  : COUPON_MODEL_TEXT.HEADER.NEW_DESC}
               </p>
             </div>
           </div>
@@ -441,7 +441,7 @@ reset();
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelBase}>
-                Coupon Code <span className="text-red-400">*</span>
+                {COUPON_MODEL_TEXT.BASIC_INFO.CODE} <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
@@ -453,7 +453,7 @@ reset();
                 className={`${fieldBase} uppercase font-mono tracking-widest ${
                   errors.code ? fieldError : ''
                 } ${isEditMode ? 'bg-gray-50 cursor-not-allowed text-gray-500' : ''}`}
-                placeholder="SUMMER50"
+                placeholder={COUPON_MODEL_TEXT.BASIC_INFO.CODE_PH}
               />
               {errors.code && (
                 <p className="mt-1 text-xs text-red-500">
@@ -464,13 +464,13 @@ reset();
 
             <div>
               <label className={labelBase}>
-                Description <span className="text-red-400">*</span>
+                {COUPON_MODEL_TEXT.BASIC_INFO.DESC} <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
                 {...register('description')}
                 className={`${fieldBase} ${errors.description ? fieldError : ''}`}
-                placeholder="Summer Sale 2026"
+                placeholder={COUPON_MODEL_TEXT.BASIC_INFO.DESC_PH}
               />
               {errors.description && (
                 <p className="mt-1 text-xs text-red-500">
@@ -484,23 +484,23 @@ reset();
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelBase}>
-                Discount Type <span className="text-red-400">*</span>
+                {COUPON_MODEL_TEXT.BASIC_INFO.TYPE} <span className="text-red-400">*</span>
               </label>
               <select
                 {...register('discount_type')}
                 className={fieldBase}
               >
-                <option value={PromotionType.PERCENTAGE}>Percentage (%)</option>
-                <option value={PromotionType.FIXED_AMOUNT}>Fixed Amount (₹)</option>
-                <option value={PromotionType.TIERED_DISCOUNT}>Tiered Discount</option>
-                <option value={PromotionType.FREE_SHIPPING}>Free Shipping</option>
-                <option value={PromotionType.BOGO}>Buy 1 Get 1</option>
+                <option value={PromotionType.PERCENTAGE}>{COUPON_MODEL_TEXT.DISCOUNT_TYPES.PERCENTAGE}</option>
+                <option value={PromotionType.FIXED_AMOUNT}>{COUPON_MODEL_TEXT.DISCOUNT_TYPES.FIXED}</option>
+                <option value={PromotionType.TIERED_DISCOUNT}>{COUPON_MODEL_TEXT.DISCOUNT_TYPES.TIERED}</option>
+                <option value={PromotionType.FREE_SHIPPING}>{COUPON_MODEL_TEXT.DISCOUNT_TYPES.SHIPPING}</option>
+                <option value={PromotionType.BOGO}>{COUPON_MODEL_TEXT.DISCOUNT_TYPES.BOGO}</option>
               </select>
             </div>
 
             <div>
               <label className={labelBase}>
-                Value <span className="text-red-400">*</span>
+                {COUPON_MODEL_TEXT.BASIC_INFO.VALUE} <span className="text-red-400">*</span>
               </label>
               <input
                 type="number"
@@ -521,7 +521,7 @@ reset();
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelBase}>
-                Valid From <span className="text-red-400">*</span>
+                {COUPON_MODEL_TEXT.BASIC_INFO.VALID_FROM} <span className="text-red-400">*</span>
               </label>
               <input
                 type="date"
@@ -536,7 +536,7 @@ reset();
             </div>
             <div>
               <label className={labelBase}>
-                Valid To <span className="text-red-400">*</span>
+                {COUPON_MODEL_TEXT.BASIC_INFO.VALID_TO} <span className="text-red-400">*</span>
               </label>
               <input
                 type="date"
@@ -552,36 +552,36 @@ reset();
           </div>
 
           {/* ── Advanced limits ── */}
-          <Section title="Advanced Limits (Optional)">
+          <Section title={COUPON_MODEL_TEXT.ADVANCED.TITLE}>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={labelBase}>Max Discount Amount (₹)</label>
+                <label className={labelBase}>{COUPON_MODEL_TEXT.ADVANCED.MAX_AMT}</label>
                 <input
                   type="number"
                   {...register('max_discount_amount')}
                   className={fieldBase}
-                  placeholder="e.g. 500"
+                  placeholder={COUPON_MODEL_TEXT.ADVANCED.MAX_AMT_PH}
                 />
               </div>
               <div>
-                <label className={labelBase}>Total Max Uses</label>
+                <label className={labelBase}>{COUPON_MODEL_TEXT.ADVANCED.TOTAL_USES}</label>
                 <input
                   type="number"
                   {...register('max_uses', { valueAsNumber: true })}
                   className={fieldBase}
-                  placeholder="Unlimited if empty"
+                  placeholder={COUPON_MODEL_TEXT.ADVANCED.TOTAL_USES_PH}
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={labelBase}>Uses Per User</label>
+                <label className={labelBase}>{COUPON_MODEL_TEXT.ADVANCED.USES_PER_USER}</label>
                 <input
                   type="number"
                   {...register('max_uses_per_user', { valueAsNumber: true })}
                   className={fieldBase}
-                  placeholder="e.g. 1"
+                  placeholder={COUPON_MODEL_TEXT.ADVANCED.USES_PER_USER_PH}
                 />
               </div>
             </div>
@@ -599,7 +599,7 @@ reset();
                   <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
                 </div>
                 <span className="text-sm font-medium text-gray-700">
-                  Auto-apply at checkout
+                  {COUPON_MODEL_TEXT.ADVANCED.AUTO_APPLY}
                 </span>
               </label>
 
@@ -613,14 +613,14 @@ reset();
                   <div className="w-9 h-5 rounded-full bg-gray-200 peer-checked:bg-emerald-500 transition-colors" />
                   <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
                 </div>
-                <span className="text-sm font-medium text-gray-700">Active</span>
+                <span className="text-sm font-medium text-gray-700">{COUPON_MODEL_TEXT.ADVANCED.ACTIVE}</span>
               </label>
             </div>
 
             {/* Applicable products */}
             <div>
               <label className={labelBase}>
-                Applicable Products (Optional)
+                {COUPON_MODEL_TEXT.ADVANCED.PRODUCTS}
               </label>
               <select
                 className={fieldBase}
@@ -639,7 +639,7 @@ reset();
                   e.target.value = '';
                 }}
               >
-                <option value="">— Select a product to add —</option>
+                <option value="">{COUPON_MODEL_TEXT.ADVANCED.PRODUCTS_SELECT}</option>
                 {productOptions.map((opt) => {
                   const MAX = 40;
                   const display =
@@ -689,7 +689,7 @@ reset();
                 })}
                 {applicableProductIds.length === 0 && (
                   <p className="text-xs text-gray-400 italic">
-                    No products selected — coupon applies to entire cart.
+                    {COUPON_MODEL_TEXT.ADVANCED.NO_PRODUCTS}
                   </p>
                 )}
               </div>
@@ -697,10 +697,10 @@ reset();
           </Section>
 
           {/* ── Promotion rules ── */}
-          <Section title="Promotion Rules" accent="indigo">
+          <Section title={COUPON_MODEL_TEXT.RULES.TITLE} accent="indigo">
             <div className="flex items-center justify-between -mt-1">
               <p className="text-xs text-gray-500">
-                All rules must pass for coupon to apply (AND logic).
+                {COUPON_MODEL_TEXT.RULES.DESC}
               </p>
               <button
                 type="button"
@@ -708,13 +708,13 @@ reset();
                 className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 rounded-lg px-3 py-1.5 transition-colors hover:bg-indigo-50"
               >
                 <Plus size={13} />
-                Add Rule
+                {COUPON_MODEL_TEXT.RULES.ADD}
               </button>
             </div>
 
             {rules.length === 0 && (
               <p className="text-xs text-gray-400 italic text-center py-3">
-                No rules added. The coupon will apply to all eligible carts.
+                {COUPON_MODEL_TEXT.RULES.EMPTY}
               </p>
             )}
 
@@ -727,7 +727,7 @@ reset();
                   <div className="flex items-center gap-3">
                     {/* Rule type */}
                     <div className="flex-1">
-                      <label className={labelBase}>Rule Type</label>
+                      <label className={labelBase}>{COUPON_MODEL_TEXT.RULES.TYPE_LBL}</label>
                       <select
                         className={fieldBase}
                         value={rule.rule_type}
@@ -755,7 +755,7 @@ reset();
                     {/* Negate toggle */}
                     <div className="flex flex-col items-center gap-1 pt-4">
                       <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
-                        Negate
+                        {COUPON_MODEL_TEXT.RULES.NEGATE}
                       </span>
                       <label className="relative cursor-pointer">
                         <input
@@ -784,7 +784,7 @@ reset();
                   {/* Rule config fields */}
                   {rule.rule_type === PromotionRuleType.MIN_CART_VALUE && (
                     <div>
-                      <label className={labelBase}>Minimum cart amount (₹)</label>
+                      <label className={labelBase}>{COUPON_MODEL_TEXT.RULES.MIN_CART_AMT}</label>
                       <input
                         type="number"
                         value={rule.amount ?? ''}
@@ -792,14 +792,14 @@ reset();
                           updateRule(idx, { amount: Number(e.target.value) })
                         }
                         className={fieldBase}
-                        placeholder="e.g. 500"
+                        placeholder={COUPON_MODEL_TEXT.RULES.MIN_CART_AMT_PH}
                       />
                     </div>
                   )}
 
                   {rule.rule_type === PromotionRuleType.MIN_QTY && (
                     <div>
-                      <label className={labelBase}>Minimum quantity</label>
+                      <label className={labelBase}>{COUPON_MODEL_TEXT.RULES.MIN_QTY}</label>
                       <input
                         type="number"
                         value={rule.qty ?? ''}
@@ -807,14 +807,14 @@ reset();
                           updateRule(idx, { qty: Number(e.target.value) })
                         }
                         className={fieldBase}
-                        placeholder="e.g. 3"
+                        placeholder={COUPON_MODEL_TEXT.RULES.MIN_QTY_PH}
                       />
                     </div>
                   )}
 
                   {rule.rule_type === PromotionRuleType.CUSTOMER_SEGMENT && (
                     <div>
-                      <label className={labelBase}>Segment ID</label>
+                      <label className={labelBase}>{COUPON_MODEL_TEXT.RULES.SEGMENT}</label>
                       <input
                         type="text"
                         value={rule.segment_id ?? ''}
@@ -822,20 +822,20 @@ reset();
                           updateRule(idx, { segment_id: e.target.value })
                         }
                         className={fieldBase}
-                        placeholder="UUID of customer segment"
+                        placeholder={COUPON_MODEL_TEXT.RULES.SEGMENT_PH}
                       />
                     </div>
                   )}
 
                   {rule.rule_type === PromotionRuleType.FIRST_ORDER_ONLY && (
                     <p className="text-xs text-indigo-600 font-medium bg-indigo-50 rounded-xl px-3 py-2.5 border border-indigo-100">
-                      Applies only to a customer's first order — no extra config needed.
+                      {COUPON_MODEL_TEXT.RULES.FIRST_ORDER_HINT}
                     </p>
                   )}
 
                   {rule.rule_type === PromotionRuleType.PRODUCT_IN_CART && (
                     <div>
-                      <label className={labelBase}>Required product</label>
+                      <label className={labelBase}>{COUPON_MODEL_TEXT.RULES.PRODUCT_ID}</label>
                       <select
                         className={fieldBase}
                         value={rule.product_id ?? ''}
@@ -843,7 +843,7 @@ reset();
                           updateRule(idx, { product_id: e.target.value })
                         }
                       >
-                        <option value="">— Select a product —</option>
+                        <option value="">{COUPON_MODEL_TEXT.RULES.PRODUCT_ID_PH}</option>
                         {productOptions.map((opt) => (
                           <option key={opt.id} value={opt.id}>
                             {opt.name.length > 50
@@ -857,7 +857,7 @@ reset();
 
                   {rule.rule_type === PromotionRuleType.NEW_CUSTOMER && (
                     <div>
-                      <label className={labelBase}>Registered within (days)</label>
+                      <label className={labelBase}>{COUPON_MODEL_TEXT.RULES.DAYS_AGO}</label>
                       <input
                         type="number"
                         value={rule.registered_within_days ?? ''}
@@ -867,14 +867,14 @@ reset();
                           })
                         }
                         className={fieldBase}
-                        placeholder="e.g. 30"
+                        placeholder={COUPON_MODEL_TEXT.RULES.DAYS_AGO_PH}
                       />
                     </div>
                   )}
 
                   {rule.rule_type === PromotionRuleType.DATE_RANGE && (
                     <div>
-                      <label className={labelBase}>Active on days</label>
+                      <label className={labelBase}>{COUPON_MODEL_TEXT.RULES.DAYS_OF_WEEK}</label>
                       <div className="flex gap-1.5 flex-wrap">
                         {DAYS.map((day, dayIdx) => {
                           const active = (rule.days_of_week ?? []).includes(dayIdx);
@@ -900,7 +900,7 @@ reset();
                   {rule.rule_type === PromotionRuleType.MAX_USES_PER_USER && (
                     <div>
                       <label className={labelBase}>
-                        Max uses per user (rule-level override)
+                        {COUPON_MODEL_TEXT.RULES.MAX_USES}
                       </label>
                       <input
                         type="number"
@@ -909,7 +909,7 @@ reset();
                           updateRule(idx, { max: Number(e.target.value) })
                         }
                         className={fieldBase}
-                        placeholder="e.g. 2"
+                        placeholder={COUPON_MODEL_TEXT.RULES.MAX_USES_PH}
                       />
                     </div>
                   )}
@@ -927,12 +927,12 @@ reset();
             {isSubmitting ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Saving…
+                {COUPON_MODEL_TEXT.RULES.FOOTER_SAVING}
               </>
             ) : isEditMode ? (
-              'Update Coupon'
+              COUPON_MODEL_TEXT.RULES.FOOTER_UPDATE
             ) : (
-              'Create Coupon'
+              COUPON_MODEL_TEXT.RULES.FOOTER_CREATE
             )}
           </button>
         </form>

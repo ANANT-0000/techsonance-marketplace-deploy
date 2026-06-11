@@ -8,7 +8,7 @@ import { AddToCart } from "@/components/customer/AddToCart";
 import { Skeleton } from "../../ui/skeleton";
 import { useImageColors } from "@/hooks/useImageColors";
 import { LOOKBOOK_DEFAULTS, LOOKBOOK_DEFAULT_HOTSPOTS } from "@/constants/storefront";
-
+import { SHOPPABLE_LOOKBOOK_TEXT } from "@/constants/customerText";
 
 export interface LookbookHotspot {
   id: string | number;
@@ -90,7 +90,7 @@ export function ShoppableLookbook({
               fetched[id] = product;
             }
           } catch (err) {
-            console.error("Error fetching lookbook product:", err);
+            // Ignore failure
           }
         })
       );
@@ -117,7 +117,7 @@ export function ShoppableLookbook({
         {/* Section Header */}
         <div className="text-center mb-10">
           <span className="text-[10px] font-bold tracking-[0.25em] text-purple-600 uppercase">
-            Curated Inspiration
+            {SHOPPABLE_LOOKBOOK_TEXT.CURATED_INSPIRATION}
           </span>
           <h2 className="text-3xl font-serif tracking-tight text-gray-900 mt-2 mb-3">
             {displayTitle}
@@ -146,7 +146,7 @@ export function ShoppableLookbook({
             const product = pId ? resolvedProducts[pId] : null;
 
             // Extract values with dynamic fallback support
-            const name = product ? product.name : (spot.name || "Premium Item");
+            const name = product ? product.name : (spot.name || SHOPPABLE_LOOKBOOK_TEXT.PREMIUM_ITEM);
             const description = product ? product.description : spot.description;
             const price = product ? (product.base_price ?? product.basePrice) : spot.price;
             const imageUrl = product
@@ -201,7 +201,7 @@ export function ShoppableLookbook({
                               <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white border border-slate-100 flex-shrink-0">
                                 <Image
                                   src={imageUrl}
-                                  alt={name || "Product"}
+                                  alt={name || SHOPPABLE_LOOKBOOK_TEXT.PRODUCT}
                                   fill
                                   className="object-contain p-1"
                                   sizes="56px"
@@ -236,7 +236,7 @@ export function ShoppableLookbook({
                           ) : (
                             <button className="w-full h-9 bg-slate-900 text-white hover:bg-black text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors">
                               <ShoppingCart size={13} />
-                              <span>Out of Stock</span>
+                              <span>{SHOPPABLE_LOOKBOOK_TEXT.OUT_OF_STOCK}</span>
                             </button>
                           )}
                         </>

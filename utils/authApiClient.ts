@@ -30,7 +30,6 @@ export const vendorLogin = async (
     });
 
     const result = response.data;
-    console.log("response", response);
 
     const payload: {
       user: VendorUser;

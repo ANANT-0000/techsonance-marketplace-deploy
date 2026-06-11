@@ -7,8 +7,8 @@ import { BuyBtn } from './BuyBtn';
 import { BuyBtnMode, Product } from '@/utils/Types';
 import { formatCurrency } from '@/lib/utils';
 import { useThemeData } from '@/hooks/useThemeData';
-
 import { useImageColors } from '@/hooks/useImageColors';
+import { PRODUCT_CARD_TEXT } from '@/constants/customerText';
 
 export function ProductCard({ product, idx }: { product: Product; idx: number }) {
     const { themeData } = useThemeData();
@@ -50,7 +50,7 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
 
             <div className={`p-4 flex flex-col flex-grow ${isGlass ? 'bg-transparent' : 'bg-white'}`}>
                 <div className="mb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide truncate">
-                    {product.category?.name || 'Category'}
+                    {product.category?.name || PRODUCT_CARD_TEXT.CATEGORY_FALLBACK}
                 </div>
                 <Link href={`/store/${product.id}`} className="block">
                     <h3 className="font-semibold text-gray-900 text-sm lg:text-[15px] leading-tight mb-3 line-clamp-2">

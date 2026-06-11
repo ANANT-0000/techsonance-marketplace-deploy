@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { CartItemDisplay, VariantDetails } from "@/utils/Types";
 import { ShoppingBag, ShoppingCart } from "lucide-react";
 import { QuickBuyItemRow } from "./QuickBuyItemRow";
@@ -6,6 +6,7 @@ import { AnimatePresence } from "motion/react";
 import { CartItemRow } from "./CartItemRow";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ITEM_LIST_PANEL_TEXT } from "@/constants/customerText";
 
 export function ItemListPanel({
   isQuickBuy,
@@ -32,9 +33,9 @@ export function ItemListPanel({
               : <ShoppingBag className="w-3.5 h-3.5 text-gray-600" />
             }
           </div>
-          {isQuickBuy ? 'Your Item' : (
+          {isQuickBuy ? ITEM_LIST_PANEL_TEXT.YOUR_ITEM : (
             <span>
-              Cart Items
+              {ITEM_LIST_PANEL_TEXT.CART_ITEMS}
               <span className="ml-1.5 text-[11px] font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
                 {cartItems.length}
               </span>
@@ -62,7 +63,7 @@ export function ItemListPanel({
               onQtyChange={onQuickBuyQtyChange}
             />
           ) : (
-            <p className="text-sm text-gray-400 text-center py-6">Loading item…</p>
+            <p className="text-sm text-gray-400 text-center py-6">{ITEM_LIST_PANEL_TEXT.LOADING}</p>
           )
         ) : (
           <AnimatePresence>
@@ -71,7 +72,7 @@ export function ItemListPanel({
                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
                   <ShoppingBag size={18} className="text-gray-400" />
                 </div>
-                <p className="text-sm text-gray-400 font-medium">Your cart is empty</p>
+                <p className="text-sm text-gray-400 font-medium">{ITEM_LIST_PANEL_TEXT.EMPTY_CART}</p>
               </div>
             ) : (
               <div className="space-y-2.5">

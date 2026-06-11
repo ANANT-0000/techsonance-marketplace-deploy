@@ -1,10 +1,11 @@
-﻿'use client';
+'use client';
 
 import { useState } from "react";
 import { updateProductVariantStatus } from "@/utils/vendorApiClient"; // adjust import to your actual API util
 import { ProductVariantStatus } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
 import toast, { Toaster } from "react-hot-toast";
+import { STATUS_CONFIRMATION_MODAL_TEXT } from "@/constants/commonText";
 
 interface StatusToggleProps {
     productVariantId: string;
@@ -39,25 +40,25 @@ export const StatusConfirmationModal = ({ onConfirm, onCancel,isActive }: { onCo
                         {/* Text */}
                         <div className="text-center">
                             <h3 className="text-base font-bold text-gray-800 mb-1">
-                                {isActive ? "Deactivate Product?" : "Activate Product?"}
+                                {isActive ? STATUS_CONFIRMATION_MODAL_TEXT.DEACTIVATE_PRODUCT : STATUS_CONFIRMATION_MODAL_TEXT.ACTIVATE_PRODUCT}
                             </h3>
                             <p className="text-sm text-gray-500">
                                 {isActive
-                                    ? "This product will no longer be visible to customers. You can reactivate it anytime."
-                                    : "This product will become visible to customers immediately."}
+                                    ? STATUS_CONFIRMATION_MODAL_TEXT.DEACTIVATE_DESCRIPTION
+                                    : STATUS_CONFIRMATION_MODAL_TEXT.ACTIVATE_DESCRIPTION}
                             </p>
                         </div>
 
                         {/* Status change preview */}
                         <div className="flex items-center justify-center gap-3 bg-gray-50 rounded-xl py-3 px-4 border border-gray-100">
                             <span className={`inline-flex items-center gap-1 py-1 px-3 rounded-full text-xs font-semibold border ${isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-500 border-gray-200"}`}>
-                                ● {isActive ? "Active" : "Inactive"}
+                                ● {isActive ? STATUS_CONFIRMATION_MODAL_TEXT.ACTIVE : STATUS_CONFIRMATION_MODAL_TEXT.INACTIVE}
                             </span>
                             <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                             </svg>
                             <span className={`inline-flex items-center gap-1 py-1 px-3 rounded-full text-xs font-semibold border ${!isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-500 border-gray-200"}`}>
-                                ● {isActive ? "Inactive" : "Active"}
+                                ● {isActive ? STATUS_CONFIRMATION_MODAL_TEXT.INACTIVE : STATUS_CONFIRMATION_MODAL_TEXT.ACTIVE}
                             </span>
                         </div>
 
@@ -67,7 +68,7 @@ export const StatusConfirmationModal = ({ onConfirm, onCancel,isActive }: { onCo
                                 onClick={() => onCancel()}
                                 className="flex-1 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200 py-2.5 rounded-xl transition-colors"
                             >
-                                Cancel
+                                {STATUS_CONFIRMATION_MODAL_TEXT.CANCEL}
                             </button>
                             <button
                                 onClick={() => onConfirm()}
@@ -76,7 +77,7 @@ export const StatusConfirmationModal = ({ onConfirm, onCancel,isActive }: { onCo
                                     : "bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700"
                                     }`}
                             >
-                                {isActive ? "Yes, Deactivate" : "Yes, Activate"}
+                                {isActive ? STATUS_CONFIRMATION_MODAL_TEXT.YES_DEACTIVATE : STATUS_CONFIRMATION_MODAL_TEXT.YES_ACTIVATE}
                             </button>
                         </div>
                     </div>

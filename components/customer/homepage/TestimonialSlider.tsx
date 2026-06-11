@@ -45,6 +45,7 @@ const iconMap: Record<string, any> = {
 };
 
 import { TESTIMONIALS_SLIDER_DEFAULT, TRUST_BADGES_SLIDER_DEFAULT } from "@/constants/storefront";
+import { TESTIMONIALS_TEXT } from "@/constants/customerText";
 
 export function TestimonialSlider({
   title,
@@ -52,8 +53,8 @@ export function TestimonialSlider({
   testimonials,
   badges
 }: TestimonialSliderProps) {
-  const displayTitle = title ?? 'What Our Clients Say';
-  const displayEyebrow = eyebrow ?? 'TESTIMONIALS';
+  const displayTitle = title ?? TESTIMONIALS_TEXT.WHAT_CLIENTS_SAY;
+  const displayEyebrow = eyebrow ?? TESTIMONIALS_TEXT.TESTIMONIALS_EYEBROW;
   const currentTestimonials = testimonials !== undefined && testimonials !== null && testimonials.length > 0
     ? testimonials
     : TESTIMONIALS_SLIDER_DEFAULT;

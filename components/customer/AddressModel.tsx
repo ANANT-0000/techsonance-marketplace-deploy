@@ -12,6 +12,7 @@ import { authToken } from "@/utils/authToken";
 import { ADDRESS_FIELDS } from "@/constants";
 import { Country, State, City } from "country-state-city";
 import { Button } from "@/components/ui/button";
+import { ADDRESS_MODEL_TEXT } from "@/constants/customerText";
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -135,13 +136,13 @@ export const AddressModal = ({
         if (operation === AddressOperationEnum.EDIT && addressId && user.id) {
             const result = await fetchUpdateUserAddress(user.id, addressId, data, token);
             if (!result?.success) {
-                dispatchFetchError({ message: result?.message || 'Failed to update address', success: result?.success || false });
+                dispatchFetchError({ message: result?.message || ADDRESS_MODEL_TEXT.ERR_UPDATE, success: result?.success || false });
                 return;
             }
         } else {
             const result = await fetchCreateUserAddress(user.id || "", data, token);
             if (!result?.success) {
-                dispatchFetchError({ message: result?.message || 'Failed to create address', success: result?.success || false });
+                dispatchFetchError({ message: result?.message || ADDRESS_MODEL_TEXT.ERR_CREATE, success: result?.success || false });
                 return;
             } else {
                 onSuccess && onSuccess(true);
@@ -177,7 +178,7 @@ export const AddressModal = ({
                             <MapPin size={15} className="text-theme-primary" />
                         </div>
                         <h2 className="text-base font-bold text-gray-900">
-                            {operation === AddressOperationEnum.EDIT ? 'Edit Address' : 'Add New Address'}
+                            {operation === AddressOperationEnum.EDIT ? ADDRESS_MODEL_TEXT.TITLE_EDIT : ADDRESS_MODEL_TEXT.TITLE_ADD}
                         </h2>
                     </div>
                     <Button
@@ -272,14 +273,14 @@ export const AddressModal = ({
                             className="px-5 rounded-xl text-xs font-semibold border-gray-200 text-gray-600 hover:bg-gray-50"
                             disabled={isSubmitting}
                         >
-                            Cancel
+                            {ADDRESS_MODEL_TEXT.BTN_CANCEL}
                         </Button>
                         <Button
                             type="submit"
                             className="px-7 rounded-xl text-xs font-semibold bg-gray-900 text-white hover:bg-gray-800 disabled:bg-gray-300"
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? "Saving…" : "Save Address"}
+                            {isSubmitting ? ADDRESS_MODEL_TEXT.BTN_SAVING : ADDRESS_MODEL_TEXT.BTN_SAVE}
                         </Button>
                     </div>
                 </form>

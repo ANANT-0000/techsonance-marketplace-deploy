@@ -8,6 +8,7 @@ import { useMediaQuery } from "react-responsive";
 import { useState, useRef, useEffect } from "react";
 import { OrderItemAPIResponse as OrderItemType, ReturnRequest, AddressPayload } from "./OrderList";
 import { Package, RotateCcw, XCircle, Truck, CheckCircle2 } from "lucide-react";
+import { ORDER_CARD_TEXT } from "@/constants/customerText";
 
 export interface OrderType {
     id: string;
@@ -22,11 +23,11 @@ export interface OrderType {
 function ItemStatusBadge({ status }: { status: string }) {
     const s = status?.toLowerCase();
     if (s === 'delivered')
-        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full"><CheckCircle2 size={9} />Delivered</span>;
+        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full"><CheckCircle2 size={9} />{ORDER_CARD_TEXT.STATUS_DELIVERED}</span>;
     if (s === 'pending' || s === 'processing')
         return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full"><Truck size={9} />{status}</span>;
     if (s === 'cancelled')
-        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full"><XCircle size={9} />Cancelled</span>;
+        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full"><XCircle size={9} />{ORDER_CARD_TEXT.STATUS_CANCELLED}</span>;
     return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full capitalize">{status}</span>;
 }
 
@@ -41,7 +42,7 @@ function ReturnBadge({ returnRequest }: { returnRequest: ReturnRequest }) {
     return (
         <span className={`inline-flex items-center gap-1 text-[10px] font-semibold border px-2 py-0.5 rounded-full ${color}`}>
             <RotateCcw size={9} />
-            Return · {returnRequest.status}
+            {ORDER_CARD_TEXT.RETURN} · {returnRequest.status}
         </span>
     );
 }
@@ -75,7 +76,7 @@ function OrderItemRow({ item, highlighted }: { item: OrderItemType; highlighted:
                         whileTap={{ scale: 0.95 }}
                         className="self-start mt-1 text-xs px-3 py-1 border border-gray-300 rounded-full hover:bg-gray-50 font-medium text-gray-700 transition-colors"
                     >
-                        Write Review
+                        {ORDER_CARD_TEXT.WRITE_REVIEW}
                     </motion.button>
                 )}
             </div>
@@ -112,7 +113,7 @@ function AddressDropdown({ address, isMobile }: { address: AddressPayload; isMob
                     className="flex items-center justify-between w-full text-blue-500 hover:text-blue-700 text-sm font-medium focus:outline-none"
                     onClick={() => setOpen((p) => !p)}
                 >
-                    <span className="truncate max-w-[80%]">{address.name || 'N/A'}</span>
+                    <span className="truncate max-w-[80%]">{address.name || ORDER_CARD_TEXT.NA}</span>
                     <motion.span animate={{ rotate: open ? 180 : 0 }} className="text-[10px] ml-1">▼</motion.span>
                 </button>
                 <AnimatePresence>
@@ -137,7 +138,7 @@ function AddressDropdown({ address, isMobile }: { address: AddressPayload; isMob
                 className="flex items-center gap-1 text-blue-500 hover:text-blue-700 text-sm font-medium focus:outline-none"
                 onClick={() => setOpen((p) => !p)}
             >
-                {address.name || 'N/A'}
+                {address.name || ORDER_CARD_TEXT.NA}
                 <span className="text-[10px]">▼</span>
             </button>
             <AnimatePresence>
@@ -188,16 +189,16 @@ export const OrderCard = ({
             <motion.div className="w-full flex flex-col border border-gray-200 shadow-sm rounded-xl p-4 gap-4 bg-white">
                 <div className="flex justify-between items-start border-b border-gray-100 pb-3">
                     <p className="text-xs text-gray-400">
-                        Ordered {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        {ORDER_CARD_TEXT.ORDERED} {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </p>
                     <div className="text-right">
-                        <p className="text-xs text-gray-400 mb-0.5">Total</p>
+                        <p className="text-xs text-gray-400 mb-0.5">{ORDER_CARD_TEXT.TOTAL}</p>
                         <p className="text-sm font-bold text-gray-900">₹{formatCurrency(Number(order.total_amount))}</p>
                     </div>
                 </div>
 
                 <div className="border-b border-gray-100 pb-3">
-                    <p className="text-xs text-gray-400 mb-1">Ship To</p>
+                    <p className="text-xs text-gray-400 mb-1">{ORDER_CARD_TEXT.SHIP_TO}</p>
                     {order.address && <AddressDropdown address={order.address} isMobile={true} />}
                 </div>
 
@@ -209,12 +210,12 @@ export const OrderCard = ({
 
                 <div className="flex justify-between items-center pt-1">
                     <Link href={`orders/${order.id}`} className="text-xs font-medium text-blue-500 hover:underline">
-                        View Details →
+                        {ORDER_CARD_TEXT.VIEW_DETAILS}
                     </Link>
                     {order.shipping?.tracking_url && (
                         <a href={order.shipping.tracking_url} target="_blank" rel="noopener noreferrer"
                             className="text-xs font-medium text-gray-500 hover:text-gray-800 flex items-center gap-1">
-                            <Truck size={12} /> Track
+                            <Truck size={12} /> {ORDER_CARD_TEXT.TRACK}
                         </a>
                     )}
                 </div>
@@ -227,24 +228,24 @@ export const OrderCard = ({
             <header className="flex justify-between items-center px-5 py-3.5 bg-gray-50 border-b border-gray-200">
                 <div className="flex gap-6 items-center">
                     <div>
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Order Placed</p>
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.ORDER_PLACED}</p>
                         <p className="text-sm text-gray-700">
                             {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </p>
                     </div>
                     <div>
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Total</p>
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.TOTAL}</p>
                         <p className="text-sm font-semibold text-gray-800">₹{formatCurrency(Number(order.total_amount))}</p>
                     </div>
                     {order.address && (
                         <div>
-                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Ship To</p>
+                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.SHIP_TO}</p>
                             <AddressDropdown address={order.address} isMobile={false} />
                         </div>
                     )}
                     {order.payment && (
                         <div>
-                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Payment</p>
+                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.PAYMENT}</p>
                             <p className="text-sm text-gray-700 flex items-center gap-1.5">
                                 {order.payment.payment_method}
                                 <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${order.payment.payment_status === 'completed' ? 'bg-emerald-50 text-emerald-700'
@@ -261,12 +262,12 @@ export const OrderCard = ({
                     <p className="text-[10px] text-gray-400 font-mono">#{order.id.split('-')[0].toUpperCase()}</p>
                     <div className="flex items-center gap-3 text-sm">
                         <Link href={`orders/${order.id}`} className="text-blue-500 hover:underline font-medium">
-                            View Details
+                            {ORDER_CARD_TEXT.VIEW_DETAILS_HEADER}
                         </Link>
                         {order.shipping?.tracking_url && (
                             <a href={order.shipping.tracking_url} target="_blank" rel="noopener noreferrer"
                                 className="text-gray-500 hover:text-gray-800 flex items-center gap-1 font-medium">
-                                <Truck size={13} /> Track
+                                <Truck size={13} /> {ORDER_CARD_TEXT.TRACK}
                             </a>
                         )}
                     </div>
@@ -276,7 +277,7 @@ export const OrderCard = ({
             {showBanner && (
                 <div className="px-5 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-700 font-medium flex items-center gap-2">
                     <Package size={13} />
-                    {matchingItems.length} of {order.items.length} items match this filter — others have a different status.
+                    {matchingItems.length} {ORDER_CARD_TEXT.MATCH_FILTER_1} {order.items.length} {ORDER_CARD_TEXT.MATCH_FILTER_2}
                 </div>
             )}
 

@@ -1,9 +1,10 @@
-﻿'use client';
+'use client';
 import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { DocumentCard } from "./DocumentCard";
 import { DocumentModal } from "./DocumentModal";
 import { VendorDocument } from "@/utils/Types";
 import { useState } from "react";
+import { DOCUMENT_SECTION_TEXT } from "@/constants/adminText";
 
 export function DocumentsSection({ documents }: { documents: VendorDocument[] }) {
     const [activeDoc, setActiveDoc] = useState<VendorDocument | null>(null);
@@ -14,7 +15,7 @@ export function DocumentsSection({ documents }: { documents: VendorDocument[] })
         return (
             <div className="mt-6 border-2 border-dashed border-gray-200 rounded-xl px-8 py-8 flex flex-col items-center gap-2 text-gray-400">
                 <FileText size={28} className="text-gray-300" />
-                <p className="text-sm font-medium">No documents submitted</p>
+                <p className="text-sm font-medium">{DOCUMENT_SECTION_TEXT.NO_DOCUMENTS_SUBMITTED}</p>
             </div>
         );
     }
@@ -33,7 +34,7 @@ export function DocumentsSection({ documents }: { documents: VendorDocument[] })
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="font-bold text-lg flex items-center gap-2">
                         <FileText size={18} className="text-gray-500" />
-                        Submitted Documents
+                        {DOCUMENT_SECTION_TEXT.SUBMITTED_DOCUMENTS}
                         <span className="text-xs font-normal text-gray-400 bg-gray-100 rounded-full px-2 py-0.5 ml-1">
                             {documents.length}
                         </span>
@@ -74,7 +75,7 @@ export function DocumentsSection({ documents }: { documents: VendorDocument[] })
                             {status.charAt(0).toUpperCase() + status.slice(1)}
                         </span>
                     ))}
-                    <span className="text-xs text-gray-400 ml-auto italic">Click any document to preview</span>
+                    <span className="text-xs text-gray-400 ml-auto italic">{DOCUMENT_SECTION_TEXT.CLICK_TO_PREVIEW}</span>
                 </div>
             </div>
         </>

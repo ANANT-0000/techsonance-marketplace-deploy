@@ -16,6 +16,7 @@ import {
 import { useImageColors } from "@/hooks/useImageColors";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VIDEO_HERO_DEFAULT } from "@/constants/storefront";
+import { INTERACTIVE_HERO_TEXT } from "@/constants/customerText";
 
 export enum HeroLayout {
   CENTER_OVERLAY = "center-overlay",
@@ -127,9 +128,9 @@ export function InteractiveHero({
       : [
           {
             image_url: undefined,
-            title: "Define Your Modern Aesthetic",
-            subtitle: "SEASON 2024 COLLECTION",
-            btn_text: "Shop Now",
+            title: INTERACTIVE_HERO_TEXT.DEFAULT_TITLE,
+            subtitle: INTERACTIVE_HERO_TEXT.DEFAULT_SUBTITLE,
+            btn_text: INTERACTIVE_HERO_TEXT.SHOP_NOW,
             btn_link: "/store",
             layout: HeroLayout.CENTER_OVERLAY,
             bg_style: HeroBgStyle.GRADIENT,
@@ -290,7 +291,7 @@ export function InteractiveHero({
                         transition={{ delay: 0.3, duration: 0.6 }}
                         className="text-3xl sm:text-5xl lg:text-6xl font-serif tracking-tight leading-[1.1] mb-6"
                       >
-                        {currentSlide.title || "Modern Collection"}
+                        {currentSlide.title || INTERACTIVE_HERO_TEXT.DEFAULT_TITLE}
                       </motion.h1>
 
                       {currentSlide.btn_text && (
@@ -345,7 +346,7 @@ export function InteractiveHero({
                       transition={{ delay: 0.3, duration: 0.6 }}
                       className="text-4xl sm:text-5xl lg:text-5xl font-serif tracking-tight leading-[1.15] mb-6"
                     >
-                      {currentSlide.title || "Modern Collection"}
+                      {currentSlide.title || INTERACTIVE_HERO_TEXT.DEFAULT_TITLE}
                     </motion.h1>
 
                     {currentSlide.btn_text && (

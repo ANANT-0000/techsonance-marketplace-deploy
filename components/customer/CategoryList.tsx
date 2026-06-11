@@ -1,6 +1,7 @@
 'use client';
 import {type  CategoryList } from "@/utils/Types";
 import { motion } from "motion/react";
+import { CATEGORY_LIST_TEXT } from "@/constants/customerText";
 
 export function CategoryList({ categories, styles }: { categories?: CategoryList[], styles?: string }) {
 
@@ -34,7 +35,7 @@ export function CategoryList({ categories, styles }: { categories?: CategoryList
                 viewport={{ once: true }}
                 className="text-2xl text-center font-bold mt-8 mb-8"
             >
-                Our Categories
+                {CATEGORY_LIST_TEXT.TITLE}
             </motion.h2>
 
             <motion.ul

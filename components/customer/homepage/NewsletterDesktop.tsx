@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 import { useState } from "react";
 
 import { NEWSLETTER_DEFAULT } from "@/constants/storefront";
+import { NEWSLETTER_TEXT } from "@/constants/customerText";
 
 export function NewsletterDesktop({ getField }: { getField: (k: string) => any }) {
   const [email, setEmail] = useState("");
@@ -32,7 +33,7 @@ export function NewsletterDesktop({ getField }: { getField: (k: string) => any }
               </p>
             )}
             <h2 className="text-4xl font-serif tracking-tight leading-tight mb-4">
-              {getField("newsletter_title") || "Subscribe"}
+              {getField("newsletter_title") || NEWSLETTER_TEXT.SUBSCRIBE}
             </h2>
             <p className="text-sm text-gray-400 font-light leading-relaxed max-w-md">
               {getField("newsletter_desc")}
@@ -54,7 +55,7 @@ export function NewsletterDesktop({ getField }: { getField: (k: string) => any }
                   <input
                     type="email"
                     required
-                    placeholder="Enter your email address"
+                    placeholder={NEWSLETTER_TEXT.PLACEHOLDER}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="flex-1 bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
@@ -63,7 +64,7 @@ export function NewsletterDesktop({ getField }: { getField: (k: string) => any }
                     type="submit"
                     className="bg-white text-black hover:bg-gray-100 transition-colors px-6 py-3.5 text-[11px] font-bold uppercase tracking-widest rounded-xl whitespace-nowrap"
                   >
-                    {getField("newsletter_btn_text") || "Subscribe"}
+                    {getField("newsletter_btn_text") || NEWSLETTER_TEXT.SUBSCRIBE}
                   </button>
                 </div>
                 {disclaimer && (

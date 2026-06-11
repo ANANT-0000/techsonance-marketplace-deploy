@@ -12,7 +12,7 @@ import {
   CustomerRegisterSchemaType,
 } from "@/utils/validation";
 import { getCompanyDomain } from "@/lib/get-domain";
-import { BASE_API_URL } from "@/constants";
+import { BASE_API_URL, AUTH_TEXT } from "@/constants";
 
 export default function CustomerRegisterPage() {
   const router = useRouter();
@@ -59,12 +59,11 @@ export default function CustomerRegisterPage() {
         router.push("/auth/customerLogin?registered=true");
       } else {
         setServerError(
-          response?.message || "Registration failed. Please try again.",
+          response?.message || AUTH_TEXT.REGISTER.FAIL_GENERIC,
         );
       }
     } catch (err: any) {
-      console.error("Registration error:", err);
-      setServerError(err.message || "Something went wrong. Please try again.");
+      setServerError(err.message || AUTH_TEXT.REGISTER.FAIL_SERVER);
     } finally {
       setIsSubmitting(false);
     }
@@ -77,12 +76,11 @@ export default function CustomerRegisterPage() {
     try {
       const domain = await getCompanyDomain();
       if (domain == null) {
-        throw new Error("Company domain not found");
+        throw new Error(AUTH_TEXT.REGISTER.DOMAIN_NOT_FOUND);
       }
       window.location.href = `${BASE_API_URL}/v1/auth/google?domain=${encodeURIComponent(domain)}`;
     } catch (error) {
-      console.error("Google OAuth error:", error);
-      setServerError("Failed to initialize Google sign-in. Please try again.");
+      setServerError(AUTH_TEXT.REGISTER.GOOGLE_INIT_FAIL);
       setIsGoogleLoading(false);
     }
   };
@@ -94,10 +92,10 @@ export default function CustomerRegisterPage() {
         <div className="flex flex-col px-6 py-8 lg:px-12 lg:py-10 justify-center flex-1">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Create an account
+              {AUTH_TEXT.REGISTER.TITLE}
             </h1>
             <p className="text-sm text-slate-600">
-              Join thousands of happy customers
+              {AUTH_TEXT.REGISTER.SUBTITLE}
             </p>
           </div>
 
@@ -146,8 +144,8 @@ export default function CustomerRegisterPage() {
             </svg>
             <span>
               {isGoogleLoading
-                ? "Connecting to Google..."
-                : "Continue with Google"}
+                ? AUTH_TEXT.REGISTER.GOOGLE_LOADING
+                : AUTH_TEXT.REGISTER.GOOGLE_BTN}
             </span>
           </button>
 
@@ -155,7 +153,7 @@ export default function CustomerRegisterPage() {
           <div className="relative flex items-center my-6">
             <div className="flex-grow border-t border-slate-300"></div>
             <span className="flex-shrink-0 mx-4 text-slate-500 text-sm font-medium">
-              or sign up with email
+              {AUTH_TEXT.REGISTER.OR_EMAIL}
             </span>
             <div className="flex-grow border-t border-slate-300"></div>
           </div>
@@ -242,20 +240,20 @@ export default function CustomerRegisterPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Creating Account...
+                  {AUTH_TEXT.REGISTER.BTN_LOADING}
                 </>
               ) : (
-                "Create Account"
+                AUTH_TEXT.REGISTER.BTN_DEFAULT
               )}
             </button>
 
             <p className="text-center text-sm text-slate-600 pt-4">
-              Already have an account?{" "}
+              {AUTH_TEXT.REGISTER.ALREADY_HAVE}
               <Link
                 href="/auth/customerLogin"
                 className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition-colors"
               >
-                Log in
+                {AUTH_TEXT.REGISTER.LOGIN_LINK}
               </Link>
             </p>
           </form>
@@ -266,10 +264,10 @@ export default function CustomerRegisterPage() {
           {" "}
           <div className=" flex flex-col justify-center items-center text-white p-12  ">
             <h2 className="text-4xl font-bold mb-4 text-center">
-              Join Our Community
+              {AUTH_TEXT.REGISTER.COMMUNITY_TITLE}
             </h2>
             <p className="text-lg text-center text-blue-100">
-              Discover amazing products and exclusive deals
+              {AUTH_TEXT.REGISTER.COMMUNITY_SUB}
             </p>
           </div>
           {/* <div className="absolute inset-0 bg-black/20"></div> */}

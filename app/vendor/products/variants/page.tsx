@@ -19,6 +19,7 @@ import { Address } from "@/utils/Types";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { authToken } from "@/utils/authToken";
 import { TableRowSkeleton } from "@/components/common/skeletons/TableRowSkeleton";
+import { INVENTORY_TEXT, AlertSeverity, StatusFilter } from "@/constants";
 
 interface InventoryLocation {
   inventory_id: string;
@@ -47,7 +48,7 @@ interface LowStockAlert {
   currentStock: number;
   warehouseName: string;
   isOutOfStock: boolean;
-  severity: "out_of_stock" | "low_stock" | "in_stock";
+  severity: AlertSeverity;
 }
 
 export const InventoryStats = ({
@@ -59,26 +60,26 @@ export const InventoryStats = ({
     <div className="flex gap-4 my-6 flex-wrap">
       {[
         {
-          label: "Total SKUs",
+          label: INVENTORY_TEXT.STATS.TOTAL_SKUS,
           value: inventory.length,
           color: "text-blue-600",
           bg: "bg-blue-50 border-blue-200",
         },
         {
-          label: "Low Stock",
+          label: INVENTORY_TEXT.STATS.LOW_STOCK,
           value: inventory.filter((i) => i.isLowStock && !i.isOutOfStock)
             .length,
           color: "text-yellow-600",
           bg: "bg-yellow-50 border-yellow-200",
         },
         {
-          label: "Out of Stock",
+          label: INVENTORY_TEXT.STATS.OUT_OF_STOCK,
           value: inventory.filter((i) => i.isOutOfStock).length,
           color: "text-red-600",
           bg: "bg-red-50 border-red-200",
         },
         {
-          label: "Healthy",
+          label: INVENTORY_TEXT.STATS.HEALTHY,
           value: inventory.filter((i) => !i.isLowStock && !i.isOutOfStock)
             .length,
           color: "text-green-600",
@@ -109,7 +110,6 @@ async function fetchInventory(
     cache: "no-cache",
   });
   const json = await res.json();
-  console.log("inv json", json);
   return json.data ?? [];
 }
 
@@ -122,8 +122,6 @@ async function fetchAlerts(
     cache: "no-cache",
   });
   const json = await res.json();
-  console.log("alert json", json);
-
   return json.data ?? [];
 }
 
@@ -151,8 +149,8 @@ export default function InventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [alerts, setAlerts] = useState<LowStockAlert[]>([]);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "low" | "out">(
-    "all",
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(
+    StatusFilter.ALL,
   );
   const [loading, setLoading] = useState(true);
   const [editId, setEditId] = useState<string | null>(null);
@@ -185,9 +183,9 @@ export default function InventoryPage() {
       item.variant_name.toLowerCase().includes(search.toLowerCase()) ||
       item.sku.toLowerCase().includes(search.toLowerCase());
     const matchStatus =
-      statusFilter === "all" ||
-      (statusFilter === "out" && item.isOutOfStock) ||
-      (statusFilter === "low" && item.isLowStock && !item.isOutOfStock);
+      statusFilter === StatusFilter.ALL ||
+      (statusFilter === StatusFilter.OUT && item.isOutOfStock) ||
+      (statusFilter === StatusFilter.LOW && item.isLowStock && !item.isOutOfStock);
     return matchSearch && matchStatus;
   });
   const totalPages = Math.ceil(filtered.length / pageSize);
@@ -219,7 +217,7 @@ export default function InventoryPage() {
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle className="text-orange-500" size={20} />
                 <h2 className="font-bold text-orange-700">
-                  Stock Alerts ({alerts.length} item
+                  {INVENTORY_TEXT.ALERTS.TITLE} ({alerts.length} item
                   {alerts.length !== 1 ? "s" : ""})
                 </h2>
               </div>
@@ -243,8 +241,8 @@ export default function InventoryPage() {
                     </span>
                     <span className="font-bold">
                       {alert.isOutOfStock
-                        ? "Out of stock"
-                        : `${alert.currentStock} left`}
+                        ? INVENTORY_TEXT.ALERTS.OUT_OF_STOCK
+                        : `${alert.currentStock} ${INVENTORY_TEXT.ALERTS.LEFT}`}
                     </span>
                     <span className="text-xs opacity-70">
                       · {alert.warehouseName}
@@ -264,7 +262,7 @@ export default function InventoryPage() {
             <input
               type="text"
               className="py-2 px-3 w-64 text-sm outline-none bg-transparent"
-              placeholder="Search by name or SKU…"
+              placeholder={INVENTORY_TEXT.FILTERS.SEARCH_PLACEHOLDER}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -274,7 +272,7 @@ export default function InventoryPage() {
           </span>
 
           <div className="flex gap-2">
-            {(["all", "low", "out"] as const).map((f) => (
+            {[StatusFilter.ALL, StatusFilter.LOW, StatusFilter.OUT].map((f) => (
               <button
                 key={f}
                 onClick={() => {
@@ -283,19 +281,19 @@ export default function InventoryPage() {
                 }}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-colors ${
                   statusFilter === f
-                    ? f === "out"
+                    ? f === StatusFilter.OUT
                       ? "bg-red-100 border-red-400 text-red-700"
-                      : f === "low"
+                      : f === StatusFilter.LOW
                         ? "bg-yellow-100 border-yellow-400 text-yellow-700"
                         : "bg-blue-100 border-blue-400 text-blue-700"
                     : "bg-white border-gray-300 text-gray-600"
                 }`}
               >
-                {f === "all"
-                  ? "All"
-                  : f === "low"
-                    ? "Low Stock"
-                    : "Out of Stock"}
+                {f === StatusFilter.ALL
+                  ? INVENTORY_TEXT.FILTERS.ALL
+                  : f === StatusFilter.LOW
+                    ? INVENTORY_TEXT.FILTERS.LOW_STOCK
+                    : INVENTORY_TEXT.FILTERS.OUT_OF_STOCK}
               </button>
             ))}
             <button
@@ -303,7 +301,7 @@ export default function InventoryPage() {
               className="px-4 py-2 rounded-xl text-sm font-semibold border-2 border-gray-300 bg-white text-gray-600 flex items-center gap-2 hover:bg-gray-50"
             >
               <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-              Refresh
+              {INVENTORY_TEXT.FILTERS.REFRESH}
             </button>
           </div>
         </div>
@@ -314,26 +312,26 @@ export default function InventoryPage() {
             <thead>
               <tr className="bg-gray-50 text-left">
                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
-                  Product
+                  {INVENTORY_TEXT.TABLE.HEADERS.PRODUCT}
                 </th>
                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
-                  SKU
+                  {INVENTORY_TEXT.TABLE.HEADERS.SKU}
                 </th>
                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
-                  Active
+                  {INVENTORY_TEXT.TABLE.HEADERS.ACTIVE}
                 </th>
 
                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
-                  Warehouse
+                  {INVENTORY_TEXT.TABLE.HEADERS.WAREHOUSE}
                 </th>
                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
-                  Stock
+                  {INVENTORY_TEXT.TABLE.HEADERS.STOCK}
                 </th>
                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
-                  Status
+                  {INVENTORY_TEXT.TABLE.HEADERS.STATUS}
                 </th>
                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
-                  Price
+                  {INVENTORY_TEXT.TABLE.HEADERS.PRICE}
                 </th>
                 {/* <th className="p-4 border-b border-gray-200 font-semibold text-gray-600 text-center">Adjust</th> */}
               </tr>
@@ -345,7 +343,7 @@ export default function InventoryPage() {
                 <tr>
                   <td colSpan={8} className="p-12 text-center text-gray-400">
                     <Package size={40} className="mx-auto mb-3 opacity-30" />
-                    No inventory items found.
+                    {INVENTORY_TEXT.TABLE.NO_ITEMS}
                   </td>
                 </tr>
               ) : (
@@ -448,15 +446,15 @@ export default function InventoryPage() {
                     <td className="p-4">
                       {item.isOutOfStock ? (
                         <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-300 text-xs font-bold px-2.5 py-1 rounded-full">
-                          <XCircle size={12} /> Out of Stock
+                          <XCircle size={12} /> {INVENTORY_TEXT.TABLE.STATUS_OUT}
                         </span>
                       ) : item.isLowStock ? (
                         <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 border border-yellow-300 text-xs font-bold px-2.5 py-1 rounded-full">
-                          <AlertTriangle size={12} /> Low Stock
+                          <AlertTriangle size={12} /> {INVENTORY_TEXT.TABLE.STATUS_LOW}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 border border-green-300 text-xs font-bold px-2.5 py-1 rounded-full">
-                          <CheckCircle size={12} /> In Stock
+                          <CheckCircle size={12} /> {INVENTORY_TEXT.TABLE.STATUS_IN}
                         </span>
                       )}
                     </td>
@@ -487,7 +485,7 @@ export default function InventoryPage() {
         {/* ── Pagination ──────────────────────────────────────────── */}
         <div className="flex justify-between items-center mt-4">
           <p className="text-sm text-gray-500">
-            Showing {currentData.length} of {filtered.length} records
+            {INVENTORY_TEXT.PAGINATION.SHOWING} {currentData.length} {INVENTORY_TEXT.PAGINATION.OF} {filtered.length} {INVENTORY_TEXT.PAGINATION.RECORDS}
           </p>
           <Pagination
             setCount={setCount}

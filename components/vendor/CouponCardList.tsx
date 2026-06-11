@@ -1,6 +1,7 @@
-﻿import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Loader2, Tag, Calendar, Clock, Zap, Users, ShoppingCart, Calculator } from "lucide-react";
 import { Coupon } from '@/utils/Types';
+import { COUPON_CARD_TEXT } from '@/constants/vendorText';
 
 export interface CouponCardListProps {
     coupons: Coupon[];
@@ -12,7 +13,7 @@ export const CouponCardList = ({ coupons, isLoading, onEdit }: CouponCardListPro
     
     // Date Formatter helper
     const formatDate = (dateString: string) => {
-        if (!dateString) return "N/A";
+        if (!dateString) return COUPON_CARD_TEXT.NA;
         return new Date(dateString).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
     };
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -39,7 +40,7 @@ useEffect(() => {
         <div className="mb-8">
             <div className="flex justify-between items-center mb-4 px-1">
                 <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    <Tag size={20} className="text-blue-600" /> Active Promotions
+                    <Tag size={20} className="text-blue-600" /> {COUPON_CARD_TEXT.TITLE}
                 </h2>
             </div>
 
@@ -50,8 +51,8 @@ useEffect(() => {
             ) : !coupons || coupons.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 bg-white border border-gray-200 rounded-2xl border-dashed">
                     <Tag size={40} className="text-gray-300 mb-3" />
-                    <p className="text-sm font-medium text-gray-600">No promotions available</p>
-                    <p className="text-xs text-gray-400 mt-1">Create a promo code to offer discounts to your customers.</p>
+                    <p className="text-sm font-medium text-gray-600">{COUPON_CARD_TEXT.EMPTY.TITLE}</p>
+                    <p className="text-xs text-gray-400 mt-1">{COUPON_CARD_TEXT.EMPTY.DESC}</p>
                 </div>
             ) : (
                 // Used Tailwind arbitrary variants to hide the scrollbar cleanly
@@ -84,11 +85,11 @@ useEffect(() => {
                                             <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md ${
                                                 isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                                             }`}>
-                                                {isActive ? 'Active' : 'Expired'}
+                                                {isActive ? COUPON_CARD_TEXT.STATUS.ACTIVE : COUPON_CARD_TEXT.STATUS.EXPIRED}
                                             </span>
                                             {isAutoApplied && (
                                                 <span className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider rounded-md bg-blue-100 text-blue-700 flex items-center gap-1">
-                                                    <Zap size={10} fill="currentColor" /> Auto
+                                                    <Zap size={10} fill="currentColor" /> {COUPON_CARD_TEXT.STATUS.AUTO}
                                                 </span>
                                             )}
                                         </div>
@@ -97,11 +98,11 @@ useEffect(() => {
                                     <div className="space-y-3 mb-5">
                                         {/* Primary Highlight */}
                                         <div className="bg-blue-50/50 rounded-xl p-3 border border-blue-100 flex justify-between items-center">
-                                            <span className="text-blue-800 font-semibold text-sm">Discount</span>
+                                            <span className="text-blue-800 font-semibold text-sm">{COUPON_CARD_TEXT.DISCOUNT.LABEL}</span>
                                             <span className="font-black text-blue-600 text-lg">
                                                 {coupon.discount_type === 'percentage' 
-                                                    ? `${coupon.discount_value}% OFF` 
-                                                    : `₹${coupon.discount_value} OFF`}
+                                                    ? `${coupon.discount_value}${COUPON_CARD_TEXT.DISCOUNT.PCT_OFF}` 
+                                                    : `₹${coupon.discount_value}${COUPON_CARD_TEXT.DISCOUNT.AMT_OFF}`}
                                             </span>
                                         </div>
 
@@ -109,7 +110,7 @@ useEffect(() => {
                                         <div className="grid grid-cols-2 gap-2 text-xs">
                                             {/* Dates */}
                                             <div className="col-span-2 flex items-center justify-between text-gray-600 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                                                <span className="flex items-center gap-1.5 font-medium"><Calendar size={13}/> Validity</span>
+                                                <span className="flex items-center gap-1.5 font-medium"><Calendar size={13}/> {COUPON_CARD_TEXT.LABELS.VALIDITY}</span>
                                                 <span className={`font-semibold ${isExpired ? 'text-red-500' : 'text-gray-800'}`}>
                                                     {formatDate(coupon.valid_from)} - {formatDate(coupon.valid_to)}
                                                 </span>
@@ -120,13 +121,13 @@ useEffect(() => {
                                                 <div className="col-span-2 grid grid-cols-2 gap-2">
                                                     {coupon.min_order_amount && (
                                                         <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100 flex flex-col justify-center">
-                                                            <span className="text-gray-400 text-[9px] uppercase font-bold tracking-wide">Min Spend</span>
+                                                            <span className="text-gray-400 text-[9px] uppercase font-bold tracking-wide">{COUPON_CARD_TEXT.LABELS.MIN_SPEND}</span>
                                                             <span className="font-semibold text-gray-800 mt-0.5">₹{coupon.min_order_amount}</span>
                                                         </div>
                                                     )}
                                                     {coupon.max_discount_amount && (
                                                         <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100 flex flex-col justify-center">
-                                                            <span className="text-gray-400 text-[9px] uppercase font-bold tracking-wide">Max Cap</span>
+                                                            <span className="text-gray-400 text-[9px] uppercase font-bold tracking-wide">{COUPON_CARD_TEXT.LABELS.MAX_CAP}</span>
                                                             <span className="font-semibold text-gray-800 mt-0.5">₹{coupon.max_discount_amount}</span>
                                                         </div>
                                                     )}
@@ -139,19 +140,19 @@ useEffect(() => {
                                                     {coupon.max_uses_per_user && (
                                                         <div className="flex items-center gap-1.5 text-gray-500">
                                                             <Users size={13} /> 
-                                                            <span><strong className="text-gray-700">{coupon.max_uses_per_user}</strong> / user</span>
+                                                            <span><strong className="text-gray-700">{coupon.max_uses_per_user}</strong>{COUPON_CARD_TEXT.LABELS.PER_USER}</span>
                                                         </div>
                                                     )}
                                                     {coupon.max_uses && (
                                                         <div className="flex items-center gap-1.5 text-gray-500">
                                                             <ShoppingCart size={13} /> 
-                                                            <span><strong className="text-gray-700">{coupon.max_uses}</strong> total</span>
+                                                            <span><strong className="text-gray-700">{coupon.max_uses}</strong>{COUPON_CARD_TEXT.LABELS.TOTAL}</span>
                                                         </div>
                                                     )}
                                                      {coupon.total_used !== undefined && (
                                                         <div className="flex items-center gap-1.5 text-gray-500">
                                                            <Calculator size={13} />
-                                                            <span><strong className="text-gray-700">{coupon.total_used}</strong> used</span>
+                                                            <span><strong className="text-gray-700">{coupon.total_used}</strong>{COUPON_CARD_TEXT.LABELS.USED}</span>
                                                         </div> 
                                                     )}
                                                  
@@ -165,7 +166,7 @@ useEffect(() => {
                                     onClick={() => onEdit(coupon.id)}
                                     className="w-full py-2.5 bg-white hover:bg-gray-50 text-gray-700 text-sm font-bold rounded-xl transition-colors border border-gray-200 shadow-sm mt-2"
                                 >
-                                    Edit Rules
+                                    {COUPON_CARD_TEXT.LABELS.EDIT_RULES}
                                 </button>
                             </div>
                         );

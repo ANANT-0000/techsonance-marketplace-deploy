@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from 'react';
 import { UserCheck, ShieldCheck, CheckCircle2, X, Mail, ArrowRight } from 'lucide-react';
 import AxiosAPI from '@/lib/axios';
+import { ACCOUNT_REACTIVATION_TEXT } from '@/constants/customerText';
 
 interface AccountReactivationProps {
     isOpen: boolean;
@@ -66,8 +67,7 @@ export function AccountReactivation({
         setIsLoading(true);
         await AxiosAPI.patch(`v1/users/reactivate/confirm`, { otp: otpString ,email:emailMasked})
         .catch((error) => {
-            console.error('Error verifying reactivation:', error);
-            // toast
+            // Error handling logic
         })
         
         setIsLoading(false);
@@ -130,10 +130,10 @@ export function AccountReactivation({
                                 <UserCheck size={36} strokeWidth={2} />
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                Account Deactivated
+                                {ACCOUNT_REACTIVATION_TEXT.HEADER_INFO}
                             </h3>
                             <p className="text-sm text-gray-500 mb-8 px-2 leading-relaxed">
-                                Welcome back! It looks like you previously deactivated your account. Would you like to restore your access and reactivate your profile now?
+                                {ACCOUNT_REACTIVATION_TEXT.DESC_INFO}
                             </p>
 
                             <div className="flex flex-col gap-3 w-full">
@@ -145,7 +145,7 @@ export function AccountReactivation({
                                     {isLoading ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                                     ) : (
-                                        <>Yes, Reactivate My Account <ArrowRight size={16} /></>
+                                        <>{ACCOUNT_REACTIVATION_TEXT.BTN_REACTIVATE} <ArrowRight size={16} /></>
                                     )}
                                 </button>
                                 <button
@@ -153,7 +153,7 @@ export function AccountReactivation({
                                     disabled={isLoading}
                                     className="w-full py-3 rounded-xl bg-white border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
                                 >
-                                    Cancel
+                                    {ACCOUNT_REACTIVATION_TEXT.BTN_CANCEL}
                                 </button>
                             </div>
                         </div>
@@ -166,10 +166,10 @@ export function AccountReactivation({
                                 <ShieldCheck size={36} strokeWidth={2} />
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                Verify Reactivation
+                                {ACCOUNT_REACTIVATION_TEXT.HEADER_OTP}
                             </h3>
                             <p className="text-sm text-gray-500 mb-8 px-2 leading-relaxed">
-                                We sent a 6-digit security code to <span className="font-semibold text-gray-800">{emailMasked}</span>. Enter it below to restore your account.
+                                {ACCOUNT_REACTIVATION_TEXT.DESC_OTP_1}<span className="font-semibold text-gray-800">{emailMasked}</span>{ACCOUNT_REACTIVATION_TEXT.DESC_OTP_2}
                             </p>
 
                             <form onSubmit={handleVerifyReactivation} className="w-full">
@@ -198,22 +198,22 @@ export function AccountReactivation({
                                     {isLoading ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                                     ) : (
-                                        "Verify & Restore Account"
+                                        ACCOUNT_REACTIVATION_TEXT.BTN_VERIFY
                                     )}
                                 </button>
                             </form>
 
                             <div className="mt-6 text-sm text-gray-500">
-                                Didn't receive the code?{" "}
+                                {ACCOUNT_REACTIVATION_TEXT.RESEND_PROMPT}
                                 {timeLeft > 0 ? (
-                                    <span className="font-medium text-gray-400">Resend in {timeLeft}s</span>
+                                    <span className="font-medium text-gray-400">{ACCOUNT_REACTIVATION_TEXT.RESEND_IN}{timeLeft}s</span>
                                 ) : (
                                     <button 
                                         onClick={() => { setTimeLeft(30); setOtp(new Array(6).fill("")); handleSendCode(); }} 
                                         disabled={isLoading}
                                         className="font-semibold text-blue-600 hover:text-blue-700 underline underline-offset-2"
                                     >
-                                        Resend OTP
+                                        {ACCOUNT_REACTIVATION_TEXT.RESEND_BTN}
                                     </button>
                                 )}
                             </div>
@@ -227,17 +227,17 @@ export function AccountReactivation({
                                 <CheckCircle2 size={48} strokeWidth={2} />
                             </div>
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                                Welcome Back!
+                                {ACCOUNT_REACTIVATION_TEXT.HEADER_SUCCESS}
                             </h3>
                             <p className="text-sm text-gray-500 mb-8 px-2 leading-relaxed">
-                                Your account has been successfully reactivated. All your preferences, orders, and data have been fully restored.
+                                {ACCOUNT_REACTIVATION_TEXT.DESC_SUCCESS}
                             </p>
 
                             <button
                                 onClick={onSuccess}
                                 className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition-colors flex justify-center items-center gap-2"
                             >
-                                Continue to Dashboard <ArrowRight size={16} />
+                                {ACCOUNT_REACTIVATION_TEXT.BTN_CONTINUE} <ArrowRight size={16} />
                             </button>
                         </div>
                     )}

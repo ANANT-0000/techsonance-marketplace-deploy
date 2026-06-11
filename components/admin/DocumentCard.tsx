@@ -1,7 +1,8 @@
-﻿'use client';
+'use client';
 import { formatStructure, isImageUrl, isPdfUrl } from "@/lib/utils";
 import { VendorDocument } from "@/utils/Types";
 import { FileText, ZoomIn } from "lucide-react";
+import { DOCUMENT_CARD_TEXT } from "@/constants/adminText";
 
 export function DocumentCard({
     doc,
@@ -43,7 +44,7 @@ export function DocumentCard({
                 ) : isPdf ? (
                     <div className="flex flex-col items-center gap-1 text-red-400">
                         <FileText size={32} />
-                        <span className="text-xs font-bold tracking-widest text-red-300">PDF</span>
+                        <span className="text-xs font-bold tracking-widest text-red-300">{DOCUMENT_CARD_TEXT.PDF}</span>
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                             <ZoomIn size={20} className="text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
@@ -51,7 +52,7 @@ export function DocumentCard({
                 ) : (
                     <div className="flex flex-col items-center gap-1 text-gray-400">
                         <FileText size={32} />
-                        <span className="text-xs">File</span>
+                        <span className="text-xs">{DOCUMENT_CARD_TEXT.FILE}</span>
                     </div>
                 )}
             </div>

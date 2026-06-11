@@ -63,7 +63,7 @@ export const WishlistServerSync = () => {
                     });
                 }
             } catch (err) {
-                console.error('Wishlist server sync failed:', err);
+                // Ignore failure
             }
         };
 

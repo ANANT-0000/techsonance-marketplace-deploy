@@ -8,6 +8,7 @@ import { BuyBtn } from "./BuyBtn";
 import { WishListBtn } from "./WishListBtn";
 import Link from "next/link";
 import { BuyBtnMode, Product } from "@/utils/Types";
+import { PRODUCT_LIST_TEXT } from "@/constants/customerText";
 
 export function ProductList({ products = [], styles }: { products?: Product[], styles?: string }) {
     const isMobile = useMediaQuery({ maxWidth: 768 });
@@ -127,7 +128,7 @@ function ProductCard({ product, isMobile }: { product: Product, isMobile: boolea
                                     ₹{Math.floor(Number(product.base_price) / (1 - Number(product.discount_percent) / 100))}
                                 </span>
                                 <span className="text-xs font-bold text-green-500">
-                                    {Math.round(Number(product.discount_percent))}% off
+                                    {Math.round(Number(product.discount_percent))}% {PRODUCT_LIST_TEXT.OFF}
                                 </span>
                             </div>
                         </>

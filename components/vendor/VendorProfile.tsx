@@ -1,4 +1,6 @@
-﻿export type CompanyProfile = {
+import { VENDOR_PROFILE_TEXT } from "@/constants/vendorText";
+
+export type CompanyProfile = {
   id: string;
   company_name: string;
   company_domain: string;
@@ -108,7 +110,7 @@ export function VendorProfile({
 
             <div>
               <p className="text-sm tracking-[0.2em] uppercase text-slate-400">
-                Vendor Profile
+                {VENDOR_PROFILE_TEXT.SECTIONS.VENDOR_PROFILE}
               </p>
 
               <h1 className="text-3xl font-semibold text-slate-900 mt-2 capitalize">
@@ -130,8 +132,8 @@ export function VendorProfile({
 
                 <Badge color="slate">
                   {profile?.vendor?.is_verified
-                    ? 'Verified'
-                    : 'Unverified'}
+                    ? VENDOR_PROFILE_TEXT.BADGES.VERIFIED
+                    : VENDOR_PROFILE_TEXT.BADGES.UNVERIFIED}
                 </Badge>
               </div>
             </div>
@@ -167,7 +169,7 @@ export function VendorProfile({
       <section className="grid lg:grid-cols-3 gap-6 mt-8">
         <div className="lg:col-span-2 rounded-[28px] bg-white p-8 shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
           <p className="text-sm uppercase tracking-widest text-slate-400">
-            About Store
+            {VENDOR_PROFILE_TEXT.SECTIONS.ABOUT_STORE}
           </p>
 
           <h2 className="text-xl font-semibold mt-3 text-slate-900">
@@ -176,13 +178,13 @@ export function VendorProfile({
 
           <p className="mt-5 leading-8 text-slate-600">
             {profile?.vendor?.store_description ||
-              'No store description added yet.'}
+              VENDOR_PROFILE_TEXT.INFO.NO_DESCRIPTION}
           </p>
         </div>
 
         <div className="rounded-[28px] bg-white p-8 shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
           <p className="text-sm uppercase tracking-widest text-slate-400">
-            Owner
+            {VENDOR_PROFILE_TEXT.SECTIONS.OWNER}
           </p>
 
           <h3 className="text-xl font-semibold mt-4 text-slate-900 capitalize">
@@ -191,29 +193,29 @@ export function VendorProfile({
           </h3>
 
           <p className="text-slate-500 mt-2">
-            Business owner
+            {VENDOR_PROFILE_TEXT.INFO.BUSINESS_OWNER}
           </p>
         </div>
 
         <InfoCard
-          label="Company Domain"
+          label={VENDOR_PROFILE_TEXT.INFO.COMPANY_DOMAIN}
           value={profile?.company_domain}
         />
 
         <InfoCard
-          label="Structure"
+          label={VENDOR_PROFILE_TEXT.INFO.STRUCTURE}
           value={profile?.company_structure}
         />
 
         <InfoCard
-          label="Font Family"
+          label={VENDOR_PROFILE_TEXT.INFO.FONT_FAMILY}
           value={profile?.companyBranding?.font_family}
         />
       </section>
 
       <section className="mt-8 rounded-[28px] bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.04)] flex flex-col lg:flex-row justify-between text-sm text-slate-500">
         <p>
-          Created:{' '}
+          {VENDOR_PROFILE_TEXT.INFO.CREATED}
           {profile?.created_at
             ? new Date(
                 profile.created_at
@@ -222,7 +224,7 @@ export function VendorProfile({
         </p>
 
         <p>
-          Updated:{' '}
+          {VENDOR_PROFILE_TEXT.INFO.UPDATED}
           {profile?.updated_at
             ? new Date(
                 profile.updated_at

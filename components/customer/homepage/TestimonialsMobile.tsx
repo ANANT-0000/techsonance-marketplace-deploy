@@ -1,11 +1,12 @@
 import { Star } from "lucide-react";
 import { TESTIMONIALS_DEFAULT } from "@/constants/storefront";
+import { TESTIMONIALS_TEXT } from "@/constants/customerText";
 
 export function TestimonialsMobile({ getField }: { getField: (k: string) => any }) {
   const cmsTestimonials = getField ? getField("social_proof_testimonials") : null;
   const testimonials = Array.isArray(cmsTestimonials) && cmsTestimonials.length > 0 ? cmsTestimonials : TESTIMONIALS_DEFAULT;
 
-  const title = (getField && getField("social_proof_title")) || "What Customers Say";
+  const title = (getField && getField("social_proof_title")) || TESTIMONIALS_TEXT.WHAT_CUSTOMERS_SAY_MOBILE;
 
   return (
     <section className=" testimonials_mobile py-8 px-4">

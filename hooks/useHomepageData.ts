@@ -58,9 +58,6 @@ export function useHomepageData() {
     try {
       // 1. Fetch CMS Home Page content (fresh from API first)
       try {
-        console.log(
-          `[useHomepageData] Fetching CMS page: /v1/cms/home?lang=${currentLang}`,
-        );
         const cmsRes = await AxiosAPI.get(`/v1/cms/home?lang=${currentLang}`);
         const cmsRow = cmsRes.data?.data ?? cmsRes.data;
         const rawContent = cmsRow?.content;
@@ -70,10 +67,6 @@ export function useHomepageData() {
             typeof rawContent === "string"
               ? JSON.parse(rawContent)
               : rawContent;
-          console.log(
-            "[useHomepageData] CMS content parsed successfully:",
-            parsedContent,
-          );
           setCmsContent(parsedContent);
           if (
             Array.isArray(parsedContent.hero_slides) &&
@@ -83,9 +76,6 @@ export function useHomepageData() {
           }
           cacheData(`${CMS_CACHE_KEY}_${currentLang}`, parsedContent);
         } else {
-          console.warn(
-            "[useHomepageData] CMS API returned no content — using cached or fallbacks.",
-          );
           if (!cmsContent) {
             const staleCached = localStorage.getItem(
               `${CMS_CACHE_KEY}_${currentLang}`,
@@ -106,10 +96,6 @@ export function useHomepageData() {
           }
         }
       } catch (err: any) {
-        console.error(
-          "[useHomepageData] CMS fetch FAILED — storefront will show fallbacks.",
-          err,
-        );
         if (!cmsContent) {
           const staleCached = localStorage.getItem(
             `${CMS_CACHE_KEY}_${currentLang}`,
@@ -181,10 +167,6 @@ export function useHomepageData() {
         }
       }
     } catch (error) {
-      console.error(
-        "[useHomepageData] Unexpected error during data refresh:",
-        error,
-      );
     } finally {
       setIsLoading(false);
     }

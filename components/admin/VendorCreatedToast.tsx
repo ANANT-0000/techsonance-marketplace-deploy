@@ -1,4 +1,5 @@
-﻿import { CheckCircle2, PartyPopper, X } from "lucide-react";
+import { CheckCircle2, PartyPopper, X } from "lucide-react";
+import { VENDOR_CREATED_TOAST_TEXT } from "@/constants/adminText";
 
 export function VendorCreatedToast({ vendorName, onClose }: { vendorName: string; onClose: () => void }) {
     return (
@@ -11,10 +12,9 @@ export function VendorCreatedToast({ vendorName, onClose }: { vendorName: string
                             <PartyPopper size={20} className="text-emerald-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="font-bold text-gray-900 text-sm">Vendor Created!</p>
+                            <p className="font-bold text-gray-900 text-sm">{VENDOR_CREATED_TOAST_TEXT.TITLE}</p>
                             <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                                <span className="font-semibold text-gray-700">{vendorName}</span> has been
-                                registered. Credentials will be sent to their email after review.
+                                <span className="font-semibold text-gray-700">{vendorName}</span>{VENDOR_CREATED_TOAST_TEXT.DESCRIPTION_SUFFIX}
                             </p>
                         </div>
                         <button
@@ -28,7 +28,7 @@ export function VendorCreatedToast({ vendorName, onClose }: { vendorName: string
                     <div className="mt-4 flex items-center gap-1.5">
                         <CheckCircle2 size={13} className="text-emerald-500" />
                         <span className="text-[11px] text-emerald-600 font-semibold">
-                            Registration submitted successfully
+                            {VENDOR_CREATED_TOAST_TEXT.SUCCESS_MSG}
                         </span>
                     </div>
                 </div>

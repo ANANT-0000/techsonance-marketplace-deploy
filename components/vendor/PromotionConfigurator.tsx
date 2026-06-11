@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
   Select,
   SelectContent,
@@ -14,6 +14,7 @@ import { authToken } from '@/utils/authToken';
 import { RootState } from '@/lib/store';
 import { useAppSelector } from '@/hooks/reduxHooks';
 import { fetchVendorProductsOptions } from '@/utils/vendorApiClient';
+import { PROMO_CONFIG_TEXT } from '@/constants/vendorText';
 
 // ── Reusable Styles ──
 const fieldBase =
@@ -93,7 +94,7 @@ function MultiVariantSelect({
       <div className="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100 max-h-48 overflow-y-auto">
         {variantOptions.length === 0 && (
           <p className="px-3 py-2 text-xs text-gray-400 italic">
-            Loading variants…
+            {PROMO_CONFIG_TEXT.COMMON.LOADING_VARIANTS}
           </p>
         )}
         {variantOptions.map((opt) => {
@@ -120,7 +121,7 @@ function MultiVariantSelect({
                 </p>
                 {(opt.sku || opt.price !== undefined) && (
                   <p className="text-xs text-gray-400 truncate">
-                    {opt.sku && `SKU: ${opt.sku}`}
+                    {opt.sku && `${PROMO_CONFIG_TEXT.COMMON.SKU}: ${opt.sku}`}
                     {opt.sku && opt.price !== undefined && " · "}
                     {opt.price !== undefined && `₹${opt.price}`}
                   </p>
@@ -134,7 +135,7 @@ function MultiVariantSelect({
                       : "bg-red-50 text-red-500"
                   }`}
                 >
-                  {opt.stock > 0 ? `${opt.stock} left` : "Out"}
+                  {opt.stock > 0 ? `${opt.stock} ${PROMO_CONFIG_TEXT.COMMON.LEFT}` : PROMO_CONFIG_TEXT.COMMON.OUT}
                 </span>
               )}
             </label>
@@ -143,8 +144,8 @@ function MultiVariantSelect({
       </div>
       {selectedIds.length > 0 && (
         <p className="mt-1.5 text-xs text-blue-500 font-medium">
-          {selectedIds.length} variant{selectedIds.length > 1 ? "s" : ""}{" "}
-          selected
+          {selectedIds.length} {selectedIds.length > 1 ? PROMO_CONFIG_TEXT.COMMON.VARIANTS_S : PROMO_CONFIG_TEXT.COMMON.VARIANT_S}{" "}
+          {PROMO_CONFIG_TEXT.COMMON.SELECTED_VARIANTS}
         </p>
       )}
       {helperText && !selectedIds.length && (
@@ -189,22 +190,22 @@ function TieredDiscountBuilder({
           className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end bg-gray-50 rounded-xl p-3 border border-gray-100"
         >
           <div>
-            <label className={labelBase}>Min Cart (₹)</label>
+            <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MIN_CART}</label>
             <Input
               type="number"
               value={tier.min_cart}
               onChange={(e) => updateTier(i, "min_cart", e.target.value)}
-              placeholder="e.g. 500"
+              placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_500}
               className={fieldBase}
             />
           </div>
           <div>
-            <label className={labelBase}>Discount (%)</label>
+            <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.DISCOUNT_PCT}</label>
             <Input
               type="number"
               value={tier.percent ?? ""}
               onChange={(e) => updateTier(i, "percent", e.target.value)}
-              placeholder="e.g. 10"
+              placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_10}
               className={fieldBase}
             />
           </div>
@@ -212,7 +213,7 @@ function TieredDiscountBuilder({
             type="button"
             onClick={() => removeTier(i)}
             className="mb-0.5 h-9 w-9 flex items-center justify-center rounded-xl border border-red-200 text-red-400 hover:bg-red-50 transition-colors text-lg"
-            title="Remove tier"
+            title={PROMO_CONFIG_TEXT.ACTIONS.REMOVE_TIER}
           >
             ×
           </button>
@@ -223,7 +224,7 @@ function TieredDiscountBuilder({
         onClick={addTier}
         className="w-full py-2 rounded-xl border border-dashed border-blue-300 text-blue-500 text-xs font-semibold hover:bg-blue-50 transition-colors"
       >
-        + Add tier
+        {PROMO_CONFIG_TEXT.ACTIONS.ADD_TIER}
       </button>
     </div>
   );
@@ -254,13 +255,13 @@ function VariantSelect({
       <label className={labelBase}>{label}</label>
       <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger className={`${fieldBase} w-full`}>
-          <SelectValue placeholder="Select a variant…" />
+          <SelectValue placeholder={PROMO_CONFIG_TEXT.COMMON.SELECT_VARIANT} />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
             {variantOptions.length === 0 && (
               <SelectItem value="__loading__" disabled>
-                Loading…
+                {PROMO_CONFIG_TEXT.COMMON.LOADING}
               </SelectItem>
             )}
             {variantOptions.map((opt) => (
@@ -282,8 +283,8 @@ function VariantSelect({
       </Select>
       {selected && (
         <div className="mt-1.5 flex gap-3 text-xs text-gray-500">
-          {selected.sku && <span>SKU: {selected.sku}</span>}
-          {selected.price !== undefined && <span>Price: ₹{selected.price}</span>}
+          {selected.sku && <span>{PROMO_CONFIG_TEXT.COMMON.SKU}: {selected.sku}</span>}
+          {selected.price !== undefined && <span>{PROMO_CONFIG_TEXT.COMMON.PRICE}: ₹{selected.price}</span>}
           {selected.stock !== undefined && (
             <span
               className={
@@ -291,8 +292,8 @@ function VariantSelect({
               }
             >
               {selected.stock > 0
-                ? `${selected.stock} in stock`
-                : "Out of stock"}
+                ? `${selected.stock} ${PROMO_CONFIG_TEXT.COMMON.IN_STOCK}`
+                : PROMO_CONFIG_TEXT.COMMON.OUT_OF_STOCK}
             </span>
           )}
         </div>
@@ -355,7 +356,7 @@ export function PromotionConfigurator({
       const res = await fetchVendorProductsOptions(token);
       setVariantOptions(res.data ?? []);
     } catch (err) {
-      console.error("Failed to fetch variants", err);
+      // silently handle or log elsewhere
     } finally {
       setLoadingVariants(false);
     }
@@ -372,7 +373,7 @@ export function PromotionConfigurator({
     <div className="space-y-5">
       {/* ── Type Selector ── */}
       <div className="max-w-xs">
-        <label className={labelBase}>Promotion Type *</label>
+        <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.PROMO_TYPE}</label>
         <Select
           value={promoType}
           onValueChange={(v) => setPromoType(v as PromotionType)}
@@ -397,10 +398,10 @@ export function PromotionConfigurator({
         {/* ──────────── PERCENTAGE ──────────── */}
         {promoType === PromotionType.PERCENTAGE && (
           <>
-            <SectionLabel icon="%" label="Discount value" />
+            <SectionLabel icon="%" label={PROMO_CONFIG_TEXT.LABELS.DISCOUNT_VAL} />
 
             <div>
-              <label className={labelBase}>Discount Percentage *</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.DISCOUNT_PCT_AST}</label>
               <div className="relative">
                 <Input
                   type="number"
@@ -408,37 +409,37 @@ export function PromotionConfigurator({
                   max={100}
                   value={discountFields.pct_value ?? ""}
                   onChange={(e) => updateField("pct_value", e.target.value)}
-                  placeholder="e.g. 20"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_20}
                   className={fieldBase + " pr-8"}
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">
                   %
                 </span>
               </div>
-              <HelperText>Enter a value between 1 – 100.</HelperText>
+              <HelperText>{PROMO_CONFIG_TEXT.HINTS.PCT_RANGE}</HelperText>
             </div>
 
             <div>
-              <label className={labelBase}>Max Discount Cap (₹)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_CAP}</label>
               <div className="relative">
                 <Input
                   type="number"
                   value={discountFields.pct_cap ?? ""}
                   onChange={(e) => updateField("pct_cap", e.target.value)}
-                  placeholder="e.g. 500"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_500}
                   className={fieldBase + " pl-7"}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
                   ₹
                 </span>
               </div>
-              <HelperText>Leave blank for no cap.</HelperText>
+              <HelperText>{PROMO_CONFIG_TEXT.HINTS.NO_CAP}</HelperText>
             </div>
 
-            <SectionLabel icon="🛒" label="Cart eligibility" />
+            <SectionLabel icon="🛒" label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY} />
 
             <div>
-              <label className={labelBase}>Minimum Cart Value (₹)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}</label>
               <div className="relative">
                 <Input
                   type="number"
@@ -446,7 +447,7 @@ export function PromotionConfigurator({
                   onChange={(e) =>
                     updateField("min_cart_value", e.target.value)
                   }
-                  placeholder="e.g. 299"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_299}
                   className={fieldBase + " pl-7"}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -456,7 +457,7 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>Maximum Cart Value (₹)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_CART_VAL}</label>
               <div className="relative">
                 <Input
                   type="number"
@@ -464,7 +465,7 @@ export function PromotionConfigurator({
                   onChange={(e) =>
                     updateField("max_cart_value", e.target.value)
                   }
-                  placeholder="Optional"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.OPTIONAL}
                   className={fieldBase + " pl-7"}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -473,28 +474,28 @@ export function PromotionConfigurator({
               </div>
             </div>
 
-            <SectionLabel icon="🔁" label="Usage limits" />
+            <SectionLabel icon="🔁" label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS} />
 
             <div>
-              <label className={labelBase}>Max Uses (total)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
                 onChange={(e) => updateField("max_uses", e.target.value)}
-                placeholder="e.g. 1000"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_1000}
                 className={fieldBase}
               />
             </div>
 
             <div>
-              <label className={labelBase}>Max Uses Per Customer</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}</label>
               <Input
                 type="number"
                 value={discountFields.max_uses_per_customer ?? ""}
                 onChange={(e) =>
                   updateField("max_uses_per_customer", e.target.value)
                 }
-                placeholder="e.g. 1"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_1}
                 className={fieldBase}
               />
             </div>
@@ -504,10 +505,10 @@ export function PromotionConfigurator({
         {/* ──────────── FIXED AMOUNT ──────────── */}
         {promoType === PromotionType.FIXED_AMOUNT && (
           <>
-            <SectionLabel icon="₹" label="Discount amount" />
+            <SectionLabel icon="₹" label={PROMO_CONFIG_TEXT.LABELS.DISCOUNT_VAL} />
 
             <div className="col-span-2">
-              <label className={labelBase}>Amount Off (₹) *</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.AMOUNT_OFF}</label>
               <div className="relative max-w-xs">
                 <Input
                   type="number"
@@ -515,7 +516,7 @@ export function PromotionConfigurator({
                   onChange={(e) =>
                     updateField("fixed_amount", e.target.value)
                   }
-                  placeholder="e.g. 100"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_100}
                   className={fieldBase + " pl-7"}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -524,10 +525,10 @@ export function PromotionConfigurator({
               </div>
             </div>
 
-            <SectionLabel icon="🛒" label="Cart eligibility" />
+            <SectionLabel icon="🛒" label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY} />
 
             <div>
-              <label className={labelBase}>Minimum Cart Value (₹)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}</label>
               <div className="relative">
                 <Input
                   type="number"
@@ -535,7 +536,7 @@ export function PromotionConfigurator({
                   onChange={(e) =>
                     updateField("min_cart_value", e.target.value)
                   }
-                  placeholder="e.g. 499"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_499}
                   className={fieldBase + " pl-7"}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -545,7 +546,7 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>Maximum Cart Value (₹)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_CART_VAL}</label>
               <div className="relative">
                 <Input
                   type="number"
@@ -553,7 +554,7 @@ export function PromotionConfigurator({
                   onChange={(e) =>
                     updateField("max_cart_value", e.target.value)
                   }
-                  placeholder="Optional"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.OPTIONAL}
                   className={fieldBase + " pl-7"}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -562,28 +563,28 @@ export function PromotionConfigurator({
               </div>
             </div>
 
-            <SectionLabel icon="🔁" label="Usage limits" />
+            <SectionLabel icon="🔁" label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS} />
 
             <div>
-              <label className={labelBase}>Max Uses (total)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
                 onChange={(e) => updateField("max_uses", e.target.value)}
-                placeholder="e.g. 500"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_500}
                 className={fieldBase}
               />
             </div>
 
             <div>
-              <label className={labelBase}>Max Uses Per Customer</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}</label>
               <Input
                 type="number"
                 value={discountFields.max_uses_per_customer ?? ""}
                 onChange={(e) =>
                   updateField("max_uses_per_customer", e.target.value)
                 }
-                placeholder="e.g. 1"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_1}
                 className={fieldBase}
               />
             </div>
@@ -593,10 +594,10 @@ export function PromotionConfigurator({
         {/* ──────────── BUY X GET Y ──────────── */}
         {promoType === PromotionType.BUY_X_GET_Y && (
           <>
-            <SectionLabel icon="🎁" label="Quantities" />
+            <SectionLabel icon="🎁" label={PROMO_CONFIG_TEXT.LABELS.QUANTITIES} />
 
             <div>
-              <label className={labelBase}>Buy Quantity *</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.BUY_QTY}</label>
               <Input
                 type="number"
                 min={1}
@@ -604,14 +605,14 @@ export function PromotionConfigurator({
                 onChange={(e) =>
                   updateField("bxgy_buy_qty", e.target.value)
                 }
-                placeholder="e.g. 2"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_2}
                 className={fieldBase}
               />
-              <HelperText>Customer must buy this many items.</HelperText>
+              <HelperText>{PROMO_CONFIG_TEXT.HINTS.MUST_BUY}</HelperText>
             </div>
 
             <div>
-              <label className={labelBase}>Get Quantity *</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.GET_QTY}</label>
               <Input
                 type="number"
                 min={1}
@@ -619,18 +620,18 @@ export function PromotionConfigurator({
                 onChange={(e) =>
                   updateField("bxgy_get_qty", e.target.value)
                 }
-                placeholder="e.g. 1"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_1}
                 className={fieldBase}
               />
-              <HelperText>Items given free or discounted.</HelperText>
+              <HelperText>{PROMO_CONFIG_TEXT.HINTS.GIVEN_FREE}</HelperText>
             </div>
 
-            <SectionLabel icon="📦" label="Free product" />
+            <SectionLabel icon="📦" label={PROMO_CONFIG_TEXT.LABELS.FREE_PRODUCT} />
 
             <div className="col-span-2">
               <VariantSelect
-                label="Free Product Variant *"
-                helperText="The product variant the customer receives for free (or at discount)."
+                label={PROMO_CONFIG_TEXT.LABELS.FREE_VARIANT}
+                helperText={PROMO_CONFIG_TEXT.HINTS.FREE_VARIANT_DESC}
                 value={discountFields.bxgy_variant_id ?? ""}
                 variantOptions={variantOptions}
                 onValueChange={(val) =>
@@ -643,7 +644,7 @@ export function PromotionConfigurator({
 
             <div>
               <label className={labelBase}>
-                Discount % on Get Items
+                {PROMO_CONFIG_TEXT.LABELS.DISC_ON_GET}
               </label>
               <div className="relative">
                 <Input
@@ -654,33 +655,33 @@ export function PromotionConfigurator({
                   onChange={(e) =>
                     updateField("bxgy_discount_pct", e.target.value)
                   }
-                  placeholder="100 = fully free"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.FULL_FREE}
                   className={fieldBase + " pr-8"}
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">
                   %
                 </span>
               </div>
-              <HelperText>Set 100 to give items completely free.</HelperText>
+              <HelperText>{PROMO_CONFIG_TEXT.HINTS.GIVE_FREE}</HelperText>
             </div>
 
             <div>
-              <label className={labelBase}>Max Redemptions Per Order</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_REDEMPTIONS}</label>
               <Input
                 type="number"
                 value={discountFields.bxgy_max_redemptions ?? ""}
                 onChange={(e) =>
                   updateField("bxgy_max_redemptions", e.target.value)
                 }
-                placeholder="Leave blank = unlimited"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.UNLIMITED}
                 className={fieldBase}
               />
             </div>
 
-            <SectionLabel icon="🛒" label="Cart eligibility" />
+            <SectionLabel icon="🛒" label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY} />
 
             <div>
-              <label className={labelBase}>Minimum Cart Value (₹)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}</label>
               <div className="relative">
                 <Input
                   type="number"
@@ -688,7 +689,7 @@ export function PromotionConfigurator({
                   onChange={(e) =>
                     updateField("min_cart_value", e.target.value)
                   }
-                  placeholder="Optional"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.OPTIONAL}
                   className={fieldBase + " pl-7"}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -698,12 +699,12 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>Max Uses (total)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
                 onChange={(e) => updateField("max_uses", e.target.value)}
-                placeholder="e.g. 200"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_200}
                 className={fieldBase}
               />
             </div>
@@ -713,10 +714,10 @@ export function PromotionConfigurator({
         {/* ──────────── BOGO ──────────── */}
         {promoType === PromotionType.BOGO && (
           <>
-            <SectionLabel icon="2×" label="BOGO config" />
+            <SectionLabel icon="2×" label={PROMO_CONFIG_TEXT.LABELS.BOGO_CONFIG} />
 
             <div>
-              <label className={labelBase}>Buy Quantity *</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.BUY_QTY}</label>
               <Input
                 type="number"
                 min={1}
@@ -724,16 +725,16 @@ export function PromotionConfigurator({
                 onChange={(e) =>
                   updateField("bogo_buy_qty", e.target.value)
                 }
-                placeholder="e.g. 1"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_1}
                 className={fieldBase}
               />
               <HelperText>
-                Typically 1 for "Buy 1 Get 1" — adjust for variants.
+                {PROMO_CONFIG_TEXT.HINTS.BOGO_QTY}
               </HelperText>
             </div>
 
             <div>
-              <label className={labelBase}>Free Item Quantity</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.FREE_ITEM_QTY}</label>
               <Input
                 type="number"
                 min={1}
@@ -741,17 +742,17 @@ export function PromotionConfigurator({
                 onChange={(e) =>
                   updateField("bogo_free_qty", e.target.value)
                 }
-                placeholder="e.g. 1"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_1}
                 className={fieldBase}
               />
             </div>
 
-            <SectionLabel icon="📦" label="Free product" />
+            <SectionLabel icon="📦" label={PROMO_CONFIG_TEXT.LABELS.FREE_PRODUCT} />
 
             <div className="col-span-2">
               <VariantSelect
-                label="Free Product Variant *"
-                helperText="Which variant does the customer get for free?"
+                label={PROMO_CONFIG_TEXT.LABELS.FREE_VARIANT}
+                helperText={PROMO_CONFIG_TEXT.HINTS.FREE_VARIANT_BOGO}
                 value={discountFields.bogo_variant_id ?? ""}
                 variantOptions={variantOptions}
                 onValueChange={(val) =>
@@ -764,7 +765,7 @@ export function PromotionConfigurator({
 
             <div>
               <label className={labelBase}>
-                Discount on Free Item (%)
+                {PROMO_CONFIG_TEXT.LABELS.DISC_ON_FREE}
               </label>
               <div className="relative">
                 <Input
@@ -775,18 +776,18 @@ export function PromotionConfigurator({
                   onChange={(e) =>
                     updateField("bogo_discount_pct", e.target.value)
                   }
-                  placeholder="100"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.HUNDRED}
                   className={fieldBase + " pr-8"}
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">
                   %
                 </span>
               </div>
-              <HelperText>Default 100 = fully free.</HelperText>
+              <HelperText>{PROMO_CONFIG_TEXT.HINTS.DEFAULT_100}</HelperText>
             </div>
 
             <div>
-              <label className={labelBase}>Same Product Only?</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.SAME_PRODUCT}</label>
               <Select
                 value={
                   discountFields.bogo_same_product
@@ -802,10 +803,10 @@ export function PromotionConfigurator({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="yes">
-                    Yes — free item must be same product
+                    {PROMO_CONFIG_TEXT.COMMON.YES_SAME_PRODUCT}
                   </SelectItem>
                   <SelectItem value="no">
-                    No — can pick a different variant
+                    {PROMO_CONFIG_TEXT.COMMON.NO_DIFF_VARIANT}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -814,25 +815,25 @@ export function PromotionConfigurator({
             <SectionLabel icon="🔁" label="Usage limits" />
 
             <div>
-              <label className={labelBase}>Max Uses (total)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
                 onChange={(e) => updateField("max_uses", e.target.value)}
-                placeholder="Optional"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.OPTIONAL}
                 className={fieldBase}
               />
             </div>
 
             <div>
-              <label className={labelBase}>Max Uses Per Customer</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}</label>
               <Input
                 type="number"
                 value={discountFields.max_uses_per_customer ?? ""}
                 onChange={(e) =>
                   updateField("max_uses_per_customer", e.target.value)
                 }
-                placeholder="e.g. 1"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_1}
                 className={fieldBase}
               />
             </div>
@@ -842,10 +843,10 @@ export function PromotionConfigurator({
         {/* ──────────── FREE SHIPPING ──────────── */}
         {promoType === PromotionType.FREE_SHIPPING && (
           <>
-            <SectionLabel icon="🚚" label="Shipping config" />
+            <SectionLabel icon="🚚" label={PROMO_CONFIG_TEXT.LABELS.SHIPPING_CONFIG} />
 
             <div>
-              <label className={labelBase}>Max Shipping Waived (₹) *</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_SHIPPING_WAIVED}</label>
               <div className="relative">
                 <Input
                   type="number"
@@ -853,7 +854,7 @@ export function PromotionConfigurator({
                   onChange={(e) =>
                     updateField("shipping_max_amount", e.target.value)
                   }
-                  placeholder="e.g. 100"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_100}
                   className={fieldBase + " pl-7"}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -861,13 +862,12 @@ export function PromotionConfigurator({
                 </span>
               </div>
               <HelperText>
-                Maximum shipping cost that will be waived. Leave blank to
-                cover any amount.
+                {PROMO_CONFIG_TEXT.HINTS.MAX_SHIPPING_HINT}
               </HelperText>
             </div>
 
             <div>
-              <label className={labelBase}>Applicable Carriers</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.APPLICABLE_CARRIERS}</label>
               <Input
                 value={discountFields.shipping_carriers ?? ""}
                 onChange={(e) =>
@@ -877,14 +877,14 @@ export function PromotionConfigurator({
                 className={fieldBase}
               />
               <HelperText>
-                Comma-separated. Leave blank to apply to all carriers.
+                {PROMO_CONFIG_TEXT.HINTS.CARRIERS_HINT}
               </HelperText>
             </div>
 
-            <SectionLabel icon="🛒" label="Cart eligibility" />
+            <SectionLabel icon="🛒" label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY} />
 
             <div>
-              <label className={labelBase}>Minimum Cart Value (₹)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}</label>
               <div className="relative">
                 <Input
                   type="number"
@@ -892,7 +892,7 @@ export function PromotionConfigurator({
                   onChange={(e) =>
                     updateField("min_cart_value", e.target.value)
                   }
-                  placeholder="e.g. 499"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_499}
                   className={fieldBase + " pl-7"}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -919,22 +919,21 @@ export function PromotionConfigurator({
         {/* ──────────── TIERED DISCOUNT ──────────── */}
         {promoType === PromotionType.TIERED_DISCOUNT && (
           <>
-            <SectionLabel icon="📊" label="Discount tiers" />
+            <SectionLabel icon="📊" label={PROMO_CONFIG_TEXT.LABELS.TIER_CONFIG} />
 
             <div className="col-span-2">
-              <label className={labelBase}>Tiers *</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.TIERS}</label>
               <TieredDiscountBuilder
                 tiers={parsedTiers}
                 onChange={handleTiersChange}
               />
               <HelperText>
-                Each tier applies when the cart value meets the minimum
-                threshold.
+                {PROMO_CONFIG_TEXT.HINTS.TIER_HINT}
               </HelperText>
             </div>
 
             <div>
-              <label className={labelBase}>Tier Type</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.TIER_TYPE}</label>
               <Select
                 value={discountFields.tier_type ?? "percentage"}
                 onValueChange={(v) => updateField("tier_type", v)}
@@ -944,17 +943,17 @@ export function PromotionConfigurator({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="percentage">
-                    Percentage (%) off cart
+                    {PROMO_CONFIG_TEXT.COMMON.TIER_PERCENTAGE}
                   </SelectItem>
                   <SelectItem value="fixed">
-                    Fixed (₹) off cart
+                    {PROMO_CONFIG_TEXT.COMMON.TIER_FIXED}
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <label className={labelBase}>Stack With Other Promos?</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.STACKABLE}</label>
               <Select
                 value={
                   discountFields.tier_stackable ? "yes" : "no"
@@ -968,24 +967,24 @@ export function PromotionConfigurator({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="no">
-                    No — use only this promotion
+                    {PROMO_CONFIG_TEXT.COMMON.STACK_NO}
                   </SelectItem>
                   <SelectItem value="yes">
-                    Yes — can stack with other codes
+                    {PROMO_CONFIG_TEXT.COMMON.STACK_YES}
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <SectionLabel icon="🔁" label="Usage limits" />
+            <SectionLabel icon="🔁" label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS} />
 
             <div>
-              <label className={labelBase}>Max Uses (total)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
                 onChange={(e) => updateField("max_uses", e.target.value)}
-                placeholder="Optional"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.OPTIONAL}
                 className={fieldBase}
               />
             </div>
@@ -1008,12 +1007,12 @@ export function PromotionConfigurator({
         {/* ──────────── BUNDLE DEAL ──────────── */}
         {promoType === PromotionType.BUNDLE_DEAL && (
           <>
-            <SectionLabel icon="📦" label="Bundle products" />
+            <SectionLabel icon="📦" label={PROMO_CONFIG_TEXT.LABELS.BUNDLE_PRODUCTS} />
 
             <div className="col-span-2">
               <MultiVariantSelect
-                label="Bundle Variants * (select all that apply)"
-                helperText="Select all variants that must be in the cart together."
+                label={PROMO_CONFIG_TEXT.LABELS.BUNDLE_VARIANTS}
+                helperText={PROMO_CONFIG_TEXT.HINTS.BUNDLE_VARIANTS_HINT}
                 selectedIds={bundleIds}
                 variantOptions={variantOptions}
                 onChange={(ids) =>
@@ -1024,10 +1023,10 @@ export function PromotionConfigurator({
               />
             </div>
 
-            <SectionLabel icon="₹" label="Bundle pricing" />
+            <SectionLabel icon="₹" label={PROMO_CONFIG_TEXT.LABELS.BUNDLE_PRICING} />
 
             <div>
-              <label className={labelBase}>Bundle Price (₹) *</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.BUNDLE_PRICE}</label>
               <div className="relative">
                 <Input
                   type="number"
@@ -1035,18 +1034,18 @@ export function PromotionConfigurator({
                   onChange={(e) =>
                     updateField("bundle_price", e.target.value)
                   }
-                  placeholder="e.g. 799"
+                  placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_499}
                   className={fieldBase + " pl-7"}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
                   ₹
                 </span>
               </div>
-              <HelperText>Final price when all bundle items are in cart.</HelperText>
+              <HelperText>{PROMO_CONFIG_TEXT.HINTS.BUNDLE_PRICE_HINT}</HelperText>
             </div>
 
             <div>
-              <label className={labelBase}>Bundle Discount Type</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.BUNDLE_DISC_TYPE}</label>
               <Select
                 value={discountFields.bundle_discount_type ?? "fixed_price"}
                 onValueChange={(v) =>
@@ -1058,13 +1057,13 @@ export function PromotionConfigurator({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="fixed_price">
-                    Fixed bundle price
+                    {PROMO_CONFIG_TEXT.COMMON.BUNDLE_FIXED}
                   </SelectItem>
                   <SelectItem value="percentage_off">
-                    Percentage off bundle
+                    {PROMO_CONFIG_TEXT.COMMON.BUNDLE_PCT}
                   </SelectItem>
                   <SelectItem value="amount_off">
-                    Amount off bundle
+                    {PROMO_CONFIG_TEXT.COMMON.BUNDLE_AMT}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -1072,7 +1071,7 @@ export function PromotionConfigurator({
 
             {discountFields.bundle_discount_type === "percentage_off" && (
               <div>
-                <label className={labelBase}>Bundle Discount (%)</label>
+                <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.BUNDLE_DISC_PCT}</label>
                 <div className="relative">
                   <Input
                     type="number"
@@ -1082,7 +1081,7 @@ export function PromotionConfigurator({
                     onChange={(e) =>
                       updateField("bundle_discount_pct", e.target.value)
                     }
-                    placeholder="e.g. 15"
+                    placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_10}
                     className={fieldBase + " pr-8"}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">
@@ -1093,7 +1092,7 @@ export function PromotionConfigurator({
             )}
 
             <div>
-              <label className={labelBase}>Require All Items?</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.REQUIRE_ALL}</label>
               <Select
                 value={
                   discountFields.bundle_require_all !== false
@@ -1109,37 +1108,37 @@ export function PromotionConfigurator({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="yes">
-                    Yes — all selected variants must be in cart
+                    {PROMO_CONFIG_TEXT.COMMON.REQUIRE_ALL_YES}
                   </SelectItem>
                   <SelectItem value="no">
-                    No — discount triggers with any subset
+                    {PROMO_CONFIG_TEXT.COMMON.REQUIRE_ALL_NO}
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <SectionLabel icon="🔁" label="Usage limits" />
+            <SectionLabel icon="🔁" label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS} />
 
             <div>
-              <label className={labelBase}>Max Uses (total)</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
                 onChange={(e) => updateField("max_uses", e.target.value)}
-                placeholder="Optional"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.OPTIONAL}
                 className={fieldBase}
               />
             </div>
 
             <div>
-              <label className={labelBase}>Max Uses Per Customer</label>
+              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}</label>
               <Input
                 type="number"
                 value={discountFields.max_uses_per_customer ?? ""}
                 onChange={(e) =>
                   updateField("max_uses_per_customer", e.target.value)
                 }
-                placeholder="e.g. 1"
+                placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_1}
                 className={fieldBase}
               />
             </div>

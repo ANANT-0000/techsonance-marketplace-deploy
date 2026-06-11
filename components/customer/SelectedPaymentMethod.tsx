@@ -1,6 +1,7 @@
-﻿'use client';
+'use client';
 import { CreditCard, Smartphone, Package } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { SELECTED_PAYMENT_METHOD_TEXT } from "@/constants/customerText";
 
 export interface SelectedPaymentMethodProps {
   method: string;
@@ -11,15 +12,15 @@ export interface SelectedPaymentMethodProps {
 
 // ─── Payment method icon map ──────────────────────────────────────────────────
 const METHOD_ICONS: Record<string, React.ReactNode> = {
-  'UPI':                          <Smartphone size={14} className="text-purple-500" />,
-  'Credit or Debit Card':         <CreditCard size={14} className="text-blue-500" />,
-  'Cash on Delivery/Pay on Delivery': <Package size={14} className="text-amber-500" />,
+  [SELECTED_PAYMENT_METHOD_TEXT.UPI]:                          <Smartphone size={14} className="text-purple-500" />,
+  [SELECTED_PAYMENT_METHOD_TEXT.CREDIT_DEBIT]:         <CreditCard size={14} className="text-blue-500" />,
+  [SELECTED_PAYMENT_METHOD_TEXT.COD]: <Package size={14} className="text-amber-500" />,
 };
 
 const METHOD_ICON_BG: Record<string, string> = {
-  'UPI':                               'bg-purple-50 border-purple-100',
-  'Credit or Debit Card':              'bg-blue-50   border-blue-100',
-  'Cash on Delivery/Pay on Delivery':  'bg-amber-50  border-amber-100',
+  [SELECTED_PAYMENT_METHOD_TEXT.UPI]:                               'bg-purple-50 border-purple-100',
+  [SELECTED_PAYMENT_METHOD_TEXT.CREDIT_DEBIT]:              'bg-blue-50   border-blue-100',
+  [SELECTED_PAYMENT_METHOD_TEXT.COD]:  'bg-amber-50  border-amber-100',
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────

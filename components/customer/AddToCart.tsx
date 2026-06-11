@@ -10,6 +10,7 @@ import { fetchAddToCart, fetchRemoveFromCart } from "@/utils/customerApiClient";
 import { useEffect, useRef, useState } from "react";
 import { authToken } from "@/utils/authToken";
 import { Variant } from "@/utils/Types";
+import { ADD_TO_CART_TEXT } from "@/constants/customerText";
 
 interface AddToCartProps {
   productVariantId: string;
@@ -125,7 +126,6 @@ export function AddToCart({
         }),
       );
     } catch (error: any) {
-      console.error("Error adding to cart:", error);
       if (
         error.message === "NETWORK_ERROR" ||
         (typeof window !== "undefined" && !navigator.onLine)
@@ -212,7 +212,6 @@ export function AddToCart({
         );
       }
     } catch (error: any) {
-      console.error("Error removing from cart:", error);
       if (
         error.message === "NETWORK_ERROR" ||
         (typeof window !== "undefined" && !navigator.onLine)
@@ -258,7 +257,7 @@ export function AddToCart({
               <ShoppingCart className="w-4 h-4 shrink-0" />
             )}
             <span className="text-[12px] sm:text-[13px] font-semibold tracking-wide whitespace-nowrap">
-              Add
+              {ADD_TO_CART_TEXT.ADD}
             </span>
           </motion.button>
         ) : (
@@ -275,7 +274,7 @@ export function AddToCart({
               onClick={handleDecrement}
               disabled={isSyncing}
               className="h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors disabled:opacity-50"
-              aria-label="Remove one"
+              aria-label={ADD_TO_CART_TEXT.ARIA_REMOVE}
             >
               <Minus size={15} strokeWidth={2.5} />
             </motion.button>
@@ -298,7 +297,7 @@ export function AddToCart({
               onClick={handleIncrement}
               disabled={isSyncing}
               className="h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors disabled:opacity-50"
-              aria-label="Add one more"
+              aria-label={ADD_TO_CART_TEXT.ARIA_ADD}
             >
               <Plus size={15} strokeWidth={2.5} />
             </motion.button>

@@ -56,6 +56,7 @@ import { authToken } from "@/utils/authToken";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { useAnalyticsDownload } from "@/hooks/useAnalyticsDownload";
+import { ANALYSIS_BOARD_TEXT } from "@/constants/vendorText";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -106,27 +107,27 @@ interface Preset {
 
 const PRESETS: Preset[] = [
   {
-    label: "Last 7 days",
+    label: ANALYSIS_BOARD_TEXT.PRESETS.LAST_7_DAYS,
     key: "7d",
     range: () => ({ startDate: subDays(new Date(), 6), endDate: new Date() }),
   },
   {
-    label: "Last 30 days",
+    label: ANALYSIS_BOARD_TEXT.PRESETS.LAST_30_DAYS,
     key: "30d",
     range: () => ({ startDate: subDays(new Date(), 29), endDate: new Date() }),
   },
   {
-    label: "Last 90 days",
+    label: ANALYSIS_BOARD_TEXT.PRESETS.LAST_90_DAYS,
     key: "90d",
     range: () => ({ startDate: subDays(new Date(), 89), endDate: new Date() }),
   },
   {
-    label: "This month",
+    label: ANALYSIS_BOARD_TEXT.PRESETS.THIS_MONTH,
     key: "mtd",
     range: () => ({ startDate: startOfMonth(new Date()), endDate: new Date() }),
   },
   {
-    label: "This year",
+    label: ANALYSIS_BOARD_TEXT.PRESETS.THIS_YEAR,
     key: "ytd",
     range: () => ({ startDate: startOfYear(new Date()), endDate: new Date() }),
   },
@@ -204,7 +205,7 @@ function DateRangePicker({
           {/* Presets sidebar */}
           <div className="flex sm:flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-gray-300  sm:w-36">
             <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1 hidden sm:block">
-              Quick select
+              {ANALYSIS_BOARD_TEXT.DATE_PICKER.QUICK_SELECT}
             </p>
             {PRESETS.map((preset) => (
               <button
@@ -233,14 +234,14 @@ function DateRangePicker({
             />
             <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-gray-300 ">
               <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
-                Cancel
+                {ANALYSIS_BOARD_TEXT.DATE_PICKER.CANCEL}
               </Button>
               <Button
                 size="sm"
                 onClick={applyCustom}
                 disabled={!range?.from || !range?.to}
               >
-                Apply
+                {ANALYSIS_BOARD_TEXT.DATE_PICKER.APPLY}
               </Button>
             </div>
           </div>
@@ -325,7 +326,9 @@ function TrendTooltip({ active, payload, label }: any) {
               className="w-2 h-2 rounded-sm inline-block flex-shrink-0"
               style={{ background: entry.color }}
             />
-            {entry.name === "revenue" ? "Revenue" : "Orders"}
+            {entry.name === "revenue"
+              ? ANALYSIS_BOARD_TEXT.METRICS.REVENUE
+              : ANALYSIS_BOARD_TEXT.METRICS.ORDERS}
           </span>
           <span className="font-semibold text-foreground">
             {entry.name === "revenue" ? fmtINR(entry.value) : entry.value}
@@ -397,7 +400,7 @@ function SkuBars({ products }: { products: TopProduct[] }) {
       {/* Total row */}
       <div className="pt-3 mt-1 border-t border-gray-300  flex justify-between items-center">
         <span className="text-xs text-muted-foreground">
-          Total (top {products.length})
+          {ANALYSIS_BOARD_TEXT.METRICS.TOTAL_TOP}{products.length})
         </span>
         <span className="text-sm font-semibold text-foreground">
           {fmtINR(total)}
@@ -418,25 +421,25 @@ function PnLBreakdown({ summary }: { summary: AnalyticsSummary }) {
 
   const lines = [
     {
-      label: "Gross sales",
+      label: ANALYSIS_BOARD_TEXT.METRICS.GROSS_SALES,
       value: fmtINR(grossRev),
       amount: grossRev,
       deduct: false,
     },
     {
-      label: "Platform fees",
+      label: ANALYSIS_BOARD_TEXT.METRICS.PLATFORM_FEES,
       value: `− ${fmtINR(summary.platformFees)}`,
       amount: summary.platformFees,
       deduct: true,
     },
     {
-      label: "GST / tax",
+      label: ANALYSIS_BOARD_TEXT.METRICS.GST_TAX,
       value: `− ${fmtINR(summary.taxCollected)}`,
       amount: summary.taxCollected,
       deduct: true,
     },
     {
-      label: "Refunds",
+      label: ANALYSIS_BOARD_TEXT.METRICS.REFUNDS,
       value: `− ${fmtINR(summary.refunds)}`,
       amount: summary.refunds,
       deduct: true,
@@ -472,7 +475,7 @@ function PnLBreakdown({ summary }: { summary: AnalyticsSummary }) {
       {/* Net bar */}
       <div className="pt-3 space-y-2">
         <div className="flex justify-between items-center">
-          <span className="font-semibold text-foreground">Net profit</span>
+          <span className="font-semibold text-foreground">{ANALYSIS_BOARD_TEXT.METRICS.NET_PROFIT}</span>
           <span className="text-lg font-bold text-emerald-600 tabular-nums">
             {fmtINR(summary.netEarnings)}
           </span>
@@ -480,7 +483,7 @@ function PnLBreakdown({ summary }: { summary: AnalyticsSummary }) {
         {/* Visual margin bar */}
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Margin</span>
+            <span>{ANALYSIS_BOARD_TEXT.METRICS.MARGIN}</span>
             <span className="font-medium text-emerald-600">{netPct}%</span>
           </div>
           <div className="h-2 rounded-full bg-muted overflow-hidden">
@@ -491,7 +494,7 @@ function PnLBreakdown({ summary }: { summary: AnalyticsSummary }) {
           </div>
         </div>
         <div className="flex justify-between text-xs text-muted-foreground pt-1">
-          <span>Total deductions</span>
+          <span>{ANALYSIS_BOARD_TEXT.METRICS.TOTAL_DEDUCTIONS}</span>
           <span className="text-rose-500 font-medium">
             {fmtINR(deductions)}
           </span>
@@ -562,38 +565,38 @@ function DerivedInsights({
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
           <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          Derived Insights
+          {ANALYSIS_BOARD_TEXT.TABLES.DERIVED_INSIGHTS}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <InsightRow
           icon={<IndianRupee className="h-3.5 w-3.5 text-blue-600" />}
-          label="Avg. order value"
+          label={ANALYSIS_BOARD_TEXT.METRICS.AVG_ORDER_VAL}
           value={fmtINR(aov)}
           color="bg-blue-50 light:bg-blue-950"
         />
         <InsightRow
           icon={<TrendingUp className="h-3.5 w-3.5 text-emerald-600" />}
-          label="Revenue per day"
+          label={ANALYSIS_BOARD_TEXT.METRICS.REV_PER_DAY}
           value={fmtINR(revenuePerDay)}
           color="bg-emerald-50 light:bg-emerald-950"
         />
         <InsightRow
           icon={<ShoppingBag className="h-3.5 w-3.5 text-violet-600" />}
-          label={`Orders over ${days} days`}
-          value={`${summary.totalOrders} orders`}
+          label={`${ANALYSIS_BOARD_TEXT.METRICS.ORDERS_OVER}${days}${ANALYSIS_BOARD_TEXT.METRICS.DAYS}`}
+          value={`${summary.totalOrders} ${ANALYSIS_BOARD_TEXT.METRICS.ORDERS.toLowerCase()}`}
           color="bg-violet-50 light:bg-violet-950"
         />
         <InsightRow
           icon={<Percent className="h-3.5 w-3.5 text-amber-600" />}
-          label="Effective tax rate"
+          label={ANALYSIS_BOARD_TEXT.METRICS.EFF_TAX_RATE}
           value={`${taxSlab}%`}
           color="bg-amber-50 light:bg-amber-950"
         />
         {topCategory && (
           <InsightRow
             icon={<Package className="h-3.5 w-3.5 text-rose-600" />}
-            label="Best category"
+            label={ANALYSIS_BOARD_TEXT.METRICS.BEST_CATEGORY}
             value={
               topCategory.name.charAt(0).toUpperCase() +
               topCategory.name.slice(1)
@@ -604,7 +607,7 @@ function DerivedInsights({
         {topProducts[0] && (
           <InsightRow
             icon={<ArrowUpRight className="h-3.5 w-3.5 text-teal-600" />}
-            label="Top SKU"
+            label={ANALYSIS_BOARD_TEXT.METRICS.TOP_SKU}
             value={topProducts[0].sku}
             color="bg-teal-50 light:bg-teal-950"
           />
@@ -652,7 +655,7 @@ function DonutChart({
         <span className="text-lg font-bold text-foreground leading-none">
           {fmtShort(total)}
         </span>
-        <span className="text-xs text-muted-foreground mt-0.5">total</span>
+        <span className="text-xs text-muted-foreground mt-0.5">{ANALYSIS_BOARD_TEXT.METRICS.TOTAL_LOWER}</span>
       </div>
 
       {/* Fixed-pixel chart — bypasses ResponsiveContainer collapse during PDF export */}
@@ -687,9 +690,9 @@ function CategoryTable({ data }: { data: CategoryPerformance[] }) {
   return (
     <div className="w-full">
       <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wide pb-2 border-b border-gray-300 ">
-        <span>Category</span>
-        <span className="text-right">Revenue</span>
-        <span className="text-right w-10">Share</span>
+        <span>{ANALYSIS_BOARD_TEXT.TABLES.CATEGORY}</span>
+        <span className="text-right">{ANALYSIS_BOARD_TEXT.METRICS.REVENUE}</span>
+        <span className="text-right w-10">{ANALYSIS_BOARD_TEXT.TABLES.SHARE}</span>
       </div>
       <div className="divide-y divide-border">
         {sorted.map((cat, i) => {
@@ -720,7 +723,7 @@ function CategoryTable({ data }: { data: CategoryPerformance[] }) {
         })}
       </div>
       <div className="pt-3 flex justify-between border-t border-grey-200  text-sm">
-        <span className="text-muted-foreground">Total</span>
+        <span className="text-muted-foreground">{ANALYSIS_BOARD_TEXT.TABLES.TOTAL}</span>
         <span className="font-bold">{fmtINR(total)}</span>
       </div>
     </div>
@@ -786,7 +789,6 @@ export default function AnalysisBoard() {
       );
       setData(response.data.data as AnalyticsData);
     } catch (err) {
-      console.error("[AnalysisBoard] Failed to fetch analytics:", err);
       setError(true);
     } finally {
       setLoading(false);

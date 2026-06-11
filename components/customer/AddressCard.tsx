@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { ADDRESS_CARD_TEXT } from "@/constants/customerText";
 
 export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) => {
     const isWork = address.address_for?.toLowerCase() === 'work';
@@ -11,7 +12,7 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
     const Icon = isWork ? Briefcase : isHome ? Home : MapPin;
     
     // Capitalize the title nicely
-    const title = address.address_for ? address.address_for.charAt(0).toUpperCase() + address.address_for.slice(1) : "Address";
+    const title = address.address_for ? address.address_for.charAt(0).toUpperCase() + address.address_for.slice(1) : ADDRESS_CARD_TEXT.DEFAULT_TITLE;
 
     return (
         <motion.div
@@ -34,7 +35,7 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                         </div>
                         {address.is_default && (
                             <Badge variant="default" className="bg-black hover:bg-black text-white rounded-full px-3 text-[10px] font-bold tracking-wide uppercase">
-                                Default
+                                {ADDRESS_CARD_TEXT.BADGE_DEFAULT}
                             </Badge>
                         )}
                     </div>
@@ -50,7 +51,7 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                         
                         {address.landmark && (
                             <p className="mt-1 italic text-xs">
-                                <span className="font-medium not-italic">Landmark:</span> {address.landmark}
+                                <span className="font-medium not-italic">{ADDRESS_CARD_TEXT.LANDMARK}</span> {address.landmark}
                             </p>
                         )}
 
@@ -66,13 +67,13 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                                 onClick={() => onEdit(address.id)}
                                 className="flex items-center gap-1.5 text-sm font-medium text-theme-secondary hover:text-theme-secondary/80 transition-colors"
                             >
-                                <Pen size={14} /> Edit
+                                <Pen size={14} /> {ADDRESS_CARD_TEXT.BTN_EDIT}
                             </button>
                             <button
                                 onClick={() => onDelete(address.user_id, address.id)}
                                 className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-red-600 transition-colors"
                             >
-                                <Trash2 size={14} /> Delete
+                                <Trash2 size={14} /> {ADDRESS_CARD_TEXT.BTN_DELETE}
                             </button>
                         </div>
                         
@@ -83,7 +84,7 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                                 className="rounded-full h-8 px-4 text-xs font-semibold text-theme-secondary border-theme-primary-foreground/90 hover:bg-theme-primary-foreground/10"
                                 onClick={() => onSetDefault(address.user_id, address.id)}
                             >
-                                Set as Default
+                                {ADDRESS_CARD_TEXT.BTN_SET_DEFAULT}
                             </Button>
                         )}
                     </div>

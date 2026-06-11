@@ -15,6 +15,7 @@ import { X, ShoppingBag, ArrowRight, Package, Tag, ChevronRight } from "lucide-r
 
 import { loadCart } from "@/lib/features/Cart";
 import { CartItemListResponse } from "@/app/(storefront)/customer/cart/CartClient";
+import { CART_SIDEBAR_TEXT } from "@/constants/customerText";
 
 // ─── Skeleton for cart items while loading ────────────────────────────────────
 const CartItemSkeleton = () => (
@@ -37,9 +38,9 @@ const EmptyCart = () => (
             </div>
         </div>
         <div>
-            <p className="text-base font-bold text-gray-800">Your cart is empty</p>
+            <p className="text-base font-bold text-gray-800">{CART_SIDEBAR_TEXT.EMPTY_TITLE}</p>
             <p className="text-sm text-gray-400 mt-1 leading-relaxed">
-                Looks like you haven't added anything yet.
+                {CART_SIDEBAR_TEXT.EMPTY_DESC}
             </p>
         </div>
     </div>
@@ -69,9 +70,9 @@ const MobileToast = ({ item }: { item: CartItemListResponse | undefined }) => (
 
         {/* Text */}
         <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-white/70 uppercase tracking-wider">Added to cart</p>
+            <p className="text-xs font-semibold text-white/70 uppercase tracking-wider">{CART_SIDEBAR_TEXT.TOAST_ADDED}</p>
             <p className="text-sm font-bold text-white truncate mt-0.5">
-                {item?.productVariant?.variant_name ?? 'Item'}
+                {item?.productVariant?.variant_name ?? CART_SIDEBAR_TEXT.TOAST_DEFAULT_ITEM}
             </p>
         </div>
 
@@ -161,10 +162,10 @@ export function CartSidebar() {
                                     <ShoppingBag size={16} className="text-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-base font-bold text-gray-900 leading-tight">Your Cart</h2>
+                                    <h2 className="text-base font-bold text-gray-900 leading-tight">{CART_SIDEBAR_TEXT.HEADER_TITLE}</h2>
                                     {itemCount > 0 && (
                                         <p className="text-xs text-gray-400 font-medium">
-                                            {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                                            {itemCount} {itemCount === 1 ? CART_SIDEBAR_TEXT.HEADER_ITEM : CART_SIDEBAR_TEXT.HEADER_ITEMS}
                                         </p>
                                     )}
                                 </div>
@@ -250,7 +251,7 @@ export function CartSidebar() {
                                 <div className="bg-gray-50 rounded-2xl px-4 py-3.5 space-y-2.5">
                                     <div className="flex justify-between items-center">
                                         <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Subtotal
+                                            {CART_SIDEBAR_TEXT.SUMMARY_SUBTOTAL}
                                         </span>
                                         <span className="text-sm font-bold text-gray-900">
                                             ₹{subtotal.toLocaleString('en-IN')}
@@ -258,15 +259,15 @@ export function CartSidebar() {
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Shipping
+                                            {CART_SIDEBAR_TEXT.SUMMARY_SHIPPING}
                                         </span>
                                         <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                                            Free
+                                            {CART_SIDEBAR_TEXT.SUMMARY_FREE}
                                         </span>
                                     </div>
                                     <div className="h-px bg-gray-200" />
                                     <div className="flex justify-between items-center">
-                                        <span className="text-sm font-bold text-gray-900">Total</span>
+                                        <span className="text-sm font-bold text-gray-900">{CART_SIDEBAR_TEXT.SUMMARY_TOTAL}</span>
                                         <span className="text-lg font-black text-gray-900 tracking-tight">
                                             ₹{subtotal.toLocaleString('en-IN')}
                                         </span>
@@ -280,7 +281,7 @@ export function CartSidebar() {
                                     className="flex items-center justify-between w-full px-4 py-3 rounded-2xl border border-gray-200 hover:border-gray-400 hover:bg-gray-50 transition-all group"
                                 >
                                     <span className="text-sm font-semibold text-gray-700 group-hover:text-gray-900">
-                                        View full cart
+                                        {CART_SIDEBAR_TEXT.VIEW_FULL_CART}
                                     </span>
                                     <ChevronRight
                                         size={16}
@@ -297,7 +298,7 @@ export function CartSidebar() {
 
                                 {/* Trust micro-copy */}
                                 <p className="text-center text-[11px] text-gray-400 font-medium">
-                                    🔒 Secure checkout · Free returns · GST invoice
+                                    {CART_SIDEBAR_TEXT.SECURE_CHECKOUT}
                                 </p>
                             </div>
                         )}
@@ -310,7 +311,7 @@ export function CartSidebar() {
                                     onClick={() => dispatch(toggleCartSidebar('close'))}
                                     className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gray-900 text-white font-bold text-sm hover:bg-black transition-all"
                                 >
-                                    Continue Shopping
+                                    {CART_SIDEBAR_TEXT.CONTINUE_SHOPPING}
                                     <ArrowRight size={15} />
                                 </Link>
                             </div>
