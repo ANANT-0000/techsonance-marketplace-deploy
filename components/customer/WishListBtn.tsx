@@ -39,8 +39,19 @@ export function WishListBtn({
     const handleToggle = async () => {
         if (syncingRef.current || !productVariantId) return;
 
-        if (!user?.id || !token) {
-            router.push('/auth/customerLogin');
+        if (!user?.id || !token || (typeof window !== 'undefined' && !navigator.onLine)) {
+            if (isWishlisted && existingItem) {
+                dispatch(removeFromWishlist(existingItem.id));
+            } else {
+                const tempId = `local_${productVariantId}_${Date.now()}`;
+                dispatch(addToWishlist({
+                    id: tempId,
+                    wishlist_id: '',
+                    product_variant_id: productVariantId,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                }));
+            }
             return;
         }
 

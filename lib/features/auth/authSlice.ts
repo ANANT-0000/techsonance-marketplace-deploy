@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { User, UserRole, VendorUser } from '../../../utils/Types';
-import { ACCESS_TOKEN_KEY, CART_KEY, IS_AUTHENTICATED_KEY, isClient, REFRESH_TOKEN_KEY, USER_STORAGE_KEY } from '@/constants';
+import { ACCESS_TOKEN_KEY, CART_KEY, IS_AUTHENTICATED_KEY, isClient, REFRESH_TOKEN_KEY, USER_STORAGE_KEY, WISHLIST_KEY } from '@/constants';
 
 // Helper to get User
 const getUserFromLocalStorage = () => {
@@ -124,6 +124,7 @@ const authSlice = createSlice({
                 localStorage.removeItem(IS_AUTHENTICATED_KEY);
                 localStorage.removeItem(ACCESS_TOKEN_KEY);
                 localStorage.removeItem(REFRESH_TOKEN_KEY);
+                localStorage.removeItem(WISHLIST_KEY);
             }
         },
 

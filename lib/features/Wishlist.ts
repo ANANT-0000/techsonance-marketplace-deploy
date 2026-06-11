@@ -132,10 +132,12 @@ const WishlistSlice = createSlice({
         },
 
         removeFromWishlist: (state, action: PayloadAction<string>) => {
-            state.wishItems = state.wishItems.filter(
-                (item) => item.id !== action.payload &&
-                    item.product_variant_id !== action.payload
+            const index = state.wishItems.findIndex(
+                (item) => item.id === action.payload || item.product_variant_id === action.payload
             );
+            if (index !== -1) {
+                state.wishItems.splice(index, 1);
+            }
 
             saveWishlistToLocalStorage(state.wishlistId, state.wishItems);
         },
@@ -167,6 +169,12 @@ const WishlistSlice = createSlice({
             .addCase(loadWishlist.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message ?? 'Failed to load wishlist';
+            })
+            .addCase('auth/logOut', (state) => {
+                state.wishlistId = '';
+                state.wishItems = [];
+                state.loading = false;
+                state.error = null;
             });
     },
 });

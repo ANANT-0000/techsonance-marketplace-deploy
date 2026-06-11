@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
-import { AboutPageContent } from '@/constants/customer';
+
 import { getCachedData, cacheData, subscribeLocaleChange } from '@/utils/cache';
+import { AboutPageContent } from '@/constants';
 
 const ABOUT_CACHE_KEY = 'techsonance_cms_about';
 const LANG_KEY = 'techsonance_locale';

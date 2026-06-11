@@ -136,7 +136,11 @@ function ProductCard({ product, isMobile }: { product: Product, isMobile: boolea
                 {
                     !isMobile &&
                     <div className={`flex gap-2 mt-2   justify-between items-center`}>
-                        <AddToCart productVariantId={product.id} styles="w-full " />
+                        <AddToCart
+                            productVariantId={product.variants[0]?.id || product.id}
+                            productVariant={product.variants[0]}
+                            styles="w-full "
+                        />
                         <BuyBtn id={product.id} mode={BuyBtnMode.QUICK_BUY} styles=" scale-[.9]" />
 
                     </div>

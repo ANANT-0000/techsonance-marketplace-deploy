@@ -18,10 +18,8 @@ export function BuyBtn({ id, styles, iconStyles, mode, selectedCoupon, quantity 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-  console.log("selectedCoupon", selectedCoupon)
   const userId = user?.id ? user.id : '';
   const handleBuyNow = async () => {
-    console.log(userId)
     if (!user || !userId || !token) {
       let redirectTarget = '/';
       if (mode === BuyBtnMode.CART) {

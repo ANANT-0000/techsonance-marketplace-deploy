@@ -2,6 +2,7 @@
 import { useEffect, useReducer } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
+import { useImageColors } from '@/hooks/useImageColors';
 import { WishListBtn } from '@/components/customer/WishListBtn';
 import { AddToCart } from '@/components/customer/AddToCart';
 import { BuyBtn } from '@/components/customer/BuyBtn';
@@ -163,7 +164,7 @@ export default function ProductClient({ id, initialProduct }: { id: string, init
     const token = authToken();
     const { user } = useAppSelector((state: RootState) => state.auth);
     const isMobile = useMediaQuery({ maxWidth: '1024px' });
-
+    
     const [state, dispatch] = useReducer(reducer, {
         isMounted: false,
         isLoading: false,
@@ -177,7 +178,8 @@ export default function ProductClient({ id, initialProduct }: { id: string, init
         activeTab: 'description',
         quantity: 1
     });
-
+    
+    const { bg: bgColor } = useImageColors(state.activeImage);
     const { items } = useAppSelector((rootState: RootState) => rootState.cart);
     const cartItem = items?.find((item) => item.productVariantId === id);
 
@@ -326,7 +328,10 @@ export default function ProductClient({ id, initialProduct }: { id: string, init
                         )}
 
                         {/* Main image */}
-                        <div className="relative flex-1 bg-gray-50 rounded-3xl overflow-hidden">
+                        <div 
+                            style={{ background: bgColor }}
+                            className="relative flex-1 rounded-3xl overflow-hidden transition-colors duration-500"
+                        >
                             {/* Top actions */}
                             <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
                                 <WishListBtn
@@ -560,6 +565,7 @@ export default function ProductClient({ id, initialProduct }: { id: string, init
                                 {/* AddToCart owns its own quantity counter via Redux */}
                                 <AddToCart
                                     productVariantId={state.activeVariant.id}
+                                    productVariant={state.activeVariant}
                                     styles="flex-1 h-12 rounded-2xl border-2 border-gray-900 bg-white text-gray-900 hover:bg-gray-900 hover:text-white font-bold text-sm transition-all duration-200"
                                 />
                                 {inStock ? (
@@ -679,6 +685,7 @@ export default function ProductClient({ id, initialProduct }: { id: string, init
                     <div className="flex gap-3 max-w-lg mx-auto h-12">
                         <AddToCart
                             productVariantId={state.activeVariant.id}
+                            productVariant={state.activeVariant}
                             styles="flex-1 h-12 rounded-2xl border-2 border-gray-900 bg-white text-gray-900 font-bold text-sm transition-all"
                         />
                         {inStock ? (

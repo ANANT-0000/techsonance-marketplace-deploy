@@ -8,10 +8,13 @@ import { BuyBtnMode, Product } from '@/utils/Types';
 import { formatCurrency } from '@/lib/utils';
 import { useThemeData } from '@/hooks/useThemeData';
 
+import { useImageColors } from '@/hooks/useImageColors';
+
 export function ProductCard({ product, idx }: { product: Product; idx: number }) {
     const { themeData } = useThemeData();
     const primaryImage = product.variants?.[0]?.images?.[0]?.image_url ?? 'https://placehold.net/400x500.png';
     const variantId = product.variants?.[0]?.id ?? '';
+    const { bg: bgColor, solidBg } = useImageColors(primaryImage);
 
     const isGlass = themeData.card_style === 'glassmorphic';
     const cardCls = isGlass 
@@ -25,16 +28,24 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
             transition={{ delay: idx * 0.03, duration: 0.25 }}
             className={`group flex flex-col cursor-pointer overflow-hidden transition-all duration-300 relative h-full rounded-[var(--radius)] ${cardCls} shadow`}
         >
-            <div className="relative aspect-square md:aspect-[4/5] bg-black/5 overflow-hidden">
+            <div 
+                style={{ background: bgColor }} 
+                className="relative aspect-square md:aspect-[4/5] overflow-hidden transition-colors duration-500"
+            >
                 <WishListBtn productVariantId={variantId} styles="absolute md:top-3 top-0 md:right-3 right-1 z-10 md:w-9 md:h-9 w-7 h-7 bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center rounded-full text-gray-600 hover:text-red-500 transition-colors" />
                 <Link href={`/store/${product.id}`} className="block w-full h-full p-4">
                     <img
                         loading="lazy"
-                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500 rounded-xl"
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 rounded-xl"
                         src={primaryImage}
                         alt={product.name?.trim()}
                     />
                 </Link>
+                {/* Seamless Edge Blending Overlay */}
+                <div 
+                    className="absolute inset-0 pointer-events-none transition-all duration-500"
+                    style={{ boxShadow: `inset 0 0 20px 6px ${solidBg}` }}
+                />
             </div>
 
             <div className={`p-4 flex flex-col flex-grow ${isGlass ? 'bg-transparent' : 'bg-white'}`}>
@@ -66,6 +77,7 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
                         <div className="hidden lg:flex xl:flex mt-3 pt-3  justify-between items-center border-t border-gray-100  gap-2.5 w-full">
                             <AddToCart
                                 productVariantId={variantId}
+                                productVariant={product.variants?.[0]}
                                 /* [&_span]:hidden hides the text so only the cart icon shows, matching the image exactly */
                                 styles="w-full h-10 rounded-full bg-theme-primary border border-gray-200 hover:bg-theme-secondary text-theme-primary-foreground transition-colors cursor-pointer "
                             />

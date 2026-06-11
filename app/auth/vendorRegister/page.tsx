@@ -16,15 +16,19 @@ import {
 } from "lucide-react";
 
 import {
-    validateComplianceFields,
-    validateRequiredDocuments,
+  validateComplianceFields,
+  validateRequiredDocuments,
   vendorRegisterSchema,
   VendorRegisterSchema,
- 
- 
 } from "@/utils/validation";
 import { COUNTRIES, COUNTRY_CODES } from "@/constants/common";
-import { BUSINESS_CATEGORIES, COMPANY_STRUCTURES, STEP_RHF_FIELDS, STEPS, VendorDocumentTypes } from "@/constants";
+import {
+  BUSINESS_CATEGORIES,
+  COMPANY_STRUCTURES,
+  STEP_RHF_FIELDS,
+  STEPS,
+  VendorDocumentTypes,
+} from "@/constants";
 import { vendorRegister } from "@/utils/authApiClient";
 
 import FinancialCompliance from "@/components/vendor/FinancialCompliance";
@@ -58,7 +62,7 @@ export const COMPLIANCE_REGEX: Record<
     message:
       "DPO name must be 3–100 characters (letters, spaces, dots, hyphens allowed)",
   },
- 
+
   // Bangladesh
   bin: {
     // NBR BIN format: 9-digit registration number
@@ -72,7 +76,7 @@ export const COMPLIANCE_REGEX: Record<
     message:
       "Invalid TIN. Bangladesh TIN must be exactly 12 digits as issued by NBR",
   },
- 
+
   // Sri Lanka
   tin_lk: {
     // IRB Sri Lanka TIN: 9 digits (older) or 12 digits (new format)
@@ -96,13 +100,7 @@ const labelCls =
 const errorCls = "mt-1.5 text-xs text-red-600 flex items-center gap-1";
 
 // ─── StepIndicator ────────────────────────────────────────────────────────────
-function StepIndicator({
-  current,
-  total,
-}: {
-  current: number;
-  total: number;
-}) {
+function StepIndicator({ current, total }: { current: number; total: number }) {
   return (
     <div className="flex items-center gap-0 mb-8">
       {STEPS.map((step, i) => {
@@ -110,7 +108,10 @@ function StepIndicator({
         const done = i < current;
         const active = i === current;
         return (
-          <div key={step.id} className="flex items-center flex-1 last:flex-none">
+          <div
+            key={step.id}
+            className="flex items-center flex-1 last:flex-none"
+          >
             <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
               <div
                 className={[
@@ -122,11 +123,7 @@ function StepIndicator({
                       : "bg-white border-gray-200 text-gray-400",
                 ].join(" ")}
               >
-                {done ? (
-                  <CheckCircle2 size={18} />
-                ) : (
-                  <Icon size={17} />
-                )}
+                {done ? <CheckCircle2 size={18} /> : <Icon size={17} />}
               </div>
               <span
                 className={[
@@ -201,14 +198,9 @@ export default function VendorRegisterPage() {
       country_code: "",
     },
   });
-const emailValue = watch("email");
+  const emailValue = watch("email");
   const currentCountryFields =
-    COUNTRIES.find((c) => c.country_code === countryCode)?.fields ?? [];
-    console.log("Current form errors:", errors);
-// Add to nextStep, after setFormStep:
-console.log("financialFileMap after step advance:", financialFileMap);
-console.log("legalFileMap after step advance:", legalFileMap);
-  // ── Navigation ──────────────────────────────────────────────────────────────
+    COUNTRIES.find((c) => c.country_code === countryCode)?.fields ?? []; // Add to nextStep, after setFormStep:  // ── Navigation ──────────────────────────────────────────────────────────────
   const nextStep = useCallback(async () => {
     setGlobalError(null);
 
@@ -256,10 +248,10 @@ console.log("legalFileMap after step advance:", legalFileMap);
   const prevStep = () => {
     setGlobalError(null);
     setFormStep((prev) => Math.max(prev - 1, 0));
-  };
-console.log("Current form stage "+ formStep);
-  // ── Submit ──────────────────────────────────────────────────────────────────
-  const onSubmit: SubmitHandler<VendorRegisterSchema> = async (data: VendorRegisterSchema) => {
+  }; // ── Submit ──────────────────────────────────────────────────────────────────
+  const onSubmit: SubmitHandler<VendorRegisterSchema> = async (
+    data: VendorRegisterSchema,
+  ) => {
     setGlobalError(null);
 
     // Validate legal docs on final submit
@@ -329,26 +321,31 @@ console.log("Current form stage "+ formStep);
     }
   };
 
-  const checkEmail=async()=>{
-
-    if(emailValue){
-
-      AxiosAPI.get(`/v1/auth/verify-mail?email=${emailValue}`).then((res)=>{
-        if(res.data.data.exists){
-          setEmailError(res.data.data.message || "Email already in use. Please use a different email or login.");
-        }else{
-          setEmailError(null);
-        }
-      }).catch((err)=>{
-        if(err.response?.status === 409){ 
-          setEmailError("Email already in use. Please use a different email or login.");
-        }
-      })
+  const checkEmail = async () => {
+    if (emailValue) {
+      AxiosAPI.get(`/v1/auth/verify-mail?email=${emailValue}`)
+        .then((res) => {
+          if (res.data.data.exists) {
+            setEmailError(
+              res.data.data.message ||
+                "Email already in use. Please use a different email or login.",
+            );
+          } else {
+            setEmailError(null);
+          }
+        })
+        .catch((err) => {
+          if (err.response?.status === 409) {
+            setEmailError(
+              "Email already in use. Please use a different email or login.",
+            );
+          }
+        });
     }
-}
+  };
   useEffect(() => {
     const debouncedEmail = setTimeout(() => {
-    checkEmail();
+      checkEmail();
     }, 700);
     return () => clearTimeout(debouncedEmail);
   }, [emailValue]);
@@ -357,7 +354,10 @@ console.log("Current form stage "+ formStep);
   return (
     <>
       {showSuccess && (
-        <RegistrationSuccessModal isOpen={showSuccess} onClose={() => setShowSuccess(false)} />
+        <RegistrationSuccessModal
+          isOpen={showSuccess}
+          onClose={() => setShowSuccess(false)}
+        />
       )}
 
       <main className="min-h-screen shadow-2xl py-10 px-4">
@@ -414,15 +414,16 @@ console.log("Current form stage "+ formStep);
                         placeholder="Acme Retail Pvt. Ltd."
                       />
                       {errors.company_name && (
-                        <p className={errorCls}>{errors.company_name.message}</p>
+                        <p className={errorCls}>
+                          {errors.company_name.message}
+                        </p>
                       )}
                     </div>
 
                     {/* First & last name */}
                     <div>
                       <label className={labelCls}>
-                        Owner First Name{" "}
-                        <span className="text-red-500">*</span>
+                        Owner First Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register("store_owner_first_name")}
@@ -438,8 +439,7 @@ console.log("Current form stage "+ formStep);
 
                     <div>
                       <label className={labelCls}>
-                        Owner Last Name{" "}
-                        <span className="text-red-500">*</span>
+                        Owner Last Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register("store_owner_last_name")}
@@ -456,8 +456,7 @@ console.log("Current form stage "+ formStep);
                     {/* Email — full width */}
                     <div className="col-span-2">
                       <label className={labelCls}>
-                        Business Email{" "}
-                        <span className="text-red-500">*</span>
+                        Business Email <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register("email")}
@@ -472,18 +471,13 @@ console.log("Current form stage "+ formStep);
                       {errors.email && (
                         <p className={errorCls}>{errors.email.message}</p>
                       )}
-                      {
-                        emailError && (
-                          <p className={errorCls}>{emailError}</p>
-                        )
-                      }
+                      {emailError && <p className={errorCls}>{emailError}</p>}
                     </div>
 
                     {/* Phone with country dial code */}
                     <div className="col-span-2">
                       <label className={labelCls}>
-                        Phone Number{" "}
-                        <span className="text-red-500">*</span>
+                        Phone Number <span className="text-red-500">*</span>
                       </label>
                       <div className="flex gap-2">
                         <select
@@ -612,8 +606,8 @@ console.log("Current form stage "+ formStep);
                       Legal & Financial Compliance
                     </h2>
                     <p className="text-gray-500 text-sm mt-1">
-                      Required regulatory identifiers for your jurisdiction.
-                      All required fields must pass format validation.
+                      Required regulatory identifiers for your jurisdiction. All
+                      required fields must pass format validation.
                     </p>
                   </div>
 

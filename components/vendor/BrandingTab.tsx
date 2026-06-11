@@ -1,6 +1,9 @@
-'use client';
+"use client";
 import { brandingSchema } from "@/utils/validation";
-import { fetchCompanyBranding, upsertCompanyBranding } from "@/utils/vendorApiClient";
+import {
+  fetchCompanyBranding,
+  upsertCompanyBranding,
+} from "@/utils/vendorApiClient";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
@@ -23,10 +26,61 @@ interface ThemePreset {
   navbar_fg: string;
   footer_bg: string;
   footer_fg: string;
-  card_style: 'standard' | 'glassmorphic';
-  border_radius: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  card_style: "standard" | "glassmorphic";
+  border_radius: "none" | "sm" | "md" | "lg" | "xl" | "full";
 }
-
+const HOME_SECTION_FIELDS: { key: string; label: string; desc: string }[] = [
+  {
+    key: "hero",
+    label: "Interactive Hero Banner",
+    desc: "Promotional slider or video background",
+  },
+  {
+    key: "lookbook",
+    label: "Shoppable Lookbook",
+    desc: "Image with interactive hotspots",
+  },
+  {
+    key: "scarcity",
+    label: "Scarcity & Urgency Timer",
+    desc: "Flash sales countdown and active promo alerts",
+  },
+  {
+    key: "social_proof",
+    label: "Trust & Social Proof",
+    desc: "Customer testimonials slider and trust badges",
+  },
+  {
+    key: "curated",
+    label: "Curated Discovery Slider",
+    desc: "Horizontal scrollable product showcase lists",
+  },
+  {
+    key: "categories",
+    label: "Shop Categories Grid",
+    desc: "Grid layout of shop categories",
+  },
+  {
+    key: "products",
+    label: "Featured Products Grid",
+    desc: "Grid layout of featured master products",
+  },
+  {
+    key: "promo",
+    label: "Middle Promo Card",
+    desc: "Mid-page promotional banner card",
+  },
+  {
+    key: "new_arrivals",
+    label: "New Arrivals Block",
+    desc: "Showcase of recently launched items",
+  },
+  {
+    key: "newsletter",
+    label: "Newsletter Subscription Banner",
+    desc: "Signup banner at the footer area",
+  },
+];
 const PRESETS: ThemePreset[] = [
   {
     name: "Techsonance Classic",
@@ -40,7 +94,7 @@ const PRESETS: ThemePreset[] = [
     footer_bg: "#0f172a",
     footer_fg: "#ffffff",
     card_style: "standard",
-    border_radius: "md"
+    border_radius: "md",
   },
   {
     name: "Emerald Eco",
@@ -54,7 +108,7 @@ const PRESETS: ThemePreset[] = [
     footer_bg: "#064e3b",
     footer_fg: "#ffffff",
     card_style: "standard",
-    border_radius: "lg"
+    border_radius: "lg",
   },
   {
     name: "Sunset Orange",
@@ -68,7 +122,7 @@ const PRESETS: ThemePreset[] = [
     footer_bg: "#431407",
     footer_fg: "#ffffff",
     card_style: "standard",
-    border_radius: "md"
+    border_radius: "md",
   },
   {
     name: "Midnight Premium",
@@ -82,7 +136,7 @@ const PRESETS: ThemePreset[] = [
     footer_bg: "#0f172a",
     footer_fg: "#f8fafc",
     card_style: "glassmorphic",
-    border_radius: "xl"
+    border_radius: "xl",
   },
   {
     name: "Luxury Rose",
@@ -96,8 +150,8 @@ const PRESETS: ThemePreset[] = [
     footer_bg: "#500724",
     footer_fg: "#ffffff",
     card_style: "glassmorphic",
-    border_radius: "full"
-  }
+    border_radius: "full",
+  },
 ];
 
 export function BrandingTab({ token }: { token: string }) {
@@ -106,68 +160,90 @@ export function BrandingTab({ token }: { token: string }) {
   const [files, setFiles] = useState<Record<string, File>>({});
 
   const applyPreset = (preset: ThemePreset) => {
-    setValue('primary_color', preset.primary_color);
-    setValue('secondary_color', preset.secondary_color);
-    setValue('accent_color', preset.accent_color);
-    setValue('background_color', preset.background_color);
-    setValue('text_color', preset.text_color);
-    setValue('navbar_bg', preset.navbar_bg);
-    setValue('navbar_fg', preset.navbar_fg);
-    setValue('footer_bg', preset.footer_bg);
-    setValue('footer_fg', preset.footer_fg);
-    setValue('card_style', preset.card_style);
-    setValue('border_radius', preset.border_radius);
+    setValue("primary_color", preset.primary_color);
+    setValue("secondary_color", preset.secondary_color);
+    setValue("accent_color", preset.accent_color);
+    setValue("background_color", preset.background_color);
+    setValue("text_color", preset.text_color);
+    setValue("navbar_bg", preset.navbar_bg);
+    setValue("navbar_fg", preset.navbar_fg);
+    setValue("footer_bg", preset.footer_bg);
+    setValue("footer_fg", preset.footer_fg);
+    setValue("card_style", preset.card_style);
+    setValue("border_radius", preset.border_radius);
   };
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } =
-    useForm({
-      resolver: zodResolver(brandingSchema),
-      defaultValues: {
-        primary_color: '#000000',
-        secondary_color: '',
-        accent_color: '',
-        font_family: 'Inter',
-        background_color: '#f8fafc',
-        text_color: '#0f172a',
-        navbar_bg: '#ffffff',
-        navbar_fg: '#0f172a',
-        footer_bg: '#0f172a',
-        footer_fg: '#ffffff',
-        navbar_position: 'sticky',
-        logo_alignment: 'left',
-        footer_style: 'detailed',
-        border_radius: 'md',
-        card_style: 'standard',
-        homepage_layout: ['hero', 'categories', 'products', 'promo', 'new_arrivals', 'newsletter']
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(brandingSchema),
+    defaultValues: {
+      primary_color: "#000000",
+      secondary_color: "",
+      accent_color: "",
+      font_family: "Inter",
+      background_color: "#f8fafc",
+      text_color: "#0f172a",
+      navbar_bg: "#ffffff",
+      navbar_fg: "#0f172a",
+      footer_bg: "#0f172a",
+      footer_fg: "#ffffff",
+      navbar_position: "sticky",
+      logo_alignment: "left",
+      footer_style: "detailed",
+      border_radius: "md",
+      card_style: "standard",
+      homepage_layout: [
+        "hero",
+        "categories",
+        "products",
+        "promo",
+        "new_arrivals",
+        "newsletter",
+      ],
+    },
+  });
 
-  const homepageLayout = watch('homepage_layout') || [];
+  const homepageLayout = watch("homepage_layout") || [];
 
   useEffect(() => {
     fetchCompanyBranding(token).then((res) => {
-      if (res?.data?.data) {
-        const d = res.data.data;
-        setValue('primary_color', d.primary_color || '#000000');
-        setValue('secondary_color', d.secondary_color || '');
-        setValue('accent_color', d.accent_color || '');
-        setValue('font_family', d.font_family || 'Inter');
-        setValue('logo_url', d.logo_url || '');
-        setValue('logo_dark_url', d.logo_dark_url || '');
-        setValue('watermark_url', d.watermark_url || '');
-        setValue('favicon_url', d.favicon_url || '');
-        setValue('background_color', d.background_color || '#f8fafc');
-        setValue('text_color', d.text_color || '#0f172a');
-        setValue('navbar_bg', d.navbar_bg || '#ffffff');
-        setValue('navbar_fg', d.navbar_fg || '#0f172a');
-        setValue('footer_bg', d.footer_bg || '#0f172a');
-        setValue('footer_fg', d.footer_fg || '#ffffff');
-        setValue('navbar_position', d.navbar_position || 'sticky');
-        setValue('logo_alignment', d.logo_alignment || 'left');
-        setValue('footer_style', d.footer_style || 'detailed');
-        setValue('border_radius', d.border_radius || 'md');
-        setValue('card_style', d.card_style || 'standard');
-        setValue('homepage_layout', d.homepage_layout || ['hero', 'categories', 'products', 'promo', 'new_arrivals', 'newsletter']);
+      const d = res?.data?.data ?? res?.data;
+      if (d && typeof d === "object") {
+        setValue("primary_color", d.primary_color || "#000000");
+        setValue("secondary_color", d.secondary_color || "");
+        setValue("accent_color", d.accent_color || "");
+        setValue("font_family", d.font_family || "Inter");
+        setValue("logo_url", d.logo_url || "");
+        setValue("logo_dark_url", d.logo_dark_url || "");
+        setValue("watermark_url", d.watermark_url || "");
+        setValue("favicon_url", d.favicon_url || "");
+        setValue("background_color", d.background_color || "#f8fafc");
+        setValue("text_color", d.text_color || "#0f172a");
+        setValue("navbar_bg", d.navbar_bg || "#ffffff");
+        setValue("navbar_fg", d.navbar_fg || "#0f172a");
+        setValue("footer_bg", d.footer_bg || "#0f172a");
+        setValue("footer_fg", d.footer_fg || "#ffffff");
+        setValue("navbar_position", d.navbar_position || "sticky");
+        setValue("logo_alignment", d.logo_alignment || "left");
+        setValue("footer_style", d.footer_style || "detailed");
+        setValue("border_radius", d.border_radius || "md");
+        setValue("card_style", d.card_style || "standard");
+        setValue(
+          "homepage_layout",
+          d.homepage_layout || [
+            "hero",
+            "categories",
+            "products",
+            "promo",
+            "new_arrivals",
+            "newsletter",
+          ],
+        );
       }
     });
   }, [token, setValue]);
@@ -186,10 +262,10 @@ export function BrandingTab({ token }: { token: string }) {
       });
       Object.entries(files).forEach(([k, v]) => fd.append(k, v));
       const res = await upsertCompanyBranding(fd, token);
-      if (res?.status === 200) {
+      if (res?.status === 200 || res?.status === 201 || res?.ok) {
         // Refresh local storefront cache if necessary
         try {
-          localStorage.removeItem('techsonance_cms_theme');
+          localStorage.removeItem("techsonance_cms_theme");
         } catch (e) {}
       }
       setSaved(true);
@@ -197,47 +273,58 @@ export function BrandingTab({ token }: { token: string }) {
     });
   };
 
-  const moveItem = (index: number, direction: 'up' | 'down') => {
+  const moveItem = (index: number, direction: "up" | "down") => {
     const layout = [...homepageLayout];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
     if (targetIndex >= 0 && targetIndex < layout.length) {
       const temp = layout[index];
       layout[index] = layout[targetIndex];
       layout[targetIndex] = temp;
-      setValue('homepage_layout', layout);
+      setValue("homepage_layout", layout);
     }
   };
 
-  const primaryColor = watch('primary_color');
-  const secondaryColor = watch('secondary_color');
-  const accentColor = watch('accent_color');
-  const backgroundColor = watch('background_color');
-  const textColor = watch('text_color');
-  const navbarBg = watch('navbar_bg');
-  const navbarFg = watch('navbar_fg');
-  const footerBg = watch('footer_bg');
-  const footerFg = watch('footer_fg');
+  const primaryColor = watch("primary_color");
+  const secondaryColor = watch("secondary_color");
+  const accentColor = watch("accent_color");
+  const backgroundColor = watch("background_color");
+  const textColor = watch("text_color");
+  const navbarBg = watch("navbar_bg");
+  const navbarFg = watch("navbar_fg");
+  const footerBg = watch("footer_bg");
+  const footerFg = watch("footer_fg");
 
   const FONT_OPTIONS = [
-    'Inter', 'Plus Jakarta Sans', 'DM Sans', 'Outfit', 'Nunito',
-    'Poppins', 'Raleway', 'Lato', 'Source Sans Pro', 'IBM Plex Sans',
+    "Inter",
+    "Plus Jakarta Sans",
+    "DM Sans",
+    "Outfit",
+    "Nunito",
+    "Poppins",
+    "Raleway",
+    "Lato",
+    "Source Sans Pro",
+    "IBM Plex Sans",
   ];
 
   const SECTION_LABELS: Record<string, string> = {
-    hero: 'Interactive Hero Banner',
-    lookbook: 'Shoppable Lookbook (Hotspots)',
-    scarcity: 'Scarcity & Urgency (Countdown)',
-    social_proof: 'Trust & Social Proof (Testimonials)',
-    curated: 'Curated Discovery Slider',
-    categories: 'Shop Categories Grid',
-    products: 'Featured Products Grid',
-    promo: 'Middle Promo Card',
-    new_arrivals: 'New Arrivals Block',
-    newsletter: 'Newsletter Subscription Banner',
+    hero: "Interactive Hero Banner",
+    lookbook: "Shoppable Lookbook (Hotspots)",
+    scarcity: "Scarcity & Urgency (Countdown)",
+    social_proof: "Trust & Social Proof (Testimonials)",
+    curated: "Curated Discovery Slider",
+    categories: "Shop Categories Grid",
+    products: "Featured Products Grid",
+    promo: "Middle Promo Card",
+    new_arrivals: "New Arrivals Block",
+    newsletter: "Newsletter Subscription Banner",
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 pb-10">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-8 pb-10 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-h-[70vh] overflow-y-auto pr-2"
+    >
       {/* Logos section */}
       <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
         <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
@@ -248,41 +335,49 @@ export function BrandingTab({ token }: { token: string }) {
           <LogoUploadField
             label="Primary Logo"
             fieldName="logo"
-            value={watch('logo_url')}
-            onFileSelect={(name, file) => setFiles(prev => ({ ...prev, [name]: file }))}
+            value={watch("logo_url")}
+            onFileSelect={(name, file) =>
+              setFiles((prev) => ({ ...prev, [name]: file }))
+            }
             hint="Used in headers and invoices"
           />
           <LogoUploadField
             label="Dark Variant"
             fieldName="logo_dark"
-            value={watch('logo_dark_url')}
-            onFileSelect={(name, file) => setFiles(prev => ({ ...prev, [name]: file }))}
+            value={watch("logo_dark_url")}
+            onFileSelect={(name, file) =>
+              setFiles((prev) => ({ ...prev, [name]: file }))
+            }
             hint="For dark-themed PDF documents"
           />
           <LogoUploadField
             label="Watermark"
             fieldName="watermark"
-            value={watch('watermark_url')}
-            onFileSelect={(name, file) => setFiles(prev => ({ ...prev, [name]: file }))}
+            value={watch("watermark_url")}
+            onFileSelect={(name, file) =>
+              setFiles((prev) => ({ ...prev, [name]: file }))
+            }
             hint="Faint stamp printed behind content"
           />
           <LogoUploadField
             label="Favicon"
             fieldName="favicon"
-            value={watch('favicon_url')}
-            onFileSelect={(name, file) => setFiles(prev => ({ ...prev, [name]: file }))}
+            value={watch("favicon_url")}
+            onFileSelect={(name, file) =>
+              setFiles((prev) => ({ ...prev, [name]: file }))
+            }
             hint="Appears on browser tabs/emails"
           />
         </div>
       </section>
 
-       {/* Colors Section */}
+      {/* Colors Section */}
       <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-6">
         <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
           <span className="w-1.5 h-4 bg-blue-600 rounded-full" />
           Color Theme Customization
         </h3>
-        
+
         <div className="border-b border-gray-100 pb-4">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2.5">
             Quick Style Presets
@@ -304,74 +399,80 @@ export function BrandingTab({ token }: { token: string }) {
             ))}
           </div>
         </div>
-        
+
         <div>
-          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Accent Palette</h4>
+          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Accent Palette
+          </h4>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <ColorField
               label="Primary Accent"
-              value={primaryColor || ''}
-              onChange={(v) => setValue('primary_color', v)}
+              value={primaryColor || ""}
+              onChange={(v) => setValue("primary_color", v)}
               error={errors.primary_color?.message}
             />
             <ColorField
               label="Secondary Accent"
-              value={secondaryColor || ''}
-              onChange={(v) => setValue('secondary_color', v)}
+              value={secondaryColor || ""}
+              onChange={(v) => setValue("secondary_color", v)}
               error={errors.secondary_color?.message}
             />
             <ColorField
               label="Accent Color"
-              value={accentColor || ''}
-              onChange={(v) => setValue('accent_color', v)}
+              value={accentColor || ""}
+              onChange={(v) => setValue("accent_color", v)}
               error={errors.accent_color?.message}
             />
           </div>
         </div>
 
         <div>
-          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Layout Background & Text</h4>
+          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Layout Background & Text
+          </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ColorField
               label="Page Background Color"
-              value={backgroundColor || ''}
-              onChange={(v) => setValue('background_color', v)}
+              value={backgroundColor || ""}
+              onChange={(v) => setValue("background_color", v)}
               error={errors.background_color?.message}
             />
             <ColorField
               label="Text Color"
-              value={textColor || ''}
-              onChange={(v) => setValue('text_color', v)}
+              value={textColor || ""}
+              onChange={(v) => setValue("text_color", v)}
               error={errors.text_color?.message}
             />
           </div>
         </div>
 
         <div>
-          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Navbar & Footer Palette</h4>
+          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Navbar & Footer Palette
+          </h4>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <ColorField
               label="Navbar Background"
-              value={navbarBg || ''}
-              onChange={(v) => setValue('navbar_bg', v)}
+              value={navbarBg || ""}
+              onChange={(v) => setValue("navbar_bg", v)}
               error={errors.navbar_bg?.message}
             />
             <ColorField
               label="Navbar Text/Foreground"
-              value={navbarFg || ''}
-              onChange={(v) => setValue('navbar_fg', v)}
+              value={navbarFg || ""}
+              onChange={(v) => setValue("navbar_fg", v)}
               error={errors.navbar_fg?.message}
             />
             <ColorField
               label="Footer Background"
-              value={footerBg || ''}
-              onChange={(v) => setValue('footer_bg', v)}
+              value={footerBg || ""}
+              onChange={(v) => setValue("footer_bg", v)}
               error={errors.footer_bg?.message}
             />
             <ColorField
               label="Footer Text/Foreground"
-              value={footerFg || ''}
-              onChange={(v) => setValue('footer_fg', v)}
+              value={footerFg || ""}
+              onChange={(v) => setValue("footer_fg", v)}
               error={errors.footer_fg?.message}
             />
           </div>
@@ -386,35 +487,45 @@ export function BrandingTab({ token }: { token: string }) {
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Field label="Typography Font Family" hint="Loaded dynamically on storefront">
-            <Select {...register('font_family')}>
-              {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
+          <Field
+            label="Typography Font Family"
+            hint="Loaded dynamically on storefront"
+          >
+            <Select {...register("font_family")}>
+              {FONT_OPTIONS.map((f) => (
+                <option key={f} value={f}>
+                  {f}
+                </option>
+              ))}
             </Select>
           </Field>
 
           <Field label="Navbar Position" hint="Header behaviour on scroll">
-            <Select {...register('navbar_position')}>
+            <Select {...register("navbar_position")}>
               <option value="sticky">Sticky (Follow scroll)</option>
               <option value="static">Static (Stay at top)</option>
             </Select>
           </Field>
 
-          <Field label="Header Logo Alignment" hint="Brand positioning in navbar">
-            <Select {...register('logo_alignment')}>
+          <Field
+            label="Header Logo Alignment"
+            hint="Brand positioning in navbar"
+          >
+            <Select {...register("logo_alignment")}>
               <option value="left">Left Aligned</option>
               <option value="center">Center Aligned</option>
             </Select>
           </Field>
 
           <Field label="Footer Style" hint="Amount of details in footer">
-            <Select {...register('footer_style')}>
+            <Select {...register("footer_style")}>
               <option value="detailed">Detailed Multi-Column</option>
               <option value="simple">Simple Center Row</option>
             </Select>
           </Field>
 
           <Field label="Border Radius" hint="Curves on buttons, inputs & cards">
-            <Select {...register('border_radius')}>
+            <Select {...register("border_radius")}>
               <option value="none">Sharp Corners (0px)</option>
               <option value="sm">Small (4px)</option>
               <option value="md">Medium (8px)</option>
@@ -425,7 +536,7 @@ export function BrandingTab({ token }: { token: string }) {
           </Field>
 
           <Field label="Card Display Style" hint="Aesthetic styling of cards">
-            <Select {...register('card_style')}>
+            <Select {...register("card_style")}>
               <option value="standard">Standard Flat Bordered</option>
               <option value="glassmorphic">Glassmorphic Blur</option>
             </Select>
@@ -441,23 +552,13 @@ export function BrandingTab({ token }: { token: string }) {
             Homepage Section Manager
           </h3>
           <p className="text-xs text-gray-500 mt-1">
-            Toggle which modular sections are active on your home page, and order them to design your custom landing page.
+            Toggle which modular sections are active on your home page, and
+            order them to design your custom landing page.
           </p>
         </div>
 
         <div className="space-y-3 max-w-2xl">
-          {[
-            { key: 'hero', label: 'Interactive Hero Banner', desc: 'Promotional slider or video background' },
-            { key: 'lookbook', label: 'Shoppable Lookbook', desc: 'Image with interactive hotspots' },
-            { key: 'scarcity', label: 'Scarcity & Urgency Timer', desc: 'Flash sales countdown and active promo alerts' },
-            { key: 'social_proof', label: 'Trust & Social Proof', desc: 'Customer testimonials slider and trust badges' },
-            { key: 'curated', label: 'Curated Discovery Slider', desc: 'Horizontal scrollable product showcase lists' },
-            { key: 'categories', label: 'Shop Categories Grid', desc: 'Grid layout of shop categories' },
-            { key: 'products', label: 'Featured Products Grid', desc: 'Grid layout of featured master products' },
-            { key: 'promo', label: 'Middle Promo Card', desc: 'Mid-page promotional banner card' },
-            { key: 'new_arrivals', label: 'New Arrivals Block', desc: 'Showcase of recently launched items' },
-            { key: 'newsletter', label: 'Newsletter Subscription Banner', desc: 'Signup banner at the footer area' }
-          ].map((section) => {
+          {HOME_SECTION_FIELDS.map((section) => {
             const isEnabled = homepageLayout.includes(section.key);
             const activeIdx = homepageLayout.indexOf(section.key);
 
@@ -469,19 +570,19 @@ export function BrandingTab({ token }: { token: string }) {
               } else {
                 layout.push(key);
               }
-              setValue('homepage_layout', layout);
+              setValue("homepage_layout", layout);
             };
 
-            const moveItemByKey = (key: string, direction: 'up' | 'down') => {
+            const moveItemByKey = (key: string, direction: "up" | "down") => {
               const layout = [...homepageLayout];
               const idx = layout.indexOf(key);
               if (idx === -1) return;
-              const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+              const targetIdx = direction === "up" ? idx - 1 : idx + 1;
               if (targetIdx >= 0 && targetIdx < layout.length) {
                 const temp = layout[idx];
                 layout[idx] = layout[targetIdx];
                 layout[targetIdx] = temp;
-                setValue('homepage_layout', layout);
+                setValue("homepage_layout", layout);
               }
             };
 
@@ -490,8 +591,8 @@ export function BrandingTab({ token }: { token: string }) {
                 key={section.key}
                 className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
                   isEnabled
-                    ? 'bg-blue-50/10 border-blue-100 shadow-sm'
-                    : 'bg-gray-50/50 border-gray-200 opacity-60'
+                    ? "bg-blue-50/10 border-blue-100 shadow-sm"
+                    : "bg-gray-50/50 border-gray-200 opacity-60"
                 }`}
               >
                 <div className="flex-1 min-w-0 pr-4">
@@ -520,7 +621,7 @@ export function BrandingTab({ token }: { token: string }) {
                     <div className="flex gap-1">
                       <button
                         type="button"
-                        onClick={() => moveItemByKey(section.key, 'up')}
+                        onClick={() => moveItemByKey(section.key, "up")}
                         disabled={activeIdx === 0}
                         className="p-1.5 rounded bg-white hover:bg-gray-50 text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-200 shadow-sm transition-all cursor-pointer"
                         title="Move Up"
@@ -529,7 +630,7 @@ export function BrandingTab({ token }: { token: string }) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => moveItemByKey(section.key, 'down')}
+                        onClick={() => moveItemByKey(section.key, "down")}
                         disabled={activeIdx === homepageLayout.length - 1}
                         className="p-1.5 rounded bg-white hover:bg-gray-50 text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-200 shadow-sm transition-all cursor-pointer"
                         title="Move Down"
@@ -544,12 +645,12 @@ export function BrandingTab({ token }: { token: string }) {
                     type="button"
                     onClick={() => toggleSection(section.key)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 cursor-pointer ${
-                      isEnabled ? 'bg-blue-600' : 'bg-gray-200'
+                      isEnabled ? "bg-blue-600" : "bg-gray-200"
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                        isEnabled ? 'translate-x-6' : 'translate-x-1'
+                        isEnabled ? "translate-x-6" : "translate-x-1"
                       }`}
                     />
                   </button>

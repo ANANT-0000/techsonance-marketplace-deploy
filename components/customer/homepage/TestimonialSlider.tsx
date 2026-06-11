@@ -13,9 +13,17 @@ export interface Testimonial {
   avatar_url?: string;
 }
 
+export enum BadgeIconType {
+  SHIPPING = "shipping",
+  SECURITY = "security",
+  QUALITY = "quality",
+  SUPPORT = "support",
+  DEFAULT = "default",
+}
+
 export interface TrustBadge {
   id?: string | number;
-  icon: string; // 'shipping' | 'security' | 'quality' | 'support'
+  icon: BadgeIconType | string;
   title: string;
   subtitle: string;
 }
@@ -29,54 +37,31 @@ export interface TestimonialSliderProps {
 
 // Map strings to Lucide icons
 const iconMap: Record<string, any> = {
-  shipping: Truck,
-  security: ShieldCheck,
-  quality: Award,
-  support: Headphones,
-  default: MessageCircleHeart
+  [BadgeIconType.SHIPPING]: Truck,
+  [BadgeIconType.SECURITY]: ShieldCheck,
+  [BadgeIconType.QUALITY]: Award,
+  [BadgeIconType.SUPPORT]: Headphones,
+  [BadgeIconType.DEFAULT]: MessageCircleHeart
 };
 
+import { TESTIMONIALS_SLIDER_DEFAULT, TRUST_BADGES_SLIDER_DEFAULT } from "@/constants/storefront";
+
 export function TestimonialSlider({
-  title = 'What Our Clients Say',
-  eyebrow = 'TESTIMONIALS',
-  testimonials = [],
-  badges = []
+  title,
+  eyebrow,
+  testimonials,
+  badges
 }: TestimonialSliderProps) {
+  const displayTitle = title ?? 'What Our Clients Say';
+  const displayEyebrow = eyebrow ?? 'TESTIMONIALS';
+  const currentTestimonials = testimonials !== undefined && testimonials !== null && testimonials.length > 0
+    ? testimonials
+    : TESTIMONIALS_SLIDER_DEFAULT;
+  const currentBadges = badges !== undefined && badges !== null && badges.length > 0
+    ? badges
+    : TRUST_BADGES_SLIDER_DEFAULT;
+
   const [activeIdx, setActiveIdx] = useState(0);
-
-  const currentTestimonials = testimonials.length > 0 ? testimonials : [
-    {
-      id: 1,
-      name: 'Aishwarya R.',
-      location: 'Delhi',
-      rating: 5,
-      comment: 'The quality of the linen blazer is absolutely premium. Fits perfectly, packaged with utmost care, and arrived ahead of schedule!',
-      avatar_url: ''
-    },
-    {
-      id: 2,
-      name: 'Rohan M.',
-      location: 'Mumbai',
-      rating: 5,
-      comment: 'Excellent customer service. I had to resize my trousers and the process was handled within 2 days. Highly recommended!',
-      avatar_url: ''
-    },
-    {
-      id: 3,
-      name: 'Karan J.',
-      location: 'Bangalore',
-      rating: 5,
-      comment: 'Top-tier fabric and stitch details. It is difficult to find such custom quality at this price point. A true marketplace gem!',
-      avatar_url: ''
-    }
-  ];
-
-  const currentBadges = badges.length > 0 ? badges : [
-    { id: 1, icon: 'shipping', title: 'Free Shipping', subtitle: 'On all orders above ₹999' },
-    { id: 2, icon: 'quality', title: 'Quality Guarantee', subtitle: 'Handcrafted premium fabrics' },
-    { id: 3, icon: 'security', title: 'Secure Checkout', subtitle: 'Fully encrypted billing logs' },
-    { id: 4, icon: 'support', title: '24/7 Support', subtitle: 'Dedicated stylist support helpline' }
-  ];
 
   // Auto-advance testimonials
   useEffect(() => {
@@ -104,10 +89,10 @@ export function TestimonialSlider({
         {/* Testimonials Slider */}
         <div className="flex flex-col items-center text-center">
           <span className="text-[10px] font-bold tracking-[0.25em] text-purple-600 uppercase mb-2">
-            {eyebrow}
+            {displayEyebrow}
           </span>
           <h2 className="text-3xl font-serif tracking-tight text-gray-900 mb-10">
-            {title}
+            {displayTitle}
           </h2>
 
           <div className="relative w-full max-w-2xl min-h-[180px] flex items-center justify-center px-8">

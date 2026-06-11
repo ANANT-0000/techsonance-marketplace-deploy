@@ -92,12 +92,7 @@ export function CartSidebar() {
     const dispatch = useAppDispatch();
     const token = authToken();
 
-    // Fetch cart list whenever sidebar opens
-    useEffect(() => {
-        if (isCartOpen) {
-            dispatch(loadCart());
-        }
-    }, [isCartOpen, dispatch]);
+
 
     // Auto-dismiss mobile toast after 2.5 s
     useEffect(() => {

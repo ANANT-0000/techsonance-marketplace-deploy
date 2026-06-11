@@ -1,26 +1,25 @@
-import { useState, useEffect, useCallback } from 'react';
-import AxiosAPI from '@/lib/axios';
-import { getCachedData, cacheData, subscribeLocaleChange } from '@/utils/cache';
-
-const STOREFRONT_CACHE_KEY = 'techsonance_cms_storefront';
-const LANG_KEY = 'techsonance_locale';
+import { useState, useEffect, useCallback } from "react";
+import AxiosAPI from "@/lib/axios";
+import { getCachedData, cacheData, subscribeLocaleChange } from "@/utils/cache";
+import { IMAGE_PLACEHOLDER, LANG_KEY, STOREFRONT_CACHE_KEY } from "@/constants";
 
 const defaultPromo = {
-  promo_banner_title: 'Uncompromised High-Fidelity Audio',
-  promo_banner_desc: 'Save up to 40% on professional studio monitors, reference headphones, and smart amplifiers. Limited time collection.',
-  promo_banner_image_url: 'https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?q=80&w=1200&auto=format&fit=crop',
-  promo_banner_link: '/store?tag=promotion'
+  promo_banner_title: "Uncompromised High-Fidelity Audio",
+  promo_banner_desc:
+    "Save up to 40% on professional studio monitors, reference headphones, and smart amplifiers. Limited time collection.",
+  promo_banner_image_url: IMAGE_PLACEHOLDER,
+  promo_banner_link: "/store?tag=promotion",
 };
 
 export function useStoreFrontCmsData() {
-  const [lang, setLang] = useState<string>('en');
+  const [lang, setLang] = useState<string>("en");
   const [promoContent, setPromoContent] = useState<any>(defaultPromo);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Initialize lang and subscribe to changes without polling
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem(LANG_KEY) || 'en';
+    if (typeof window !== "undefined") {
+      const savedLang = localStorage.getItem(LANG_KEY) || "en";
       setLang(savedLang);
     }
     const unsubscribe = subscribeLocaleChange((newLang) => {
@@ -43,15 +42,14 @@ export function useStoreFrontCmsData() {
       const cmsRow = res.data?.data ?? res.data;
       const rawContent = cmsRow?.content;
       if (rawContent) {
-        const parsed = typeof rawContent === 'string'
-          ? JSON.parse(rawContent)
-          : rawContent;
+        const parsed =
+          typeof rawContent === "string" ? JSON.parse(rawContent) : rawContent;
 
         setPromoContent(parsed);
         cacheData(`${STOREFRONT_CACHE_KEY}_${currentLang}`, parsed);
       }
     } catch (err) {
-      console.warn('Using default static storefront promotions');
+      console.warn("Using default static storefront promotions");
     } finally {
       setIsLoading(false);
     }
@@ -61,5 +59,18 @@ export function useStoreFrontCmsData() {
     fetchStoreFrontCms(lang);
   }, [lang, fetchStoreFrontCms]);
 
-  return { promoContent, isLoading };
+  const getField = useCallback(
+    (key: string) => {
+      if (
+        promoContent &&
+        promoContent[key] !== undefined &&
+        promoContent[key] !== null &&
+        promoContent[key] !== ""
+      ) {
+        return promoContent[key];
+      }
+    },
+    [promoContent],
+  );
+  return { promoContent, isLoading, getField };
 }

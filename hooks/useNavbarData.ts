@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import AxiosAPI from '@/lib/axios';
 import { NAV_LINKS } from '@/constants/customer';
 import { getCachedData, cacheData, subscribeLocaleChange } from '@/utils/cache';
+import { LANG_KEY, NAVBAR_CACHE_KEY } from '@/constants';
 
-const NAVBAR_CACHE_KEY = 'techsonance_cms_navbar';
-const LANG_KEY = 'techsonance_locale';
+
 
 export function useNavbarData() {
   const [lang, setLang] = useState<string>('en');

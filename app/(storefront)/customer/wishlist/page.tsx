@@ -185,6 +185,7 @@ export default function WishlistPage() {
                                             <div className="w-full sm:w-40">
                                                 <AddToCart 
                                                     productVariantId={item.productVariant.id} 
+                                                    productVariant={item.productVariant as any}
                                                     styles="w-full h-11 text-sm font-bold rounded-xl" 
                                                 />
                                             </div>

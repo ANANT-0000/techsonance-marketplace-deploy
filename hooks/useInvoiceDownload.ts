@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
-import { BASE_API_URL } from '@/constants';
-import { renderPdfInIframe } from '@/lib/renderPdf';
+import { useState, useCallback } from "react";
+import { BASE_API_URL } from "@/constants";
+import { renderPdfInIframe } from "@/lib/renderPdf";
 
 export interface InvoicePayload {
   meta: Meta;
@@ -116,26 +116,28 @@ export interface Footer {
   signatorySignatureDataUri: string;
 }
 // ── Build invoice HTML string (same function from before, no changes needed) ──
-function buildInvoiceHtml(payload:  InvoicePayload): string {
+function buildInvoiceHtml(payload: InvoicePayload): string {
   const { meta, branding, seller, customer, items, totals, footer } = payload;
-  const sym = totals.currency === 'INR' ? '₹' : '$';
+  const sym = totals.currency === "INR" ? "₹" : "$";
   const fc = (n: number) => `${sym}${Number(n).toFixed(2)}`;
   const fmtDate = (d: string | undefined) => {
-    if (!d) return '';
-    return new Date(d).toLocaleDateString('en-IN', {
-      day: '2-digit', month: 'short', year: 'numeric',
+    if (!d) return "";
+    return new Date(d).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     });
   };
   const hasCgst = totals.totalCgst > 0;
   const hasIgst = totals.totalIgst > 0;
-  const primaryColor = branding.primaryColor || '#131921';
-  const fontFamily = branding.fontFamily || 'Arial, sans-serif';
+  const primaryColor = branding.primaryColor || "#131921";
+  const fontFamily = branding.fontFamily || "Arial, sans-serif";
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily.split(',')[0])}:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily.split(",")[0])}:wght@400;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: '${fontFamily}', Arial, Helvetica, sans-serif; font-size: 11px; line-height: 1.5; color: #111; background: #fff; }
@@ -183,9 +185,11 @@ function buildInvoiceHtml(payload:  InvoicePayload): string {
       <h1>Tax Invoice / Bill of Supply</h1>
       <div style="font-size:9px;color:#555;margin-top:2px;">(Original for Recipient)</div>
     </div>
-    ${branding.logoUrl
-      ? `<div class="header-logo"><img src="${branding.logoUrl}" crossorigin="anonymous" alt="Logo"></div>`
-      : ''}
+    ${
+      branding.logoUrl
+        ? `<div class="header-logo"><img src="${branding.logoUrl}" crossorigin="anonymous" alt="Logo"></div>`
+        : ""
+    }
   </div>
 
   <div class="two-col">
@@ -193,31 +197,31 @@ function buildInvoiceHtml(payload:  InvoicePayload): string {
       <div class="block-label">Sold By:</div>
       <div class="recipient-name">${seller.legalName}</div>
       <div class="address-line">${seller.address.addressLine1}</div>
-      ${seller.address.addressLine2 ? `<div class="address-line">${seller.address.addressLine2}</div>` : ''}
+      ${seller.address.addressLine2 ? `<div class="address-line">${seller.address.addressLine2}</div>` : ""}
       <div class="address-line">${seller.address.city}, ${seller.address.state} ${seller.address.postalCode}</div>
       <div class="address-line">${seller.address.country}</div>
       <div style="margin-top:6px">
-        ${(seller.taxIds || []).map((t: any) => `<div class="tax-row"><strong>${t.key}:</strong> ${t.value}</div>`).join('')}
-        ${seller.supportEmail ? `<div class="tax-row"><strong>Email:</strong> ${seller.supportEmail}</div>` : ''}
-        ${seller.supportPhone ? `<div class="tax-row"><strong>Phone:</strong> ${seller.supportPhone}</div>` : ''}
+        ${(seller.taxIds || []).map((t: any) => `<div class="tax-row"><strong>${t.key}:</strong> ${t.value}</div>`).join("")}
+        ${seller.supportEmail ? `<div class="tax-row"><strong>Email:</strong> ${seller.supportEmail}</div>` : ""}
+        ${seller.supportPhone ? `<div class="tax-row"><strong>Phone:</strong> ${seller.supportPhone}</div>` : ""}
       </div>
     </div>
     <div class="col">
       <div class="block-label">Billing Address:</div>
       <div class="recipient-name">${customer.billingAddress.recipientName}</div>
       <div class="address-line">${customer.billingAddress.addressLine1}</div>
-      ${customer.billingAddress.addressLine2 ? `<div class="address-line">${customer.billingAddress.addressLine2}</div>` : ''}
+      ${customer.billingAddress.addressLine2 ? `<div class="address-line">${customer.billingAddress.addressLine2}</div>` : ""}
       <div class="address-line">${customer.billingAddress.city}, ${customer.billingAddress.state} ${customer.billingAddress.postalCode}</div>
       <div class="address-line">${customer.billingAddress.country}</div>
-      ${customer.billingAddress.stateCode ? `<div class="address-line" style="font-weight:700">State/UT Code: ${customer.billingAddress.stateCode}</div>` : ''}
+      ${customer.billingAddress.stateCode ? `<div class="address-line" style="font-weight:700">State/UT Code: ${customer.billingAddress.stateCode}</div>` : ""}
       <br>
       <div class="block-label">Shipping Address:</div>
       <div class="recipient-name">${customer.shippingAddress.recipientName}</div>
       <div class="address-line">${customer.shippingAddress.addressLine1}</div>
-      ${customer.shippingAddress.addressLine2 ? `<div class="address-line">${customer.shippingAddress.addressLine2}</div>` : ''}
+      ${customer.shippingAddress.addressLine2 ? `<div class="address-line">${customer.shippingAddress.addressLine2}</div>` : ""}
       <div class="address-line">${customer.shippingAddress.city}, ${customer.shippingAddress.state} ${customer.shippingAddress.postalCode}</div>
       <div class="address-line">${customer.shippingAddress.country}</div>
-      ${customer.placeOfSupply ? `<div class="address-line" style="font-weight:700;margin-top:2px">Place of supply: ${customer.placeOfSupply}</div>` : ''}
+      ${customer.placeOfSupply ? `<div class="address-line" style="font-weight:700;margin-top:2px">Place of supply: ${customer.placeOfSupply}</div>` : ""}
     </div>
   </div>
 
@@ -244,14 +248,15 @@ function buildInvoiceHtml(payload:  InvoicePayload): string {
       </tr>
     </thead>
     <tbody>
-      ${items.map((item: InvoiceItem, i: number) => {
-        const isCgstSgst = item.taxType === 'CGST+SGST';
-        const half = isCgstSgst ? item.taxAmount / 2 : 0;
-        return `<tr>
+      ${items
+        .map((item: InvoiceItem, i: number) => {
+          const isCgstSgst = item.taxType === "CGST+SGST";
+          const half = isCgstSgst ? item.taxAmount / 2 : 0;
+          return `<tr>
           <td><span style="color:#888;font-size:8.5px">${i + 1}</span></td>
           <td>
             <div class="item-name">${item.name}</div>
-            ${item.sku ? `<div style="font-size:8px;color:#999">SKU: ${item.sku}</div>` : ''}
+            ${item.sku ? `<div style="font-size:8px;color:#999">SKU: ${item.sku}</div>` : ""}
           </td>
           <td>${fc(item.unitPrice)}</td>
           <td>${fc(item.discount)}</td>
@@ -259,94 +264,110 @@ function buildInvoiceHtml(payload:  InvoicePayload): string {
           <td>${fc(item.netAmount)}</td>
           <td>${item.taxRate}%</td>
           <td>
-            ${isCgstSgst
-              ? `<div style="font-size:8px;color:#666">CGST</div><div style="font-size:8px;color:#666">SGST</div>`
-              : item.taxType}
+            ${
+              isCgstSgst
+                ? `<div style="font-size:8px;color:#666">CGST</div><div style="font-size:8px;color:#666">SGST</div>`
+                : item.taxType
+            }
           </td>
           <td>
-            ${isCgstSgst
-              ? `<div style="font-size:8px;color:#666">${fc(half)}</div><div style="font-size:8px;color:#666">${fc(half)}</div>`
-              : fc(item.taxAmount)}
+            ${
+              isCgstSgst
+                ? `<div style="font-size:8px;color:#666">${fc(half)}</div><div style="font-size:8px;color:#666">${fc(half)}</div>`
+                : fc(item.taxAmount)
+            }
           </td>
           <td><strong>${fc(item.totalAmount)}</strong></td>
         </tr>`;
-      }).join('')}
+        })
+        .join("")}
     </tbody>
   </table>
 
   <div class="totals-wrap">
     <div class="totals-box">
       <div class="totals-row"><span>Taxable Amount</span><span>${fc(totals.netAmount)}</span></div>
-      ${hasCgst ? `
+      ${
+        hasCgst
+          ? `
         <div class="totals-row indent"><span>CGST</span><span>${fc(totals.totalCgst)}</span></div>
-        <div class="totals-row indent"><span>SGST</span><span>${fc(totals.totalSgst)}</span></div>` : ''}
-      ${hasIgst ? `<div class="totals-row indent"><span>IGST</span><span>${fc(totals.totalIgst)}</span></div>` : ''}
-      ${totals.totalTax > 0 ? `<div class="totals-row"><span>Total Tax</span><span>${fc(totals.totalTax)}</span></div>` : ''}
+        <div class="totals-row indent"><span>SGST</span><span>${fc(totals.totalSgst)}</span></div>`
+          : ""
+      }
+      ${hasIgst ? `<div class="totals-row indent"><span>IGST</span><span>${fc(totals.totalIgst)}</span></div>` : ""}
+      ${totals.totalTax > 0 ? `<div class="totals-row"><span>Total Tax</span><span>${fc(totals.totalTax)}</span></div>` : ""}
       <div class="totals-row grand"><span>TOTAL</span><span>${fc(totals.grandTotal)}</span></div>
     </div>
   </div>
 
   <div class="amount-words">
-    Amount in Words: <span style="font-weight:400;color:#555">${totals.currency} ${totals.grandTotalInWords || ''}</span>
+    Amount in Words: <span style="font-weight:400;color:#555">${totals.currency} ${totals.grandTotalInWords || ""}</span>
   </div>
   <div style="font-size:9px;color:#444;margin-bottom:14px;">Whether tax is payable under reverse charge — No</div>
 
   <div class="signatory-wrap">
     <div class="signatory-box">
       <div style="font-size:9px;color:#333;margin-bottom:6px;font-weight:700">For ${seller.legalName}:</div>
-      ${footer.signatorySignatureDataUri
-        ? `<img src="${footer.signatorySignatureDataUri}" style="height:50px;object-fit:contain;margin-bottom:6px" alt="Signature">`
-        : ''}
-      <div class="sig-line">${footer.signatoryName || 'Authorized Signatory'}</div>
-      ${footer.signatoryDesignation ? `<div style="font-size:8.5px;color:#777;margin-top:2px">${footer.signatoryDesignation}</div>` : ''}
+      ${
+        footer.signatorySignatureDataUri
+          ? `<img src="${footer.signatorySignatureDataUri}" style="height:50px;object-fit:contain;margin-bottom:6px" alt="Signature">`
+          : ""
+      }
+      <div class="sig-line">${footer.signatoryName || "Authorized Signatory"}</div>
+      ${footer.signatoryDesignation ? `<div style="font-size:8.5px;color:#777;margin-top:2px">${footer.signatoryDesignation}</div>` : ""}
     </div>
   </div>
 
-  ${footer.notes ? `<div class="section"><div class="section-heading">Notes</div><div class="section-body">${footer.notes}</div></div>` : ''}
-  ${footer.termsAndConditions ? `<div class="section"><div class="section-heading">Terms &amp; Conditions</div><div class="section-body">${footer.termsAndConditions}</div></div>` : ''}
+  ${footer.notes ? `<div class="section"><div class="section-heading">Notes</div><div class="section-body">${footer.notes}</div></div>` : ""}
+  ${footer.termsAndConditions ? `<div class="section"><div class="section-heading">Terms &amp; Conditions</div><div class="section-body">${footer.termsAndConditions}</div></div>` : ""}
   <div class="page-footer">This is a system-generated invoice. No signature required if digitally authenticated.</div>
 </div>
 </body>
 </html>`;
 }
 
-
 // ── The hook ──
 
 export function useInvoiceDownload() {
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const downloadInvoice = useCallback(async (orderId: string, token: string) => {
-    setIsGenerating(true);
-    try {
-      // Fetch the payload from the new backend endpoint
-      const res = await fetch(`${BASE_API_URL}/v1/invoice/payload/${orderId}`, {
-        headers: {
-          Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+  const downloadInvoice = useCallback(
+    async (orderId: string, token: string) => {
+      setIsGenerating(true);
+      try {
+        // Fetch the payload from the new backend endpoint
+        const res = await fetch(
+          `${BASE_API_URL}/v1/invoice/payload/${orderId}`,
+          {
+            headers: {
+              Authorization: token.startsWith("Bearer ")
+                ? token
+                : `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || `HTTP ${res.status}`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `HTTP ${res.status}`);
+        }
+
+        const { data: payload } = await res.json(); // Build HTML string and render to PDF in isolated iframe
+        const html = buildInvoiceHtml(payload);
+        const filename = `invoice-${payload.meta.invoiceNumber}.pdf`;
+
+        await renderPdfInIframe(html, filename);
+      } catch (err) {
+        console.error("[useInvoiceDownload] Failed:", err);
+        // Re-throw so the UI can show a toast/error
+        throw err;
+      } finally {
+        setIsGenerating(false);
       }
-
-      const { data: payload } = await res.json();
-      console.log("payload for invoice", payload);
-      // Build HTML string and render to PDF in isolated iframe
-      const html = buildInvoiceHtml(payload);
-      const filename = `invoice-${payload.meta.invoiceNumber}.pdf`;
-
-      await renderPdfInIframe(html, filename);
-    } catch (err) {
-      console.error('[useInvoiceDownload] Failed:', err);
-      // Re-throw so the UI can show a toast/error
-      throw err;
-    } finally {
-      setIsGenerating(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   return { downloadInvoice, isGenerating };
 }

@@ -20,23 +20,11 @@ const isClient = typeof window !== 'undefined';
 //     cartSidebar?: ReturnType<typeof cartSidebarReducer>;
 //     wishlist?: ReturnType<typeof WishlistReducer>;
 // };
-let cartSaveTimer: ReturnType<typeof setTimeout> | null = null;
-let wishlistSaveTimer: ReturnType<typeof setTimeout> | null = null;
-const CART_SAVE_ACTIONS = ['cart/addToCart', 'cart/removeFromCart', 'cart/clearCart'];
 const localStorageMiddleware = (store: any) => (next: any) => (action: any) => {
     try {
         const result = next(action);
         if (!isClient) return result;
 
-if (CART_SAVE_ACTIONS.includes(action.type)) {
-            if (cartSaveTimer) clearTimeout(cartSaveTimer);
-            cartSaveTimer = setTimeout(() => {
-                const cartState = store.getState().cart;
-                if (Array.isArray(cartState.items)) {
-                    localStorage.setItem('cart', JSON.stringify(cartState));
-                }
-            }, 300);
-        }
         if (action.type === 'auth/loginSuccess' || action.type === 'auth/logOut') {
             const authState = store.getState().auth;
             localStorage.setItem('auth', JSON.stringify(authState));
@@ -44,13 +32,6 @@ if (CART_SAVE_ACTIONS.includes(action.type)) {
         if (action.type.startsWith('cartSidebar/')) {
             const cartSidebarState = store.getState().cartSidebar;
             localStorage.setItem('cartSidebar', JSON.stringify(cartSidebarState));
-        }
-        if (action.type.startsWith('wishlist/')) {
-            if (wishlistSaveTimer) clearTimeout(wishlistSaveTimer);
-            wishlistSaveTimer = setTimeout(() => {
-                const wishlistState = store.getState().wishlist;
-                localStorage.setItem('wishlist', JSON.stringify(wishlistState));
-            }, 300);
         }
         return result;
     } catch (error) {

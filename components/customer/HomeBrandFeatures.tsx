@@ -1,5 +1,5 @@
 "use client";
-import { HOME_BRAND_FEATURES } from "@/constants/customer";
+import { HOME_BRAND_FEATURES } from "@/constants";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 
 interface BrandFeature {
