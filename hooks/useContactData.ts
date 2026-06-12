@@ -1,21 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
-import AxiosAPI from '@/lib/axios';
-import { ContactPageContent, ContactList } from '@/constants/customer';
-import { getCachedData, cacheData, subscribeLocaleChange } from '@/utils/cache';
+import { useState, useEffect, useCallback } from "react";
+import AxiosAPI from "@/lib/axios";
+import { ContactPageContent, ContactList } from "@/constants/customer";
+import { getCachedData, cacheData, subscribeLocaleChange } from "@/utils/cache";
 
-const CONTACT_CACHE_KEY = 'techsonance_cms_contact';
-const LANG_KEY = 'techsonance_locale';
+const CONTACT_CACHE_KEY = "techsonance_cms_contact";
+const LANG_KEY = "techsonance_locale";
 
 export function useContactData() {
-  const [lang, setLang] = useState<string>('en');
+  const [lang, setLang] = useState<string>("en");
   const [heroContent, setHeroContent] = useState<any>(ContactPageContent);
   const [contactList, setContactList] = useState<any[]>(ContactList);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Initialize lang and subscribe to changes without polling
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem(LANG_KEY) || 'en';
+    if (typeof window !== "undefined") {
+      const savedLang = localStorage.getItem(LANG_KEY) || "en";
       setLang(savedLang);
     }
     const unsubscribe = subscribeLocaleChange((newLang) => {
@@ -39,9 +39,8 @@ export function useContactData() {
       const cmsRow = res.data?.data ?? res.data;
       const rawContent = cmsRow?.content;
       if (rawContent) {
-        const parsed = typeof rawContent === 'string'
-          ? JSON.parse(rawContent)
-          : rawContent;
+        const parsed =
+          typeof rawContent === "string" ? JSON.parse(rawContent) : rawContent;
 
         const hero = parsed.hero || ContactPageContent;
         const list = parsed.list || ContactList;
@@ -50,7 +49,6 @@ export function useContactData() {
         cacheData(`${CONTACT_CACHE_KEY}_${currentLang}`, { hero, list });
       }
     } catch (err) {
-      console.warn('Using default static Contact content');
     } finally {
       setIsLoading(false);
     }

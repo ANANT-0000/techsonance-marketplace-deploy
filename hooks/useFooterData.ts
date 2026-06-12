@@ -53,7 +53,6 @@ export function useFooterData() {
         });
       }
     } catch (err) {
-      console.warn("Using default static footer config");
     } finally {
       setIsLoading(false);
     }

@@ -1,13 +1,18 @@
 import * as Sentry from "@sentry/nextjs";
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+if (process.env.NODE_ENV === "development") {
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
-  tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
+    tracesSampleRate: 1,
 
-  sendDefaultPii: false,
+    sendDefaultPii: false,
 
-  environment: process.env.NODE_ENV,
-});
+    environment: process.env.NODE_ENV,
+  });
+}
 
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+export const onRouterTransitionStart =
+  process.env.NODE_ENV === "development"
+    ? Sentry.captureRouterTransitionStart
+    : undefined;

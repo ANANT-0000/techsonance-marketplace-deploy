@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 import { BASE_API_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { revalidatePath } from "next/cache";
@@ -61,7 +61,6 @@ export const fetchCreateUserAddress = async (
         body: JSON.stringify(addressData),
       },
     );
-    console.warn(response);
     if (response.status !== 201) {
       return {
         success: false,
@@ -87,7 +86,6 @@ export const fetchUpdateUserAddress = async (
   try {
     const companyDomain = await getCompanyDomain();
 
-    console.log("customerId", customerId, "\n address id", addressId);
     const response = await fetch(
       `${BASE_API_URL}/v1/address/customer/${customerId}/${addressId}`,
       {
@@ -100,7 +98,6 @@ export const fetchUpdateUserAddress = async (
         body: JSON.stringify(addressData),
       },
     );
-    console.warn(response);
     if (response.status !== 202) {
       return {
         success: false,
@@ -123,7 +120,6 @@ export const fetchDeleteUserAddress = async (
 ) => {
   try {
     const companyDomain = await getCompanyDomain();
-    console.log(customerId, addressId);
     const response = await fetch(
       `${BASE_API_URL}/v1/address/customer/${customerId}/${addressId}`,
       {

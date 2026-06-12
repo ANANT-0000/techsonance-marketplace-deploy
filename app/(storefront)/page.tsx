@@ -11,8 +11,12 @@ import { TestimonialSlider } from "@/components/customer/homepage/TestimonialSli
 import { CuratedDiscovery } from "@/components/customer/homepage/CuratedDiscovery";
 import AxiosAPI from "@/lib/axios";
 import { useStoreFrontCmsData } from "@/hooks/useStoreFrontCmsData";
+import { CmsDataKey, LayoutSection } from "@/constants/cms";
+
 import {
   InteractiveHero,
+  HeroLayout,
+  HeroBgStyle,
   SectionHeader,
   NewArrivalsDesktop,
   MobileNewArrivalCard,
@@ -51,12 +55,12 @@ export default function Home() {
   const { getField: getStoreField } = useStoreFrontCmsData();
   const { themeData } = useThemeData();
   const layout: string[] = themeData?.homepage_layout || [
-    "hero",
-    "categories",
-    "products",
-    "promo",
-    "new_arrivals",
-    "newsletter",
+    LayoutSection.HERO,
+    LayoutSection.CATEGORIES,
+    LayoutSection.PRODUCTS,
+    LayoutSection.PROMO,
+    LayoutSection.NEW_ARRIVALS,
+    LayoutSection.NEWSLETTER,
   ];
 
   const [products, setProducts] = useState<any[]>([]);
@@ -79,20 +83,20 @@ export default function Home() {
   // ── Desktop Renderer ────────────────────────────────────────────────────────
   const renderDesktop = (key: string) => {
     switch (key) {
-      case "hero":
+      case LayoutSection.HERO:
         return (
-          <div key="hero">
+          <div key={LayoutSection.HERO}>
             {isLoading ? (
               <div className="w-full h-[60vh] bg-gray-100 animate-pulse" />
             ) : (
               <InteractiveHero
-                banner_type={getField("hero_banner_type") || "carousel"}
-                video_url={getField("hero_video_url")}
-                video_eyebrow={getField("hero_video_eyebrow")}
-                video_title={getField("hero_video_title")}
-                video_desc={getField("hero_video_desc")}
-                video_btn_text={getField("hero_video_btn_text")}
-                video_btn_link={getField("hero_video_btn_link")}
+                banner_type={getField(CmsDataKey.HERO_BANNER_TYPE) || "carousel"}
+                video_url={getField(CmsDataKey.HERO_VIDEO_URL)}
+                video_eyebrow={getField(CmsDataKey.HERO_VIDEO_EYEBROW)}
+                video_title={getField(CmsDataKey.HERO_VIDEO_TITLE)}
+                video_desc={getField(CmsDataKey.HERO_VIDEO_DESC)}
+                video_btn_text={getField(CmsDataKey.HERO_VIDEO_BTN_TEXT)}
+                video_btn_link={getField(CmsDataKey.HERO_VIDEO_BTN_LINK)}
                 slides={heroSlides.map((slide: any) => ({
                   image_url: slide.image_url,
                   title: slide.title,
@@ -103,68 +107,69 @@ export default function Home() {
                     (slide.search_query
                       ? `/store?search=${encodeURIComponent(slide.search_query)}`
                       : "/store"),
-                  layout: slide.layout || "center-overlay",
-                  bg_style: slide.bg_style || "gradient",
+                  layout: slide.layout || HeroLayout.CENTER_OVERLAY,
+                  bg_style: slide.bg_style || HeroBgStyle.GRADIENT,
+                  bg_color: slide.bg_color || "",
                 }))}
               />
             )}
           </div>
         );
 
-      case "lookbook":
+      case LayoutSection.LOOKBOOK:
         return (
           <ShoppableLookbook
-            key="lookbook"
-            title={getField("lookbook_title")}
-            subtitle={getField("lookbook_subtitle")}
-            image_url={getField("lookbook_image_url")}
-            hotspots={getField("lookbook_hotspots")}
-            bg_color={getField("lookbook_bg_color")}
+            key={LayoutSection.LOOKBOOK}
+            title={getField(CmsDataKey.LOOKBOOK_TITLE)}
+            subtitle={getField(CmsDataKey.LOOKBOOK_SUBTITLE)}
+            image_url={getField(CmsDataKey.LOOKBOOK_IMAGE_URL)}
+            hotspots={getField(CmsDataKey.LOOKBOOK_HOTSPOTS)}
+            bg_color={getField(CmsDataKey.LOOKBOOK_BG_COLOR)}
           />
         );
 
-      case "scarcity":
+      case LayoutSection.SCARCITY:
         return (
           <ScarcityBlock
-            key="scarcity"
-            timer_title={getStoreField("promo_timer_title")}
-            expires_at={getStoreField("promo_expires_at")}
-            alert_text={getStoreField("promo_alert_text")}
-            alert_bg={getStoreField("promo_alert_bg")}
-            alert_text_color={getStoreField("promo_alert_text_color")}
-            btn_text={getStoreField("promo_btn_text")}
-            btn_link={getStoreField("promo_btn_link")}
+            key={LayoutSection.SCARCITY}
+            timer_title={getStoreField(CmsDataKey.PROMO_TIMER_TITLE)}
+            expires_at={getStoreField(CmsDataKey.PROMO_EXPIRES_AT)}
+            alert_text={getStoreField(CmsDataKey.PROMO_ALERT_TEXT)}
+            alert_bg={getStoreField(CmsDataKey.PROMO_ALERT_BG)}
+            alert_text_color={getStoreField(CmsDataKey.PROMO_ALERT_TEXT_COLOR)}
+            btn_text={getStoreField(CmsDataKey.PROMO_BTN_TEXT)}
+            btn_link={getStoreField(CmsDataKey.PROMO_BTN_LINK)}
           />
         );
 
-      case "social_proof":
+      case LayoutSection.SOCIAL_PROOF:
         return (
           <TestimonialSlider
-            key="social_proof"
-            title={getField("social_proof_title")}
-            eyebrow={getField("social_proof_eyebrow")}
-            testimonials={getField("social_proof_testimonials")}
-            badges={getField("social_proof_badges")}
+            key={LayoutSection.SOCIAL_PROOF}
+            title={getField(CmsDataKey.SOCIAL_PROOF_TITLE)}
+            eyebrow={getField(CmsDataKey.SOCIAL_PROOF_EYEBROW)}
+            testimonials={getField(CmsDataKey.SOCIAL_PROOF_TESTIMONIALS)}
+            badges={getField(CmsDataKey.SOCIAL_PROOF_BADGES)}
           />
         );
 
-      case "curated":
+      case LayoutSection.CURATED:
         return (
           <CuratedDiscovery
-            key="curated"
-            title={getField("curated_title")}
-            subtitle={getField("curated_subtitle")}
-            type={getField("curated_type")}
-            product_ids={getField("curated_product_ids")}
-            bg_color={getField("curated_bg_color")}
+            key={LayoutSection.CURATED}
+            title={getField(CmsDataKey.CURATED_TITLE)}
+            subtitle={getField(CmsDataKey.CURATED_SUBTITLE)}
+            type={getField(CmsDataKey.CURATED_TYPE)}
+            product_ids={getField(CmsDataKey.CURATED_PRODUCT_IDS)}
+            bg_color={getField(CmsDataKey.CURATED_BG_COLOR)}
           />
         );
 
-      case "categories":
+      case LayoutSection.CATEGORIES:
         if (!isLoading && categories.length === 0) return null;
         return (
           <section
-            key="categories"
+            key={LayoutSection.CATEGORIES}
             className="py-20 px-6 lg:px-16 xl:px-24 bg-white"
           >
             <div className="max-w-screen-xl mx-auto">
@@ -191,11 +196,11 @@ export default function Home() {
           </section>
         );
 
-      case "products":
+      case LayoutSection.PRODUCTS:
         if (!productsLoading && products.length === 0) return null;
         return (
           <section
-            key="products"
+            key={LayoutSection.PRODUCTS}
             className="py-20 px-6 lg:px-16 xl:px-24 bg-[#faf9f6]"
           >
             <div className="max-w-screen-xl mx-auto">
@@ -228,38 +233,38 @@ export default function Home() {
           </section>
         );
 
-      case "promo": {
-        const imageUrl = getField("middle_banner_image_url");
+      case LayoutSection.PROMO: {
+        const imageUrl = getField(CmsDataKey.MIDDLE_BANNER_IMAGE_URL);
         if (!imageUrl && !isLoading) return null;
         return isLoading ? (
           <div
-            key="promo"
+            key={LayoutSection.PROMO}
             className="w-full h-[52vh] bg-gray-100 animate-pulse"
           />
         ) : (
           <PromoBannerDesktop
-            key="promo"
+            key={LayoutSection.PROMO}
             imageUrl={imageUrl}
-            subtitle={getField("middle_banner_subtitle")}
-            title={getField("middle_banner_title")}
-            desc={getField("middle_banner_desc")}
-            btnText={getField("middle_banner_btn_text")}
+            subtitle={getField(CmsDataKey.MIDDLE_BANNER_SUBTITLE)}
+            title={getField(CmsDataKey.MIDDLE_BANNER_TITLE)}
+            desc={getField(CmsDataKey.MIDDLE_BANNER_DESC)}
+            btnText={getField(CmsDataKey.MIDDLE_BANNER_BTN_TEXT)}
           />
         );
       }
 
-      case "new_arrivals":
+      case LayoutSection.NEW_ARRIVALS:
         return isLoading ? (
           <div
-            key="new_arrivals"
+            key={LayoutSection.NEW_ARRIVALS}
             className="w-full h-[600px] bg-gray-100 animate-pulse mx-6 lg:mx-16 xl:mx-24 rounded-2xl my-20"
           />
         ) : (
-          <NewArrivalsDesktop key="new_arrivals" getField={getField} />
+          <NewArrivalsDesktop key={LayoutSection.NEW_ARRIVALS} getField={getField} />
         );
 
-      case "newsletter":
-        return <NewsletterDesktop key="newsletter" getField={getField} />;
+      case LayoutSection.NEWSLETTER:
+        return <NewsletterDesktop key={LayoutSection.NEWSLETTER} getField={getField} />;
 
       default:
         return null;
@@ -269,20 +274,20 @@ export default function Home() {
   // ── Mobile Renderer ─────────────────────────────────────────────────────────
   const renderMobile = (key: string) => {
     switch (key) {
-      case "hero":
+      case LayoutSection.HERO:
         return (
-          <div key="m-hero" className="h-[52vh]">
+          <div key={`m-${LayoutSection.HERO}`} className="h-[52vh]">
             {isLoading ? (
               <div className="w-full h-full bg-gray-100 animate-pulse" />
             ) : (
               <InteractiveHero
-                banner_type={getField("hero_banner_type") || "carousel"}
-                video_url={getField("hero_video_url")}
-                video_eyebrow={getField("hero_video_eyebrow")}
-                video_title={getField("hero_video_title")}
-                video_desc={getField("hero_video_desc")}
-                video_btn_text={getField("hero_video_btn_text")}
-                video_btn_link={getField("hero_video_btn_link")}
+                banner_type={getField(CmsDataKey.HERO_BANNER_TYPE) || "carousel"}
+                video_url={getField(CmsDataKey.HERO_VIDEO_URL)}
+                video_eyebrow={getField(CmsDataKey.HERO_VIDEO_EYEBROW)}
+                video_title={getField(CmsDataKey.HERO_VIDEO_TITLE)}
+                video_desc={getField(CmsDataKey.HERO_VIDEO_DESC)}
+                video_btn_text={getField(CmsDataKey.HERO_VIDEO_BTN_TEXT)}
+                video_btn_link={getField(CmsDataKey.HERO_VIDEO_BTN_LINK)}
                 slides={heroSlides.map((slide: any) => ({
                   image_url: slide.image_url,
                   title: slide.title,
@@ -293,67 +298,67 @@ export default function Home() {
                     (slide.search_query
                       ? `/store?search=${encodeURIComponent(slide.search_query)}`
                       : "/store"),
-                  layout: slide.layout || "center-overlay",
-                  bg_style: slide.bg_style || "gradient",
+                  layout: slide.layout || HeroLayout.CENTER_OVERLAY,
+                  bg_style: slide.bg_style || HeroBgStyle.GRADIENT,
                 }))}
               />
             )}
           </div>
         );
 
-      case "lookbook":
+      case LayoutSection.LOOKBOOK:
         return (
           <ShoppableLookbook
-            key="m-lookbook"
-            title={getField("lookbook_title")}
-            subtitle={getField("lookbook_subtitle")}
-            image_url={getField("lookbook_image_url")}
-            hotspots={getField("lookbook_hotspots")}
-            bg_color={getField("lookbook_bg_color")}
+            key={`m-${LayoutSection.LOOKBOOK}`}
+            title={getField(CmsDataKey.LOOKBOOK_TITLE)}
+            subtitle={getField(CmsDataKey.LOOKBOOK_SUBTITLE)}
+            image_url={getField(CmsDataKey.LOOKBOOK_IMAGE_URL)}
+            hotspots={getField(CmsDataKey.LOOKBOOK_HOTSPOTS)}
+            bg_color={getField(CmsDataKey.LOOKBOOK_BG_COLOR)}
           />
         );
 
-      case "scarcity":
+      case LayoutSection.SCARCITY:
         return (
           <ScarcityBlock
-            key="m-scarcity"
-            timer_title={getField("scarcity_timer_title")}
-            expires_at={getField("scarcity_expires_at")}
-            alert_text={getField("scarcity_alert_text")}
-            alert_bg={getField("scarcity_alert_bg")}
-            alert_text_color={getField("scarcity_alert_text_color")}
-            btn_text={getField("scarcity_btn_text")}
-            btn_link={getField("scarcity_btn_link")}
+            key={`m-${LayoutSection.SCARCITY}`}
+            timer_title={getField(CmsDataKey.SCARCITY_TIMER_TITLE)}
+            expires_at={getField(CmsDataKey.SCARCITY_EXPIRES_AT)}
+            alert_text={getField(CmsDataKey.SCARCITY_ALERT_TEXT)}
+            alert_bg={getField(CmsDataKey.SCARCITY_ALERT_BG)}
+            alert_text_color={getField(CmsDataKey.SCARCITY_ALERT_TEXT_COLOR)}
+            btn_text={getField(CmsDataKey.SCARCITY_BTN_TEXT)}
+            btn_link={getField(CmsDataKey.SCARCITY_BTN_LINK)}
           />
         );
 
-      case "social_proof":
+      case LayoutSection.SOCIAL_PROOF:
         return (
           <TestimonialSlider
-            key="m-social_proof"
-            title={getField("social_proof_title")}
-            eyebrow={getField("social_proof_eyebrow")}
-            testimonials={getField("social_proof_testimonials")}
-            badges={getField("social_proof_badges")}
+            key={`m-${LayoutSection.SOCIAL_PROOF}`}
+            title={getField(CmsDataKey.SOCIAL_PROOF_TITLE)}
+            eyebrow={getField(CmsDataKey.SOCIAL_PROOF_EYEBROW)}
+            testimonials={getField(CmsDataKey.SOCIAL_PROOF_TESTIMONIALS)}
+            badges={getField(CmsDataKey.SOCIAL_PROOF_BADGES)}
           />
         );
 
-      case "curated":
+      case LayoutSection.CURATED:
         return (
           <CuratedDiscovery
-            key="m-curated"
-            title={getField("curated_title")}
-            subtitle={getField("curated_subtitle")}
-            type={getField("curated_type")}
-            product_ids={getField("curated_product_ids")}
-            bg_color={getField("curated_bg_color")}
+            key={`m-${LayoutSection.CURATED}`}
+            title={getField(CmsDataKey.CURATED_TITLE)}
+            subtitle={getField(CmsDataKey.CURATED_SUBTITLE)}
+            type={getField(CmsDataKey.CURATED_TYPE)}
+            product_ids={getField(CmsDataKey.CURATED_PRODUCT_IDS)}
+            bg_color={getField(CmsDataKey.CURATED_BG_COLOR)}
           />
         );
 
-      case "categories":
+      case LayoutSection.CATEGORIES:
         if (!isLoading && categories.length === 0) return null;
         return (
-          <section key="m-categories" className="mt-[14vh] pb-4 px-4">
+          <section key={`m-${LayoutSection.CATEGORIES}`} className="mt-[14vh] pb-4 px-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-[13px] font-bold text-gray-900 uppercase tracking-widest">
                 Explore
@@ -373,10 +378,10 @@ export default function Home() {
           </section>
         );
 
-      case "products":
+      case LayoutSection.PRODUCTS:
         if (!productsLoading && products.length === 0) return null;
         return (
-          <section key="m-products" className="py-6 px-4 bg-[#faf9f6]">
+          <section key={`m-${LayoutSection.PRODUCTS}`} className="py-6 px-4 bg-[#faf9f6]">
             <div className="flex justify-between items-center mb-5">
               <h2 className="text-[13px] font-bold text-gray-900 uppercase tracking-widest">
                 Featured
@@ -409,29 +414,29 @@ export default function Home() {
           </section>
         );
 
-      case "promo": {
-        const imageUrl = getField("middle_banner_image_url");
+      case LayoutSection.PROMO: {
+        const imageUrl = getField(CmsDataKey.MIDDLE_BANNER_IMAGE_URL);
         if (!imageUrl && !isLoading) return null;
         return isLoading ? (
           <div
-            key="m-promo"
+            key={`m-${LayoutSection.PROMO}`}
             className="mx-4 my-6 h-44 bg-gray-100 rounded-2xl animate-pulse"
           />
         ) : (
           <PromoBannerMobile
-            key="m-promo"
+            key={`m-${LayoutSection.PROMO}`}
             imageUrl={imageUrl}
-            title={getField("middle_banner_title")}
-            desc={getField("middle_banner_desc")}
-            btnText={getField("middle_banner_btn_text")}
+            title={getField(CmsDataKey.MIDDLE_BANNER_TITLE)}
+            desc={getField(CmsDataKey.MIDDLE_BANNER_DESC)}
+            btnText={getField(CmsDataKey.MIDDLE_BANNER_BTN_TEXT)}
           />
         );
       }
 
-      case "new_arrivals":
+      case LayoutSection.NEW_ARRIVALS:
         if (!productsLoading && newArrivals.length === 0) return null;
         return (
-          <section key="m-new_arrivals" className="py-6 px-4">
+          <section key={`m-${LayoutSection.NEW_ARRIVALS}`} className="py-6 px-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-[13px] font-bold text-gray-900 uppercase tracking-widest">
                 New Arrivals

@@ -60,10 +60,7 @@ export default function Contact() {
   const onSubmit = (data: ContactFormData) => {
     try {
       reset();
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      console.log("form error ", errors);
-    }
+    } catch (error) {}
   };
   return (
     <>

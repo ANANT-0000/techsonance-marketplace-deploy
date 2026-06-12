@@ -1,8 +1,17 @@
 "use client";
- 
+
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, Ticket, Calendar, Activity, Tag, TrendingUp, Zap } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Ticket,
+  Calendar,
+  Activity,
+  Tag,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 import { Coupon, User } from "@/utils/Types";
 import AxiosAPI from "@/lib/axios";
 import { LoaderSpinner } from "@/components/common/LoaderSpinner";
@@ -13,10 +22,14 @@ import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 
 export default function CouponsPage() {
-  
   const router = useRouter();
-  const {user}=useAppSelector((state:RootState) => state.auth);
-const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ? user.id : '';
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const userId =
+    user && "user_id" in user
+      ? user.user_id
+      : user && "id" in user
+        ? user.id
+        : "";
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,7 +45,6 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
       });
       setCoupons(res.data.data);
     } catch (error) {
-      console.error("Failed to fetch coupons:", error);
     } finally {
       setLoading(false);
     }
@@ -57,10 +69,15 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
   const formatDiscount = (coupon: Coupon) => {
     if (coupon.discount_type === "percentage") {
       return `${coupon.discount_value}% OFF${
-        coupon.max_discount_amount ? ` (Up to ₹${coupon.max_discount_amount})` : ""
+        coupon.max_discount_amount
+          ? ` (Up to ₹${coupon.max_discount_amount})`
+          : ""
       }`;
     }
-    if (coupon.discount_type === "fixed_cart" || coupon.discount_type === "fixed_amount") {
+    if (
+      coupon.discount_type === "fixed_cart" ||
+      coupon.discount_type === "fixed_amount"
+    ) {
       return `₹${coupon.discount_value} OFF`;
     }
     if (coupon.discount_type === "free_shipping") {
@@ -78,16 +95,16 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
     setCouponId(id);
     setIsModalOpen(true);
   };
-    // Summary counts
+  // Summary counts
   const activeCoupons = coupons.filter(
-    (c) => c.is_active && new Date(c.valid_to) >= new Date()
+    (c) => c.is_active && new Date(c.valid_to) >= new Date(),
   ).length;
   const expiredCoupons = coupons.filter(
-    (c) => new Date(c.valid_to) < new Date()
+    (c) => new Date(c.valid_to) < new Date(),
   ).length;
   const totalRedemptions = coupons.reduce(
     (sum, c) => sum + (c.total_used ?? 0),
-    0
+    0,
   );
   return (
     <div className="w-full p-6 mx-auto">
@@ -107,7 +124,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
           Create Coupon
         </Button>
       </header>
- 
+
       {/* ── Summary cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
@@ -126,7 +143,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
             Currently live
           </p>
         </div>
- 
+
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -139,9 +156,11 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
           <h3 className="text-2xl font-bold text-gray-800">
             {loading ? "—" : expiredCoupons}
           </h3>
-          <p className="text-xs text-gray-500 mt-1 font-medium">Past validity</p>
+          <p className="text-xs text-gray-500 mt-1 font-medium">
+            Past validity
+          </p>
         </div>
- 
+
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -154,10 +173,12 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
           <h3 className="text-2xl font-bold text-gray-800">
             {loading ? "—" : totalRedemptions}
           </h3>
-          <p className="text-xs text-gray-500 mt-1 font-medium">All-time uses</p>
+          <p className="text-xs text-gray-500 mt-1 font-medium">
+            All-time uses
+          </p>
         </div>
       </div>
- 
+
       {/* ── Search & filter bar ── */}
       <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-6 shadow-sm">
         <div className="relative max-w-md">
@@ -165,6 +186,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
             size={16}
           />
+
           <input
             type="text"
             placeholder="Search by code or description…"
@@ -174,7 +196,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
           />
         </div>
       </div>
- 
+
       {/* ── Main grid ── */}
       {loading ? (
         <div className="flex justify-center items-center py-20 min-h-[400px]">
@@ -189,7 +211,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
               coupon.max_uses && coupon.total_used !== undefined
                 ? Math.min((coupon.total_used / coupon.max_uses) * 100, 100)
                 : null;
- 
+
             return (
               <div
                 key={coupon.id}
@@ -211,24 +233,28 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                       isActive
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                         : isExpired
-                        ? "bg-gray-50 text-gray-500 border-gray-200"
-                        : "bg-amber-50 text-amber-700 border-amber-200"
+                          ? "bg-gray-50 text-gray-500 border-gray-200"
+                          : "bg-amber-50 text-amber-700 border-amber-200"
                     }`}
                   >
                     {isActive ? "Active" : isExpired ? "Expired" : "Inactive"}
                   </span>
                 </div>
- 
+
                 {/* Description + discount pill */}
                 <div className="mb-4 flex-grow">
                   <p className="text-sm font-semibold text-gray-800 mb-2 leading-snug">
-                    {coupon.description ?? <span className="text-gray-400 italic">No description</span>}
+                    {coupon.description ?? (
+                      <span className="text-gray-400 italic">
+                        No description
+                      </span>
+                    )}
                   </p>
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-100">
                     {formatDiscount(coupon)}
                   </span>
                 </div>
- 
+
                 {/* Footer: expiry + usage */}
                 <div className="border-t border-gray-100 pt-4 space-y-2.5 mt-auto">
                   <div className="flex items-center justify-between text-xs text-gray-500">
@@ -244,7 +270,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                       })}
                     </span>
                   </div>
- 
+
                   {coupon.total_used !== undefined && (
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <span className="flex items-center gap-1.5">
@@ -257,7 +283,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                       </span>
                     </div>
                   )}
- 
+
                   {usagePct !== null && (
                     <div>
                       <div className="w-full bg-gray-100 rounded-full h-1.5 mt-1 overflow-hidden">
@@ -266,8 +292,8 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
                             usagePct >= 90
                               ? "bg-red-400"
                               : usagePct >= 60
-                              ? "bg-amber-400"
-                              : "bg-indigo-500"
+                                ? "bg-amber-400"
+                                : "bg-indigo-500"
                           }`}
                           style={{ width: `${usagePct}%` }}
                         />
@@ -278,7 +304,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
               </div>
             );
           })}
- 
+
           {/* Empty state */}
           {filteredCoupons.length === 0 && (
             <div className="col-span-full flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-2xl border border-dashed border-gray-200">
@@ -306,7 +332,7 @@ const userId= user && 'user_id' in user  ? user.user_id : user && 'id' in user ?
           )}
         </div>
       )}
- 
+
       {/* Modal */}
       {(isModalOpen || couponId) && (
         <CouponModel

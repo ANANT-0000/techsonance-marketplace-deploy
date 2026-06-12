@@ -1,3 +1,4 @@
+import { CmsDataKey } from "@/constants/cms";
 import { useState, useEffect, useCallback } from "react";
 import AxiosAPI from "@/lib/axios";
 import {
@@ -6,12 +7,7 @@ import {
   dispatchLocaleChange,
   subscribeLocaleChange,
 } from "@/utils/cache";
-import {
-  BANNERS_CACHE_KEY,
-  CATEGORIES_CACHE_KEY,
-  CMS_CACHE_KEY,
-  LANG_KEY,
-} from "@/constants";
+
 // Dynamic banners fallback images
 
 export function useHomepageData() {
@@ -25,7 +21,7 @@ export function useHomepageData() {
   // Initialize lang and subscribe to changes without polling
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedLang = localStorage.getItem(LANG_KEY) || "en";
+      const savedLang = localStorage.getItem(CmsDataKey.LANG_KEY) || "en";
       setLangState(savedLang);
     }
     const unsubscribe = subscribeLocaleChange((newLang) => {
@@ -42,7 +38,7 @@ export function useHomepageData() {
   const fetchData = useCallback(async (currentLang: string) => {
     setIsLoading(true);
     // Try finding in cache first
-    const cachedCms = getCachedData(`${CMS_CACHE_KEY}_${currentLang}`);
+    const cachedCms = getCachedData(`${CmsDataKey.CMS_CACHE_KEY}_${currentLang}`);
     if (cachedCms) {
       setCmsContent(cachedCms);
       if (
@@ -74,11 +70,11 @@ export function useHomepageData() {
           ) {
             setHeroSlides(parsedContent.hero_slides);
           }
-          cacheData(`${CMS_CACHE_KEY}_${currentLang}`, parsedContent);
+          cacheData(`${CmsDataKey.CMS_CACHE_KEY}_${currentLang}`, parsedContent);
         } else {
           if (!cmsContent) {
             const staleCached = localStorage.getItem(
-              `${CMS_CACHE_KEY}_${currentLang}`,
+              `${CmsDataKey.CMS_CACHE_KEY}_${currentLang}`,
             );
             if (staleCached) {
               try {
@@ -98,7 +94,7 @@ export function useHomepageData() {
       } catch (err: any) {
         if (!cmsContent) {
           const staleCached = localStorage.getItem(
-            `${CMS_CACHE_KEY}_${currentLang}`,
+            `${CmsDataKey.CMS_CACHE_KEY}_${currentLang}`,
           );
           if (staleCached) {
             try {
@@ -128,14 +124,14 @@ export function useHomepageData() {
           if (urls.length > 0) {
             setBanners(urls);
             if (typeof window !== "undefined") {
-              localStorage.setItem(BANNERS_CACHE_KEY, JSON.stringify(urls));
+              localStorage.setItem(CmsDataKey.BANNERS_CACHE_KEY, JSON.stringify(urls));
             }
           }
         }
       } catch (err) {
         // Banners are non-critical — use defaults silently
         if (typeof window !== "undefined") {
-          const cachedBanners = localStorage.getItem(BANNERS_CACHE_KEY);
+          const cachedBanners = localStorage.getItem(CmsDataKey.BANNERS_CACHE_KEY);
           if (cachedBanners) setBanners(JSON.parse(cachedBanners));
         }
       }
@@ -154,7 +150,7 @@ export function useHomepageData() {
             setCategories(formatted);
             if (typeof window !== "undefined") {
               localStorage.setItem(
-                CATEGORIES_CACHE_KEY,
+                CmsDataKey.CATEGORIES_CACHE_KEY,
                 JSON.stringify(formatted),
               );
             }
@@ -162,7 +158,7 @@ export function useHomepageData() {
         }
       } catch (err) {
         if (typeof window !== "undefined") {
-          const cachedCategories = localStorage.getItem(CATEGORIES_CACHE_KEY);
+          const cachedCategories = localStorage.getItem(CmsDataKey.CATEGORIES_CACHE_KEY);
           if (cachedCategories) setCategories(JSON.parse(cachedCategories));
         }
       }

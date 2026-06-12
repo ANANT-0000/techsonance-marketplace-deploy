@@ -30,6 +30,7 @@ import { useParams, useRouter } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import AxiosAPI from "@/lib/axios";
 import { ConfirmationModal } from "@/components/common/ConfirmationModal";
+import toast from "react-hot-toast";
 
 export enum UserStatus {
   PENDING = "pending",
@@ -176,7 +177,7 @@ export default function VendorDetailPage() {
           documents: apiData.documents || [],
         });
       } catch (error) {
-        console.error("Failed to fetch vendor details", error);
+        toast.error("Failed to fetch vendor details");
       } finally {
         setIsLoading(false);
       }

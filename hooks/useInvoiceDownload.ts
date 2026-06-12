@@ -294,7 +294,11 @@ function buildInvoiceHtml(payload: InvoicePayload): string {
         <div class="totals-row indent"><span>SGST</span><span>${fc(totals.totalSgst)}</span></div>`
           : ""
       }
-      ${hasIgst ? `<div class="totals-row indent"><span>IGST</span><span>${fc(totals.totalIgst)}</span></div>` : ""}
+      ${
+        hasIgst
+          ? `<div class="totals-row indent"><span>IGST</span><span>${fc(totals.totalIgst)}</span></div>`
+          : ""
+      }
       ${totals.totalTax > 0 ? `<div class="totals-row"><span>Total Tax</span><span>${fc(totals.totalTax)}</span></div>` : ""}
       <div class="totals-row grand"><span>TOTAL</span><span>${fc(totals.grandTotal)}</span></div>
     </div>
@@ -313,7 +317,9 @@ function buildInvoiceHtml(payload: InvoicePayload): string {
           ? `<img src="${footer.signatorySignatureDataUri}" style="height:50px;object-fit:contain;margin-bottom:6px" alt="Signature">`
           : ""
       }
-      <div class="sig-line">${footer.signatoryName || "Authorized Signatory"}</div>
+      <div class="sig-line">${
+        footer.signatoryName || "Authorized Signatory"
+      }</div>
       ${footer.signatoryDesignation ? `<div style="font-size:8.5px;color:#777;margin-top:2px">${footer.signatoryDesignation}</div>` : ""}
     </div>
   </div>
@@ -359,7 +365,6 @@ export function useInvoiceDownload() {
 
         await renderPdfInIframe(html, filename);
       } catch (err) {
-        console.error("[useInvoiceDownload] Failed:", err);
         // Re-throw so the UI can show a toast/error
         throw err;
       } finally {

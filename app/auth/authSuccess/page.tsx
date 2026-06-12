@@ -98,13 +98,11 @@ function AuthSuccessHandler() {
             }
           }, 1000);
         } catch (decodeError) {
-          console.error("Token decode error:", decodeError);
           setStatus(LoginStatusEnum.ERROR);
           setErrorMessage("Invalid authentication token");
           setTimeout(() => router.push("/auth/customerLogin"), 2000);
         }
       } catch (error) {
-        console.error("Auth success handler error:", error);
         setStatus(LoginStatusEnum.ERROR);
         setErrorMessage("Authentication failed. Please try again.");
         setTimeout(() => router.push("/auth/customerLogin"), 2000);

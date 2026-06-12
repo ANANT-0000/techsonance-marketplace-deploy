@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -17,7 +17,6 @@ import { BASE_API_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { AccountReactivation } from "@/components/customer/AccountReactivationModel";
 import Image from "next/image";
-// ADDED IMPORT: Icons for visibility toggle
 import { Eye, EyeOff } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -26,7 +25,7 @@ interface LoginFormData {
   password: string;
 }
 
-export default function CustomerLoginPage() {
+function CustomerLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
@@ -34,7 +33,6 @@ export default function CustomerLoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isReactivationOpen, setIsReactivationOpen] = useState(false);
-  // ADDED STATE: For toggling password visibility
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -52,7 +50,6 @@ export default function CustomerLoginPage() {
   });
   const userEmail = watch("email");
 
-  // Check for registration success message
   useEffect(() => {
     if (searchParams.get("registered") === "true") {
       setSuccessMessage("Account created successfully! Please log in.");
@@ -75,7 +72,6 @@ export default function CustomerLoginPage() {
           router.push("/");
         }
       } else if (response.status === 423) {
-        console.log("resonse statsu", response);
         dispatch(loginFailure(response?.message));
         setServerError(response?.message);
         setIsReactivationOpen(true);
@@ -92,7 +88,6 @@ export default function CustomerLoginPage() {
         "Login failed. Please try again.";
       dispatch(loginFailure(message));
       setServerError(message);
-      console.error("Login error:", error);
     }
   };
 
@@ -112,16 +107,16 @@ export default function CustomerLoginPage() {
       }
       window.location.href = `${BASE_API_URL}/v1/auth/google?domain=${encodeURIComponent(domain)}`;
     } catch (error) {
-      console.error("Google OAuth error:", error);
       setServerError("Failed to initialize Google sign-in. Please try again.");
       setIsGoogleLoading(false);
     }
   };
+
   const handleReactivationSuccess = () => {
     setIsReactivationOpen(false);
-
     toast.success("Redirecting to dashboard...");
   };
+
   return (
     <main className="w-full flex justify-center items-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
       <Toaster
@@ -202,7 +197,7 @@ export default function CustomerLoginPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={isGoogleLoading || isSubmitting}
-            className={`${isGoogleLoading || isSubmitting ? "opacity-50 cursor-not-allowed" : "hover:border-slate-400 hover:bg-slate-50"} w-full flex items-center justify-center gap-3  border-2 border-slate-300 text-slate-700 py-3 rounded-xl font-semibold transition-all duration-200 shadow-sm mb-6`}
+            className={`${isGoogleLoading || isSubmitting ? "opacity-50 cursor-not-allowed" : "hover:border-slate-400 hover:bg-slate-50"} w-full flex items-center justify-center gap-3 border-2 border-slate-300 text-slate-700 py-3 rounded-xl font-semibold transition-all duration-200 shadow-sm mb-6`}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -215,7 +210,7 @@ export default function CustomerLoginPage() {
               />
               <path
                 fill="#FBBC05"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.２２ 1 1２s．4３ ３．４5 1.18 4.93l2.85-2.22.81-.62z"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
               />
               <path
                 fill="#EA4335"
@@ -305,7 +300,6 @@ export default function CustomerLoginPage() {
                   }`}
                   disabled={isSubmitting || isGoogleLoading}
                 />
-                {/* ADDED COMPONENT: Eye toggle button */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -368,7 +362,7 @@ export default function CustomerLoginPage() {
             </button>
 
             <p className="text-center text-sm text-slate-600 pt-4">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/auth/customerRegister"
                 className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition-colors"
@@ -386,5 +380,13 @@ export default function CustomerLoginPage() {
         emailMasked={userEmail}
       />
     </main>
+  );
+}
+
+export default function CustomerLoginPage() {
+  return (
+    <Suspense>
+      <CustomerLoginForm />
+    </Suspense>
   );
 }

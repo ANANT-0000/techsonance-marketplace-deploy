@@ -20,12 +20,16 @@ export interface TaxBreakdown {
 
 // ─── Reducer ──────────────────────────────────────────────────────────────────
 
+export enum TaxPanelActionType {
+  TOGGLE = 'toggle'
+}
+
 interface TaxPanelState {
   isExpanded: boolean;
 }
 
-function taxPanelReducer(state: TaxPanelState, action: 'toggle'): TaxPanelState {
-  if (action === 'toggle') return { isExpanded: !state.isExpanded };
+function taxPanelReducer(state: TaxPanelState, action: TaxPanelActionType): TaxPanelState {
+  if (action === TaxPanelActionType.TOGGLE) return { isExpanded: !state.isExpanded };
   return state;
 }
 
@@ -58,7 +62,7 @@ export function TaxBreakdownPanel({
     <div className="border border-gray-100 rounded-xl overflow-hidden">
       {/* Summary row — toggle button */}
       <button
-        onClick={() => panelDispatch('toggle')}
+        onClick={() => panelDispatch(TaxPanelActionType.TOGGLE)}
         className="w-full flex items-center justify-between px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/80 transition-colors text-left"
       >
         <div className="flex items-center gap-2">

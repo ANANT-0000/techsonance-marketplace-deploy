@@ -15,10 +15,15 @@ const AxiosAPI = axios.create({
   baseURL: BASE_API_URL,
   headers: {
     "Content-Type": "application/json",
-    "company-domain": await getCompanyDomain(),
   },
 });
-
+AxiosAPI.interceptors.request.use(async (config) => {
+  const domain = await getCompanyDomain();
+  if (domain) {
+    config.headers["company-domain"] = domain;
+  }
+  return config;
+});
 export const vendorLogin = async (
   data: { email: string; password: string },
   dispatch: any,

@@ -15,7 +15,12 @@ import {
 import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
 import { BrandingTab } from "@/components/vendor/BrandingTab";
-import { fetchProductOptions } from "@/utils/commonAPiClient";
+import {
+  HeroLayout,
+  HeroBgStyle,
+} from "@/components/customer/homepage/InteractiveHero";
+import { CmsDataKey } from "@/constants/cms";
+import { UILabels } from "@/constants/ui-labels";
 
 export enum PageType {
   HOME = "home",
@@ -32,27 +37,48 @@ export enum LangType {
   ES = "es",
 }
 
+export type CmsDataPayload = Record<string, any>;
+
 interface CmsState {
   page: PageType;
   lang: LangType;
   loading: boolean;
   saving: boolean;
   msg: { text: string; ok: boolean } | null;
-  data: any;
+  data: CmsDataPayload;
+}
+
+export enum CmsActionType {
+  SET_PAGE = "SET_PAGE",
+  SET_LANG = "SET_LANG",
+  FETCH_START = "FETCH_START",
+  FETCH_SUCCESS = "FETCH_SUCCESS",
+  FETCH_FAILURE = "FETCH_FAILURE",
+  SAVE_START = "SAVE_START",
+  SAVE_SUCCESS = "SAVE_SUCCESS",
+  SAVE_FAILURE = "SAVE_FAILURE",
+  SET_DATA_FIELD = "SET_DATA_FIELD",
+  SET_DATA_FULL = "SET_DATA_FULL",
+  CLEAR_MESSAGE = "CLEAR_MESSAGE",
+}
+
+export interface SetDataFieldPayload {
+  key: string;
+  val: any;
 }
 
 type CmsAction =
-  | { type: "SET_PAGE"; payload: PageType }
-  | { type: "SET_LANG"; payload: LangType }
-  | { type: "FETCH_START" }
-  | { type: "FETCH_SUCCESS"; payload: any }
-  | { type: "FETCH_FAILURE"; payload: string }
-  | { type: "SAVE_START" }
-  | { type: "SAVE_SUCCESS"; payload: string }
-  | { type: "SAVE_FAILURE"; payload: string }
-  | { type: "SET_DATA_FIELD"; payload: { key: string; val: any } }
-  | { type: "SET_DATA_FULL"; payload: any }
-  | { type: "CLEAR_MESSAGE" };
+  | { type: CmsActionType.SET_PAGE; payload: PageType }
+  | { type: CmsActionType.SET_LANG; payload: LangType }
+  | { type: CmsActionType.FETCH_START }
+  | { type: CmsActionType.FETCH_SUCCESS; payload: CmsDataPayload }
+  | { type: CmsActionType.FETCH_FAILURE; payload: string }
+  | { type: CmsActionType.SAVE_START }
+  | { type: CmsActionType.SAVE_SUCCESS; payload: string }
+  | { type: CmsActionType.SAVE_FAILURE; payload: string }
+  | { type: CmsActionType.SET_DATA_FIELD; payload: SetDataFieldPayload }
+  | { type: CmsActionType.SET_DATA_FULL; payload: CmsDataPayload }
+  | { type: CmsActionType.CLEAR_MESSAGE };
 
 const initialState: CmsState = {
   page: PageType.HOME,
@@ -65,42 +91,42 @@ const initialState: CmsState = {
 
 function cmsReducer(state: CmsState, action: CmsAction): CmsState {
   switch (action.type) {
-    case "SET_PAGE":
+    case CmsActionType.SET_PAGE:
       return { ...state, page: action.payload, msg: null };
-    case "SET_LANG":
+    case CmsActionType.SET_LANG:
       return { ...state, lang: action.payload, msg: null };
-    case "FETCH_START":
+    case CmsActionType.FETCH_START:
       return { ...state, loading: true, msg: null };
-    case "FETCH_SUCCESS":
+    case CmsActionType.FETCH_SUCCESS:
       return { ...state, loading: false, data: action.payload };
-    case "FETCH_FAILURE":
+    case CmsActionType.FETCH_FAILURE:
       return {
         ...state,
         loading: false,
         msg: { text: action.payload, ok: false },
       };
-    case "SAVE_START":
+    case CmsActionType.SAVE_START:
       return { ...state, saving: true, msg: null };
-    case "SAVE_SUCCESS":
+    case CmsActionType.SAVE_SUCCESS:
       return {
         ...state,
         saving: false,
         msg: { text: action.payload, ok: true },
       };
-    case "SAVE_FAILURE":
+    case CmsActionType.SAVE_FAILURE:
       return {
         ...state,
         saving: false,
         msg: { text: action.payload, ok: false },
       };
-    case "SET_DATA_FIELD":
+    case CmsActionType.SET_DATA_FIELD:
       return {
         ...state,
         data: { ...state.data, [action.payload.key]: action.payload.val },
       };
-    case "SET_DATA_FULL":
+    case CmsActionType.SET_DATA_FULL:
       return { ...state, data: action.payload };
-    case "CLEAR_MESSAGE":
+    case CmsActionType.CLEAR_MESSAGE:
       return { ...state, msg: null };
     default:
       return state;
@@ -567,28 +593,28 @@ export default function CmsManagementPage() {
   const [state, dispatch] = useReducer(cmsReducer, initialState);
   const { page, lang, loading, saving, msg, data } = state;
 
-  const [products, setProducts] = useState<{id: string; name: string;}[]>([]);
+  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [selectedHotspotId, setSelectedHotspotId] = useState<any>(null);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetchProductOptions()
-        setProducts(res ?? []);
-      } catch {
-        // ignore
-      }
-    })();
+    AxiosAPI.get("/v1/products/options")
+      .then((res) => {
+        const list = Array.isArray(res.data)
+          ? res.data
+          : (res.data?.data ?? []);
+        setProducts(list);
+      })
+      .catch(() => setProducts([]));
   }, []);
 
   const token = authToken() || "";
 
   const load = async () => {
     if (page === PageType.THEME) {
-      dispatch({ type: "FETCH_SUCCESS", payload: {} });
+      dispatch({ type: CmsActionType.FETCH_SUCCESS, payload: {} });
       return;
     }
-    dispatch({ type: "FETCH_START" });
+    dispatch({ type: CmsActionType.FETCH_START });
     try {
       const res = await AxiosAPI.get(`/v1/cms/${page}?lang=${lang}`);
       // Backend wraps: { data: { content: '...' }, status, message }
@@ -596,9 +622,9 @@ export default function CmsManagementPage() {
       const cmsRow = res.data?.data ?? res.data;
       const raw = cmsRow?.content;
       let parsed = typeof raw === "string" ? JSON.parse(raw) : (raw ?? {});
-      dispatch({ type: "FETCH_SUCCESS", payload: parsed });
+      dispatch({ type: CmsActionType.FETCH_SUCCESS, payload: parsed });
     } catch {
-      dispatch({ type: "FETCH_SUCCESS", payload: {} });
+      dispatch({ type: CmsActionType.FETCH_SUCCESS, payload: {} });
     }
   };
 
@@ -607,11 +633,11 @@ export default function CmsManagementPage() {
   }, [page, lang]);
 
   const set = (key: string, val: any) =>
-    dispatch({ type: "SET_DATA_FIELD", payload: { key, val } });
+    dispatch({ type: CmsActionType.SET_DATA_FIELD, payload: { key, val } });
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch({ type: "SAVE_START" });
+    dispatch({ type: CmsActionType.SAVE_START });
     const payload = {
       page_content_type: page,
       language: lang,
@@ -625,12 +651,12 @@ export default function CmsManagementPage() {
       localStorage.removeItem(`techsonance_cms_${page}_${lang}`);
       localStorage.removeItem(`techsonance_cms_${page}`); // legacy key format
       dispatch({
-        type: "SAVE_SUCCESS",
+        type: CmsActionType.SAVE_SUCCESS,
         payload: "Saved! Storefront will reflect changes on next page load.",
       });
     } catch (err: any) {
       dispatch({
-        type: "SAVE_FAILURE",
+        type: CmsActionType.SAVE_FAILURE,
         payload: `Save failed: ${err?.response?.data?.message || "Try again."}`,
       });
     }
@@ -638,19 +664,28 @@ export default function CmsManagementPage() {
 
   const addItem = (key: string, template: any) => {
     const nextArr = [...(data[key] || []), { id: Date.now(), ...template }];
-    dispatch({ type: "SET_DATA_FIELD", payload: { key, val: nextArr } });
+    dispatch({
+      type: CmsActionType.SET_DATA_FIELD,
+      payload: { key, val: nextArr },
+    });
   };
 
   const removeItem = (key: string, id: any) => {
     const nextArr = (data[key] || []).filter((i: any) => i.id !== id);
-    dispatch({ type: "SET_DATA_FIELD", payload: { key, val: nextArr } });
+    dispatch({
+      type: CmsActionType.SET_DATA_FIELD,
+      payload: { key, val: nextArr },
+    });
   };
 
   const updateItem = (key: string, id: any, field: string, val: string) => {
     const nextArr = (data[key] || []).map((i: any) =>
       i.id === id ? { ...i, [field]: val } : i,
     );
-    dispatch({ type: "SET_DATA_FIELD", payload: { key, val: nextArr } });
+    dispatch({
+      type: CmsActionType.SET_DATA_FIELD,
+      payload: { key, val: nextArr },
+    });
   };
 
   const moveItem = (index: number, direction: "up" | "down") => {
@@ -661,7 +696,7 @@ export default function CmsManagementPage() {
       layout[index] = layout[targetIndex];
       layout[targetIndex] = temp;
       dispatch({
-        type: "SET_DATA_FIELD",
+        type: CmsActionType.SET_DATA_FIELD,
         payload: { key: "homepage_layout", val: layout },
       });
     }
@@ -675,10 +710,11 @@ export default function CmsManagementPage() {
     const clampedY = Math.max(0, Math.min(100, y));
 
     if (selectedHotspotId !== null && selectedHotspotId !== undefined) {
-      const updated = (data.lookbook_hotspots || []).map((h: any) =>
-        h.id === selectedHotspotId ? { ...h, x: clampedX, y: clampedY } : h
+      const updated = (data?.[CmsDataKey.LOOKBOOK_HOTSPOTS] || []).map(
+        (h: any) =>
+          h.id === selectedHotspotId ? { ...h, x: clampedX, y: clampedY } : h,
       );
-      set("lookbook_hotspots", updated);
+      set(CmsDataKey.LOOKBOOK_HOTSPOTS, updated);
     } else {
       const newId = Date.now();
       const newHotspot = {
@@ -688,7 +724,10 @@ export default function CmsManagementPage() {
         productId: "",
         product_id: "",
       };
-      set("lookbook_hotspots", [...(data.lookbook_hotspots || []), newHotspot]);
+      set(CmsDataKey.LOOKBOOK_HOTSPOTS, [
+        ...(data?.[CmsDataKey.LOOKBOOK_HOTSPOTS] || []),
+        newHotspot,
+      ]);
       setSelectedHotspotId(newId);
     }
   };
@@ -727,7 +766,9 @@ export default function CmsManagementPage() {
             {PAGES.map((p) => (
               <button
                 key={p}
-                onClick={() => dispatch({ type: "SET_PAGE", payload: p })}
+                onClick={() =>
+                  dispatch({ type: CmsActionType.SET_PAGE, payload: p })
+                }
                 className={`px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${page === p ? "bg-purple-600 text-white border-purple-600" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-purple-300"}`}
               >
                 {PAGE_LABELS[p]}
@@ -744,7 +785,9 @@ export default function CmsManagementPage() {
               {([LangType.EN, LangType.ES] as LangType[]).map((l) => (
                 <button
                   key={l}
-                  onClick={() => dispatch({ type: "SET_LANG", payload: l })}
+                  onClick={() =>
+                    dispatch({ type: CmsActionType.SET_LANG, payload: l })
+                  }
                   className={`flex items-center gap-1 px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${lang === l ? "bg-purple-600 text-white border-purple-600" : "bg-gray-50 text-gray-600 border-gray-200"}`}
                 >
                   {l === LangType.EN ? (
@@ -788,218 +831,311 @@ export default function CmsManagementPage() {
           {page === PageType.HOME && (
             <>
               <Section
-                title="Hero Carousel Slides"
+                title={UILabels.SECTIONS.HERO_CAROUSEL_SLIDES}
                 action={
                   <AddBtn
                     onClick={() =>
-                      addItem("hero_slides", {
+                      addItem(CmsDataKey.HERO_SLIDES, {
                         image_url: "",
                         title: "",
                         subtitle: "",
                         btn_text: "Shop Now",
                         search_query: "",
-                        layout: "center-overlay",
-                        bg_style: "gradient",
+                        layout: HeroLayout.CENTER_OVERLAY,
+                        bg_style: HeroBgStyle.GRADIENT,
+                        bg_color: "",
                       })
                     }
-                    label="Add Slide"
+                    label={UILabels.FIELDS.ADD_SLIDE}
                   />
                 }
               >
-                {(data.hero_slides || []).length === 0 && (
+                {(data?.[CmsDataKey.HERO_SLIDES] || []).length === 0 && (
                   <p className="text-center text-gray-400 text-sm py-8">
                     No slides yet. Click <strong>Add Slide</strong> to add hero
                     carousel images. Each slide can link to a product search on
                     the shop page.
                   </p>
                 )}
-                {(data.hero_slides || []).map((slide: any, idx: number) => (
-                  <ListCard
-                    key={slide.id}
-                    onRemove={() => removeItem("hero_slides", slide.id)}
-                  >
-                    <div className="md:col-span-2">
-                      <p className="text-[10px] font-bold text-purple-500 uppercase tracking-widest mb-1">
-                        Slide {idx + 1}
-                      </p>
-                    </div>
-                    <Field
-                      label="Title"
-                      value={slide.title || ""}
-                      onChange={(v: string) =>
-                        updateItem("hero_slides", slide.id, "title", v)
+                {(data?.[CmsDataKey.HERO_SLIDES] || []).map(
+                  (slide: any, idx: number) => (
+                    <ListCard
+                      key={slide.id}
+                      onRemove={() =>
+                        removeItem(CmsDataKey.HERO_SLIDES, slide.id)
                       }
-                    />
-                    <Field
-                      label="Subtitle (small label above title)"
-                      value={slide.subtitle || ""}
-                      onChange={(v: string) =>
-                        updateItem("hero_slides", slide.id, "subtitle", v)
-                      }
-                    />
-                    <Field
-                      label="Button Text"
-                      value={slide.btn_text || ""}
-                      onChange={(v: string) =>
-                        updateItem("hero_slides", slide.id, "btn_text", v)
-                      }
-                    />
-
-                    <SelectField
-                      label="Layout Style"
-                      value={slide.layout || "center-overlay"}
-                      onChange={(v: string) =>
-                        updateItem("hero_slides", slide.id, "layout", v)
-                      }
-                      options={[
-                        {
-                          value: "center-overlay",
-                          label: "Centered Text Overlay",
-                        },
-                        {
-                          value: "left-content-right-image",
-                          label: "Text Left, Image Right (Split)",
-                        },
-                        {
-                          value: "right-content-left-image",
-                          label: "Image Left, Text Right (Split)",
-                        },
-                      ]}
-                    />
-                    <SelectField
-                      label="Background Style"
-                      value={slide.bg_style || "gradient"}
-                      onChange={(v: string) =>
-                        updateItem("hero_slides", slide.id, "bg_style", v)
-                      }
-                      options={[
-                        { value: "gradient", label: "Automatic Edge Gradient" },
-                        { value: "solid", label: "Automatic Edge Solid Color" },
-                      ]}
-                    />
-
-                    <SlideQueryPicker
-                      value={slide.search_query || ""}
-                      onChange={(v: string) =>
-                        updateItem("hero_slides", slide.id, "search_query", v)
-                      }
-                    />
-                    <div className="md:col-span-2">
-                      <ImageUploadField
-                        label="Slide Banner Image"
-                        value={slide.image_url || ""}
+                    >
+                      <div className="md:col-span-2">
+                        <p className="text-[10px] font-bold text-purple-500 uppercase tracking-widest mb-1">
+                          Slide {idx + 1}
+                        </p>
+                      </div>
+                      <Field
+                        label={UILabels.FIELDS.TITLE}
+                        value={slide.title || ""}
                         onChange={(v: string) =>
-                          updateItem("hero_slides", slide.id, "image_url", v)
+                          updateItem(
+                            CmsDataKey.HERO_SLIDES,
+                            slide.id,
+                            "title",
+                            v,
+                          )
                         }
                       />
-                    </div>
-                  </ListCard>
-                ))}
+                      <Field
+                        label={UILabels.FIELDS.SUBTITLE_SMALL_LABEL_ABOVE_TITLE}
+                        value={slide.subtitle || ""}
+                        onChange={(v: string) =>
+                          updateItem(
+                            CmsDataKey.HERO_SLIDES,
+                            slide.id,
+                            "subtitle",
+                            v,
+                          )
+                        }
+                      />
+                      <Field
+                        label={UILabels.FIELDS.BUTTON_TEXT}
+                        value={slide.btn_text || ""}
+                        onChange={(v: string) =>
+                          updateItem(
+                            CmsDataKey.HERO_SLIDES,
+                            slide.id,
+                            "btn_text",
+                            v,
+                          )
+                        }
+                      />
+
+                      <SelectField
+                        label={UILabels.FIELDS.LAYOUT_STYLE}
+                        value={slide.layout || HeroLayout.CENTER_OVERLAY}
+                        onChange={(v: string) =>
+                          updateItem(
+                            CmsDataKey.HERO_SLIDES,
+                            slide.id,
+                            "layout",
+                            v,
+                          )
+                        }
+                        options={[
+                          {
+                            value: HeroLayout.CENTER_OVERLAY,
+                            label: "Centered Text Overlay",
+                          },
+                          {
+                            value: HeroLayout.LEFT_CONTENT_RIGHT_IMAGE,
+                            label: "Text Left, Image Right (Split)",
+                          },
+                          {
+                            value: HeroLayout.RIGHT_CONTENT_LEFT_IMAGE,
+                            label: "Image Left, Text Right (Split)",
+                          },
+                        ]}
+                      />
+                      <SelectField
+                        label={UILabels.FIELDS.BACKGROUND_STYLE}
+                        value={slide.bg_style || HeroBgStyle.GRADIENT}
+                        onChange={(v: string) =>
+                          updateItem(
+                            CmsDataKey.HERO_SLIDES,
+                            slide.id,
+                            "bg_style",
+                            v,
+                          )
+                        }
+                        options={[
+                          {
+                            value: HeroBgStyle.GRADIENT,
+                            label: "Automatic Edge Gradient",
+                          },
+                          {
+                            value: HeroBgStyle.SOLID,
+                            label: "Automatic Edge Solid Color",
+                          },
+                          {
+                            value: "custom",
+                            label: "Custom Color (Pick Below)",
+                          },
+                        ]}
+                      />
+
+                      <ColorField
+                        label={
+                          UILabels.FIELDS
+                            .SLIDE_BACKGROUND_COLOR_USED_WHEN_STYLE_IS_CUSTOM
+                        }
+                        value={slide.bg_color || ""}
+                        onChange={(v: string) =>
+                          updateItem(
+                            CmsDataKey.HERO_SLIDES,
+                            slide.id,
+                            "bg_color",
+                            v,
+                          )
+                        }
+                      />
+
+                      <SlideQueryPicker
+                        value={slide.search_query || ""}
+                        onChange={(v: string) =>
+                          updateItem(
+                            CmsDataKey.HERO_SLIDES,
+                            slide.id,
+                            "search_query",
+                            v,
+                          )
+                        }
+                      />
+                      <div className="md:col-span-2">
+                        <ImageUploadField
+                          label={UILabels.FIELDS.SLIDE_BANNER_IMAGE}
+                          value={slide.image_url || ""}
+                          onChange={(v: string) =>
+                            updateItem(
+                              CmsDataKey.HERO_SLIDES,
+                              slide.id,
+                              "image_url",
+                              v,
+                            )
+                          }
+                        />
+                      </div>
+                    </ListCard>
+                  ),
+                )}
               </Section>
-              <Section title="Hero Block (Legacy — used if no carousel slides above)">
+              <Section
+                title={
+                  UILabels.SECTIONS
+                    .HERO_BLOCK_LEGACY__USED_IF_NO_CAROUSEL_SLIDES_ABOVE
+                }
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Subtitle"
-                    value={data.hero_subtitle || ""}
-                    onChange={(v: string) => set("hero_subtitle", v)}
+                    label={UILabels.FIELDS.SUBTITLE}
+                    value={data?.[CmsDataKey.HERO_SUBTITLE] || ""}
+                    onChange={(v: string) => set(CmsDataKey.HERO_SUBTITLE, v)}
                   />
                   <Field
-                    label="Button Text"
-                    value={data.hero_btn_text || ""}
-                    onChange={(v: string) => set("hero_btn_text", v)}
+                    label={UILabels.FIELDS.BUTTON_TEXT}
+                    value={data?.[CmsDataKey.HERO_BTN_TEXT] || ""}
+                    onChange={(v: string) => set(CmsDataKey.HERO_BTN_TEXT, v)}
                   />
                   <SelectField
-                    label="Layout Style"
-                    value={data.hero_layout || "center-overlay"}
-                    onChange={(v: string) => set("hero_layout", v)}
+                    label={UILabels.FIELDS.LAYOUT_STYLE}
+                    value={
+                      data?.[CmsDataKey.HERO_LAYOUT] ||
+                      HeroLayout.CENTER_OVERLAY
+                    }
+                    onChange={(v: string) => set(CmsDataKey.HERO_LAYOUT, v)}
                     options={[
                       {
-                        value: "center-overlay",
+                        value: HeroLayout.CENTER_OVERLAY,
                         label: "Centered Text Overlay",
                       },
                       {
-                        value: "left-content-right-image",
+                        value: HeroLayout.LEFT_CONTENT_RIGHT_IMAGE,
                         label: "Text Left, Image Right (Split)",
                       },
                       {
-                        value: "right-content-left-image",
+                        value: HeroLayout.RIGHT_CONTENT_LEFT_IMAGE,
                         label: "Image Left, Text Right (Split)",
                       },
                     ]}
                   />
                   <SelectField
-                    label="Background Style"
-                    value={data.hero_bg_style || "gradient"}
-                    onChange={(v: string) => set("hero_bg_style", v)}
+                    label={UILabels.FIELDS.BACKGROUND_STYLE}
+                    value={
+                      data?.[CmsDataKey.HERO_BG_STYLE] || HeroBgStyle.GRADIENT
+                    }
+                    onChange={(v: string) => set(CmsDataKey.HERO_BG_STYLE, v)}
                     options={[
-                      { value: "gradient", label: "Automatic Edge Gradient" },
-                      { value: "solid", label: "Automatic Edge Solid Color" },
+                      {
+                        value: HeroBgStyle.GRADIENT,
+                        label: "Automatic Edge Gradient",
+                      },
+                      {
+                        value: HeroBgStyle.SOLID,
+                        label: "Automatic Edge Solid Color",
+                      },
+                      { value: "custom", label: "Custom Color (Pick Below)" },
                     ]}
                   />
                   <div className="md:col-span-2">
                     <Field
-                      label="Title"
-                      value={data.hero_title || ""}
-                      onChange={(v: string) => set("hero_title", v)}
+                      label={UILabels.FIELDS.TITLE}
+                      value={data?.[CmsDataKey.HERO_TITLE] || ""}
+                      onChange={(v: string) => set(CmsDataKey.HERO_TITLE, v)}
                     />
                   </div>
                   <div className="md:col-span-2">
                     <Field
-                      label="Description"
-                      value={data.hero_desc || ""}
-                      onChange={(v: string) => set("hero_desc", v)}
+                      label={UILabels.FIELDS.DESCRIPTION}
+                      value={data?.[CmsDataKey.HERO_DESC] || ""}
+                      onChange={(v: string) => set(CmsDataKey.HERO_DESC, v)}
                       textarea
                     />
                   </div>
                   <div className="md:col-span-2">
                     <ImageUploadField
-                      label="Hero Banner Image"
-                      value={data.hero_image_url || ""}
-                      onChange={(v: string) => set("hero_image_url", v)}
-                    />
-                  </div>
-                </div>
-              </Section>
-
-              <Section title="Middle Promo Banner">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field
-                    label="Subtitle"
-                    value={data.middle_banner_subtitle || ""}
-                    onChange={(v: string) => set("middle_banner_subtitle", v)}
-                  />
-                  <Field
-                    label="Button Text"
-                    value={data.middle_banner_btn_text || ""}
-                    onChange={(v: string) => set("middle_banner_btn_text", v)}
-                  />
-                  <div className="md:col-span-2">
-                    <Field
-                      label="Title"
-                      value={data.middle_banner_title || ""}
-                      onChange={(v: string) => set("middle_banner_title", v)}
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Field
-                      label="Description"
-                      value={data.middle_banner_desc || ""}
-                      onChange={(v: string) => set("middle_banner_desc", v)}
-                      textarea
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <ImageUploadField
-                      label="Promo Banner Image"
-                      value={data.middle_banner_image_url || ""}
+                      label={UILabels.FIELDS.HERO_BANNER_IMAGE}
+                      value={data?.[CmsDataKey.HERO_IMAGE_URL] || ""}
                       onChange={(v: string) =>
-                        set("middle_banner_image_url", v)
+                        set(CmsDataKey.HERO_IMAGE_URL, v)
                       }
                     />
                   </div>
                 </div>
               </Section>
-              <Section title="New Arrivals — 4 Grid Layout">
+
+              <Section title={UILabels.SECTIONS.MIDDLE_PROMO_BANNER}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field
+                    label={UILabels.FIELDS.SUBTITLE}
+                    value={data?.[CmsDataKey.MIDDLE_BANNER_SUBTITLE] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.MIDDLE_BANNER_SUBTITLE, v)
+                    }
+                  />
+                  <Field
+                    label={UILabels.FIELDS.BUTTON_TEXT}
+                    value={data?.[CmsDataKey.MIDDLE_BANNER_BTN_TEXT] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.MIDDLE_BANNER_BTN_TEXT, v)
+                    }
+                  />
+                  <div className="md:col-span-2">
+                    <Field
+                      label={UILabels.FIELDS.TITLE}
+                      value={data?.[CmsDataKey.MIDDLE_BANNER_TITLE] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.MIDDLE_BANNER_TITLE, v)
+                      }
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Field
+                      label={UILabels.FIELDS.DESCRIPTION}
+                      value={data?.[CmsDataKey.MIDDLE_BANNER_DESC] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.MIDDLE_BANNER_DESC, v)
+                      }
+                      textarea
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <ImageUploadField
+                      label={UILabels.FIELDS.PROMO_BANNER_IMAGE}
+                      value={data?.[CmsDataKey.MIDDLE_BANNER_IMAGE_URL] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.MIDDLE_BANNER_IMAGE_URL, v)
+                      }
+                    />
+                  </div>
+                </div>
+              </Section>
+              <Section title={UILabels.SECTIONS.NEW_ARRIVALS__4_GRID_LAYOUT}>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Loop or write out the 4 card fields */}
                   {[1, 2, 3, 4].map((num) => (
@@ -1021,14 +1157,14 @@ export default function CmsManagementPage() {
 
                       <div className="grid grid-cols-2 gap-4">
                         <Field
-                          label="Title"
+                          label={UILabels.FIELDS.TITLE}
                           value={data[`new_arrivals_card_${num}_title`] || ""}
                           onChange={(v: string) =>
                             set(`new_arrivals_card_${num}_title`, v)
                           }
                         />
                         <Field
-                          label="Subtitle"
+                          label={UILabels.FIELDS.SUBTITLE}
                           value={
                             data[`new_arrivals_card_${num}_subtitle`] || ""
                           }
@@ -1039,7 +1175,10 @@ export default function CmsManagementPage() {
                       </div>
 
                       <ColorField
-                        label="Card Background Color (overrides auto-detect)"
+                        label={
+                          UILabels.FIELDS
+                            .CARD_BACKGROUND_COLOR_OVERRIDES_AUTODETECT
+                        }
                         value={data[`new_arrivals_card_${num}_bg_color`] || ""}
                         onChange={(v: string) =>
                           set(`new_arrivals_card_${num}_bg_color`, v)
@@ -1049,48 +1188,60 @@ export default function CmsManagementPage() {
                   ))}
                 </div>
               </Section>
-              <Section title="Newsletter Block">
+              <Section title={UILabels.SECTIONS.NEWSLETTER_BLOCK}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Newsletter Title"
-                    value={data.newsletter_title || ""}
-                    onChange={(v: string) => set("newsletter_title", v)}
+                    label={UILabels.FIELDS.NEWSLETTER_TITLE}
+                    value={data?.[CmsDataKey.NEWSLETTER_TITLE] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.NEWSLETTER_TITLE, v)
+                    }
                   />
                   <Field
-                    label="Newsletter Button Text"
-                    value={data.newsletter_btn_text || ""}
-                    onChange={(v: string) => set("newsletter_btn_text", v)}
+                    label={UILabels.FIELDS.NEWSLETTER_BUTTON_TEXT}
+                    value={data?.[CmsDataKey.NEWSLETTER_BTN_TEXT] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.NEWSLETTER_BTN_TEXT, v)
+                    }
                   />
                   <Field
-                    label="Newsletter Eyebrow / Tag"
-                    value={data.newsletter_eyebrow || ""}
-                    onChange={(v: string) => set("newsletter_eyebrow", v)}
+                    label={UILabels.FIELDS.NEWSLETTER_EYEBROW__TAG}
+                    value={data?.[CmsDataKey.NEWSLETTER_EYEBROW] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.NEWSLETTER_EYEBROW, v)
+                    }
                   />
                   <Field
-                    label="Newsletter Success Message"
-                    value={data.newsletter_success_text || ""}
-                    onChange={(v: string) => set("newsletter_success_text", v)}
+                    label={UILabels.FIELDS.NEWSLETTER_SUCCESS_MESSAGE}
+                    value={data?.[CmsDataKey.NEWSLETTER_SUCCESS_TEXT] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.NEWSLETTER_SUCCESS_TEXT, v)
+                    }
                   />
                   <div className="md:col-span-2">
                     <Field
-                      label="Newsletter Description"
-                      value={data.newsletter_desc || ""}
-                      onChange={(v: string) => set("newsletter_desc", v)}
+                      label={UILabels.FIELDS.NEWSLETTER_DESCRIPTION}
+                      value={data?.[CmsDataKey.NEWSLETTER_DESC] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.NEWSLETTER_DESC, v)
+                      }
                       textarea
                     />
                   </div>
                   <div className="md:col-span-2">
                     <Field
-                      label="Newsletter Terms Disclaimer"
-                      value={data.newsletter_disclaimer || ""}
-                      onChange={(v: string) => set("newsletter_disclaimer", v)}
+                      label={UILabels.FIELDS.NEWSLETTER_TERMS_DISCLAIMER}
+                      value={data?.[CmsDataKey.NEWSLETTER_DISCLAIMER] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.NEWSLETTER_DISCLAIMER, v)
+                      }
                     />
                   </div>
                 </div>
               </Section>
 
               <Section
-                title="Brand Highlight Block"
+                title={UILabels.SECTIONS.BRAND_HIGHLIGHT_BLOCK}
                 action={
                   <AddBtn
                     onClick={() =>
@@ -1099,48 +1250,63 @@ export default function CmsManagementPage() {
                         label: "",
                       })
                     }
-                    label="Add Stat"
+                    label={UILabels.FIELDS.ADD_STAT}
                   />
                 }
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Highlight Eyebrow / Subtitle"
-                    value={data.brand_highlight_eyebrow || ""}
-                    onChange={(v: string) => set("brand_highlight_eyebrow", v)}
+                    label={UILabels.FIELDS.HIGHLIGHT_EYEBROW__SUBTITLE}
+                    value={data?.[CmsDataKey.BRAND_HIGHLIGHT_EYEBROW] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.BRAND_HIGHLIGHT_EYEBROW, v)
+                    }
                   />
                   <Field
-                    label="Highlight Button Text"
-                    value={data.brand_highlight_btn_text || ""}
-                    onChange={(v: string) => set("brand_highlight_btn_text", v)}
+                    label={UILabels.FIELDS.HIGHLIGHT_BUTTON_TEXT}
+                    value={data?.[CmsDataKey.BRAND_HIGHLIGHT_BTN_TEXT] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.BRAND_HIGHLIGHT_BTN_TEXT, v)
+                    }
                   />
                   <div className="md:col-span-2">
                     <Field
-                      label="Highlight Title"
-                      value={data.brand_highlight_title || ""}
-                      onChange={(v: string) => set("brand_highlight_title", v)}
+                      label={UILabels.FIELDS.HIGHLIGHT_TITLE}
+                      value={data?.[CmsDataKey.BRAND_HIGHLIGHT_TITLE] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.BRAND_HIGHLIGHT_TITLE, v)
+                      }
                     />
                   </div>
                   <div className="md:col-span-2">
                     <Field
-                      label="Highlight Description"
-                      value={data.brand_highlight_desc || ""}
-                      onChange={(v: string) => set("brand_highlight_desc", v)}
+                      label={UILabels.FIELDS.HIGHLIGHT_DESCRIPTION}
+                      value={data?.[CmsDataKey.BRAND_HIGHLIGHT_DESC] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.BRAND_HIGHLIGHT_DESC, v)
+                      }
                       textarea
                     />
                   </div>
                   <div className="md:col-span-2">
                     <ImageUploadField
-                      label="Highlight Banner Image"
-                      value={data.brand_highlight_image_url || ""}
-                      onChange={(v: string) => set("brand_highlight_image_url", v)}
+                      label={UILabels.FIELDS.HIGHLIGHT_BANNER_IMAGE}
+                      value={data?.[CmsDataKey.BRAND_HIGHLIGHT_IMAGE_URL] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.BRAND_HIGHLIGHT_IMAGE_URL, v)
+                      }
                     />
                   </div>
                   <div className="md:col-span-2">
                     <ColorField
-                      label="Card Background Color (overrides auto-detect from image)"
-                      value={data.brand_highlight_bg_color || ""}
-                      onChange={(v: string) => set("brand_highlight_bg_color", v)}
+                      label={
+                        UILabels.FIELDS
+                          .CARD_BACKGROUND_COLOR_OVERRIDES_AUTODETECT_FROM_IMAGE
+                      }
+                      value={data?.[CmsDataKey.BRAND_HIGHLIGHT_BG_COLOR] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.BRAND_HIGHLIGHT_BG_COLOR, v)
+                      }
                     />
                   </div>
                 </div>
@@ -1150,60 +1316,79 @@ export default function CmsManagementPage() {
                     Key Stats (Max 3 Recommended)
                   </h4>
                   <div className="space-y-3">
-                    {(data.brand_highlight_stats || []).map((stat: any, sIdx: number) => (
-                      <div
-                        key={stat.id || sIdx}
-                        className="flex gap-3 items-end bg-gray-50 p-4 rounded-xl border border-gray-150 relative"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => removeItem("brand_highlight_stats", stat.id)}
-                          className="absolute right-3 top-3 text-red-400 hover:text-red-600"
+                    {(data.brand_highlight_stats || []).map(
+                      (stat: any, sIdx: number) => (
+                        <div
+                          key={stat.id || sIdx}
+                          className="flex gap-3 items-end bg-gray-50 p-4 rounded-xl border border-gray-150 relative"
                         >
-                          <Trash2 size={14} />
-                        </button>
-                        <div className="flex-1 grid grid-cols-2 gap-3">
-                          <Field
-                            label="Stat Value (e.g. 500+)"
-                            value={stat.value || ""}
-                            onChange={(v: string) =>
-                              updateItem("brand_highlight_stats", stat.id, "value", v)
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeItem("brand_highlight_stats", stat.id)
                             }
-                          />
-                          <Field
-                            label="Stat Label (e.g. Products)"
-                            value={stat.label || ""}
-                            onChange={(v: string) =>
-                              updateItem("brand_highlight_stats", stat.id, "label", v)
-                            }
-                          />
+                            className="absolute right-3 top-3 text-red-400 hover:text-red-600"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                          <div className="flex-1 grid grid-cols-2 gap-3">
+                            <Field
+                              label={UILabels.FIELDS.STAT_VALUE_EG_500}
+                              value={stat.value || ""}
+                              onChange={(v: string) =>
+                                updateItem(
+                                  "brand_highlight_stats",
+                                  stat.id,
+                                  "value",
+                                  v,
+                                )
+                              }
+                            />
+                            <Field
+                              label={UILabels.FIELDS.STAT_LABEL_EG_PRODUCTS}
+                              value={stat.label || ""}
+                              onChange={(v: string) =>
+                                updateItem(
+                                  "brand_highlight_stats",
+                                  stat.id,
+                                  "label",
+                                  v,
+                                )
+                              }
+                            />
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ),
+                    )}
                     {!(data.brand_highlight_stats || []).length && (
                       <p className="text-center text-xs text-gray-400 py-3">
-                        No stats added. Default promise stats will be shown on the storefront.
+                        No stats added. Default promise stats will be shown on
+                        the storefront.
                       </p>
                     )}
                   </div>
                 </div>
               </Section>
 
-              <Section title="Interactive Hero Options (Enhanced)">
+              <Section
+                title={UILabels.SECTIONS.INTERACTIVE_HERO_OPTIONS_ENHANCED}
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <SelectField
-                    label="Banner Display Type"
-                    value={data.hero_banner_type || "carousel"}
-                    onChange={(v: string) => set("hero_banner_type", v)}
+                    label={UILabels.FIELDS.BANNER_DISPLAY_TYPE}
+                    value={data?.[CmsDataKey.HERO_BANNER_TYPE] || "carousel"}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.HERO_BANNER_TYPE, v)
+                    }
                     options={[
                       { value: "carousel", label: "Image Carousel Slider" },
                       { value: "video", label: "Video Background Banner" },
                     ]}
                   />
                   <Field
-                    label="Video Background URL (MP4 Format)"
-                    value={data.hero_video_url || ""}
-                    onChange={(v: string) => set("hero_video_url", v)}
+                    label={UILabels.FIELDS.VIDEO_BACKGROUND_URL_MP4_FORMAT}
+                    value={data?.[CmsDataKey.HERO_VIDEO_URL] || ""}
+                    onChange={(v: string) => set(CmsDataKey.HERO_VIDEO_URL, v)}
                     mono
                   />
 
@@ -1213,110 +1398,139 @@ export default function CmsManagementPage() {
                     </h4>
                   </div>
                   <Field
-                    label="Video Hero Eyebrow / Tag"
-                    value={data.hero_video_eyebrow || ""}
-                    onChange={(v: string) => set("hero_video_eyebrow", v)}
+                    label={UILabels.FIELDS.VIDEO_HERO_EYEBROW__TAG}
+                    value={data?.[CmsDataKey.HERO_VIDEO_EYEBROW] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.HERO_VIDEO_EYEBROW, v)
+                    }
                   />
                   <Field
-                    label="Video Hero Button Text"
-                    value={data.hero_video_btn_text || ""}
-                    onChange={(v: string) => set("hero_video_btn_text", v)}
+                    label={UILabels.FIELDS.VIDEO_HERO_BUTTON_TEXT}
+                    value={data?.[CmsDataKey.HERO_VIDEO_BTN_TEXT] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.HERO_VIDEO_BTN_TEXT, v)
+                    }
                   />
                   <Field
-                    label="Video Hero Title"
-                    value={data.hero_video_title || ""}
-                    onChange={(v: string) => set("hero_video_title", v)}
+                    label={UILabels.FIELDS.VIDEO_HERO_TITLE}
+                    value={data?.[CmsDataKey.HERO_VIDEO_TITLE] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.HERO_VIDEO_TITLE, v)
+                    }
                   />
                   <Field
-                    label="Video Hero Button Link (URL)"
-                    value={data.hero_video_btn_link || ""}
-                    onChange={(v: string) => set("hero_video_btn_link", v)}
+                    label={UILabels.FIELDS.VIDEO_HERO_BUTTON_LINK_URL}
+                    value={data?.[CmsDataKey.HERO_VIDEO_BTN_LINK] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.HERO_VIDEO_BTN_LINK, v)
+                    }
                     mono
                   />
                   <div className="md:col-span-2">
                     <Field
-                      label="Video Hero Description"
-                      value={data.hero_video_desc || ""}
-                      onChange={(v: string) => set("hero_video_desc", v)}
+                      label={UILabels.FIELDS.VIDEO_HERO_DESCRIPTION}
+                      value={data?.[CmsDataKey.HERO_VIDEO_DESC] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.HERO_VIDEO_DESC, v)
+                      }
                       textarea
                     />
                   </div>
                 </div>
               </Section>
 
-              <Section title="Shoppable Lookbook Section">
+              <Section title={UILabels.SECTIONS.SHOPPABLE_LOOKBOOK_SECTION}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Lookbook Section Title"
-                    value={data.lookbook_title || ""}
-                    onChange={(v: string) => set("lookbook_title", v)}
+                    label={UILabels.FIELDS.LOOKBOOK_SECTION_TITLE}
+                    value={data?.[CmsDataKey.LOOKBOOK_TITLE] || ""}
+                    onChange={(v: string) => set(CmsDataKey.LOOKBOOK_TITLE, v)}
                   />
                   <Field
-                    label="Lookbook Subtitle / Description"
-                    value={data.lookbook_subtitle || ""}
-                    onChange={(v: string) => set("lookbook_subtitle", v)}
+                    label={UILabels.FIELDS.LOOKBOOK_SUBTITLE__DESCRIPTION}
+                    value={data?.[CmsDataKey.LOOKBOOK_SUBTITLE] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.LOOKBOOK_SUBTITLE, v)
+                    }
                   />
                   <div className="md:col-span-2">
                     <ImageUploadField
-                      label="Main Lookbook Image"
-                      value={data.lookbook_image_url || ""}
-                      onChange={(v: string) => set("lookbook_image_url", v)}
+                      label={UILabels.FIELDS.MAIN_LOOKBOOK_IMAGE}
+                      value={data?.[CmsDataKey.LOOKBOOK_IMAGE_URL] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.LOOKBOOK_IMAGE_URL, v)
+                      }
                     />
                   </div>
                   <div className="md:col-span-2">
                     <ColorField
-                      label="Section Background Color (fallback if no image or transparent)"
-                      value={data.lookbook_bg_color || ""}
-                      onChange={(v: string) => set("lookbook_bg_color", v)}
+                      label={
+                        UILabels.FIELDS
+                          .SECTION_BACKGROUND_COLOR_FALLBACK_IF_NO_IMAGE_OR_TRANSPARENT
+                      }
+                      value={data?.[CmsDataKey.LOOKBOOK_BG_COLOR] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.LOOKBOOK_BG_COLOR, v)
+                      }
                     />
                   </div>
                 </div>
 
                 <div className="mt-6 border-t border-gray-150 pt-6">
                   {/* Visual Preview Map */}
-                  {data.lookbook_image_url ? (
+                  {data?.[CmsDataKey.LOOKBOOK_IMAGE_URL] ? (
                     <div className="mb-6 border border-gray-200 rounded-2xl p-4 bg-white shadow-sm">
                       <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
                         Visual Preview & Placement
                       </h4>
                       <p className="text-[10px] text-gray-400 mb-3">
-                        1. Select a hotspot card from the list below (it will highlight in purple).<br/>
-                        2. Click anywhere on the image preview to position the selected hotspot. If no card is selected, clicking will add a new hotspot.
+                        1. Select a hotspot card from the list below (it will
+                        highlight in purple).
+                        <br />
+                        2. Click anywhere on the image preview to position the
+                        selected hotspot. If no card is selected, clicking will
+                        add a new hotspot.
                       </p>
                       <div
                         onClick={handleImageClick}
-                        className="relative w-full aspect-[16/9] bg-slate-50 border border-slate-100 rounded-xl overflow-hidden cursor-crosshair select-none group"
+                        className="relative w-full max-h-64 aspect-[16/9] bg-slate-50 border border-slate-100 rounded-xl overflow-hidden cursor-crosshair select-none group"
                       >
                         <img
-                          src={data.lookbook_image_url}
+                          src={data?.[CmsDataKey.LOOKBOOK_IMAGE_URL]}
                           alt="Lookbook Interactive Map"
                           className="w-full h-full object-cover pointer-events-none"
                         />
-                        {(data.lookbook_hotspots || []).map((spot: any, sIdx: number) => {
-                          const isSelected = spot.id === selectedHotspotId;
-                          return (
-                            <div
-                              key={spot.id || sIdx}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedHotspotId(spot.id);
-                              }}
-                              style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
-                              className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full border border-white flex items-center justify-center text-[10px] font-black shadow-md cursor-pointer transition-all ${
-                                isSelected
-                                  ? "bg-purple-600 text-white scale-125 ring-2 ring-purple-400 ring-offset-1"
-                                  : "bg-black/60 text-white hover:bg-black/85"
-                              }`}
-                            >
-                              {sIdx + 1}
-                            </div>
-                          );
-                        })}
+                        {(data?.[CmsDataKey.LOOKBOOK_HOTSPOTS] || []).map(
+                          (spot: any, sIdx: number) => {
+                            const isSelected = spot.id === selectedHotspotId;
+                            return (
+                              <div
+                                key={spot.id || sIdx}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedHotspotId(spot.id);
+                                }}
+                                style={{
+                                  left: `${spot.x}%`,
+                                  top: `${spot.y}%`,
+                                }}
+                                className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full border border-white flex items-center justify-center text-[10px] font-black shadow-md cursor-pointer transition-all ${
+                                  isSelected
+                                    ? "bg-purple-600 text-white scale-125 ring-2 ring-purple-400 ring-offset-1"
+                                    : "bg-black/60 text-white hover:bg-black/85"
+                                }`}
+                              >
+                                {sIdx + 1}
+                              </div>
+                            );
+                          },
+                        )}
                       </div>
                     </div>
                   ) : (
                     <div className="mb-6 bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-6 text-center text-xs text-gray-400">
-                      Upload a Main Lookbook Image to enable visual hotspot placement.
+                      Upload a Main Lookbook Image to enable visual hotspot
+                      placement.
                     </div>
                   )}
 
@@ -1327,17 +1541,23 @@ export default function CmsManagementPage() {
                     <AddBtn
                       onClick={() => {
                         const newId = Date.now();
-                        set("lookbook_hotspots", [
-                          ...(data.lookbook_hotspots || []),
-                          { id: newId, x: 50, y: 50, productId: "", product_id: "" },
+                        set(CmsDataKey.LOOKBOOK_HOTSPOTS, [
+                          ...(data?.[CmsDataKey.LOOKBOOK_HOTSPOTS] || []),
+                          {
+                            id: newId,
+                            x: 50,
+                            y: 50,
+                            productId: "",
+                            product_id: "",
+                          },
                         ]);
                         setSelectedHotspotId(newId);
                       }}
-                      label="Add Hotspot"
+                      label={UILabels.FIELDS.ADD_HOTSPOT}
                     />
                   </div>
                   <div className="space-y-3">
-                    {(data.lookbook_hotspots || []).map(
+                    {(data?.[CmsDataKey.LOOKBOOK_HOTSPOTS] || []).map(
                       (hs: any, hIdx: number) => {
                         const isSelected = hs.id === selectedHotspotId;
                         return (
@@ -1363,7 +1583,7 @@ export default function CmsManagementPage() {
                                   }
                                   set(
                                     "lookbook_hotspots",
-                                    data.lookbook_hotspots.filter(
+                                    data?.[CmsDataKey.LOOKBOOK_HOTSPOTS].filter(
                                       (h: any) => h.id !== hs.id,
                                     ),
                                   );
@@ -1389,13 +1609,16 @@ export default function CmsManagementPage() {
                                   onChange={(e) =>
                                     set(
                                       "lookbook_hotspots",
-                                      data.lookbook_hotspots.map((h: any) =>
-                                        h.id === hs.id
-                                          ? {
-                                              ...h,
-                                              x: parseFloat(e.target.value) || 0,
-                                            }
-                                          : h,
+                                      data?.[CmsDataKey.LOOKBOOK_HOTSPOTS].map(
+                                        (h: any) =>
+                                          h.id === hs.id
+                                            ? {
+                                                ...h,
+                                                x:
+                                                  parseFloat(e.target.value) ||
+                                                  0,
+                                              }
+                                            : h,
                                       ),
                                     )
                                   }
@@ -1416,13 +1639,16 @@ export default function CmsManagementPage() {
                                   onChange={(e) =>
                                     set(
                                       "lookbook_hotspots",
-                                      data.lookbook_hotspots.map((h: any) =>
-                                        h.id === hs.id
-                                          ? {
-                                              ...h,
-                                              y: parseFloat(e.target.value) || 0,
-                                            }
-                                          : h,
+                                      data?.[CmsDataKey.LOOKBOOK_HOTSPOTS].map(
+                                        (h: any) =>
+                                          h.id === hs.id
+                                            ? {
+                                                ...h,
+                                                y:
+                                                  parseFloat(e.target.value) ||
+                                                  0,
+                                              }
+                                            : h,
                                       ),
                                     )
                                   }
@@ -1440,14 +1666,15 @@ export default function CmsManagementPage() {
                                     const pId = e.target.value;
                                     set(
                                       "lookbook_hotspots",
-                                      data.lookbook_hotspots.map((h: any) =>
-                                        h.id === hs.id
-                                          ? {
-                                              ...h,
-                                              productId: pId,
-                                              product_id: pId,
-                                            }
-                                          : h,
+                                      data?.[CmsDataKey.LOOKBOOK_HOTSPOTS].map(
+                                        (h: any) =>
+                                          h.id === hs.id
+                                            ? {
+                                                ...h,
+                                                productId: pId,
+                                                product_id: pId,
+                                              }
+                                            : h,
                                       ),
                                     );
                                   }}
@@ -1463,80 +1690,101 @@ export default function CmsManagementPage() {
                               </div>
                             </div>
                             {(hs.productId || hs.product_id) && (
-                              <ProductPreviewCard productId={hs.productId || hs.product_id} />
+                              <ProductPreviewCard
+                                productId={hs.productId || hs.product_id}
+                              />
                             )}
                           </div>
                         );
-                      }
+                      },
                     )}
-                    {!(data.lookbook_hotspots || []).length && (
+                    {!(data?.[CmsDataKey.LOOKBOOK_HOTSPOTS] || []).length && (
                       <p className="text-center text-xs text-gray-400 py-3">
-                        No hotspots added. Press Add Hotspot or click the image above to place interactive tags.
+                        No hotspots added. Press Add Hotspot or click the image
+                        above to place interactive tags.
                       </p>
                     )}
                   </div>
                 </div>
               </Section>
 
-              <Section title="Scarcity & Urgency Timer Block">
+              <Section title={UILabels.SECTIONS.SCARCITY__URGENCY_TIMER_BLOCK}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Timer Heading Title"
-                    value={data.scarcity_timer_title || ""}
-                    onChange={(v: string) => set("scarcity_timer_title", v)}
+                    label={UILabels.FIELDS.TIMER_HEADING_TITLE}
+                    value={data?.[CmsDataKey.SCARCITY_TIMER_TITLE] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.SCARCITY_TIMER_TITLE, v)
+                    }
                   />
                   <Field
-                    label="Expiration Date & Time"
-                    value={toDatetimeLocal(data.scarcity_expires_at || "")}
-                    onChange={(v: string) => set("scarcity_expires_at", v)}
+                    label={UILabels.FIELDS.EXPIRATION_DATE__TIME}
+                    value={toDatetimeLocal(
+                      data?.[CmsDataKey.SCARCITY_EXPIRES_AT] || "",
+                    )}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.SCARCITY_EXPIRES_AT, v)
+                    }
                     type="datetime-local"
                   />
                   <Field
-                    label="CTA Action Button Text"
-                    value={data.scarcity_btn_text || ""}
-                    onChange={(v: string) => set("scarcity_btn_text", v)}
+                    label={UILabels.FIELDS.CTA_ACTION_BUTTON_TEXT}
+                    value={data?.[CmsDataKey.SCARCITY_BTN_TEXT] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.SCARCITY_BTN_TEXT, v)
+                    }
                   />
                   <Field
-                    label="CTA Action Button Link (URL)"
-                    value={data.scarcity_btn_link || ""}
-                    onChange={(v: string) => set("scarcity_btn_link", v)}
+                    label={UILabels.FIELDS.CTA_ACTION_BUTTON_LINK_URL}
+                    value={data?.[CmsDataKey.SCARCITY_BTN_LINK] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.SCARCITY_BTN_LINK, v)
+                    }
                     mono
                   />
 
                   <div className="md:col-span-2">
                     <Field
-                      label="Marketing Alert Text Message"
-                      value={data.scarcity_alert_text || ""}
-                      onChange={(v: string) => set("scarcity_alert_text", v)}
+                      label={UILabels.FIELDS.MARKETING_ALERT_TEXT_MESSAGE}
+                      value={data?.[CmsDataKey.SCARCITY_ALERT_TEXT] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.SCARCITY_ALERT_TEXT, v)
+                      }
                     />
                   </div>
 
                   <ColorField
-                    label="Alert Bar Background Color"
-                    value={data.scarcity_alert_bg}
-                    onChange={(v: string) => set("scarcity_alert_bg", v)}
+                    label={UILabels.FIELDS.ALERT_BAR_BACKGROUND_COLOR}
+                    value={data?.[CmsDataKey.SCARCITY_ALERT_BG]}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.SCARCITY_ALERT_BG, v)
+                    }
                   />
                   <ColorField
-                    label="Alert Bar Text Color"
-                    value={data.scarcity_alert_text_color}
+                    label={UILabels.FIELDS.ALERT_BAR_TEXT_COLOR}
+                    value={data?.[CmsDataKey.SCARCITY_ALERT_TEXT_COLOR]}
                     onChange={(v: string) =>
-                      set("scarcity_alert_text_color", v)
+                      set(CmsDataKey.SCARCITY_ALERT_TEXT_COLOR, v)
                     }
                   />
                 </div>
               </Section>
 
-              <Section title="Trust & Social Proof Section">
+              <Section title={UILabels.SECTIONS.TRUST__SOCIAL_PROOF_SECTION}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Social Proof Header Title"
-                    value={data.social_proof_title || ""}
-                    onChange={(v: string) => set("social_proof_title", v)}
+                    label={UILabels.FIELDS.SOCIAL_PROOF_HEADER_TITLE}
+                    value={data?.[CmsDataKey.SOCIAL_PROOF_TITLE] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.SOCIAL_PROOF_TITLE, v)
+                    }
                   />
                   <Field
-                    label="Eyebrow Tag / Subtext"
-                    value={data.social_proof_eyebrow || ""}
-                    onChange={(v: string) => set("social_proof_eyebrow", v)}
+                    label={UILabels.FIELDS.EYEBROW_TAG__SUBTEXT}
+                    value={data?.[CmsDataKey.SOCIAL_PROOF_EYEBROW] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.SOCIAL_PROOF_EYEBROW, v)
+                    }
                   />
                 </div>
 
@@ -1545,10 +1793,12 @@ export default function CmsManagementPage() {
                     <h4 className="text-xs font-bold text-gray-500 uppercase">
                       Customer Testimonials
                     </h4>
+
                     <AddBtn
                       onClick={() =>
-                        set("social_proof_testimonials", [
-                          ...(data.social_proof_testimonials || []),
+                        set(CmsDataKey.SOCIAL_PROOF_TESTIMONIALS, [
+                          ...(data?.[CmsDataKey.SOCIAL_PROOF_TESTIMONIALS] ||
+                            []),
                           {
                             id: Date.now(),
                             name: "",
@@ -1559,11 +1809,11 @@ export default function CmsManagementPage() {
                           },
                         ])
                       }
-                      label="Add Testimonial"
+                      label={UILabels.FIELDS.ADD_TESTIMONIAL}
                     />
                   </div>
                   <div className="space-y-4">
-                    {(data.social_proof_testimonials || []).map(
+                    {(data?.[CmsDataKey.SOCIAL_PROOF_TESTIMONIALS] || []).map(
                       (t: any, tIdx: number) => (
                         <div
                           key={t.id || tIdx}
@@ -1574,9 +1824,9 @@ export default function CmsManagementPage() {
                             onClick={() =>
                               set(
                                 "social_proof_testimonials",
-                                data.social_proof_testimonials.filter(
-                                  (x: any) => x.id !== t.id,
-                                ),
+                                data?.[
+                                  CmsDataKey.SOCIAL_PROOF_TESTIMONIALS
+                                ].filter((x: any) => x.id !== t.id),
                               )
                             }
                             className="absolute right-3 top-3 text-red-400 hover:text-red-600"
@@ -1585,27 +1835,29 @@ export default function CmsManagementPage() {
                           </button>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Field
-                              label="Customer Name"
+                              label={UILabels.FIELDS.CUSTOMER_NAME}
                               value={t.name}
                               onChange={(v: string) =>
                                 set(
                                   "social_proof_testimonials",
-                                  data.social_proof_testimonials.map(
-                                    (x: any) =>
-                                      x.id === t.id ? { ...x, name: v } : x,
+                                  data?.[
+                                    CmsDataKey.SOCIAL_PROOF_TESTIMONIALS
+                                  ].map((x: any) =>
+                                    x.id === t.id ? { ...x, name: v } : x,
                                   ),
                                 )
                               }
                             />
                             <Field
-                              label="Role / Designation"
+                              label={UILabels.FIELDS.ROLE__DESIGNATION}
                               value={t.role}
                               onChange={(v: string) =>
                                 set(
                                   "social_proof_testimonials",
-                                  data.social_proof_testimonials.map(
-                                    (x: any) =>
-                                      x.id === t.id ? { ...x, role: v } : x,
+                                  data?.[
+                                    CmsDataKey.SOCIAL_PROOF_TESTIMONIALS
+                                  ].map((x: any) =>
+                                    x.id === t.id ? { ...x, role: v } : x,
                                   ),
                                 )
                               }
@@ -1622,15 +1874,16 @@ export default function CmsManagementPage() {
                                 onChange={(e) =>
                                   set(
                                     "social_proof_testimonials",
-                                    data.social_proof_testimonials.map(
-                                      (x: any) =>
-                                        x.id === t.id
-                                          ? {
-                                              ...x,
-                                              rating:
-                                                parseInt(e.target.value) || 5,
-                                            }
-                                          : x,
+                                    data?.[
+                                      CmsDataKey.SOCIAL_PROOF_TESTIMONIALS
+                                    ].map((x: any) =>
+                                      x.id === t.id
+                                        ? {
+                                            ...x,
+                                            rating:
+                                              parseInt(e.target.value) || 5,
+                                          }
+                                        : x,
                                     ),
                                   )
                                 }
@@ -1638,28 +1891,30 @@ export default function CmsManagementPage() {
                               />
                             </div>
                             <Field
-                              label="Avatar Image URL (Optional)"
+                              label={UILabels.FIELDS.AVATAR_IMAGE_URL_OPTIONAL}
                               value={t.avatar}
                               onChange={(v: string) =>
                                 set(
                                   "social_proof_testimonials",
-                                  data.social_proof_testimonials.map(
-                                    (x: any) =>
-                                      x.id === t.id ? { ...x, avatar: v } : x,
+                                  data?.[
+                                    CmsDataKey.SOCIAL_PROOF_TESTIMONIALS
+                                  ].map((x: any) =>
+                                    x.id === t.id ? { ...x, avatar: v } : x,
                                   ),
                                 )
                               }
                             />
                             <div className="md:col-span-2">
                               <Field
-                                label="Testimonial Quote / Text"
+                                label={UILabels.FIELDS.TESTIMONIAL_QUOTE__TEXT}
                                 value={t.text}
                                 onChange={(v: string) =>
                                   set(
                                     "social_proof_testimonials",
-                                    data.social_proof_testimonials.map(
-                                      (x: any) =>
-                                        x.id === t.id ? { ...x, text: v } : x,
+                                    data?.[
+                                      CmsDataKey.SOCIAL_PROOF_TESTIMONIALS
+                                    ].map((x: any) =>
+                                      x.id === t.id ? { ...x, text: v } : x,
                                     ),
                                   )
                                 }
@@ -1680,8 +1935,8 @@ export default function CmsManagementPage() {
                     </h4>
                     <AddBtn
                       onClick={() =>
-                        set("social_proof_badges", [
-                          ...(data.social_proof_badges || []),
+                        set(CmsDataKey.SOCIAL_PROOF_BADGES, [
+                          ...(data?.[CmsDataKey.SOCIAL_PROOF_BADGES] || []),
                           {
                             id: Date.now(),
                             icon: "Shield",
@@ -1690,11 +1945,11 @@ export default function CmsManagementPage() {
                           },
                         ])
                       }
-                      label="Add Trust Badge"
+                      label={UILabels.FIELDS.ADD_TRUST_BADGE}
                     />
                   </div>
                   <div className="space-y-4">
-                    {(data.social_proof_badges || []).map(
+                    {(data?.[CmsDataKey.SOCIAL_PROOF_BADGES] || []).map(
                       (bg: any, bIdx: number) => (
                         <div
                           key={bg.id || bIdx}
@@ -1705,7 +1960,7 @@ export default function CmsManagementPage() {
                             onClick={() =>
                               set(
                                 "social_proof_badges",
-                                data.social_proof_badges.filter(
+                                data?.[CmsDataKey.SOCIAL_PROOF_BADGES].filter(
                                   (x: any) => x.id !== bg.id,
                                 ),
                               )
@@ -1716,38 +1971,41 @@ export default function CmsManagementPage() {
                           </button>
                           <div className="flex-1 grid grid-cols-3 gap-3">
                             <Field
-                              label="Lucide Icon Name"
+                              label={UILabels.FIELDS.LUCIDE_ICON_NAME}
                               value={bg.icon}
                               onChange={(v: string) =>
                                 set(
                                   "social_proof_badges",
-                                  data.social_proof_badges.map((x: any) =>
-                                    x.id === bg.id ? { ...x, icon: v } : x,
+                                  data?.[CmsDataKey.SOCIAL_PROOF_BADGES].map(
+                                    (x: any) =>
+                                      x.id === bg.id ? { ...x, icon: v } : x,
                                   ),
                                 )
                               }
                               mono
                             />
                             <Field
-                              label="Badge Title"
+                              label={UILabels.FIELDS.BADGE_TITLE}
                               value={bg.title}
                               onChange={(v: string) =>
                                 set(
                                   "social_proof_badges",
-                                  data.social_proof_badges.map((x: any) =>
-                                    x.id === bg.id ? { ...x, title: v } : x,
+                                  data?.[CmsDataKey.SOCIAL_PROOF_BADGES].map(
+                                    (x: any) =>
+                                      x.id === bg.id ? { ...x, title: v } : x,
                                   ),
                                 )
                               }
                             />
                             <Field
-                              label="Short Description"
+                              label={UILabels.FIELDS.SHORT_DESCRIPTION}
                               value={bg.desc}
                               onChange={(v: string) =>
                                 set(
                                   "social_proof_badges",
-                                  data.social_proof_badges.map((x: any) =>
-                                    x.id === bg.id ? { ...x, desc: v } : x,
+                                  data?.[CmsDataKey.SOCIAL_PROOF_BADGES].map(
+                                    (x: any) =>
+                                      x.id === bg.id ? { ...x, desc: v } : x,
                                   ),
                                 )
                               }
@@ -1760,23 +2018,27 @@ export default function CmsManagementPage() {
                 </div>
               </Section>
 
-              <Section title="Curated Discovery Products Slider">
+              <Section
+                title={UILabels.SECTIONS.CURATED_DISCOVERY_PRODUCTS_SLIDER}
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Discovery Section Heading"
-                    value={data.curated_title || ""}
-                    onChange={(v: string) => set("curated_title", v)}
+                    label={UILabels.FIELDS.DISCOVERY_SECTION_HEADING}
+                    value={data?.[CmsDataKey.CURATED_TITLE] || ""}
+                    onChange={(v: string) => set(CmsDataKey.CURATED_TITLE, v)}
                   />
                   <Field
-                    label="Subtitle / Tagline"
-                    value={data.curated_subtitle || ""}
-                    onChange={(v: string) => set("curated_subtitle", v)}
+                    label={UILabels.FIELDS.SUBTITLE__TAGLINE}
+                    value={data?.[CmsDataKey.CURATED_SUBTITLE] || ""}
+                    onChange={(v: string) =>
+                      set(CmsDataKey.CURATED_SUBTITLE, v)
+                    }
                   />
 
                   <SelectField
-                    label="Curation Category Type"
-                    value={data.curated_type || "trending"}
-                    onChange={(v: string) => set("curated_type", v)}
+                    label={UILabels.FIELDS.CURATION_CATEGORY_TYPE}
+                    value={data?.[CmsDataKey.CURATED_TYPE] || "trending"}
+                    onChange={(v: string) => set(CmsDataKey.CURATED_TYPE, v)}
                     options={[
                       { value: "trending", label: "Trending Masterpieces" },
                       { value: "new_arrivals", label: "New Arrivals" },
@@ -1792,32 +2054,38 @@ export default function CmsManagementPage() {
                       Curated Custom Products
                     </label>
                     <div className="flex flex-wrap gap-2 mb-3">
-                      {(Array.isArray(data.curated_product_ids) ? data.curated_product_ids : [])
-                        .map((productId: string) => {
-                          const p = products.find((x) => x.id === productId);
-                          return (
-                            <div
-                              key={productId}
-                              className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-xs font-bold px-3 py-1.5 rounded-full border border-purple-100 shadow-sm"
+                      {(Array.isArray(data?.[CmsDataKey.CURATED_PRODUCT_IDS])
+                        ? data?.[CmsDataKey.CURATED_PRODUCT_IDS]
+                        : []
+                      ).map((productId: string) => {
+                        const p = products.find((x) => x.id === productId);
+                        return (
+                          <div
+                            key={productId}
+                            className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-xs font-bold px-3 py-1.5 rounded-full border border-purple-100 shadow-sm"
+                          >
+                            <span>{p ? p.name : productId}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const filtered = (
+                                  data?.[CmsDataKey.CURATED_PRODUCT_IDS] || []
+                                ).filter((id: string) => id !== productId);
+                                set(CmsDataKey.CURATED_PRODUCT_IDS, filtered);
+                              }}
+                              className="text-purple-400 hover:text-purple-650 transition-colors"
                             >
-                              <span>{p ? p.name : productId}</span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const filtered = (data.curated_product_ids || []).filter(
-                                    (id: string) => id !== productId
-                                  );
-                                  set("curated_product_ids", filtered);
-                                }}
-                                className="text-purple-400 hover:text-purple-650 transition-colors"
-                              >
-                                <X size={12} />
-                              </button>
-                            </div>
-                          );
-                        })}
-                      {(!data.curated_product_ids || data.curated_product_ids.length === 0) && (
-                        <span className="text-xs text-gray-400">No custom products selected.</span>
+                              <X size={12} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {(!data?.[CmsDataKey.CURATED_PRODUCT_IDS] ||
+                        data?.[CmsDataKey.CURATED_PRODUCT_IDS].length ===
+                          0) && (
+                        <span className="text-xs text-gray-400">
+                          No custom products selected.
+                        </span>
                       )}
                     </div>
                     <div className="flex gap-2">
@@ -1825,22 +2093,31 @@ export default function CmsManagementPage() {
                         onChange={(e) => {
                           const val = e.target.value;
                           if (!val) return;
-                          const currentIds = Array.isArray(data.curated_product_ids)
-                            ? data.curated_product_ids
+                          const currentIds = Array.isArray(
+                            data?.[CmsDataKey.CURATED_PRODUCT_IDS],
+                          )
+                            ? data?.[CmsDataKey.CURATED_PRODUCT_IDS]
                             : [];
                           if (!currentIds.includes(val)) {
-                            set("curated_product_ids", [...currentIds, val]);
+                            set(CmsDataKey.CURATED_PRODUCT_IDS, [
+                              ...currentIds,
+                              val,
+                            ]);
                           }
                           e.target.value = "";
                         }}
                         className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-purple-400"
                         defaultValue=""
                       >
-                        <option value="" disabled>-- Add Product to Curated List --</option>
+                        <option value="" disabled>
+                          -- Add Product to Curated List --
+                        </option>
                         {products
                           .filter((p) => {
-                            const currentIds = Array.isArray(data.curated_product_ids)
-                              ? data.curated_product_ids
+                            const currentIds = Array.isArray(
+                              data?.[CmsDataKey.CURATED_PRODUCT_IDS],
+                            )
+                              ? data?.[CmsDataKey.CURATED_PRODUCT_IDS]
                               : [];
                             return !currentIds.includes(p.id);
                           })
@@ -1854,9 +2131,11 @@ export default function CmsManagementPage() {
                   </div>
                   <div className="md:col-span-2">
                     <ColorField
-                      label="Section Background Color"
-                      value={data.curated_bg_color || ""}
-                      onChange={(v: string) => set("curated_bg_color", v)}
+                      label={UILabels.FIELDS.SECTION_BACKGROUND_COLOR}
+                      value={data?.[CmsDataKey.CURATED_BG_COLOR] || ""}
+                      onChange={(v: string) =>
+                        set(CmsDataKey.CURATED_BG_COLOR, v)
+                      }
                     />
                   </div>
                 </div>
@@ -1867,11 +2146,11 @@ export default function CmsManagementPage() {
           {/* NAVBAR */}
           {page === PageType.NAVBAR && (
             <Section
-              title="Navigation Links"
+              title={UILabels.SECTIONS.NAVIGATION_LINKS}
               action={
                 <AddBtn
                   onClick={() => addItem("links", { label: "", href: "" })}
-                  label="Add Link"
+                  label={UILabels.FIELDS.ADD_LINK}
                 />
               }
             >
@@ -1882,14 +2161,14 @@ export default function CmsManagementPage() {
                 >
                   <div className="flex-1 grid grid-cols-2 gap-3">
                     <Field
-                      label="Label"
+                      label={UILabels.FIELDS.LABEL}
                       value={link.label}
                       onChange={(v: string) =>
                         updateItem("links", link.id, "label", v)
                       }
                     />
                     <Field
-                      label="URL Path"
+                      label={UILabels.FIELDS.URL_PATH}
                       value={link.href}
                       onChange={(v: string) =>
                         updateItem("links", link.id, "href", v)
@@ -1917,21 +2196,21 @@ export default function CmsManagementPage() {
           {/* FOOTER */}
           {page === PageType.FOOTER && (
             <>
-              <Section title="Copyright / Bottom Text">
+              <Section title={UILabels.SECTIONS.COPYRIGHT__BOTTOM_TEXT}>
                 <Field
-                  label="Bottom Text"
+                  label={UILabels.FIELDS.BOTTOM_TEXT}
                   value={data.bottom_text || ""}
                   onChange={(v: string) => set("bottom_text", v)}
                 />
               </Section>
               <Section
-                title="Footer Columns"
+                title={UILabels.SECTIONS.FOOTER_COLUMNS}
                 action={
                   <AddBtn
                     onClick={() =>
                       addItem("content", { header: "", links: [] })
                     }
-                    label="Add Column"
+                    label={UILabels.FIELDS.ADD_COLUMN}
                   />
                 }
               >
@@ -1943,7 +2222,7 @@ export default function CmsManagementPage() {
                     <div className="flex justify-between items-center gap-3">
                       <div className="flex-1">
                         <Field
-                          label="Column Header"
+                          label={UILabels.FIELDS.COLUMN_HEADER}
                           value={col.header}
                           onChange={(v: string) =>
                             set(
@@ -2084,81 +2363,81 @@ export default function CmsManagementPage() {
           {/* ABOUT */}
           {page === PageType.ABOUT && (
             <>
-              <Section title="Hero Block">
+              <Section title={UILabels.SECTIONS.HERO_BLOCK}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Hero Title"
+                    label={UILabels.FIELDS.HERO_TITLE}
                     value={data.heroTitle || ""}
                     onChange={(v: string) => set("heroTitle", v)}
                   />
                   <Field
-                    label="Hero Subtitle"
+                    label={UILabels.FIELDS.HERO_SUBTITLE}
                     value={data.heroDesc || ""}
                     onChange={(v: string) => set("heroDesc", v)}
                   />
                   <div className="md:col-span-2">
                     <ImageUploadField
-                      label="Hero Background Image"
+                      label={UILabels.FIELDS.HERO_BACKGROUND_IMAGE}
                       value={data.heroImg || ""}
                       onChange={(v: string) => set("heroImg", v)}
                     />
                   </div>
                 </div>
               </Section>
-              <Section title="Thoughts & Founder">
+              <Section title={UILabels.SECTIONS.THOUGHTS__FOUNDER}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Section Title"
+                    label={UILabels.FIELDS.SECTION_TITLE}
                     value={data.ownThoughtsTitle || ""}
                     onChange={(v: string) => set("ownThoughtsTitle", v)}
                   />
                   <ImageUploadField
-                    label="Section Image"
+                    label={UILabels.FIELDS.SECTION_IMAGE}
                     value={data.ownThoughtsImg || ""}
                     onChange={(v: string) => set("ownThoughtsImg", v)}
                   />
                   <div className="md:col-span-2">
                     <Field
-                      label="Description"
+                      label={UILabels.FIELDS.DESCRIPTION}
                       value={data.ownThoughtsDesc || ""}
                       onChange={(v: string) => set("ownThoughtsDesc", v)}
                       textarea
                     />
                   </div>
                   <Field
-                    label="Founder Name"
+                    label={UILabels.FIELDS.FOUNDER_NAME}
                     value={data.founderName || ""}
                     onChange={(v: string) => set("founderName", v)}
                   />
                   <Field
-                    label="Founder Title / Role"
+                    label={UILabels.FIELDS.FOUNDER_TITLE__ROLE}
                     value={data.founderTitle || ""}
                     onChange={(v: string) => set("founderTitle", v)}
                   />
                   <div className="md:col-span-2">
                     <ImageUploadField
-                      label="Founder Photo"
+                      label={UILabels.FIELDS.FOUNDER_PHOTO}
                       value={data.founderImg || ""}
                       onChange={(v: string) => set("founderImg", v)}
                     />
                   </div>
                 </div>
               </Section>
-              <Section title="Core Values Banner">
+              <Section title={UILabels.SECTIONS.CORE_VALUES_BANNER}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Section Title"
+                    label={UILabels.FIELDS.SECTION_TITLE}
                     value={data.coreValuesTitle || ""}
                     onChange={(v: string) => set("coreValuesTitle", v)}
                   />
                   <ImageUploadField
-                    label="Background Image"
+                    label={UILabels.FIELDS.BACKGROUND_IMAGE}
                     value={data.coreValuesImg || ""}
                     onChange={(v: string) => set("coreValuesImg", v)}
                   />
                   <div className="md:col-span-2">
                     <Field
-                      label="Description"
+                      label={UILabels.FIELDS.DESCRIPTION}
                       value={data.coreValuesDesc || ""}
                       onChange={(v: string) => set("coreValuesDesc", v)}
                     />
@@ -2166,7 +2445,7 @@ export default function CmsManagementPage() {
                 </div>
               </Section>
               <Section
-                title="Core Values List"
+                title={UILabels.SECTIONS.CORE_VALUES_LIST}
                 action={
                   <AddBtn
                     onClick={() =>
@@ -2176,7 +2455,7 @@ export default function CmsManagementPage() {
                         description: "",
                       })
                     }
-                    label="Add Value"
+                    label={UILabels.FIELDS.ADD_VALUE}
                   />
                 }
               >
@@ -2186,14 +2465,14 @@ export default function CmsManagementPage() {
                     onRemove={() => removeItem("coreValues", v.id)}
                   >
                     <Field
-                      label="Title"
+                      label={UILabels.FIELDS.TITLE}
                       value={v.title}
                       onChange={(val: string) =>
                         updateItem("coreValues", v.id, "title", val)
                       }
                     />
                     <Field
-                      label="Tagline"
+                      label={UILabels.FIELDS.TAGLINE}
                       value={v.tagline}
                       onChange={(val: string) =>
                         updateItem("coreValues", v.id, "tagline", val)
@@ -2201,7 +2480,7 @@ export default function CmsManagementPage() {
                     />
                     <div className="md:col-span-2">
                       <Field
-                        label="Description"
+                        label={UILabels.FIELDS.DESCRIPTION}
                         value={v.description}
                         onChange={(val: string) =>
                           updateItem("coreValues", v.id, "description", val)
@@ -2211,21 +2490,21 @@ export default function CmsManagementPage() {
                   </ListCard>
                 ))}
               </Section>
-              <Section title="Mission Section">
+              <Section title={UILabels.SECTIONS.MISSION_SECTION}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Mission Title"
+                    label={UILabels.FIELDS.MISSION_TITLE}
                     value={data.missionTitle || ""}
                     onChange={(v: string) => set("missionTitle", v)}
                   />
                   <ImageUploadField
-                    label="Mission Image"
+                    label={UILabels.FIELDS.MISSION_IMAGE}
                     value={data.missionImg || ""}
                     onChange={(v: string) => set("missionImg", v)}
                   />
                   <div className="md:col-span-2">
                     <Field
-                      label="Mission Statement"
+                      label={UILabels.FIELDS.MISSION_STATEMENT}
                       value={data.missionDesc || ""}
                       onChange={(v: string) => set("missionDesc", v)}
                       textarea
@@ -2234,7 +2513,7 @@ export default function CmsManagementPage() {
                 </div>
               </Section>
               <Section
-                title="Mission Deliverables"
+                title={UILabels.SECTIONS.MISSION_DELIVERABLES}
                 action={
                   <AddBtn
                     onClick={() =>
@@ -2244,7 +2523,7 @@ export default function CmsManagementPage() {
                         description: "",
                       })
                     }
-                    label="Add Card"
+                    label={UILabels.FIELDS.ADD_CARD}
                   />
                 }
               >
@@ -2254,14 +2533,14 @@ export default function CmsManagementPage() {
                     onRemove={() => removeItem("missionToDeliver", m.id)}
                   >
                     <Field
-                      label="Title"
+                      label={UILabels.FIELDS.TITLE}
                       value={m.title}
                       onChange={(val: string) =>
                         updateItem("missionToDeliver", m.id, "title", val)
                       }
                     />
                     <Field
-                      label="Tagline"
+                      label={UILabels.FIELDS.TAGLINE}
                       value={m.tagline}
                       onChange={(val: string) =>
                         updateItem("missionToDeliver", m.id, "tagline", val)
@@ -2269,7 +2548,7 @@ export default function CmsManagementPage() {
                     />
                     <div className="md:col-span-2">
                       <Field
-                        label="Description"
+                        label={UILabels.FIELDS.DESCRIPTION}
                         value={m.description}
                         onChange={(val: string) =>
                           updateItem(
@@ -2290,17 +2569,17 @@ export default function CmsManagementPage() {
           {/* CONTACT */}
           {page === PageType.CONTACT && (
             <>
-              <Section title="Hero Block">
+              <Section title={UILabels.SECTIONS.HERO_BLOCK}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Hero Title"
+                    label={UILabels.FIELDS.HERO_TITLE}
                     value={data.hero?.heroTitle || ""}
                     onChange={(v: string) =>
                       set("hero", { ...data.hero, heroTitle: v })
                     }
                   />
                   <Field
-                    label="Hero Subtitle"
+                    label={UILabels.FIELDS.HERO_SUBTITLE}
                     value={data.hero?.heroDesc || ""}
                     onChange={(v: string) =>
                       set("hero", { ...data.hero, heroDesc: v })
@@ -2308,7 +2587,7 @@ export default function CmsManagementPage() {
                   />
                   <div className="md:col-span-2">
                     <ImageUploadField
-                      label="Hero Background Image"
+                      label={UILabels.FIELDS.HERO_BACKGROUND_IMAGE}
                       value={data.hero?.heroImg || ""}
                       onChange={(v: string) =>
                         set("hero", { ...data.hero, heroImg: v })
@@ -2318,7 +2597,7 @@ export default function CmsManagementPage() {
                 </div>
               </Section>
               <Section
-                title="Contact Methods"
+                title={UILabels.SECTIONS.CONTACT_METHODS}
                 action={
                   <AddBtn
                     onClick={() =>
@@ -2329,7 +2608,7 @@ export default function CmsManagementPage() {
                         icon: "phone",
                       })
                     }
-                    label="Add Method"
+                    label={UILabels.FIELDS.ADD_METHOD}
                   />
                 }
               >
@@ -2356,14 +2635,14 @@ export default function CmsManagementPage() {
                       </select>
                     </div>
                     <Field
-                      label="Title"
+                      label={UILabels.FIELDS.TITLE}
                       value={c.title}
                       onChange={(v: string) =>
                         updateItem("list", c.id, "title", v)
                       }
                     />
                     <Field
-                      label="Icon (Lucide name)"
+                      label={UILabels.FIELDS.ICON_LUCIDE_NAME}
                       value={c.icon}
                       onChange={(v: string) =>
                         updateItem("list", c.id, "icon", v)
@@ -2371,7 +2650,7 @@ export default function CmsManagementPage() {
                       mono
                     />
                     <Field
-                      label="Details / Value"
+                      label={UILabels.FIELDS.DETAILS__VALUE}
                       value={c.description}
                       onChange={(v: string) =>
                         updateItem("list", c.id, "description", v)
@@ -2386,22 +2665,22 @@ export default function CmsManagementPage() {
           {/* storefront */}
           {page === PageType.STORE && (
             <>
-              <Section title="Store Page Promotional Banner">
+              <Section title={UILabels.SECTIONS.STORE_PAGE_PROMOTIONAL_BANNER}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Banner Title"
+                    label={UILabels.FIELDS.BANNER_TITLE}
                     value={data.promo_banner_title || ""}
                     onChange={(v: string) => set("promo_banner_title", v)}
                   />
                   <Field
-                    label="Banner Action Link (URL)"
+                    label={UILabels.FIELDS.BANNER_ACTION_LINK_URL}
                     value={data.promo_banner_link || ""}
                     onChange={(v: string) => set("promo_banner_link", v)}
                     mono
                   />
                   <div className="md:col-span-2">
                     <Field
-                      label="Banner Description"
+                      label={UILabels.FIELDS.BANNER_DESCRIPTION}
                       value={data.promo_banner_desc || ""}
                       onChange={(v: string) => set("promo_banner_desc", v)}
                       textarea
@@ -2409,38 +2688,38 @@ export default function CmsManagementPage() {
                   </div>
                   <div className="md:col-span-2">
                     <ImageUploadField
-                      label="Promo Card Background Image"
+                      label={UILabels.FIELDS.PROMO_CARD_BACKGROUND_IMAGE}
                       value={data.promo_banner_image_url || ""}
                       onChange={(v: string) => set("promo_banner_image_url", v)}
                     />
                   </div>
                 </div>
               </Section>
-              <Section title="Urgent Promo & Countdown Timer">
+              <Section title={UILabels.SECTIONS.URGENT_PROMO__COUNTDOWN_TIMER}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="Timer Heading Title"
+                    label={UILabels.FIELDS.TIMER_HEADING_TITLE}
                     value={data.promo_timer_title || ""}
                     onChange={(v: string) => set("promo_timer_title", v)}
                     placeholder="e.g. FLASH SALE ENDS IN"
                   />
 
                   <Field
-                    label="Expiration Date & Time"
+                    label={UILabels.FIELDS.EXPIRATION_DATE__TIME}
                     value={toDatetimeLocal(data.promo_expires_at || "")}
                     onChange={(v: string) => set("promo_expires_at", v)}
                     type="datetime-local"
                   />
 
                   <Field
-                    label="Action Button Text"
+                    label={UILabels.FIELDS.ACTION_BUTTON_TEXT}
                     value={data.promo_btn_text || ""}
                     onChange={(v: string) => set("promo_btn_text", v)}
                     placeholder="e.g. Shop the Sale"
                   />
 
                   <Field
-                    label="Action Button Link (URL)"
+                    label={UILabels.FIELDS.ACTION_BUTTON_LINK_URL}
                     value={data.promo_btn_link || ""}
                     onChange={(v: string) => set("promo_btn_link", v)}
                     placeholder="e.g. /store"
@@ -2449,7 +2728,7 @@ export default function CmsManagementPage() {
 
                   <div className="md:col-span-2">
                     <Field
-                      label="Marketing Alert Banner Text"
+                      label={UILabels.FIELDS.MARKETING_ALERT_BANNER_TEXT}
                       value={data.promo_alert_text || ""}
                       onChange={(v: string) => set("promo_alert_text", v)}
                       placeholder="e.g. Use coupon FIRST10 for an extra 10% off!"
@@ -2457,13 +2736,13 @@ export default function CmsManagementPage() {
                   </div>
 
                   <ColorField
-                    label="Alert Bar Background Color"
+                    label={UILabels.FIELDS.ALERT_BAR_BACKGROUND_COLOR}
                     value={data.promo_alert_bg || "#ef4444"}
                     onChange={(v: string) => set("promo_alert_bg", v)}
                   />
 
                   <ColorField
-                    label="Alert Bar Text Color"
+                    label={UILabels.FIELDS.ALERT_BAR_TEXT_COLOR}
                     value={data.promo_alert_text_color || "#ffffff"}
                     onChange={(v: string) => set("promo_alert_text_color", v)}
                   />

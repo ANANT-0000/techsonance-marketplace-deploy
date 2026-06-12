@@ -9,6 +9,11 @@ import { useAppDispatch, useAppSelector } from '@/hooks/reduxHooks';
 import { ChevronLeft } from 'lucide-react';
 import { PROFILE_SIDEBAR_TEXT } from '@/constants/customerText';
 
+export enum SidebarActionType {
+  SET_MOBILE = "SET_MOBILE",
+  SET_MOUNTED = "SET_MOUNTED",
+}
+
 const ProfileSidebarLink = [
     { name: PROFILE_SIDEBAR_TEXT.LINKS.OVERVIEW, path: '/customer', icon: 'user' },
     { name: PROFILE_SIDEBAR_TEXT.LINKS.ORDERS, path: '/orders', icon: 'shopping-bag' },
@@ -21,13 +26,13 @@ const ProfileSidebarLink = [
 
 type SidebarState = { isMounted: boolean; isMobile: boolean };
 type SidebarAction = 
-    | { type: 'SET_MOUNTED' }
-    | { type: 'SET_MOBILE'; payload: boolean };
+    | { type: SidebarActionType.SET_MOUNTED }
+    | { type: SidebarActionType.SET_MOBILE; payload: boolean };
 
 const sidebarReducer = (state: SidebarState, action: SidebarAction): SidebarState => {
     switch (action.type) {
-        case 'SET_MOUNTED': return { ...state, isMounted: true };
-        case 'SET_MOBILE': return { ...state, isMobile: action.payload };
+        case SidebarActionType.SET_MOUNTED: return { ...state, isMounted: true };
+        case SidebarActionType.SET_MOBILE: return { ...state, isMobile: action.payload };
         default: return state;
     }
 };
@@ -44,11 +49,11 @@ export function ProfileSidebar() {
     });
 
     useEffect(() => {
-        dispatchState({ type: 'SET_MOUNTED' });
+        dispatchState({ type: SidebarActionType.SET_MOUNTED });
         const mql = window.matchMedia('(max-width: 1023px)');
-        dispatchState({ type: 'SET_MOBILE', payload: mql.matches });
+        dispatchState({ type: SidebarActionType.SET_MOBILE, payload: mql.matches });
         
-        const handler = (e: MediaQueryListEvent) => dispatchState({ type: 'SET_MOBILE', payload: e.matches });
+        const handler = (e: MediaQueryListEvent) => dispatchState({ type: SidebarActionType.SET_MOBILE, payload: e.matches });
         mql.addEventListener('change', handler);
         return () => mql.removeEventListener('change', handler);
     }, []);

@@ -17,28 +17,40 @@ interface State {
     showPassword: boolean;
 }
 
+export enum ForgotPasswordActionType {
+  SET_STEP = 'SET_STEP',
+  SET_LOADING = 'SET_LOADING',
+  SET_ERROR = 'SET_ERROR',
+  SET_SUCCESS = 'SET_SUCCESS',
+  SET_EMAIL = 'SET_EMAIL',
+  SET_OTP = 'SET_OTP',
+  SET_NEW_PASSWORD = 'SET_NEW_PASSWORD',
+  TOGGLE_PASSWORD_VISIBILITY = 'TOGGLE_PASSWORD_VISIBILITY',
+  RESET_FORM = 'RESET_FORM',
+}
+
 type Action =
-    | { type: 'SET_STEP'; payload: 1 | 2 }
-    | { type: 'SET_LOADING'; payload: boolean }
-    | { type: 'SET_ERROR'; payload: string | null }
-    | { type: 'SET_SUCCESS'; payload: string | null }
-    | { type: 'SET_EMAIL'; payload: string }
-    | { type: 'SET_OTP'; payload: string }
-    | { type: 'SET_NEW_PASSWORD'; payload: string }
-    | { type: 'TOGGLE_PASSWORD_VISIBILITY' }
-    | { type: 'RESET_FORM' };
+    | { type: ForgotPasswordActionType.SET_STEP; payload: 1 | 2 }
+    | { type: ForgotPasswordActionType.SET_LOADING; payload: boolean }
+    | { type: ForgotPasswordActionType.SET_ERROR; payload: string | null }
+    | { type: ForgotPasswordActionType.SET_SUCCESS; payload: string | null }
+    | { type: ForgotPasswordActionType.SET_EMAIL; payload: string }
+    | { type: ForgotPasswordActionType.SET_OTP; payload: string }
+    | { type: ForgotPasswordActionType.SET_NEW_PASSWORD; payload: string }
+    | { type: ForgotPasswordActionType.TOGGLE_PASSWORD_VISIBILITY }
+    | { type: ForgotPasswordActionType.RESET_FORM };
 
 function reducer(state: State, action: Action): State {
     switch (action.type) {
-        case 'SET_STEP': return { ...state, step: action.payload };
-        case 'SET_LOADING': return { ...state, isLoading: action.payload };
-        case 'SET_ERROR': return { ...state, error: action.payload };
-        case 'SET_SUCCESS': return { ...state, successMessage: action.payload };
-        case 'SET_EMAIL': return { ...state, email: action.payload };
-        case 'SET_OTP': return { ...state, otp: action.payload };
-        case 'SET_NEW_PASSWORD': return { ...state, newPassword: action.payload };
-        case 'TOGGLE_PASSWORD_VISIBILITY': return { ...state, showPassword: !state.showPassword };
-        case 'RESET_FORM': return { ...state, step: 1, otp: '', error: null, successMessage: null };
+        case ForgotPasswordActionType.SET_STEP: return { ...state, step: action.payload };
+        case ForgotPasswordActionType.SET_LOADING: return { ...state, isLoading: action.payload };
+        case ForgotPasswordActionType.SET_ERROR: return { ...state, error: action.payload };
+        case ForgotPasswordActionType.SET_SUCCESS: return { ...state, successMessage: action.payload };
+        case ForgotPasswordActionType.SET_EMAIL: return { ...state, email: action.payload };
+        case ForgotPasswordActionType.SET_OTP: return { ...state, otp: action.payload };
+        case ForgotPasswordActionType.SET_NEW_PASSWORD: return { ...state, newPassword: action.payload };
+        case ForgotPasswordActionType.TOGGLE_PASSWORD_VISIBILITY: return { ...state, showPassword: !state.showPassword };
+        case ForgotPasswordActionType.RESET_FORM: return { ...state, step: 1, otp: '', error: null, successMessage: null };
         default: return state;
     }
 }
@@ -59,38 +71,38 @@ export default function ForgotPasswordClient() {
 
     const handleRequestOtp = async (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch({ type: 'SET_LOADING', payload: true });
-        dispatch({ type: 'SET_ERROR', payload: null });
-        dispatch({ type: 'SET_SUCCESS', payload: null });
+        dispatch({ type: ForgotPasswordActionType.SET_LOADING, payload: true });
+        dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: null });
+        dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: null });
 
         try {
             await requestPasswordResetOTP(state.email);
-            dispatch({ type: 'SET_STEP', payload: 2 });
-            dispatch({ type: 'SET_SUCCESS', payload: 'An OTP has been sent to your email.' });
+            dispatch({ type: ForgotPasswordActionType.SET_STEP, payload: 2 });
+            dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: 'An OTP has been sent to your email.' });
         } catch (err) {
-            dispatch({ type: 'SET_ERROR', payload: 'Failed to send OTP. Please check your email and try again.' });
+            dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: 'Failed to send OTP. Please check your email and try again.' });
         } finally {
-            dispatch({ type: 'SET_LOADING', payload: false });
+            dispatch({ type: ForgotPasswordActionType.SET_LOADING, payload: false });
         }
     };
 
     const handleResetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch({ type: 'SET_LOADING', payload: true });
-        dispatch({ type: 'SET_ERROR', payload: null });
-        dispatch({ type: 'SET_SUCCESS', payload: null });
+        dispatch({ type: ForgotPasswordActionType.SET_LOADING, payload: true });
+        dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: null });
+        dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: null });
 
         try {
             await resetPasswordWithOTP(state.email, state.otp, state.newPassword);
-            dispatch({ type: 'SET_SUCCESS', payload: 'Password reset successfully! Redirecting to login...' });
+            dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: 'Password reset successfully! Redirecting to login...' });
 
             setTimeout(() => {
                 router.push('/auth/customerLogin');
             }, 2000);
         } catch (err: any) {
-            dispatch({ type: 'SET_ERROR', payload: err.message || 'Invalid OTP or failed to reset password.' });
+            dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: err.message || 'Invalid OTP or failed to reset password.' });
         } finally {
-            dispatch({ type: 'SET_LOADING', payload: false });
+            dispatch({ type: ForgotPasswordActionType.SET_LOADING, payload: false });
         }
     };
 
@@ -127,7 +139,7 @@ export default function ForgotPasswordClient() {
                     <div className="relative">
                         {state.step === 2 && (
                             <button
-                                onClick={() => dispatch({ type: 'SET_STEP', payload: 1 })}
+                                onClick={() => dispatch({ type: ForgotPasswordActionType.SET_STEP, payload: 1 })}
                                 className="mb-3 flex items-center gap-1 text-white/80 hover:text-white transition-colors text-sm"
                             >
                                 <ArrowLeft className="w-4 h-4" />
@@ -209,7 +221,7 @@ export default function ForgotPasswordClient() {
                                             type="email"
                                             required
                                             value={state.email}
-                                            onChange={(e) => dispatch({ type: 'SET_EMAIL', payload: e.target.value })}
+                                            onChange={(e) => dispatch({ type: ForgotPasswordActionType.SET_EMAIL, payload: e.target.value })}
                                             className="w-full pl-12 pr-4 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-teal-100 focus:border-teal-500 outline-none transition-all text-slate-700 placeholder:text-slate-400"
                                             placeholder="manish@example.com"
                                         />
@@ -269,7 +281,7 @@ export default function ForgotPasswordClient() {
                                             required
                                             maxLength={6}
                                             value={state.otp}
-                                            onChange={(e) => dispatch({ type: 'SET_OTP', payload: e.target.value.replace(/\D/g, '') })}
+                                            onChange={(e) => dispatch({ type: ForgotPasswordActionType.SET_OTP, payload: e.target.value.replace(/\D/g, '') })}
                                             className="w-full pl-12 pr-4 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-teal-100 focus:border-teal-500 outline-none transition-all tracking-[0.5em] font-mono text-2xl text-center font-bold text-slate-700"
                                             placeholder="000000"
                                         />
@@ -280,7 +292,7 @@ export default function ForgotPasswordClient() {
                                         </p>
                                         <button
                                             type="button"
-                                            onClick={() => dispatch({ type: 'RESET_FORM' })}
+                                            onClick={() => dispatch({ type: ForgotPasswordActionType.RESET_FORM })}
                                             className="text-xs text-teal-600 hover:text-teal-700 font-medium"
                                         >
                                             Resend code
@@ -302,13 +314,13 @@ export default function ForgotPasswordClient() {
                                             required
                                             minLength={8}
                                             value={state.newPassword}
-                                            onChange={(e) => dispatch({ type: 'SET_NEW_PASSWORD', payload: e.target.value })}
+                                            onChange={(e) => dispatch({ type: ForgotPasswordActionType.SET_NEW_PASSWORD, payload: e.target.value })}
                                             className="w-full pl-12 pr-12 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-teal-100 focus:border-teal-500 outline-none transition-all text-slate-700"
                                             placeholder="Enter a strong password"
                                         />
                                         <button
                                             type="button"
-                                            onClick={() => dispatch({ type: 'TOGGLE_PASSWORD_VISIBILITY' })}
+                                            onClick={() => dispatch({ type: ForgotPasswordActionType.TOGGLE_PASSWORD_VISIBILITY })}
                                             className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-medium"
                                         >
                                             {state.showPassword ? 'Hide' : 'Show'}

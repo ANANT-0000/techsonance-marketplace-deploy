@@ -1,4 +1,4 @@
-﻿// 'use server';
+// 'use server';
 import { BASE_API_URL, CUSTOMER_BASE_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
 
@@ -34,7 +34,6 @@ export const fetchCustomerWishlist = async (
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response);
     if (response.status !== 200) {
     }
     return await response.json();
@@ -78,7 +77,6 @@ export const fetchDeleteWishList = async (
       },
       body: JSON.stringify({ productVariantId: productId }),
     });
-    console.log(response);
     if (response.status !== 200) {
     }
     return await response.json();
@@ -112,11 +110,6 @@ export const fetchRemoveFromCart = async (
   cartItemId: string,
   token: string,
 ) => {
-  console.log("8888888888888");
-  console.log("customerId", customerId);
-  console.log("cartId", cartId);
-  console.log("cartItemId", cartItemId);
-
   try {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/cart/${customerId}`, {

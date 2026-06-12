@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
-import { BASE_API_URL } from '@/constants';
-import { renderPdfInIframe } from '@/lib/renderPdf';
-import AxiosAPI from '@/lib/axios';
+import { useState, useCallback } from "react";
+import { BASE_API_URL } from "@/constants";
+import { renderPdfInIframe } from "@/lib/renderPdf";
+import AxiosAPI from "@/lib/axios";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types — mirrors PolicyDocumentPayload from the server interface
@@ -51,22 +51,22 @@ interface WarrantyPayload {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function fmtDate(d: Date | string | null | undefined): string {
-  if (!d) return 'N/A';
-  const dt = typeof d === 'string' ? new Date(d) : d;
-  return dt.toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+  if (!d) return "N/A";
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return dt.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 }
 
 function fmtPrice(price: string | number): string {
-  const num = typeof price === 'string' ? parseFloat(price) : price;
+  const num = typeof price === "string" ? parseFloat(price) : price;
   return `₹${num.toFixed(2)}`;
 }
 
 function fmtPolicyType(type: string): string {
-  return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -77,12 +77,14 @@ function fmtPolicyType(type: string): string {
 
 function buildWarrantyHtml(p: WarrantyPayload): string {
   const policy = p.policy;
-  const endDateText = policy.endDate ? fmtDate(policy.endDate) : 'Lifetime / No Expiry';
+  const endDateText = policy.endDate
+    ? fmtDate(policy.endDate)
+    : "Lifetime / No Expiry";
 
-  const primaryColor = p.branding.primaryColor || '#131921';
-  const secondaryColor = p.branding.secondaryColor || '#555555';
-  const accentColor = p.branding.accentColor || '#ff9900';
-  const fontFamily = p.branding.fontFamily || 'Arial, sans-serif';
+  const primaryColor = p.branding.primaryColor || "#131921";
+  const secondaryColor = p.branding.secondaryColor || "#555555";
+  const accentColor = p.branding.accentColor || "#ff9900";
+  const fontFamily = p.branding.fontFamily || "Arial, sans-serif";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -90,7 +92,7 @@ function buildWarrantyHtml(p: WarrantyPayload): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Warranty Certificate</title>
-  <link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily.split(',')[0])}:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily.split(",")[0])}:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -183,9 +185,11 @@ function buildWarrantyHtml(p: WarrantyPayload): string {
     <!-- ── Header ── -->
     <div class="header">
       <div>
-        ${p.branding.logoUrl
-      ? `<img src="${p.branding.logoUrl}" alt="Company Logo" class="header-logo" crossorigin="anonymous" />`
-      : ''}
+        ${
+          p.branding.logoUrl
+            ? `<img src="${p.branding.logoUrl}" alt="Company Logo" class="header-logo" crossorigin="anonymous" />`
+            : ""
+        }
         <div class="header-title">Product Policy Document</div>
       </div>
       <div class="header-meta">
@@ -206,7 +210,7 @@ function buildWarrantyHtml(p: WarrantyPayload): string {
         <h4>Issued To</h4>
         <p><strong>${p.customer.name}</strong></p>
         <p>${p.customer.email}</p>
-        ${p.customer.phone ? `<p>${p.customer.phone}</p>` : ''}
+        ${p.customer.phone ? `<p>${p.customer.phone}</p>` : ""}
       </div>
     </div>
 
@@ -224,7 +228,7 @@ function buildWarrantyHtml(p: WarrantyPayload): string {
           <td class="col-qty">${p.product.quantity}</td>
           <td>
             <strong>${p.product.name}</strong>
-            ${p.product.sku ? `<br><span style="font-size: 10px; color: #666;">SKU: ${p.product.sku}</span>` : ''}
+            ${p.product.sku ? `<br><span style="font-size: 10px; color: #666;">SKU: ${p.product.sku}</span>` : ""}
           </td>
           <td class="col-price">${fmtPrice(p.product.price)}</td>
         </tr>
@@ -248,35 +252,41 @@ function buildWarrantyHtml(p: WarrantyPayload): string {
           <span>Coverage End Date</span>
           <strong>${endDateText}</strong>
         </div>
-        ${policy.serviceProvider
-      ? `<div class="policy-item">
+        ${
+          policy.serviceProvider
+            ? `<div class="policy-item">
                <span>Authorized Service Provider</span>
                <strong>${policy.serviceProvider}</strong>
              </div>`
-      : ''}
+            : ""
+        }
       </div>
 
       <!-- ── Coverage / Exclusions ── -->
       <div class="policy-description">
-        ${policy.coverageDescription
-      ? `<h5>What is Covered</h5>
+        ${
+          policy.coverageDescription
+            ? `<h5>What is Covered</h5>
              <p>${policy.coverageDescription}</p>`
-      : ''}
-        ${policy.exclusions
-      ? `<h5>Exclusions (What is Not Covered)</h5>
+            : ""
+        }
+        ${
+          policy.exclusions
+            ? `<h5>Exclusions (What is Not Covered)</h5>
              <p>${policy.exclusions}</p>`
-      : ''}
+            : ""
+        }
       </div>
     </div>
 
     <!-- ── Support / Claims ── -->
     <div class="support-box">
       <h4>How to file a claim or request support</h4>
-      ${policy.processDescription ? `<p>${policy.processDescription}</p>` : ''}
+      ${policy.processDescription ? `<p>${policy.processDescription}</p>` : ""}
       <p style="margin-top: 8px;">
         <strong>Contact Support:</strong>
-        ${policy.claimEmail ? policy.claimEmail : ''}
-        ${policy.claimPhone ? ` | ${policy.claimPhone}` : ''}
+        ${policy.claimEmail ? policy.claimEmail : ""}
+        ${policy.claimPhone ? ` | ${policy.claimPhone}` : ""}
       </p>
     </div>
 
@@ -306,55 +316,66 @@ export function useWarrantyDownload() {
    *
    * Requires a valid JWT `token` for authorization.
    */
-  const downloadWarranty = useCallback(async (orderId: string, token: string): Promise<boolean> => {
-    setIsGenerating(true);
-    try {
-      // 1. Fetch the structured warranty payload from the backend
-      const res = await AxiosAPI.get(`/v1/product-policies/warranty-payload/${orderId}`, {
-        headers: {
-          Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
-        },
-      });
+  const downloadWarranty = useCallback(
+    async (orderId: string, token: string): Promise<boolean> => {
+      setIsGenerating(true);
+      try {
+        // 1. Fetch the structured warranty payload from the backend
+        const res = await AxiosAPI.get(
+          `/v1/product-policies/warranty-payload/${orderId}`,
+          {
+            headers: {
+              Authorization: token.startsWith("Bearer ")
+                ? token
+                : `Bearer ${token}`,
+            },
+          },
+        );
 
-      if (res.data.status != 200) {
-        throw new Error(res.data.message || `HTTP ${res.data.status}: Failed to fetch warranty data`);
-      }
-
-      // API response shape: { success, status, message, data: { message, data: WarrantyPayload[] } }
-      const inner = res.data.data as { message: string; data: WarrantyPayload[] };
-      const payloads = inner?.data;
-
-      if (!payloads || payloads.length === 0) {
-        // No policy snapshots for this order — expected for old orders or
-        // products that have no policy configured. Return false (not an error).
-        return false;
-      }
-
-      // 2. For each order item, build HTML and render to a separate PDF file
-      for (let i = 0; i < payloads.length; i++) {
-        const payload = payloads[i];
-        const html = buildWarrantyHtml(payload);
-        const filename = `warranty-${payload.meta.orderNumber}-item-${i + 1}.pdf`;
-
-        await renderPdfInIframe(html, filename).catch((error) => {
-          console.error('[useWarrantyDownload] Failed to render warranty PDF:', error);
-        });
-
-        // Stagger sequential downloads so the browser doesn't block them
-        if (i < payloads.length - 1) {
-          await new Promise(r => setTimeout(r, 400));
+        if (res.data.status != 200) {
+          throw new Error(
+            res.data.message ||
+              `HTTP ${res.data.status}: Failed to fetch warranty data`,
+          );
         }
-      }
 
-      return true;
-    } catch (err) {
-      console.error('[useWarrantyDownload] Failed:', err);
-      // Re-throw so the calling UI can display a toast/error message
-      throw err;
-    } finally {
-      setIsGenerating(false);
-    }
-  }, []);
+        // API response shape: { success, status, message, data: { message, data: WarrantyPayload[] } }
+        const inner = res.data.data as {
+          message: string;
+          data: WarrantyPayload[];
+        };
+        const payloads = inner?.data;
+
+        if (!payloads || payloads.length === 0) {
+          // No policy snapshots for this order — expected for old orders or
+          // products that have no policy configured. Return false (not an error).
+          return false;
+        }
+
+        // 2. For each order item, build HTML and render to a separate PDF file
+        for (let i = 0; i < payloads.length; i++) {
+          const payload = payloads[i];
+          const html = buildWarrantyHtml(payload);
+          const filename = `warranty-${payload.meta.orderNumber}-item-${i + 1}.pdf`;
+
+          await renderPdfInIframe(html, filename).catch((error) => {});
+
+          // Stagger sequential downloads so the browser doesn't block them
+          if (i < payloads.length - 1) {
+            await new Promise((r) => setTimeout(r, 400));
+          }
+        }
+
+        return true;
+      } catch (err) {
+        // Re-throw so the calling UI can display a toast/error message
+        throw err;
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [],
+  );
 
   return { downloadWarranty, isGenerating };
 }

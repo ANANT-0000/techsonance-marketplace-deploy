@@ -232,6 +232,7 @@ function DateRangePicker({
               toDate={new Date()}
               initialFocus
             />
+
             <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-gray-300 ">
               <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
                 {ANALYSIS_BOARD_TEXT.DATE_PICKER.CANCEL}
@@ -326,6 +327,7 @@ function TrendTooltip({ active, payload, label }: any) {
               className="w-2 h-2 rounded-sm inline-block flex-shrink-0"
               style={{ background: entry.color }}
             />
+
             {entry.name === "revenue"
               ? ANALYSIS_BOARD_TEXT.METRICS.REVENUE
               : ANALYSIS_BOARD_TEXT.METRICS.ORDERS}
@@ -371,6 +373,7 @@ function SkuBars({ products }: { products: TopProduct[] }) {
                   className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                   style={{ background: color }}
                 />
+
                 <span
                   className="text-xs font-mono text-muted-foreground truncate"
                   title={product.sku}
@@ -400,7 +403,8 @@ function SkuBars({ products }: { products: TopProduct[] }) {
       {/* Total row */}
       <div className="pt-3 mt-1 border-t border-gray-300  flex justify-between items-center">
         <span className="text-xs text-muted-foreground">
-          {ANALYSIS_BOARD_TEXT.METRICS.TOTAL_TOP}{products.length})
+          {ANALYSIS_BOARD_TEXT.METRICS.TOTAL_TOP}
+          {products.length})
         </span>
         <span className="text-sm font-semibold text-foreground">
           {fmtINR(total)}
@@ -475,7 +479,9 @@ function PnLBreakdown({ summary }: { summary: AnalyticsSummary }) {
       {/* Net bar */}
       <div className="pt-3 space-y-2">
         <div className="flex justify-between items-center">
-          <span className="font-semibold text-foreground">{ANALYSIS_BOARD_TEXT.METRICS.NET_PROFIT}</span>
+          <span className="font-semibold text-foreground">
+            {ANALYSIS_BOARD_TEXT.METRICS.NET_PROFIT}
+          </span>
           <span className="text-lg font-bold text-emerald-600 tabular-nums">
             {fmtINR(summary.netEarnings)}
           </span>
@@ -575,24 +581,28 @@ function DerivedInsights({
           value={fmtINR(aov)}
           color="bg-blue-50 light:bg-blue-950"
         />
+
         <InsightRow
           icon={<TrendingUp className="h-3.5 w-3.5 text-emerald-600" />}
           label={ANALYSIS_BOARD_TEXT.METRICS.REV_PER_DAY}
           value={fmtINR(revenuePerDay)}
           color="bg-emerald-50 light:bg-emerald-950"
         />
+
         <InsightRow
           icon={<ShoppingBag className="h-3.5 w-3.5 text-violet-600" />}
           label={`${ANALYSIS_BOARD_TEXT.METRICS.ORDERS_OVER}${days}${ANALYSIS_BOARD_TEXT.METRICS.DAYS}`}
           value={`${summary.totalOrders} ${ANALYSIS_BOARD_TEXT.METRICS.ORDERS.toLowerCase()}`}
           color="bg-violet-50 light:bg-violet-950"
         />
+
         <InsightRow
           icon={<Percent className="h-3.5 w-3.5 text-amber-600" />}
           label={ANALYSIS_BOARD_TEXT.METRICS.EFF_TAX_RATE}
           value={`${taxSlab}%`}
           color="bg-amber-50 light:bg-amber-950"
         />
+
         {topCategory && (
           <InsightRow
             icon={<Package className="h-3.5 w-3.5 text-rose-600" />}
@@ -655,7 +665,9 @@ function DonutChart({
         <span className="text-lg font-bold text-foreground leading-none">
           {fmtShort(total)}
         </span>
-        <span className="text-xs text-muted-foreground mt-0.5">{ANALYSIS_BOARD_TEXT.METRICS.TOTAL_LOWER}</span>
+        <span className="text-xs text-muted-foreground mt-0.5">
+          {ANALYSIS_BOARD_TEXT.METRICS.TOTAL_LOWER}
+        </span>
       </div>
 
       {/* Fixed-pixel chart — bypasses ResponsiveContainer collapse during PDF export */}
@@ -691,8 +703,12 @@ function CategoryTable({ data }: { data: CategoryPerformance[] }) {
     <div className="w-full">
       <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wide pb-2 border-b border-gray-300 ">
         <span>{ANALYSIS_BOARD_TEXT.TABLES.CATEGORY}</span>
-        <span className="text-right">{ANALYSIS_BOARD_TEXT.METRICS.REVENUE}</span>
-        <span className="text-right w-10">{ANALYSIS_BOARD_TEXT.TABLES.SHARE}</span>
+        <span className="text-right">
+          {ANALYSIS_BOARD_TEXT.METRICS.REVENUE}
+        </span>
+        <span className="text-right w-10">
+          {ANALYSIS_BOARD_TEXT.TABLES.SHARE}
+        </span>
       </div>
       <div className="divide-y divide-border">
         {sorted.map((cat, i) => {
@@ -708,6 +724,7 @@ function CategoryTable({ data }: { data: CategoryPerformance[] }) {
                   className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ background: COLORS[i % COLORS.length] }}
                 />
+
                 <span className="text-sm capitalize truncate">{cat.name}</span>
               </div>
               <span className="text-sm font-semibold text-right tabular-nums">
@@ -723,7 +740,9 @@ function CategoryTable({ data }: { data: CategoryPerformance[] }) {
         })}
       </div>
       <div className="pt-3 flex justify-between border-t border-grey-200  text-sm">
-        <span className="text-muted-foreground">{ANALYSIS_BOARD_TEXT.TABLES.TOTAL}</span>
+        <span className="text-muted-foreground">
+          {ANALYSIS_BOARD_TEXT.TABLES.TOTAL}
+        </span>
         <span className="font-bold">{fmtINR(total)}</span>
       </div>
     </div>
@@ -855,6 +874,7 @@ export default function AnalysisBoard() {
             activePreset={activePreset}
             onSelect={handleDateSelect}
           />
+
           <Button
             variant="ghost"
             size="sm"
@@ -881,7 +901,6 @@ export default function AnalysisBoard() {
                   dateRange.endDate,
                 );
               } catch (e) {
-                console.error("[AnalysisBoard] PDF export failed:", e);
               } finally {
                 setIsPdfExporting(false);
               }
@@ -908,6 +927,7 @@ export default function AnalysisBoard() {
             icon={<IndianRupee className="h-4 w-4 text-blue-600" />}
             iconColor="bg-blue-50 light:bg-blue-950"
           />
+
           <MetricCard
             title="Net Earnings"
             value={fmtINR(summary.netEarnings)}
@@ -919,6 +939,7 @@ export default function AnalysisBoard() {
               positive: parseFloat(marginPct) > 0 ? true : null,
             }}
           />
+
           <MetricCard
             title="Avg. Order Value"
             value={fmtINR(aov)}
@@ -926,6 +947,7 @@ export default function AnalysisBoard() {
             icon={<ShoppingBag className="h-4 w-4 text-violet-600" />}
             iconColor="bg-violet-50 light:bg-violet-950"
           />
+
           <MetricCard
             title="GST Collected"
             value={fmtINR(summary.taxCollected)}
@@ -987,6 +1009,7 @@ export default function AnalysisBoard() {
                         stopColor="#378ADD"
                         stopOpacity={0.25}
                       />
+
                       <stop
                         offset="95%"
                         stopColor="#378ADD"
@@ -1000,12 +1023,14 @@ export default function AnalysisBoard() {
                     stroke="currentColor"
                     strokeOpacity={0.07}
                   />
+
                   <XAxis
                     dataKey="month"
                     tick={{ fontSize: 11, fill: "currentColor", opacity: 0.5 }}
                     axisLine={false}
                     tickLine={false}
                   />
+
                   <YAxis
                     yAxisId="revenue"
                     orientation="left"
@@ -1015,6 +1040,7 @@ export default function AnalysisBoard() {
                     tickLine={false}
                     width={52}
                   />
+
                   <YAxis
                     yAxisId="orders"
                     orientation="right"
@@ -1023,10 +1049,12 @@ export default function AnalysisBoard() {
                     tickLine={false}
                     width={32}
                   />
+
                   <RechartsTooltip
                     content={<TrendTooltip />}
                     cursor={{ fill: "currentColor", fillOpacity: 0.04 }}
                   />
+
                   <Bar
                     yAxisId="revenue"
                     dataKey="revenue"
@@ -1036,6 +1064,7 @@ export default function AnalysisBoard() {
                     strokeWidth={1.5}
                     radius={[4, 4, 0, 0]}
                   />
+
                   <Line
                     yAxisId="orders"
                     type="monotone"
@@ -1111,6 +1140,7 @@ export default function AnalysisBoard() {
                       className="w-2 h-2 rounded-sm inline-block flex-shrink-0"
                       style={{ background: COLORS[i % COLORS.length] }}
                     />
+
                     <span className="capitalize">{cat.name}</span>
                     <span className="font-medium text-foreground">
                       {catTotal > 0

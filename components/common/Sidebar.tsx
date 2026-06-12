@@ -1,6 +1,5 @@
-'use client';
-
-import { useRef, useState, useCallback } from "react";
+"use client";
+import { useRef, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
@@ -9,13 +8,12 @@ import { toggleSidebar, type isSidebarType } from "@/lib/features/sidebar";
 import { RootState } from "@/lib/store";
 import { NavLinkType } from "@/utils/Types";
 import { UserMenu } from "./SidebarFooter";
-import { logOut } from "@/lib/features/auth/authSlice";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const RESERVED_KEYS = new Set(["icon", "section", "divider"]);
-const COLLAPSED_W = 64;   // px — icon-only
-const EXPANDED_W = 224;  // px — full
+const COLLAPSED_W = 64; // px — icon-only
+const EXPANDED_W = 224; // px — full
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -78,16 +76,24 @@ function Tooltip({ label, show }: { label: string; show: boolean }) {
       "
     >
       {/* Arrow */}
-      <span className="
+      <span
+        className="
         absolute -left-[5px] top-1/2 -translate-y-1/2
         border-[5px] border-transparent border-r-[#1e2433]
-      " />
+      "
+      />
       {label}
     </span>
   );
 }
 
-function SectionLabel({ label, expanded }: { label: string; expanded: boolean }) {
+function SectionLabel({
+  label,
+  expanded,
+}: {
+  label: string;
+  expanded: boolean;
+}) {
   return (
     <li
       aria-hidden="true"
@@ -126,9 +132,10 @@ function NavItem({
          px-2.5 py-[9px] select-none
           transition-colors duration-150
           ${expanded ? "" : "justify-center"}
-          ${isActive
-            ? "bg-[#4f8ef7]/[0.15] text-[#4f8ef7]"
-            : "text-white/50 hover:bg-white/[0.07] hover:text-white/90"
+          ${
+            isActive
+              ? "bg-[#4f8ef7]/[0.15] text-[#4f8ef7]"
+              : "text-white/50 hover:bg-white/[0.07] hover:text-white/90"
           }
         `}
       >
@@ -139,7 +146,11 @@ function NavItem({
 
         {/* Icon */}
         <span className="flex h-[24px] w-[24px] shrink-0 items-center justify-center">
-          <DynamicIcon name={icon} className="text-white  h-[24px] w-[24px]" fallback={() => null} />
+          <DynamicIcon
+            name={icon}
+            className="text-white  h-[24px] w-[24px]"
+            fallback={() => null}
+          />
         </span>
 
         {/* Label — slides in/out */}
@@ -176,6 +187,12 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
 
   // Hover state — sidebar expands while hovered OR while pinned open
   const [hovered, setHovered] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -228,10 +245,9 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
 
   return (
     <aside
-
       style={{ width: expanded ? EXPANDED_W : COLLAPSED_W }}
-      className={` left-0 top-0 z-40  flex h-screen flex-col  bg-[#0f1117]  transition-[width] duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden px-[14px] py-4 ${expanded ? 'rounded-r-2xl' : ''}
-     ` }
+      className={` left-0 top-0 z-40  flex h-screen flex-col  bg-[#0f1117]  transition-[width] duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden px-[14px] py-4 ${expanded ? "rounded-r-2xl" : ""}
+     `}
     >
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div
@@ -241,32 +257,40 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
         `}
       >
         {/* Logo mark + wordmark */}
-        <button className="flex items-center justify-between overflow-hidden w-full  mx-1 "
-          onClick={() => dispatch(toggleSidebar())}>
-          {isSidebarOpen && <div
-            className="
+        <button
+          className="flex items-center justify-between overflow-hidden w-full  mx-1 "
+          onClick={() => dispatch(toggleSidebar())}
+        >
+          {isSidebarOpen && (
+            <div
+              className="
               h-7 w-7 shrink-0 rounded-lg
               bg-gradient-to-br from-[#4f8ef7] to-[#7c5cfc]
               flex items-center justify-center
               text-[11px] font-bold text-white
             "
-          >
-            TS
-          </div>}
-
+            >
+              TS
+            </div>
+          )}
 
           <span
             className="block rounded-md text-gray-400 hover:text-gray-100  transition-colors"
             aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
           >
-            <DynamicIcon name={!expanded ? "panel-left-open" : "panel-left-close"} size={24} />
+            <DynamicIcon
+              name={!expanded ? "panel-left-open" : "panel-left-close"}
+              size={24}
+            />
           </span>
         </button>
-
       </div>
 
       {/* ── Nav ────────────────────────────────────────────────────────────── */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden" aria-label="Main navigation">
+      <nav
+        className="flex-1 overflow-y-auto overflow-x-hidden"
+        aria-label="Main navigation"
+      >
         <ul className="flex flex-col gap-0.5 list-none p-0 m-0">
           {renderList.map((item, i) => {
             if (item.kind === "divider") {
@@ -287,7 +311,8 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
             const label = getLabel(linkObj);
             const icon = getIcon(linkObj);
             const href = getHref(basePath, linkObj);
-            const active = href.length > 0 && (path === href || path.startsWith(href + "/"));
+            const active =
+              href.length > 0 && (path === href || path.startsWith(href + "/"));
 
             return (
               <NavItem
@@ -304,12 +329,8 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
       </nav>
 
       {/* ── Footer / User ──────────────────────────────────────────────────── */}
-      {user && (
-        <UserMenu
-          user={user}
-          role={role}
-          expanded={expanded}
-        />
+      {mounted && user && (
+        <UserMenu user={user} role={role} expanded={expanded} />
       )}
     </aside>
   );

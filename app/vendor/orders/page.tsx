@@ -69,6 +69,7 @@ export const orderTableHeader = [
   "Date",
   "Actions",
 ];
+
 const getStatusBadges = (statuses: string | string[]) => {
   const statusArray = (Array.isArray(statuses) ? statuses : [statuses]).filter(
     Boolean,
@@ -87,6 +88,7 @@ const getStatusBadges = (statuses: string | string[]) => {
             ● Pending
           </span>
         );
+
       case "delivered":
         return (
           <span
@@ -96,6 +98,7 @@ const getStatusBadges = (statuses: string | string[]) => {
             ● Delivered
           </span>
         );
+
       case "active":
         return (
           <span
@@ -105,6 +108,7 @@ const getStatusBadges = (statuses: string | string[]) => {
             ● Active
           </span>
         );
+
       case "cancelled":
         return (
           <span
@@ -114,6 +118,7 @@ const getStatusBadges = (statuses: string | string[]) => {
             ● {status}
           </span>
         );
+
       case "shipped":
         return (
           <span
@@ -123,6 +128,7 @@ const getStatusBadges = (statuses: string | string[]) => {
             ● Shipped
           </span>
         );
+
       case "return":
       case "replacement":
         return (
@@ -133,6 +139,7 @@ const getStatusBadges = (statuses: string | string[]) => {
             ● {status}
           </span>
         );
+
       default:
         return (
           <span
@@ -232,7 +239,6 @@ export default function OrdersPage() {
     try {
       // 1. Get the Cloudinary URLs from Backend
       const res = await fetchBulkInvoiceUrls(selectedOrders, token as string);
-      console.log("Bulk Invoice URLs:", res);
       const invoices = res.data;
 
       if (!invoices || invoices.length === 0) {
@@ -262,7 +268,6 @@ export default function OrdersPage() {
 
       setSelectedOrders([]); // Clear selection on success
     } catch (error) {
-      console.error("Error downloading invoices", error);
       alert("Failed to download invoices.");
     } finally {
       setIsDownloading(false);
@@ -296,8 +301,8 @@ export default function OrdersPage() {
             </button>
           )}
           {/* <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
-                        <Download size={16} /> Export CSV
-                    </button> */}
+                         <Download size={16} /> Export CSV
+                     </button> */}
         </div>
       </header>
 
@@ -305,13 +310,13 @@ export default function OrdersPage() {
       <div className="relative flex flex-wrap justify-between rounded-xl items-center py-3 px-4 gap-3 bg-white border border-gray-200 shadow-sm mb-4">
         {/* Search */}
         {/* <span className="flex flex-1 min-w-[220px] items-center gap-2 border border-gray-200 bg-gray-50 py-2 px-3 rounded-xl focus-within:border-blue-400 focus-within:bg-white transition-colors">
-                    <img className="w-5 h-5 opacity-50 shrink-0" src={searchImgDark} alt="search icon" />
-                    <input
-                        type="text"
-                        className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
-                        placeholder="Search by name, email or domain"
-                    />
-                </span> */}
+                     <img className="w-5 h-5 opacity-50 shrink-0" src={searchImgDark} alt="search icon" />
+                     <input
+                         type="text"
+                         className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
+                         placeholder="Search by name, email or domain"
+                     />
+                 </span> */}
 
         {/* Filters */}
         <span className="flex flex-wrap gap-3 items-center">
@@ -340,35 +345,34 @@ export default function OrdersPage() {
             <option value="asc">Oldest First</option>
           </select>
           {/* 
-                    {isOpen ? (
-                        <button
-                            onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-2 text-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
-                        >
-                            {date ? date.toDateString() : "Select Date"}
-                            <ChevronUp size={16} />
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => setIsOpen(true)}
-                            className="flex items-center gap-2 text-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
-                        >
-                            {date ? date.toDateString() : "Select Date"}
-                            <ChevronDown size={16} />
-                        </button>
-                    )}
-
-                    {isOpen && (
-                        <div className="absolute right-4 top-full mt-2 z-20 shadow-lg rounded-xl overflow-hidden border border-gray-200">
-                            <Calendar
-                                mode="single"
-                                selected={date}
-                                onSelect={handleDateChange}
-                                className="rounded-xl bg-white"
-                                captionLayout="dropdown"
-                            />
-                        </div>
-                    )} */}
+                     {isOpen ? (
+                         <button
+                             onClick={() => setIsOpen(false)}
+                             className="flex items-center gap-2 text-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
+                         >
+                             {date ? date.toDateString() : "Select Date"}
+                             <ChevronUp size={16} />
+                         </button>
+                     ) : (
+                         <button
+                             onClick={() => setIsOpen(true)}
+                             className="flex items-center gap-2 text-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
+                         >
+                             {date ? date.toDateString() : "Select Date"}
+                             <ChevronDown size={16} />
+                         </button>
+                     )}
+                       {isOpen && (
+                         <div className="absolute right-4 top-full mt-2 z-20 shadow-lg rounded-xl overflow-hidden border border-gray-200">
+                             <Calendar
+                                 mode="single"
+                                 selected={date}
+                                 onSelect={handleDateChange}
+                                 className="rounded-xl bg-white"
+                                 captionLayout="dropdown"
+                             />
+                         </div>
+                     )} */}
         </span>
       </div>
 

@@ -104,7 +104,6 @@ export default function MarketingPage() {
       setOverallMetrics(res.data.data.overall);
       setProductConversions(res.data.data.productConversions);
     } catch (error) {
-      console.error("Error fetching conversion metrics:", error);
     } finally {
       setIsLoadingMetrics(false);
     }
@@ -116,7 +115,6 @@ export default function MarketingPage() {
       const res = await fetchCoupons(token as string);
       setCoupons(res.data.data || []);
     } catch (error) {
-      console.error("Error fetching coupons:", error);
     } finally {
       setIsLoadingCoupons(false);
     }
@@ -160,7 +158,6 @@ export default function MarketingPage() {
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Failed to export analytics:", error);
       alert("Failed to download CSV.");
     } finally {
       setIsExporting(false);
@@ -389,16 +386,16 @@ export default function MarketingPage() {
 
         {/* Reviews Section */}
         {/* <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-                     <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
-                        <h2 className="font-bold text-lg text-gray-800">Customer Reviews</h2>
-                    </div>
-                    <div className="p-8 text-center text-gray-400 text-sm">
-                         Review mapping logic here...
-                    </div>
-                    <span className="flex justify-end p-4 border-t border-gray-100">
-                      <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative" /> 
-                    </span>
-                </div> */}
+                      <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+                         <h2 className="font-bold text-lg text-gray-800">Customer Reviews</h2>
+                     </div>
+                     <div className="p-8 text-center text-gray-400 text-sm">
+                          Review mapping logic here...
+                     </div>
+                     <span className="flex justify-end p-4 border-t border-gray-100">
+                       <Pagination setCount={setCount} count={count} totalPages={totalPages} style="relative" /> 
+                     </span>
+                 </div> */}
       </section>
 
       {/* Promo Code Creation Modal */}

@@ -42,14 +42,19 @@ interface State {
     isLoadingPopular: boolean;
 }
 
+export enum SearchPageActionType {
+    SET_POPULAR = 'SET_POPULAR',
+    SET_LOADING = 'SET_LOADING',
+}
+
 type Action =
-    | { type: 'SET_POPULAR'; payload: string[] }
-    | { type: 'SET_LOADING'; payload: boolean };
+    | { type: SearchPageActionType.SET_POPULAR; payload: string[] }
+    | { type: SearchPageActionType.SET_LOADING; payload: boolean };
 
 function reducer(state: State, action: Action): State {
     switch (action.type) {
-        case 'SET_POPULAR': return { ...state, popularSuggestions: action.payload };
-        case 'SET_LOADING': return { ...state, isLoadingPopular: action.payload };
+        case SearchPageActionType.SET_POPULAR: return { ...state, popularSuggestions: action.payload };
+        case SearchPageActionType.SET_LOADING: return { ...state, isLoadingPopular: action.payload };
         default: return state;
     }
 }
@@ -83,7 +88,7 @@ export default function SearchPage() {
     useEffect(() => {
         if (queryParam.trim()) return; // don't bother if we're about to redirect
         const load = async () => {
-            dispatch({ type: 'SET_LOADING', payload: true });
+            dispatch({ type: SearchPageActionType.SET_LOADING, payload: true });
             try {
                 const popular = await fetchHomepageProducts(12);
                 if (Array.isArray(popular?.data)) {
@@ -92,12 +97,12 @@ export default function SearchPage() {
                             p?.name ? p.name.split(' ').slice(0, 3).join(' ') + '...' : ''
                         )
                         .filter(Boolean);
-                    dispatch({ type: 'SET_POPULAR', payload: Array.from(new Set(names)) });
+                    dispatch({ type: SearchPageActionType.SET_POPULAR, payload: Array.from(new Set(names)) });
                 }
             } catch {
                 // fall through to FALLBACK_KEYWORDS
             } finally {
-                dispatch({ type: 'SET_LOADING', payload: false });
+                dispatch({ type: SearchPageActionType.SET_LOADING, payload: false });
             }
         };
         load();

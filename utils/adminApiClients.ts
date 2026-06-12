@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 import { ADMIN_BASE_URL, BASE_API_URL } from "@/constants";
 import { authToken } from "./authToken";
 import { revalidatePath } from "next/cache";
@@ -11,7 +11,6 @@ export const fetchRoles = async (token: string) => {
     next: { tags: ["roles"] },
   });
   if (!response.ok) {
-    console.error("Failed to fetch roles:", response);
     return { data: [] };
   }
   return await response.json();
@@ -29,7 +28,6 @@ export const fetchPermissions = async (token: string) => {
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching permissions:", error);
     throw error;
   }
 };
@@ -44,11 +42,9 @@ export const createRole = async (role: string, token: string) => {
       body: JSON.stringify({ role }),
     });
     if (!response.ok) {
-      console.error("Failed to create role");
     }
     return await response.json();
   } catch (error) {
-    console.error("Error creating role:", error);
     throw error;
   }
 };
@@ -71,7 +67,6 @@ export const createPermission = async (
     }
     return await response.json();
   } catch (error) {
-    console.error("Error creating permission:", error);
     throw error;
   }
 };
@@ -119,7 +114,6 @@ export const handleDeletePermission = async (
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) {
-    console.error("Failed to delete permission:", response);
     throw new Error("Failed to delete permission");
   }
   revalidatePath(`/admin/${adminId}/roles`);
@@ -159,7 +153,6 @@ export const fetchApplications = async (token: string) => {
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching vendor applications:", error);
     throw error;
   }
 };
@@ -173,7 +166,6 @@ export const fetchRolePermissions = async (token: string) => {
   );
   const res = await response.json();
   if (response.status !== 200) {
-    console.error("Error fetching role permissions:", res.message);
   }
   return res;
 };
@@ -212,7 +204,6 @@ export const approveVendor = async (vendorId: string, token: string) => {
     }
     return await response.json();
   } catch (error) {
-    console.error("Error approving vendor:", error);
     throw error;
   }
 };
@@ -234,7 +225,6 @@ export const rejectVendor = async (vendorId: string, token: string) => {
     }
     return await response.json();
   } catch (error) {
-    console.error("Error rejecting vendor:", error);
     throw error;
   }
 };
@@ -251,7 +241,6 @@ export const fetchTemplates = async (token: string) => {
     });
     return response.json();
   } catch (error) {
-    console.error("Error fetching templates:", error);
     throw error;
   }
 };
@@ -271,7 +260,6 @@ export const fetchTemplateById = async (id: string, token: string) => {
     });
     return response.json();
   } catch (error) {
-    console.error(`Error fetching template ${id}:`, error);
     throw error;
   }
 };
@@ -295,7 +283,6 @@ export const fetchCreateTemplate = async (
     });
     return response.json();
   } catch (error) {
-    console.error("Error creating template:", error);
     throw error;
   }
 };
@@ -317,7 +304,6 @@ export const fetchUpdateTemplate = async (
     });
     return response.json();
   } catch (error) {
-    console.error("Error updating template:", error);
     throw error;
   }
 };
@@ -337,7 +323,6 @@ export const fetchDeleteTemplate = async (id: string, token: string) => {
     });
     return response.json();
   } catch (error) {
-    console.error(`Error deleting template ${id}:`, error);
     throw error;
   }
 };

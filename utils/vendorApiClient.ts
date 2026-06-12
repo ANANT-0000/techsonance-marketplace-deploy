@@ -32,7 +32,6 @@ export const fetchVendorsProductsCategory = async (token: string) => {
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching product categories:", error);
     return { data: [], message: "Error fetching product categories" };
   }
 };
@@ -52,13 +51,11 @@ export const createVendorProductCategory = async (
       body: JSON.stringify({ category: categoryData }),
     });
     if (response.status !== 201) {
-      console.error("Failed to create product category");
       return { data: {}, message: "Failed to create product category" };
     }
     // revalidatePath('/vendor/products/categories');
     return await response.json();
   } catch (error) {
-    console.error("Error creating product category:", error);
     return { data: {}, message: "Error creating product category" };
   }
 };
@@ -84,7 +81,6 @@ export const updateVendorProductCategory = async (
     revalidatePath("/vendor/products/categories");
     return await response.json();
   } catch (error) {
-    console.error("Error updating product category:", error);
     return { data: {}, message: "Error updating product category" };
   }
 };
@@ -103,12 +99,10 @@ export const deleteVendorProductCategory = async (
       },
     );
     if (response.status !== 200) {
-      console.error("Failed to delete product category");
     }
     revalidatePath("/vendor/products/categories");
     return await response.json();
   } catch (error) {
-    console.error("Error deleting product category:", error);
     throw error;
   }
 };
@@ -133,13 +127,11 @@ export const createProduct = async (
       body: productData,
     });
     if (!response.ok) {
-      console.error("Failed to create product");
       return { status: response.status, statusText: response.statusText };
     }
     revalidatePath("/vendor/products");
     return await response.json();
   } catch (error) {
-    console.error("Error creating product:", error);
     return { status: 500, statusText: "Internal Server Error" };
   }
 };
@@ -159,13 +151,11 @@ export const updateProduct = async (
       },
     });
     if (!response.ok) {
-      console.error("Failed to create product");
       return { status: response.status, statusText: response.statusText };
     }
     revalidatePath("/vendor/products");
     return await response.json();
   } catch (error) {
-    console.error("Error creating product:", error);
     return { status: 500, statusText: "Internal Server Error" + error };
   }
 };
@@ -189,7 +179,6 @@ export const updateProductVariantStatus = async (
       },
     );
     if (!response.ok) {
-      console.error("Failed to create product");
       return { status: response.status, statusText: response.statusText };
     }
 
@@ -197,7 +186,6 @@ export const updateProductVariantStatus = async (
     revalidatePath(`/vendor/products/${productVariantId}/productVariants`);
     return await response.json();
   } catch (error) {
-    console.error("Error creating product:", error);
     return { status: 500, statusText: "Internal Server Error" + error };
   }
 };
@@ -223,7 +211,6 @@ export const fetchVendorProducts = async (
         },
       },
     );
-    console.log(response.status);
     if (response.status !== 200) {
     }
     return await response.json();
@@ -243,19 +230,15 @@ export const fetchVendorProductsOptions = async (token: string) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response.status);
     if (response.status !== 200) {
-      console.error("Failed to fetch products");
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching products:", error);
     return { data: [], message: "Error fetching products" };
   }
 };
 export const fetchVendorActiveProducts = async (token: string) => {
   const cleanToken = token.replace(/['"]+/g, "");
-  console.log("token", token);
   try {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/products/active`, {
@@ -267,11 +250,9 @@ export const fetchVendorActiveProducts = async (token: string) => {
       },
     });
     if (response.status !== 200) {
-      console.error("Failed to fetch products");
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching products:", error);
     return { data: [], message: "Error fetching products" };
   }
 };
@@ -288,11 +269,9 @@ export const fetchVendorOneProducts = async (id: string, token: string) => {
       },
     });
     if (response.status !== 200) {
-      console.error("Failed to fetch products");
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching products:", error);
     return {
       data: {},
       status: 500,
@@ -311,13 +290,11 @@ export const deleteProduct = async (productId: string, token: string) => {
       },
     });
     if (!response.ok) {
-      console.error("Failed to delete product");
     }
     revalidatePath("/vendor/products");
     revalidatePath(`/vendor/products/${productId}`);
     return await response.json();
   } catch (error) {
-    console.error("Error deleting product:", error);
     return { status: 500, statusText: "Internal Server Error" + error };
   }
 };
@@ -346,7 +323,6 @@ export const createProductVariant = async (
     revalidatePath("/vendor/products");
     return res;
   } catch (error) {
-    console.error("Error creating product variant:", error);
     return {
       data: {},
       status: 500,
@@ -382,7 +358,6 @@ export const fetchLowStockAlerts = async (token: string) => {
     });
     return res.json();
   } catch (error) {
-    console.error("Error fetching low stock alerts:", error);
     return {
       data: {},
       status: 500,
@@ -411,15 +386,12 @@ export const updateProductVariant = async (
     );
 
     if (!response.ok) {
-      console.error("Failed to update product variant");
     }
 
     const res = await response.json();
-    console.log(`[updateProducrtVarint] reponse`, res);
     revalidatePath(`/vendor/products/${productId}/variants`);
     return res;
   } catch (error) {
-    console.error("Error updating product variant:", error);
     return {
       data: {},
       status: 500,
@@ -445,15 +417,12 @@ export const fetchProductVariants = async (
         },
       },
     );
-    console.log(response);
     if (response.status !== 200) {
-      console.error("Failed to fetch product variants");
       return [];
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error fetching product variants:", error);
     throw error;
   }
 };
@@ -475,13 +444,11 @@ export const deleteProductVariant = async (
       },
     );
     if (!response.ok) {
-      console.error("Failed to delete product variant");
     }
     revalidatePath(`/vendor/products/${productId}/variants`);
     revalidatePath("/vendor/products");
     return await response.json();
   } catch (error) {
-    console.error("Error deleting product variant:", error);
     return {
       data: {},
       status: 500,
@@ -503,13 +470,10 @@ export const fetchVariant = async (variantId: string, token: string) => {
       },
     );
     if (response.status !== 200) {
-      console.error("Failed to fetch variant data");
-
       return null;
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching variant data:", error);
     return {
       data: {},
       status: 500,
@@ -532,12 +496,10 @@ export const fetchVendorPendingOrders = async (token: string) => {
       },
     });
     if (response.status !== 200) {
-      console.error("Failed to fetch pending orders");
       return [];
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching pending orders:", error);
     return [];
   }
 };
@@ -563,13 +525,10 @@ export const fetchVendorOrderList = async (
       },
     );
     if (response.status !== 200) {
-      console.error("Failed to fetch orders");
-
       return [];
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching orders:", error);
     return [];
   }
 };
@@ -591,12 +550,10 @@ export const fetchVendorOrderDetails = async (
       },
     );
     if (response.status !== 200) {
-      console.error("Failed to fetch order details", response);
       return {};
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching order details:", error);
     return {};
   }
 };
@@ -620,19 +577,15 @@ export const fetchUpdateOrderStatus = async (
       },
     );
     if (response.status !== 200) {
-      console.error("Failed to update order status");
     }
     return await response.json();
-  } catch (error) {
-    console.log("failed to update order status", error);
-  }
+  } catch (error) {}
 };
 export const fetchAddTrackingUrl = async (
   orderId: string,
   trackingUrl: string,
   token: string,
 ) => {
-  console.log(orderId, trackingUrl);
   try {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/shipping`, {
@@ -644,13 +597,10 @@ export const fetchAddTrackingUrl = async (
       },
       body: JSON.stringify({ orderId: orderId, trackingUrl: trackingUrl }),
     });
-    console.log(response);
     if (response.status !== 201) {
-      console.error("Failed to add tracking URL", response);
     }
     return await response.json();
   } catch (error) {
-    console.error("Error adding tracking URL:", error);
     return {
       data: {},
       status: 500,
@@ -663,7 +613,6 @@ export const fetchUpdateTrackingUrl = async (
   trackingUrl: string,
   token: string,
 ) => {
-  console.log(orderId, trackingUrl);
   try {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/shipping/${orderId}`, {
@@ -675,13 +624,10 @@ export const fetchUpdateTrackingUrl = async (
       },
       body: JSON.stringify({ trackingUrl: trackingUrl }),
     });
-    console.log(response);
     if (response.status !== 201) {
-      console.error("Failed to update tracking URL", response);
     }
     return await response.json();
   } catch (error) {
-    console.error("Error updating tracking URL:", error);
     return {
       data: {},
       status: 500,
@@ -697,7 +643,6 @@ export const fetchCreateWarehouseLocation = async (
   warehouseAddress: any,
   token: string,
 ) => {
-  console.log(warehouseAddress);
   try {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/warehouse`, {
@@ -712,7 +657,6 @@ export const fetchCreateWarehouseLocation = async (
     revalidatePath(`/vendor`);
     return await response.json();
   } catch (error) {
-    console.error("Error creating warehouse location:", error);
     return {
       data: {},
       status: 500,
@@ -739,7 +683,6 @@ export const fetchUpdateWarehouseLocation = async (
 
     return await response.json();
   } catch (error) {
-    console.error("Error updating warehouse location:", error);
     return {
       data: {},
       status: 500,
@@ -759,7 +702,6 @@ export const fetchVendorWarehouseLocations = async (token: string) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Error fetching warehouse locations:", error);
     return { data: {}, message: "Error fetching warehouse locations" };
   }
 };
@@ -777,7 +719,6 @@ export const fetchVendorWarehouse = async (token: string) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Error fetching warehouse locations:", error);
     return { data: {}, message: "Error fetching warehouse locations" };
   }
 };
@@ -797,7 +738,6 @@ export const fetchDeleteWarehouseLocation = async (
     });
     return await response.json();
   } catch (error) {
-    console.error("Error deleting warehouse location:", error);
     return {
       data: {},
       status: 500,
@@ -810,7 +750,6 @@ export const fetchCreateCompanyLocation = async (
   addressData: any,
   token: string,
 ) => {
-  console.log(addressData);
   try {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/address/company`, {
@@ -825,7 +764,6 @@ export const fetchCreateCompanyLocation = async (
     revalidatePath(`/vendor`);
     return await response.json();
   } catch (error) {
-    console.error("Error creating company location:", error);
     return {
       data: {},
       status: 500,
@@ -855,7 +793,6 @@ export const fetchUpdateCompanyLocation = async (
 
     return await response.json();
   } catch (error) {
-    console.error("Error updating company location:", error);
     return {
       data: {},
       status: 500,
@@ -875,7 +812,6 @@ export const fetchGetCompanyLocations = async (token: string) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Error fetching company locations:", error);
     return { data: {}, message: "Error fetching company locations" };
   }
 };
@@ -897,7 +833,6 @@ export const fetchUpdateOrderItem = async (
     });
     return await response.json();
   } catch (error) {
-    console.error("Error updating order item:", error);
     return {
       data: {},
       status: 500,
@@ -923,7 +858,6 @@ export const fetchGetVendorReturnRequests = async (token: string) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Error fetching return requests:", error);
     return { data: [], message: "Error fetching return requests" };
   }
 };
@@ -944,7 +878,6 @@ export const fetchGetVendorReturnById = async (
     );
     return await response.json();
   } catch (error) {
-    console.error("Error fetching return request:", error);
     return { data: {}, message: "Error fetching return request" };
   }
 };
@@ -994,7 +927,6 @@ export const fetchGetCompanyRefunds = async (token: string) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Error fetching company refunds:", error);
     return { data: [], message: "Error fetching company refunds" };
   }
 };
@@ -1020,7 +952,6 @@ export const fetchCompanyCustomers = async (
     );
     return await response.json();
   } catch (error) {
-    console.error("Error fetching company customers:", error);
     return { data: [], message: "Error fetching company customers" };
   }
 };
@@ -1043,7 +974,6 @@ export const FetchSuspendCustomer = async (
 
     return await response.json();
   } catch (error) {
-    console.error("Error suspending customer:", error);
     return { data: {}, message: "Error suspending customer" };
   }
 };
@@ -1067,7 +997,6 @@ export const fetchBulkInvoiceUrls = async (
     });
     return await response.json();
   } catch (error) {
-    console.error("Error fetching bulk invoice URLs:", error);
     return { data: [], message: "Error fetching bulk invoice URLs" };
   }
 };
@@ -1094,7 +1023,6 @@ export const fetchGstRecords = async (
     });
     return await response.json();
   } catch (error) {
-    console.error("Error fetching GST records:", error);
     return { data: [] };
   }
 };
@@ -1113,7 +1041,6 @@ export const fetchCreateGstRecord = async (formData: any, token: string) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Error saving GST:", error);
     return { data: {}, message: "Error saving GST" };
   }
 };
@@ -1137,7 +1064,6 @@ export const fetchTaxProfiles = async (
     );
     return await response.json();
   } catch (error) {
-    console.error("Error fetching tax profiles:", error);
     return { data: [] };
   }
 };
@@ -1182,7 +1108,6 @@ export const fetchAssignProductTax = async (
     revalidatePath("/vendor/finances/product-taxes");
     return await response.json();
   } catch (error) {
-    console.error("Error assigning product tax:", error);
     return { data: {}, message: "Error assigning product tax" };
   }
 };
@@ -1207,7 +1132,6 @@ export const fetchBulkAssignProductTax = async (
     revalidatePath("/vendor/finances/product-taxes");
     return await response.json();
   } catch (error) {
-    console.error("Error assigning product tax:", error);
     return { data: {}, message: "Error assigning product tax" };
   }
 };
@@ -1278,7 +1202,6 @@ export const fetchCreateTaxProfile = async (formData: any, token: string) => {
 
     return await response.json();
   } catch (error) {
-    console.error("Error saving Tax Profile:", error);
     return { data: {}, message: "Error saving Tax Profile" };
   }
 };
@@ -1299,7 +1222,6 @@ export const fetchSingleGstRecord = async (id: string, token: string) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Error fetching single GST record:", error);
     return { data: null };
   }
 };
@@ -1323,7 +1245,6 @@ export const fetchUpdateGstRecord = async (
     revalidatePath(`/vendor/finances/gst`);
     return await response.json();
   } catch (error) {
-    console.error("Error updating GST:", error);
     return { data: {}, message: "Error updating GST" };
   }
 };
@@ -1341,7 +1262,6 @@ export const fetchDeleteGstRecord = async (id: string, token: string) => {
     revalidatePath("/vendor/finances/gst");
     return await response.json();
   } catch (error) {
-    console.error("Error deleting GST:", error);
     return { data: {}, message: "Error deleting GST" };
   }
 };
@@ -1365,7 +1285,6 @@ export const fetchSingleTaxProfile = async (id: string, token: string) => {
     );
     return await response.json();
   } catch (error) {
-    console.error("Error fetching single Tax Profile:", error);
     return { data: null };
   }
 };
@@ -1392,7 +1311,6 @@ export const fetchUpdateTaxProfile = async (
     revalidatePath("/vendor/finances/tax-profiles");
     return await response.json();
   } catch (error) {
-    console.error("Error updating Tax Profile:", error);
     return { data: {}, message: "Error updating Tax Profile" };
   }
 };
@@ -1414,7 +1332,6 @@ export const fetchCompanyBranding = async (token: string) => {
     if (!res.ok) return { data: null };
     return res.json();
   } catch (error) {
-    console.error("Error fetching company branding:", error);
     return { data: null, message: "Error fetching company branding" };
   }
 };
@@ -1436,14 +1353,12 @@ export const upsertCompanyBranding = async (
     revalidatePath("/");
 
     const data = await res.json();
-    console.log("company branding res", res);
     return {
       status: res.status,
       ok: res.ok,
       data: data?.data ?? data,
     };
   } catch (error) {
-    console.error("Error upserting company branding:", error);
     return {
       status: 500,
       ok: false,
@@ -1469,7 +1384,6 @@ export const fetchCompanyLegalProfile = async (token: string) => {
     if (!res.ok) return { data: null };
     return res.json();
   } catch (error) {
-    console.error("Error fetching company legal profile:", error);
     return { data: null };
   }
 };
@@ -1495,7 +1409,6 @@ export const upsertCompanyLegalProfile = async (
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error upserting company legal profile:", error);
     return {
       data: {},
       success: false,
@@ -1516,7 +1429,6 @@ export const fetchCompanyCompliance = async (token: string) => {
     if (!res.ok) return { data: [] };
     return res.json();
   } catch (error) {
-    console.error("Error fetching company compliance fields:", error);
     return { data: [] };
   }
 };
@@ -1545,7 +1457,6 @@ export const upsertCompanyComplianceField = async (
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error upserting company compliance field:", error);
     return {
       data: {},
       success: false,
@@ -1570,7 +1481,6 @@ export const deleteCompanyComplianceField = async (
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error deleting company compliance field:", error);
     return {
       data: {},
       success: false,
@@ -1595,7 +1505,6 @@ export const fetchCompanyDocumentConfig = async (token: string) => {
     if (!res.ok) return { data: null };
     return res.json();
   } catch (error) {
-    console.error("Error fetching company document config:", error);
     return { data: null };
   }
 };
@@ -1620,7 +1529,6 @@ export const upsertCompanyDocumentConfig = async (
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error upserting company document config:", error);
     return {
       data: {},
       success: false,
@@ -1641,7 +1549,6 @@ export const fetchProductPolicies = async (token: string) => {
     if (!res.ok) return { data: [] };
     return res.json();
   } catch (error) {
-    console.error("Error fetching product policies:", error);
     return { data: [] };
   }
 };
@@ -1690,7 +1597,6 @@ export const updateProductPolicy = async (
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error updating product policy:", error);
     return {
       data: {},
       success: false,
@@ -1709,7 +1615,6 @@ export const deleteProductPolicy = async (id: string, token: string) => {
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error deleting product policy:", error);
     return {
       data: {},
       success: false,
@@ -1741,7 +1646,6 @@ export const assignPolicyToCategory = async (
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error assigning policy to category:", error);
     return {
       data: {},
       success: false,
@@ -1775,7 +1679,6 @@ export const fetchAssignedProductPolicyOverride = async (
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error fetching assigned product policy override:", error);
     return {
       data: {},
       success: false,
@@ -1800,7 +1703,6 @@ export const fetchCategoryPolicies = async (
     if (!res.ok) return { data: [] };
     return res.json();
   } catch (error) {
-    console.error("Error fetching category policies:", error);
     return { data: [] };
   }
 };
@@ -1826,7 +1728,6 @@ export const assignPolicyToCategories = async (
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error assigning policy to categories:", error);
     return {
       data: {},
       success: false,
@@ -1851,7 +1752,6 @@ export const removePolicyFromCategory = async (
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error removing policy from category:", error);
     return {
       data: {},
       success: false,
@@ -1878,7 +1778,6 @@ export const fetchProductPolicyOverrides = async (
     if (!res.ok) return { data: [] };
     return res.json();
   } catch (error) {
-    console.error("Error fetching product policy overrides:", error);
     return { data: [] };
   }
 };
@@ -1908,7 +1807,6 @@ export const fetchCreateAssignedProductPolicyOverride = async (
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error creating assigned product policy override:", error);
     return {
       data: {},
       success: false,
@@ -1933,7 +1831,6 @@ export const removeProductPolicyOverride = async (
     revalidatePath("/vendor");
     return res.json();
   } catch (error) {
-    console.error("Error removing product policy override:", error);
     return {
       data: {},
       success: false,
@@ -1957,7 +1854,6 @@ export const fetchPolicyCoverageOverview = async (token: string) => {
     if (!res.ok) return { data: [] };
     return res.json();
   } catch (error) {
-    console.error("Error fetching policy coverage overview:", error);
     return { data: [] };
   }
 };
@@ -1978,10 +1874,6 @@ export const fetchPolicyCoverageDetails = async (
     if (!res.ok) return { data: null };
     return res.json();
   } catch (error) {
-    console.error(
-      `Error fetching coverage details for policy ${policyId}:`,
-      error,
-    );
     return { data: null };
   }
 };
@@ -2004,7 +1896,6 @@ export const fetchRevenueAnalytics = async (
     // if (!res.ok) return { data: null };
     return res.json();
   } catch (error) {
-    console.error("Error fetching revenue analytics:", error);
     return { data: null };
   }
 };
@@ -2022,7 +1913,6 @@ export const fetchTopProducts = async (token: string) => {
     );
     return res.json();
   } catch (error) {
-    console.error("Error fetching top products:", error);
     return { data: [] };
   }
 };
@@ -2130,7 +2020,6 @@ export const fetchStockManagerVariants = async (token: string) => {
     );
     return await response.json();
   } catch (error) {
-    console.error(error);
     return { data: [], message: "Error fetching stock manager variants" };
   }
 };
@@ -2156,7 +2045,6 @@ export const quickUpdateStock = async (
     revalidatePath("/vendor/products");
     return await response.json();
   } catch (error) {
-    console.error("Error updating stock:", error);
     return { data: {}, message: "Error updating stock" };
   }
 };
@@ -2175,7 +2063,6 @@ export const fetchCreateTaxSlab = async (formData: any, token: string) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Error creating tax slab:", error);
     return { data: {}, message: "Error creating tax slab" };
   }
 };
@@ -2196,7 +2083,6 @@ export const fetchTaxSlabs = async (sortBy: string, token: string) => {
     );
     return await response.json();
   } catch (error) {
-    console.error("Error fetching tax slabs:", error);
     return { data: { data: [] } };
   }
 };
@@ -2216,7 +2102,6 @@ export const fetchSingleTaxSlab = async (id: string, token: string) => {
     );
     return await response.json();
   } catch (error) {
-    console.error("Error fetching tax slab:", error);
     return { data: null };
   }
 };
@@ -2243,7 +2128,6 @@ export const fetchUpdateTaxSlab = async (
     revalidatePath(`/vendor/finances/tax-rates`);
     return await response.json();
   } catch (error) {
-    console.error("Error updating tax slab:", error);
     return { data: {}, message: "Error updating tax slab" };
   }
 };

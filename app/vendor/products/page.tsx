@@ -40,6 +40,7 @@ export const PRODUCT_TABLE_HEAD = [
   "PRICE",
   "ACTION",
 ];
+
 const getCategoryOptions = async (
   setIsLoadingCategory: (loading: boolean) => void,
   setCategoryOptions: (options: { value: string; label: string }[]) => void,
@@ -54,7 +55,6 @@ const getCategoryOptions = async (
       );
     })
     .catch((error) => {
-      console.error("Error fetching category options:", error);
       setCategoryOptions([]);
     })
     .finally(() => {
@@ -93,7 +93,6 @@ export default function Products() {
       token ?? "",
     );
     if (response.status !== 200) {
-      console.error("Error fetching products:", response.statusText);
       setProductList([]);
 
       setTotalPages(1);
@@ -156,9 +155,9 @@ export default function Products() {
             Add Product
           </Link>
           {/* <button className="flex items-center gap-2 rounded-xl bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 transition-colors shadow-sm">
-                        <Download size={16} />
-                        Export CSV
-                    </button> */}
+                         <Download size={16} />
+                         Export CSV
+                     </button> */}
         </div>
       </div>
 
@@ -171,6 +170,7 @@ export default function Products() {
             size={18}
             className="text-gray-400 shrink-0"
           />
+
           <input
             type="text"
             className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
@@ -213,8 +213,8 @@ export default function Products() {
           <TableHeader>
             <TableRow className="bg-gray-50 border-b border-gray-100 hover:bg-gray-50">
               {/* <TableHead className="p-4 w-10">
-                                <input className="w-4 h-4" type="checkbox" />
-                            </TableHead> */}
+                                 <input className="w-4 h-4" type="checkbox" />
+                             </TableHead> */}
               {PRODUCT_TABLE_HEAD.map((head, index) => (
                 <TableHead
                   key={index}
@@ -253,6 +253,7 @@ export default function Products() {
                           src={firstVariant?.images?.[0]?.image_url}
                           alt={item.name}
                         />
+
                         <span className="text-sm font-medium text-gray-800 line-clamp-2 leading-tight">
                           {item.name.trimStart()}
                         </span>

@@ -15,23 +15,29 @@ import { SearchBar } from "./SearchBar";
 import { BackButton } from "../ui/back-button";
 import { SearchTrigger } from "./SearchOverlay";
 
+export enum NavActionType {
+  MOUNT = "MOUNT",
+  TOGGLE_SEARCH = "TOGGLE_SEARCH",
+  SET_SEARCH_QUERY = "SET_SEARCH_QUERY",
+}
+
 type NavState = {
   isMounted: boolean;
   isSearchOpen: boolean;
   searchQuery: string;
 };
 type NavAction =
-  | { type: "MOUNT" }
-  | { type: "TOGGLE_SEARCH"; payload: boolean }
-  | { type: "SET_SEARCH_QUERY"; payload: string };
+  | { type: NavActionType.MOUNT }
+  | { type: NavActionType.TOGGLE_SEARCH; payload: boolean }
+  | { type: NavActionType.SET_SEARCH_QUERY; payload: string };
 
 const navReducer = (state: NavState, action: NavAction): NavState => {
   switch (action.type) {
-    case "MOUNT":
+    case NavActionType.MOUNT:
       return { ...state, isMounted: true };
-    case "TOGGLE_SEARCH":
+    case NavActionType.TOGGLE_SEARCH:
       return { ...state, isSearchOpen: action.payload };
-    case "SET_SEARCH_QUERY":
+    case NavActionType.SET_SEARCH_QUERY:
       return { ...state, searchQuery: action.payload };
     default:
       return state;
@@ -70,7 +76,7 @@ export function Navbar({
   });
 
   useEffect(() => {
-    dispatchState({ type: "MOUNT" });
+    dispatchState({ type: NavActionType.MOUNT });
   }, []);
 
   if (
@@ -176,19 +182,19 @@ export function Navbar({
                                     <SearchBar
                                         value={state.searchQuery}
                                         onChange={(val) => dispatchState({ type: 'SET_SEARCH_QUERY', payload: val })}
-                                        onClose={() => dispatchState({ type: 'TOGGLE_SEARCH', payload: false })}
+                                        onClose={() => dispatchState({ type: NavActionType.TOGGLE_SEARCH, payload: false })}
                                         onSearch={(val) => {
                                             if (val.trim()) {
                                                 router.push(`/store?search=${encodeURIComponent(val)}`);
                                             }
-                                            dispatchState({ type: 'TOGGLE_SEARCH', payload: false });
+                                            dispatchState({ type: NavActionType.TOGGLE_SEARCH, payload: false });
                                             dispatchState({ type: 'SET_SEARCH_QUERY', payload: '' });
                                         }}
                                         placeholder="Search products..."
                                     />
                                 </div>
                             ) : (
-                                <button onClick={() => dispatchState({ type: 'TOGGLE_SEARCH', payload: true })} className="p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors">
+                                <button onClick={() => dispatchState({ type: NavActionType.TOGGLE_SEARCH, payload: true })} className="p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors">
                                     <Search size={20} strokeWidth={1.5} />
                                 </button>
                             )} */}

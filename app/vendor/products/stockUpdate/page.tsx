@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 import {
@@ -15,9 +15,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { authToken } from "@/utils/authToken";
-import { fetchStockManagerVariants, quickUpdateStock, updateProductVariantStatus } from "@/utils/vendorApiClient";
+import {
+  fetchStockManagerVariants,
+  quickUpdateStock,
+  updateProductVariantStatus,
+} from "@/utils/vendorApiClient";
 import { TableRowSkeleton } from "@/components/common/skeletons";
-import { ConfirmationModal } from "@/components/common/ConfirmationModal"; 
+import { ConfirmationModal } from "@/components/common/ConfirmationModal";
 import { useAppSelector } from "@/hooks/reduxHooks";
 
 export const stockTableHeader = [
@@ -55,7 +59,7 @@ const STEP_OPTIONS = [2, 5, 10, 25, 50];
 
 export default function StockManagerPage() {
   const { user } = useAppSelector((state) => state.auth);
-  const vendorId = (user && 'vendor_id' in user ? user.vendor_id : '') ?? '';
+  const vendorId = (user && "vendor_id" in user ? user.vendor_id : "") ?? "";
   const token = authToken();
 
   const [loading, setLoading] = useState(true);
@@ -86,7 +90,6 @@ export default function StockManagerPage() {
       const res = await fetchStockManagerVariants(token as string);
       setVariants(res.data || []);
     } catch {
-      console.error("Failed to load variants");
     } finally {
       setLoading(false);
     }
@@ -98,7 +101,11 @@ export default function StockManagerPage() {
   }, [token]);
 
   // Triggers the confirmation modal instead of executing immediately
-  const handleStatusToggleClick = (variantId: string, currentStatus: string, productName: string) => {
+  const handleStatusToggleClick = (
+    variantId: string,
+    currentStatus: string,
+    productName: string,
+  ) => {
     setConfirmConfig({
       isOpen: true,
       variantId,
@@ -117,7 +124,9 @@ export default function StockManagerPage() {
 
     // Optimistic UI update
     setVariants((prev) =>
-      prev.map((v) => (v.variantId === variantId ? { ...v, status: nextStatus } : v))
+      prev.map((v) =>
+        v.variantId === variantId ? { ...v, status: nextStatus } : v,
+      ),
     );
 
     try {
@@ -127,7 +136,9 @@ export default function StockManagerPage() {
       alert("Failed to update status");
       // Revert if API fails
       setVariants((prev) =>
-        prev.map((v) => (v.variantId === variantId ? { ...v, status: currentStatus } : v))
+        prev.map((v) =>
+          v.variantId === variantId ? { ...v, status: currentStatus } : v,
+        ),
       );
     } finally {
       setIsStatusUpdating(false);
@@ -139,11 +150,17 @@ export default function StockManagerPage() {
     if (editStockValue < 0) return alert("Stock cannot be less than zero.");
     setIsSaving(true);
     try {
-      await quickUpdateStock(activeModalItem.variantId, editStockValue, token as string);
+      await quickUpdateStock(
+        activeModalItem.variantId,
+        editStockValue,
+        token as string,
+      );
       setVariants((prev) =>
         prev.map((v) =>
-          v.variantId === activeModalItem.variantId ? { ...v, stock: editStockValue } : v
-        )
+          v.variantId === activeModalItem.variantId
+            ? { ...v, stock: editStockValue }
+            : v,
+        ),
       );
       setActiveModalItem(null);
     } catch {
@@ -172,12 +189,15 @@ export default function StockManagerPage() {
     .sort((a, b) => {
       if (sortBy === "stock_asc") return a.stock - b.stock;
       if (sortBy === "stock_desc") return b.stock - a.stock;
-      if (sortBy === "name_asc") return a.productName.localeCompare(b.productName);
+      if (sortBy === "name_asc")
+        return a.productName.localeCompare(b.productName);
       return 0;
     });
 
   const totalVariants = variants.length;
-  const lowStockCount = variants.filter((v) => v.stock > 0 && v.stock <= 5).length;
+  const lowStockCount = variants.filter(
+    (v) => v.stock > 0 && v.stock <= 5,
+  ).length;
   const outOfStockCount = variants.filter((v) => v.stock === 0).length;
   const healthyCount = variants.filter((v) => v.stock > 5).length;
 
@@ -190,7 +210,6 @@ export default function StockManagerPage() {
 
   return (
     <main className="w-full min-h-screen px-4 sm:px-6 pb-12 relative">
-
       {/* ── Page Header ── */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-8 pb-6">
         <div className="flex items-center gap-3">
@@ -219,14 +238,41 @@ export default function StockManagerPage() {
       {!loading && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Total SKUs", value: totalVariants, color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
-            { label: "Low Stock", value: lowStockCount, color: "text-amber-600", bg: "bg-amber-50 border-amber-200" },
-            { label: "Out of Stock", value: outOfStockCount, color: "text-red-600", bg: "bg-red-50 border-red-200" },
-            { label: "Healthy", value: healthyCount, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
+            {
+              label: "Total SKUs",
+              value: totalVariants,
+              color: "text-blue-600",
+              bg: "bg-blue-50 border-blue-200",
+            },
+            {
+              label: "Low Stock",
+              value: lowStockCount,
+              color: "text-amber-600",
+              bg: "bg-amber-50 border-amber-200",
+            },
+            {
+              label: "Out of Stock",
+              value: outOfStockCount,
+              color: "text-red-600",
+              bg: "bg-red-50 border-red-200",
+            },
+            {
+              label: "Healthy",
+              value: healthyCount,
+              color: "text-emerald-600",
+              bg: "bg-emerald-50 border-emerald-200",
+            },
           ].map((stat) => (
-            <div key={stat.label} className={`border-2 rounded-2xl px-5 py-4 flex flex-col gap-1 bg-white ${stat.bg}`}>
-              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">{stat.label}</p>
-              <p className={`text-3xl font-extrabold ${stat.color}`}>{stat.value}</p>
+            <div
+              key={stat.label}
+              className={`border-2 rounded-2xl px-5 py-4 flex flex-col gap-1 bg-white ${stat.bg}`}
+            >
+              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+                {stat.label}
+              </p>
+              <p className={`text-3xl font-extrabold ${stat.color}`}>
+                {stat.value}
+              </p>
             </div>
           ))}
         </div>
@@ -236,7 +282,10 @@ export default function StockManagerPage() {
       <div className="flex flex-wrap gap-3 items-center justify-between mb-4">
         <div className="flex flex-wrap gap-2.5 items-center flex-1 min-w-[300px]">
           <div className="relative flex-1 max-w-md min-w-[240px]">
-            <PackageSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+            <PackageSearch
+              size={15}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
+            />
             <input
               type="text"
               placeholder="Search by product name or SKU…"
@@ -246,7 +295,10 @@ export default function StockManagerPage() {
             />
           </div>
           <div className="relative">
-            <SlidersHorizontal size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+            <SlidersHorizontal
+              size={13}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
+            />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -258,7 +310,10 @@ export default function StockManagerPage() {
             </select>
           </div>
           <div className="relative">
-            <ArrowUpDown size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+            <ArrowUpDown
+              size={13}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
+            />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -283,7 +338,10 @@ export default function StockManagerPage() {
           <thead>
             <tr className="bg-stone-50/80 text-left border-b border-stone-200">
               {stockTableHeader.map((col) => (
-                <th key={col} className="p-4 text-xs font-semibold text-stone-500 uppercase tracking-wide whitespace-nowrap">
+                <th
+                  key={col}
+                  className="p-4 text-xs font-semibold text-stone-500 uppercase tracking-wide whitespace-nowrap"
+                >
                   {col}
                 </th>
               ))}
@@ -302,26 +360,34 @@ export default function StockManagerPage() {
             ) : (
               filteredAndSorted.map((item) => {
                 const sc = stockClass(item.stock);
-                
+
                 return (
                   <tr
                     key={item.variantId}
                     onClick={() => openModal(item)} // Extended to entire row
                     className={`group hover:bg-stone-50/60 bg-white transition-colors cursor-pointer ${
-                      sc === "out" ? "bg-red-50/30" : sc === "low" ? "bg-amber-50/20" : ""
+                      sc === "out"
+                        ? "bg-red-50/30"
+                        : sc === "low"
+                          ? "bg-amber-50/20"
+                          : ""
                     }`}
                   >
                     {/* Product / Variant */}
                     <td className="p-4 max-w-[240px]">
                       {/* stopPropagation on Link prevents navigating + opening modal simultaneously if it bubbles */}
-                      <span
-                        className="block font-semibold text-stone-800  truncate transition-colors leading-snug "
-                      >
+                      <span className="block font-semibold text-stone-800  truncate transition-colors leading-snug ">
                         {item.productName}
                       </span>
                       <span className="inline-block text-[16px] font-medium text-stone-500 bg-stone-100 border border-stone-200 px-2 py-0.5 rounded-md mt-1.5 font-mono">
-                       <span className="font-bold text-black/90"> {item.attributes?.[0]?.name ?? ''} :</span>
-                       <span className="text-black/70"> {item.attributes?.[0]?.value || ""}</span> 
+                        <span className="font-bold text-black/90">
+                          {" "}
+                          {item.attributes?.[0]?.name ?? ""} :
+                        </span>
+                        <span className="text-black/70">
+                          {" "}
+                          {item.attributes?.[0]?.value || ""}
+                        </span>
                       </span>
                     </td>
 
@@ -338,15 +404,17 @@ export default function StockManagerPage() {
                       </div>
                     </td>
 
-{/* Stock — framed data + tactile button */}
+                    {/* Stock — framed data + tactile button */}
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         {/* Data Display Box */}
-                        <div 
+                        <div
                           className={`flex items-center justify-center min-w-[44px] h-8 px-2 rounded-lg bg-white border shadow-sm ${
-                            sc === "out" ? "border-red-200 text-red-600" :
-                            sc === "low" ? "border-amber-200 text-amber-600" :
-                            "border-stone-200 text-stone-800"
+                            sc === "out"
+                              ? "border-red-200 text-red-600"
+                              : sc === "low"
+                                ? "border-amber-200 text-amber-600"
+                                : "border-stone-200 text-stone-800"
                           }`}
                         >
                           <span className="text-sm font-bold tabular-nums leading-none">
@@ -359,7 +427,11 @@ export default function StockManagerPage() {
                           type="button"
                           className="inline-flex items-center justify-center h-8 gap-1.5 px-3 rounded-lg border border-stone-200 bg-white text-xs font-bold text-stone-600 shadow-sm hover:bg-stone-50 hover:border-stone-300 hover:text-stone-900 active:bg-stone-100 transition-all group/btn"
                         >
-                          <Edit size={14} strokeWidth={2.5} className="text-stone-400 group-hover/btn:text-stone-600 transition-colors" />
+                          <Edit
+                            size={14}
+                            strokeWidth={2.5}
+                            className="text-stone-400 group-hover/btn:text-stone-600 transition-colors"
+                          />
                           Adjust
                         </button>
                       </div>
@@ -376,30 +448,40 @@ export default function StockManagerPage() {
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
-                            item.status === "active" ? "bg-emerald-500" : "bg-stone-400"
+                            item.status === "active"
+                              ? "bg-emerald-500"
+                              : "bg-stone-400"
                           }`}
                         />
+
                         {item.status === "active" ? "Active" : "Inactive"}
                       </span>
                     </td>
 
                     {/* Actions */}
-                    <td 
-                      className="p-4" 
-                      onClick={(e) => e.stopPropagation()}  
-                    >
+                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-3">
                         {/* Toggle */}
                         <button
-                          onClick={() => handleStatusToggleClick(item.variantId, item.status, item.productName)}
+                          onClick={() =>
+                            handleStatusToggleClick(
+                              item.variantId,
+                              item.status,
+                              item.productName,
+                            )
+                          }
                           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
-                            item.status === "active" ? "bg-emerald-500" : "bg-stone-300"
+                            item.status === "active"
+                              ? "bg-emerald-500"
+                              : "bg-stone-300"
                           }`}
                           aria-label={`Toggle ${item.productName} status`}
                         >
                           <span
                             className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform ${
-                              item.status === "active" ? "translate-x-4" : "translate-x-0.5"
+                              item.status === "active"
+                                ? "translate-x-4"
+                                : "translate-x-0.5"
                             }`}
                           />
                         </button>
@@ -417,14 +499,17 @@ export default function StockManagerPage() {
       {!loading && filteredAndSorted.length > 0 && (
         <p className="text-center text-xs text-stone-400 mt-5">
           Showing{" "}
-          <span className="font-semibold text-stone-600">{filteredAndSorted.length}</span>{" "}
+          <span className="font-semibold text-stone-600">
+            {filteredAndSorted.length}
+          </span>{" "}
           of {totalVariants} items. Click any{" "}
-          <span className="font-semibold text-stone-600">row</span> to edit quantity.
+          <span className="font-semibold text-stone-600">row</span> to edit
+          quantity.
         </p>
       )}
 
       {/* ── Stock Update Modal ── */}
-{/* ── Stock Update Modal ── */}
+      {/* ── Stock Update Modal ── */}
       <AnimatePresence>
         {activeModalItem && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-sm">
@@ -473,8 +558,20 @@ export default function StockManagerPage() {
 
                 {/* Arrow */}
                 <div className="flex flex-col items-center justify-center shrink-0 px-2">
-                  <svg width="20" height="14" viewBox="0 0 20 14" fill="none" className="text-stone-300">
-                    <path d="M1 7h18M13 1l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <svg
+                    width="20"
+                    height="14"
+                    viewBox="0 0 20 14"
+                    fill="none"
+                    className="text-stone-300"
+                  >
+                    <path
+                      d="M1 7h18M13 1l6 6-6 6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </div>
 
@@ -488,8 +585,8 @@ export default function StockManagerPage() {
                       delta === 0
                         ? "text-stone-800"
                         : delta > 0
-                        ? "text-emerald-600"
-                        : "text-red-500"
+                          ? "text-emerald-600"
+                          : "text-red-500"
                     }`}
                   >
                     {editStockValue}
@@ -499,8 +596,8 @@ export default function StockManagerPage() {
 
               {/* Direct Input Section */}
               <div className="px-5 py-6">
-                <label 
-                  htmlFor="stock-input" 
+                <label
+                  htmlFor="stock-input"
                   className="block text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2.5"
                 >
                   Set Exact Quantity
@@ -513,12 +610,15 @@ export default function StockManagerPage() {
                     value={editStockValue}
                     onChange={(e) =>
                       setEditStockValue(
-                        e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10))
+                        e.target.value === ""
+                          ? 0
+                          : Math.max(0, parseInt(e.target.value, 10)),
                       )
                     }
                     className="w-full border-2 border-stone-200 rounded-xl pl-4 pr-16 py-3 text-xl font-bold text-stone-800 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all tabular-nums"
                     autoFocus
                   />
+
                   <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
                     <span className="text-[10px] font-bold text-stone-500 bg-stone-100 border border-stone-200/60 px-2.5 py-1.5 rounded-lg uppercase tracking-wide">
                       Units
@@ -543,7 +643,9 @@ export default function StockManagerPage() {
                           : "bg-red-100 text-red-700"
                       }`}
                     >
-                      {delta > 0 ? `Stocking up: +${delta}` : `Reducing by: ${delta}`}
+                      {delta > 0
+                        ? `Stocking up: +${delta}`
+                        : `Reducing by: ${delta}`}
                     </span>
                   )}
                 </div>
@@ -580,13 +682,12 @@ export default function StockManagerPage() {
         title={isActivating ? "Publish Variant?" : "Deactivate Variant?"}
         message={
           isActivating
-            ? `Are you sure you want to activate "${confirmConfig?.productName.trim().split(' ').slice(0, 2).join(' ')}"? Turning this on will publish this variant to customers and make it available for purchase.`
-            : `Are you sure you want to deactivate "${confirmConfig?.productName.trim().split(' ').slice(0, 2).join(' ')}"? This will immediately hide the variant from customers.`
+            ? `Are you sure you want to activate "${confirmConfig?.productName.trim().split(" ").slice(0, 2).join(" ")}"? Turning this on will publish this variant to customers and make it available for purchase.`
+            : `Are you sure you want to deactivate "${confirmConfig?.productName.trim().split(" ").slice(0, 2).join(" ")}"? This will immediately hide the variant from customers.`
         }
         actionType={isActivating ? "activate" : "deactivate"}
         confirmText={isActivating ? "Publish Variant" : "Deactivate"}
       />
-
     </main>
   );
 }

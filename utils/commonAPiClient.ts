@@ -3,7 +3,6 @@ import { getCompanyDomain } from "@/lib/get-domain";
 
 export const fetchProduct = async (productId: string) => {
   const companyDomain = await getCompanyDomain();
-  console.log("company domain  in product by id", companyDomain);
   try {
     const response = await fetch(`${BASE_API_URL}/v1/products/${productId}`, {
       method: "GET",
@@ -14,12 +13,11 @@ export const fetchProduct = async (productId: string) => {
         "company-domain": companyDomain,
       },
     });
-    console.log(response);
     if (response.status !== 200) {
     }
     return await response.json();
   } catch (error) {
-    // throw error;
+    // ignore
   }
 };
 export const fetchProductVariantDetails = async (id: string) => {
@@ -37,10 +35,10 @@ export const fetchProductVariantDetails = async (id: string) => {
       },
     );
 
-    const result = await response.json(); // Renamed 'data' to 'result' for clarity
+    const result = await response.json();
 
     if (response.status !== 200) {
-      console.error("Failed to fetch product variant details:", result);
+      // handle non-200 silently
     }
 
     return {
@@ -50,7 +48,6 @@ export const fetchProductVariantDetails = async (id: string) => {
         result?.message || (response.status === 200 ? "Success" : "Failed"),
     };
   } catch (error) {
-    console.error("Error fetching product variants:", error);
     return { data: undefined, success: false, message: "Error occurred" };
   }
 };
@@ -200,7 +197,6 @@ export const fetchProductOptions = async (): Promise<
     const json = await response.json();
     return json?.data ?? json ?? [];
   } catch (error) {
-    console.error("Error fetching product options:", error);
     return [];
   }
 };
@@ -241,7 +237,6 @@ export const fetchHomepageProducts = async (
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching homepage products:", error);
     return { data: [] };
   }
 };

@@ -86,7 +86,6 @@ export default function AssignPolicyPage() {
         setLoadingOptions(false);
       })
       .catch((error) => {
-        console.error("Error fetching options:", error);
         setGlobalError(
           "Failed to load policies, categories, or products. Please try again later.",
         );
@@ -169,6 +168,7 @@ export default function AssignPolicyPage() {
                       className="w-4 h-4 accent-blue-600"
                       {...register("target_type")}
                     />
+
                     <span className="font-medium text-gray-700">
                       Category Default
                     </span>
@@ -180,6 +180,7 @@ export default function AssignPolicyPage() {
                       className="w-4 h-4 accent-blue-600"
                       {...register("target_type")}
                     />
+
                     <span className="font-medium text-gray-700">
                       Specific Product Override
                     </span>

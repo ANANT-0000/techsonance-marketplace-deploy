@@ -42,7 +42,8 @@ export interface HeroSlide {
   btn_text?: string;
   btn_link?: string;
   layout?: HeroLayout;
-  bg_style?: HeroBgStyle;
+  bg_style?: HeroBgStyle | "custom";
+  bg_color?: string;
 }
 
 export interface InteractiveHeroProps {
@@ -142,8 +143,14 @@ export function InteractiveHero({
   const { bg: bgColor, solidBg } = useImageColors(activeSlideImage);
 
   // Background style selection
-  const isGradient = (currentSlide?.bg_style || HeroBgStyle.GRADIENT) === HeroBgStyle.GRADIENT;
-  const finalBg = isGradient ? bgColor : solidBg;
+  const bgStyleValue = currentSlide?.bg_style || HeroBgStyle.GRADIENT;
+  const isCustomBg = bgStyleValue === "custom";
+  const isGradient = bgStyleValue === HeroBgStyle.GRADIENT;
+  const finalBg = isCustomBg
+    ? (currentSlide?.bg_color || solidBg)
+    : isGradient
+    ? bgColor
+    : solidBg;
 
   // Layout selection
   const layoutStyle = currentSlide?.layout || HeroLayout.CENTER_OVERLAY;

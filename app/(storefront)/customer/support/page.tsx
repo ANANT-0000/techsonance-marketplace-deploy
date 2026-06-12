@@ -27,6 +27,21 @@ import { RootState } from "@/lib/store";
 import AxiosAPI from "@/lib/axios";
 import { formatCurrency } from "@/lib/utils";
 
+export enum FormActionType {
+  SET = "SET",
+  RESET_FORM = "RESET_FORM",
+  RESET_ATTACHMENT = "RESET_ATTACHMENT",
+}
+
+export enum DataActionType {
+  SET = "SET",
+}
+
+export enum UIActionType {
+  SET = "SET",
+  RESET_FAQ_VOTES = "RESET_FAQ_VOTES",
+}
+
 interface TicketThreadProps {
   ticketId: string;
   userId: string;
@@ -59,7 +74,7 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
         setComments(res.data);
       }
     } catch (err) {
-      console.error("Failed to fetch comments", err);
+      void 0;
     } finally {
       setLoading(false);
     }
@@ -91,7 +106,7 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
         fetchComments();
       }
     } catch (err) {
-      console.error("Failed to post comment", err);
+      void 0;
       toast.error("Failed to send comment");
     } finally {
       setSubmittingComment(false);
@@ -122,14 +137,16 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
         toast.success("Thank you for your feedback!");
       }
     } catch (err) {
-      console.error("Failed to submit feedback rating", err);
+      void 0;
       toast.error("Failed to submit feedback");
     } finally {
       setSubmittingRating(false);
     }
   };
 
-  const isResolvedOrClosed = ticketStatus.toLowerCase() === "resolved" || ticketStatus.toLowerCase() === "closed";
+  const isResolvedOrClosed =
+    ticketStatus.toLowerCase() === "resolved" ||
+    ticketStatus.toLowerCase() === "closed";
 
   return (
     <div className="mt-4 pt-4 border-t border-gray-150 space-y-6">
@@ -138,17 +155,20 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
           Conversation History
         </h4>
-        
+
         {loading ? (
           <div className="flex items-center justify-center py-6">
             <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
           </div>
         ) : comments.length === 0 ? (
-          <p className="text-xs text-gray-450 italic py-2">No updates or comments yet.</p>
+          <p className="text-xs text-gray-450 italic py-2">
+            No updates or comments yet.
+          </p>
         ) : (
           <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
             {comments.map((comment) => {
-              const isSupport = comment.user_role === "admin" || comment.user_role === "vendor";
+              const isSupport =
+                comment.user_role === "admin" || comment.user_role === "vendor";
               return (
                 <div
                   key={comment.id}
@@ -163,10 +183,15 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
                       {isSupport ? "Support Agent" : "You"}
                     </span>
                     <span className="text-[10px] text-gray-405 font-medium">
-                      {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(comment.created_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
                   </div>
-                  <p className="whitespace-pre-wrap leading-relaxed">{comment.comment_text}</p>
+                  <p className="whitespace-pre-wrap leading-relaxed">
+                    {comment.comment_text}
+                  </p>
                 </div>
               );
             })}
@@ -184,12 +209,17 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
             placeholder="Type your message..."
             className="flex-1 text-xs px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none resize-none transition-all font-medium text-gray-700"
           />
+
           <button
             type="submit"
             disabled={submittingComment || !commentText.trim()}
             className="bg-blue-600 hover:bg-blue-750 text-white font-bold text-xs px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center shrink-0 disabled:bg-gray-205 disabled:text-gray-400"
           >
-            {submittingComment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Send"}
+            {submittingComment ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              "Send"
+            )}
           </button>
         </form>
       )}
@@ -201,15 +231,27 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
             <div className="bg-emerald-50 border border-emerald-150 p-4 rounded-xl flex items-center gap-3">
               <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
               <div>
-                <p className="text-xs font-bold text-emerald-800">Feedback Submitted</p>
-                <p className="text-[11px] text-emerald-700">Thank you for rating your experience! Your feedback helps us improve our service.</p>
+                <p className="text-xs font-bold text-emerald-800">
+                  Feedback Submitted
+                </p>
+                <p className="text-[11px] text-emerald-700">
+                  Thank you for rating your experience! Your feedback helps us
+                  improve our service.
+                </p>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmitRating} className="bg-gray-50 border border-gray-150 p-4 sm:p-5 rounded-2xl space-y-4">
+            <form
+              onSubmit={handleSubmitRating}
+              className="bg-gray-50 border border-gray-150 p-4 sm:p-5 rounded-2xl space-y-4"
+            >
               <div>
-                <h4 className="text-xs font-bold text-gray-900 mb-1">Rate Ticket Resolution</h4>
-                <p className="text-[11px] text-gray-500">How satisfied are you with the support you received?</p>
+                <h4 className="text-xs font-bold text-gray-900 mb-1">
+                  Rate Ticket Resolution
+                </h4>
+                <p className="text-[11px] text-gray-500">
+                  How satisfied are you with the support you received?
+                </p>
               </div>
 
               {/* Star Rating 1-5 */}
@@ -284,7 +326,9 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
                 disabled={submittingRating || rating === 0}
                 className="w-full bg-blue-600 hover:bg-blue-750 text-white font-bold text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:bg-gray-205 disabled:text-gray-400"
               >
-                {submittingRating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                {submittingRating && (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                )}
                 Submit Feedback
               </button>
             </form>
@@ -309,10 +353,14 @@ type FormState = {
   successMsg: string;
 };
 
+type FormSetActionPayload = {
+  [K in keyof FormState]: { key: K; value: FormState[K] }
+}[keyof FormState];
+
 type FormAction =
-  | { type: "SET"; key: keyof FormState; value: any }
-  | { type: "RESET_FORM" }
-  | { type: "RESET_ATTACHMENT" };
+  | ({ type: FormActionType.SET } & FormSetActionPayload)
+  | { type: FormActionType.RESET_FORM }
+  | { type: FormActionType.RESET_ATTACHMENT };
 
 const initialFormState: FormState = {
   submitLoading: false,
@@ -330,16 +378,16 @@ const initialFormState: FormState = {
 
 function formReducer(state: FormState, action: FormAction): FormState {
   switch (action.type) {
-    case "SET":
+    case FormActionType.SET:
       return { ...state, [action.key]: action.value };
-    case "RESET_ATTACHMENT":
+    case FormActionType.RESET_ATTACHMENT:
       return {
         ...state,
         selectedFile: null,
         attachmentUrl: "",
         uploadingFile: false,
       };
-    case "RESET_FORM":
+    case FormActionType.RESET_FORM:
       return { ...initialFormState };
     default:
       return state;
@@ -352,12 +400,12 @@ const renderReturnTimeline = (returnReq: any) => {
   const steps = [
     { key: "pending", label: "Requested", desc: "Awaiting approval" },
     { key: "approved", label: "Approved", desc: "Return request accepted" },
-    ...(type !== "refund" ?
-      [
-        { key: "in_transit", label: "In Transit", desc: "Item shipped back" },
-        { key: "delivered", label: "Inspected", desc: "QC check complete" },
-      ]
-    : []),
+    ...(type !== "refund"
+      ? [
+          { key: "in_transit", label: "In Transit", desc: "Item shipped back" },
+          { key: "delivered", label: "Inspected", desc: "QC check complete" },
+        ]
+      : []),
     {
       key: "completed",
       label: "Completed",
@@ -403,6 +451,7 @@ const renderReturnTimeline = (returnReq: any) => {
             icon = (
               <RefreshCw className="w-4.5 h-4.5 text-blue-600 animate-spin" />
             );
+
             circleColor = "bg-blue-50 border-blue-300 text-blue-600";
           } else if (isRejectedStep) {
             icon = <X className="w-4.5 h-4.5 text-red-600" />;
@@ -426,11 +475,11 @@ const renderReturnTimeline = (returnReq: any) => {
                 <span
                   className={`text-sm font-bold ${isCompleted || isCurrent ? "text-gray-900" : "text-gray-450"}`}
                 >
-                  {isRejectedStep ?
-                    "Rejected"
-                  : isQcFailedStep ?
-                    "QC Failed"
-                  : step.label}
+                  {isRejectedStep
+                    ? "Rejected"
+                    : isQcFailedStep
+                      ? "QC Failed"
+                      : step.label}
                 </span>
                 <span className="text-xs text-gray-500 font-medium mt-0.5">
                   {step.desc}
@@ -473,7 +522,11 @@ type DataState = {
   loadingHelpArticles: boolean;
 };
 
-type DataAction = { type: "SET"; key: keyof DataState; value: any };
+type DataAction = {
+  type: DataActionType.SET;
+  key: keyof DataState;
+  value: any;
+};
 
 const initialDataState: DataState = {
   tickets: [],
@@ -488,7 +541,7 @@ const initialDataState: DataState = {
 
 function dataReducer(state: DataState, action: DataAction): DataState {
   switch (action.type) {
-    case "SET":
+    case DataActionType.SET:
       return { ...state, [action.key]: action.value };
     default:
       return state;
@@ -508,9 +561,13 @@ export default function HelpCenterPage() {
     expandedTicketId: string | null;
   };
 
+  type UISetActionPayload = {
+    [K in keyof UIState]: { key: K; value: UIState[K] }
+  }[keyof UIState];
+
   type UIAction =
-    | { type: "SET"; key: keyof UIState; value: any }
-    | { type: "RESET_FAQ_VOTES" };
+    | ({ type: UIActionType.SET } & UISetActionPayload)
+    | { type: UIActionType.RESET_FAQ_VOTES };
 
   const initialUIState: UIState = {
     activeTab: "faq",
@@ -522,9 +579,9 @@ export default function HelpCenterPage() {
 
   function uiReducer(state: UIState, action: UIAction): UIState {
     switch (action.type) {
-      case "SET":
+      case UIActionType.SET:
         return { ...state, [action.key]: action.value };
-      case "RESET_FAQ_VOTES":
+      case UIActionType.RESET_FAQ_VOTES:
         try {
           localStorage.removeItem("tn_faq_votes");
         } catch {}
@@ -545,7 +602,9 @@ export default function HelpCenterPage() {
     const articles = dataState.helpArticles || [];
     if (!q) return articles;
     return articles.filter((art) =>
-      (art.title + " " + art.content + " " + (art.category || "")).toLowerCase().includes(q),
+      (art.title + " " + art.content + " " + (art.category || ""))
+        .toLowerCase()
+        .includes(q),
     );
   }, [uiState.searchQuery, dataState.helpArticles]);
 
@@ -554,7 +613,11 @@ export default function HelpCenterPage() {
     try {
       const raw = localStorage.getItem("tn_faq_votes");
       if (raw) {
-        uiDispatch({ type: "SET", key: "faqVotes", value: JSON.parse(raw) });
+        uiDispatch({
+          type: UIActionType.SET,
+          key: "faqVotes",
+          value: JSON.parse(raw),
+        });
       }
     } catch {}
   }, []);
@@ -565,64 +628,118 @@ export default function HelpCenterPage() {
       fetchRecentOrderItems();
       fetchReturns();
     } else {
-      dataDispatch({ type: "SET", key: "loadingTickets", value: false });
-      dataDispatch({ type: "SET", key: "loadingReturns", value: false });
+      dataDispatch({
+        type: DataActionType.SET,
+        key: "loadingTickets",
+        value: false,
+      });
+      dataDispatch({
+        type: DataActionType.SET,
+        key: "loadingReturns",
+        value: false,
+      });
     }
   }, [isAuthenticated, user?.id]);
 
   const fetchHelpArticles = async () => {
     try {
-      dataDispatch({ type: "SET", key: "loadingHelpArticles", value: true });
+      dataDispatch({
+        type: DataActionType.SET,
+        key: "loadingHelpArticles",
+        value: true,
+      });
       const res = await AxiosAPI.get("/v1/help-articles");
       if (res.data) {
-        dataDispatch({ type: "SET", key: "helpArticles", value: res.data.data });
+        dataDispatch({
+          type: DataActionType.SET,
+          key: "helpArticles",
+          value: res.data.data,
+        });
       }
     } catch (err) {
-      console.error("Failed to fetch help articles", err);
     } finally {
-      dataDispatch({ type: "SET", key: "loadingHelpArticles", value: false });
+      dataDispatch({
+        type: DataActionType.SET,
+        key: "loadingHelpArticles",
+        value: false,
+      });
     }
   };
 
   const fetchTickets = async () => {
     try {
-      dataDispatch({ type: "SET", key: "loadingTickets", value: true });
+      dataDispatch({
+        type: DataActionType.SET,
+        key: "loadingTickets",
+        value: true,
+      });
       const res = await AxiosAPI.get(`/v1/tickets/customer/${user?.id}`);
       if (res.data) {
-        dataDispatch({ type: "SET", key: "tickets", value: res.data });
+        dataDispatch({
+          type: DataActionType.SET,
+          key: "tickets",
+          value: res.data,
+        });
       }
     } catch (err) {
-      console.error("Failed to fetch tickets", err);
     } finally {
-      dataDispatch({ type: "SET", key: "loadingTickets", value: false });
+      dataDispatch({
+        type: DataActionType.SET,
+        key: "loadingTickets",
+        value: false,
+      });
     }
   };
 
   const fetchRecentOrderItems = async () => {
     try {
-      dataDispatch({ type: "SET", key: "loadingOrders", value: true });
+      dataDispatch({
+        type: DataActionType.SET,
+        key: "loadingOrders",
+        value: true,
+      });
       const res = await AxiosAPI.get(`/v1/order-items/user/${user?.id}`);
       if (res.data?.data) {
-        dataDispatch({ type: "SET", key: "orderItems", value: res.data.data });
+        dataDispatch({
+          type: DataActionType.SET,
+          key: "orderItems",
+          value: res.data.data,
+        });
       }
     } catch (err) {
-      console.error("Failed to fetch recent order items", err);
+      void 0;
     } finally {
-      dataDispatch({ type: "SET", key: "loadingOrders", value: false });
+      dataDispatch({
+        type: DataActionType.SET,
+        key: "loadingOrders",
+        value: false,
+      });
     }
   };
 
   const fetchReturns = async () => {
     try {
-      dataDispatch({ type: "SET", key: "loadingReturns", value: true });
+      dataDispatch({
+        type: DataActionType.SET,
+        key: "loadingReturns",
+        value: true,
+      });
       const res = await AxiosAPI.get(`/v1/returns/user/${user?.id}`);
       if (res.data) {
-        dataDispatch({ type: "SET", key: "returnsList", value: res.data });
+        dataDispatch({
+          type: DataActionType.SET,
+          key: "returnsList",
+          value: res.data,
+        });
       }
     } catch (err) {
-      console.error("Failed to fetch return requests", err);
+      void 0;
     } finally {
-      dataDispatch({ type: "SET", key: "loadingReturns", value: false });
+      dataDispatch({
+        type: DataActionType.SET,
+        key: "loadingReturns",
+        value: false,
+      });
     }
   };
 
@@ -631,10 +748,10 @@ export default function HelpCenterPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    dispatch({ type: "SET", key: "selectedFile", value: file });
-    dispatch({ type: "SET", key: "uploadingFile", value: true });
-    dispatch({ type: "SET", key: "errorMsg", value: "" });
-    dispatch({ type: "SET", key: "successMsg", value: "" });
+    dispatch({ type: FormActionType.SET, key: "selectedFile", value: file });
+    dispatch({ type: FormActionType.SET, key: "uploadingFile", value: true });
+    dispatch({ type: FormActionType.SET, key: "errorMsg", value: "" });
+    dispatch({ type: FormActionType.SET, key: "successMsg", value: "" });
 
     try {
       const formData = new FormData();
@@ -645,37 +762,49 @@ export default function HelpCenterPage() {
       });
 
       if (res.data?.url) {
-        dispatch({ type: "SET", key: "attachmentUrl", value: res.data.url });
+        dispatch({
+          type: FormActionType.SET,
+          key: "attachmentUrl",
+          value: res.data.url,
+        });
       } else {
         dispatch({
-          type: "SET",
+          type: FormActionType.SET,
           key: "errorMsg",
           value: "Failed to upload attachment. Please try again.",
         });
-        dispatch({ type: "SET", key: "selectedFile", value: null });
+        dispatch({
+          type: FormActionType.SET,
+          key: "selectedFile",
+          value: null,
+        });
       }
     } catch (err) {
-      console.error("Attachment upload error", err);
+      void 0;
       dispatch({
-        type: "SET",
+        type: FormActionType.SET,
         key: "errorMsg",
         value: "Failed to upload file to the server.",
       });
-      dispatch({ type: "SET", key: "selectedFile", value: null });
+      dispatch({ type: FormActionType.SET, key: "selectedFile", value: null });
     } finally {
-      dispatch({ type: "SET", key: "uploadingFile", value: false });
+      dispatch({
+        type: FormActionType.SET,
+        key: "uploadingFile",
+        value: false,
+      });
     }
   };
 
   const handleRemoveFile = () => {
-    dispatch({ type: "RESET_ATTACHMENT" });
+    dispatch({ type: FormActionType.RESET_ATTACHMENT });
   };
 
   const handleSubmitTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formState.subject.trim() || !formState.message.trim()) {
       dispatch({
-        type: "SET",
+        type: FormActionType.SET,
         key: "errorMsg",
         value: "Please fill in all fields.",
       });
@@ -683,9 +812,9 @@ export default function HelpCenterPage() {
     }
 
     try {
-      dispatch({ type: "SET", key: "submitLoading", value: true });
-      dispatch({ type: "SET", key: "errorMsg", value: "" });
-      dispatch({ type: "SET", key: "successMsg", value: "" });
+      dispatch({ type: FormActionType.SET, key: "submitLoading", value: true });
+      dispatch({ type: FormActionType.SET, key: "errorMsg", value: "" });
+      dispatch({ type: FormActionType.SET, key: "successMsg", value: "" });
 
       const payload: any = {
         subject: formState.subject,
@@ -707,30 +836,38 @@ export default function HelpCenterPage() {
 
       if (res.status === 201) {
         dispatch({
-          type: "SET",
+          type: FormActionType.SET,
           key: "successMsg",
           value:
             "Support ticket created successfully! We will get back to you soon.",
         });
-        dispatch({ type: "RESET_FORM" });
+        dispatch({ type: FormActionType.RESET_FORM });
         fetchTickets();
-        uiDispatch({ type: "SET", key: "activeTab", value: "tickets" });
+        uiDispatch({
+          type: UIActionType.SET,
+          key: "activeTab",
+          value: "tickets",
+        });
       } else {
         dispatch({
-          type: "SET",
+          type: FormActionType.SET,
           key: "errorMsg",
           value: "Failed to submit ticket. Please try again.",
         });
       }
     } catch (err) {
-      console.error("Error submitting ticket", err);
+      void 0;
       dispatch({
-        type: "SET",
+        type: FormActionType.SET,
         key: "errorMsg",
         value: "Failed to submit ticket. Please try again.",
       });
     } finally {
-      dispatch({ type: "SET", key: "submitLoading", value: false });
+      dispatch({
+        type: FormActionType.SET,
+        key: "submitLoading",
+        value: false,
+      });
     }
   };
 
@@ -776,25 +913,33 @@ export default function HelpCenterPage() {
         <div className="flex border-b border-gray-200 mb-8 overflow-x-auto gap-2">
           <button
             onClick={() =>
-              uiDispatch({ type: "SET", key: "activeTab", value: "faq" })
+              uiDispatch({
+                type: UIActionType.SET,
+                key: "activeTab",
+                value: "faq",
+              })
             }
             className={`px-5 py-3 font-bold text-sm border-b-2 transition-all shrink-0 ${
-              uiState.activeTab === "faq" ?
-                "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-900"
+              uiState.activeTab === "faq"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-900"
             }`}
           >
             FAQs & New Ticket
           </button>
           <button
             onClick={() => {
-              uiDispatch({ type: "SET", key: "activeTab", value: "tickets" });
+              uiDispatch({
+                type: UIActionType.SET,
+                key: "activeTab",
+                value: "tickets",
+              });
               fetchTickets();
             }}
             className={`px-5 py-3 font-bold text-sm border-b-2 transition-all shrink-0 flex items-center gap-2 ${
-              uiState.activeTab === "tickets" ?
-                "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-900"
+              uiState.activeTab === "tickets"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-900"
             }`}
           >
             My Support Tickets
@@ -806,13 +951,17 @@ export default function HelpCenterPage() {
           </button>
           <button
             onClick={() => {
-              uiDispatch({ type: "SET", key: "activeTab", value: "returns" });
+              uiDispatch({
+                type: UIActionType.SET,
+                key: "activeTab",
+                value: "returns",
+              });
               fetchReturns();
             }}
             className={`px-5 py-3 font-bold text-sm border-b-2 transition-all shrink-0 flex items-center gap-2 ${
-              uiState.activeTab === "returns" ?
-                "border-blue-650 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-900"
+              uiState.activeTab === "returns"
+                ? "border-blue-650 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-900"
             }`}
           >
             Track Returns & Replacements
@@ -859,7 +1008,7 @@ export default function HelpCenterPage() {
                         value={uiState.searchQuery}
                         onChange={(e) =>
                           uiDispatch({
-                            type: "SET",
+                            type: UIActionType.SET,
                             key: "searchQuery",
                             value: e.target.value,
                           })
@@ -867,6 +1016,7 @@ export default function HelpCenterPage() {
                         placeholder="Search FAQs"
                         className="w-full text-sm px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none"
                       />
+
                       <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
                     </div>
                   </div>
@@ -879,8 +1029,12 @@ export default function HelpCenterPage() {
                     </div>
                   ) : FAQS_FILTERED.length === 0 ? (
                     <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl bg-gray-50/30">
-                      <p className="text-xs text-gray-500 font-semibold">No matches found</p>
-                      <p className="text-[11px] text-gray-450 mt-1">Try a different search query or submit a ticket below.</p>
+                      <p className="text-xs text-gray-500 font-semibold">
+                        No matches found
+                      </p>
+                      <p className="text-[11px] text-gray-450 mt-1">
+                        Try a different search query or submit a ticket below.
+                      </p>
                     </div>
                   ) : (
                     FAQS_FILTERED.map((faq, idx) => (
@@ -891,7 +1045,7 @@ export default function HelpCenterPage() {
                         <button
                           onClick={() =>
                             uiDispatch({
-                              type: "SET",
+                              type: UIActionType.SET,
                               key: "openFaqIndex",
                               value: uiState.openFaqIndex === idx ? null : idx,
                             })
@@ -907,7 +1061,9 @@ export default function HelpCenterPage() {
                         </button>
                         {uiState.openFaqIndex === idx && (
                           <div className="px-5 pb-5 text-gray-500 text-sm border-t border-gray-50 pt-3 leading-relaxed">
-                            <div className="mb-3 whitespace-pre-wrap">{faq.content}</div>
+                            <div className="mb-3 whitespace-pre-wrap">
+                              {faq.content}
+                            </div>
                             <div className="flex items-center gap-3">
                               <span className="text-xs text-gray-500">
                                 Was this helpful?
@@ -919,7 +1075,7 @@ export default function HelpCenterPage() {
                                     [faq.id]: "up",
                                   };
                                   uiDispatch({
-                                    type: "SET",
+                                    type: UIActionType.SET,
                                     key: "faqVotes",
                                     value: next,
                                   });
@@ -928,7 +1084,10 @@ export default function HelpCenterPage() {
                                       "tn_faq_votes",
                                       JSON.stringify(next),
                                     );
-                                    await AxiosAPI.post(`/v1/help-articles/${faq.id}/vote`, { isHelpful: true });
+                                    await AxiosAPI.post(
+                                      `/v1/help-articles/${faq.id}/vote`,
+                                      { isHelpful: true },
+                                    );
                                   } catch {}
                                   toast.success("Thanks for the feedback");
                                 }}
@@ -943,7 +1102,7 @@ export default function HelpCenterPage() {
                                     [faq.id]: "down",
                                   };
                                   uiDispatch({
-                                    type: "SET",
+                                    type: UIActionType.SET,
                                     key: "faqVotes",
                                     value: next,
                                   });
@@ -952,7 +1111,10 @@ export default function HelpCenterPage() {
                                       "tn_faq_votes",
                                       JSON.stringify(next),
                                     );
-                                    await AxiosAPI.post(`/v1/help-articles/${faq.id}/vote`, { isHelpful: false });
+                                    await AxiosAPI.post(
+                                      `/v1/help-articles/${faq.id}/vote`,
+                                      { isHelpful: false },
+                                    );
                                   } catch {}
                                   toast("Thanks — we will improve", {
                                     icon: "ℹ️",
@@ -982,7 +1144,7 @@ export default function HelpCenterPage() {
                   Describe your issue and we'll reply as soon as possible.
                 </p>
 
-                {!isAuthenticated ?
+                {!isAuthenticated ? (
                   <div className="border border-dashed border-gray-250 rounded-xl p-6 text-center">
                     <p className="text-sm text-gray-500 mb-4">
                       Please log in to submit support tickets.
@@ -994,7 +1156,8 @@ export default function HelpCenterPage() {
                       Login to Support
                     </Link>
                   </div>
-                : <form onSubmit={handleSubmitTicket} className="space-y-4">
+                ) : (
+                  <form onSubmit={handleSubmitTicket} className="space-y-4">
                     {formState.errorMsg && (
                       <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 text-red-655 text-xs">
                         <AlertCircle className="w-4.5 h-4.5 shrink-0 mt-0.5" />
@@ -1017,7 +1180,7 @@ export default function HelpCenterPage() {
                         value={formState.category}
                         onChange={(e) =>
                           dispatch({
-                            type: "SET",
+                            type: FormActionType.SET,
                             key: "category",
                             value: e.target.value,
                           })
@@ -1041,23 +1204,24 @@ export default function HelpCenterPage() {
                         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                           Link Order Item (Optional)
                         </label>
-                        {dataState.loadingOrders ?
+                        {dataState.loadingOrders ? (
                           <div className="flex items-center gap-2 px-3 py-2 border rounded-xl bg-gray-50">
                             <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
                             <span className="text-xs text-gray-400">
                               Loading order history...
                             </span>
                           </div>
-                        : dataState.orderItems.length === 0 ?
+                        ) : dataState.orderItems.length === 0 ? (
                           <div className="text-xs text-gray-400 p-3 border rounded-xl bg-gray-50">
                             No recent purchases found to link.
                           </div>
-                        : <select
+                        ) : (
+                          <select
                             value={formState.linkedOrderItemId}
                             onChange={(e) => {
                               const itemId = e.target.value;
                               dispatch({
-                                type: "SET",
+                                type: FormActionType.SET,
                                 key: "linkedOrderItemId",
                                 value: itemId,
                               });
@@ -1065,7 +1229,7 @@ export default function HelpCenterPage() {
                                 (item) => item.id === itemId,
                               );
                               dispatch({
-                                type: "SET",
+                                type: FormActionType.SET,
                                 key: "linkedOrderId",
                                 value: selectedItem?.order?.id || "",
                               });
@@ -1081,7 +1245,7 @@ export default function HelpCenterPage() {
                               </option>
                             ))}
                           </select>
-                        }
+                        )}
                       </div>
                     )}
 
@@ -1094,7 +1258,7 @@ export default function HelpCenterPage() {
                         value={formState.subject}
                         onChange={(e) =>
                           dispatch({
-                            type: "SET",
+                            type: FormActionType.SET,
                             key: "subject",
                             value: e.target.value,
                           })
@@ -1113,7 +1277,7 @@ export default function HelpCenterPage() {
                         value={formState.message}
                         onChange={(e) =>
                           dispatch({
-                            type: "SET",
+                            type: FormActionType.SET,
                             key: "message",
                             value: e.target.value,
                           })
@@ -1139,21 +1303,22 @@ export default function HelpCenterPage() {
                           disabled={formState.uploadingFile}
                         />
 
-                        {!formState.attachmentUrl ?
+                        {!formState.attachmentUrl ? (
                           <label
                             htmlFor="ticket-file-input"
                             className={`cursor-pointer px-4 py-2.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 transition-colors flex items-center gap-2 ${
-                              formState.uploadingFile ?
-                                "opacity-50 pointer-events-none"
-                              : ""
+                              formState.uploadingFile
+                                ? "opacity-50 pointer-events-none"
+                                : ""
                             }`}
                           >
                             <Upload size={14} />
-                            {formState.uploadingFile ?
-                              "Uploading..."
-                            : "Upload Screenshot"}
+                            {formState.uploadingFile
+                              ? "Uploading..."
+                              : "Upload Screenshot"}
                           </label>
-                        : <div className="flex items-center gap-2 bg-blue-50 border border-blue-150 px-3 py-1.5 rounded-xl text-xs font-semibold text-blue-700">
+                        ) : (
+                          <div className="flex items-center gap-2 bg-blue-50 border border-blue-150 px-3 py-1.5 rounded-xl text-xs font-semibold text-blue-700">
                             <span className="truncate max-w-[150px]">
                               {formState.selectedFile?.name || "attachment.png"}
                             </span>
@@ -1165,7 +1330,7 @@ export default function HelpCenterPage() {
                               <X size={14} />
                             </button>
                           </div>
-                        }
+                        )}
 
                         {formState.uploadingFile && (
                           <Loader2 className="w-4.5 h-4.5 text-blue-600 animate-spin" />
@@ -1186,7 +1351,7 @@ export default function HelpCenterPage() {
                       Submit Ticket
                     </button>
                   </form>
-                }
+                )}
 
                 <div className="mt-6 pt-6 border-t border-gray-100 flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
@@ -1213,7 +1378,7 @@ export default function HelpCenterPage() {
               Your Support Tickets
             </h2>
 
-            {!isAuthenticated ?
+            {!isAuthenticated ? (
               <div className="text-center py-12">
                 <Headphones className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-800 font-bold mb-1">
@@ -1230,12 +1395,12 @@ export default function HelpCenterPage() {
                   Sign In
                 </Link>
               </div>
-            : dataState.loadingTickets ?
+            ) : dataState.loadingTickets ? (
               <div className="text-center py-16 flex flex-col items-center justify-center">
                 <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
                 <p className="text-sm text-gray-500">Loading tickets...</p>
               </div>
-            : dataState.tickets.length === 0 ?
+            ) : dataState.tickets.length === 0 ? (
               <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl">
                 <Headphones className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-805 font-bold mb-1">
@@ -1247,14 +1412,19 @@ export default function HelpCenterPage() {
                 </p>
                 <button
                   onClick={() =>
-                    uiDispatch({ type: "SET", key: "activeTab", value: "faq" })
+                    uiDispatch({
+                      type: UIActionType.SET,
+                      key: "activeTab",
+                      value: "faq",
+                    })
                   }
                   className="bg-blue-50 text-blue-650 hover:bg-blue-100 font-bold px-5 py-2.5 rounded-xl text-xs transition-colors"
                 >
                   Create Ticket
                 </button>
               </div>
-            : <div className="space-y-4">
+            ) : (
+              <div className="space-y-4">
                 {dataState.tickets.map((ticket) => {
                   const isExpanded = uiState.expandedTicketId === ticket.id;
                   return (
@@ -1266,7 +1436,7 @@ export default function HelpCenterPage() {
                       <div
                         onClick={() =>
                           uiDispatch({
-                            type: "SET",
+                            type: UIActionType.SET,
                             key: "expandedTicketId",
                             value: isExpanded ? null : ticket.id,
                           })
@@ -1319,6 +1489,7 @@ export default function HelpCenterPage() {
                                     size={14}
                                     className="text-gray-400"
                                   />
+
                                   <span>
                                     Linked Order ID: #
                                     {ticket.order_id.slice(0, 8)}
@@ -1338,6 +1509,7 @@ export default function HelpCenterPage() {
                                     size={14}
                                     className="text-gray-400"
                                   />
+
                                   <span>Attachment Preview:</span>
                                   <a
                                     href={ticket.attachment_url}
@@ -1375,7 +1547,7 @@ export default function HelpCenterPage() {
                   );
                 })}
               </div>
-            }
+            )}
           </div>
         )}
 
@@ -1386,7 +1558,7 @@ export default function HelpCenterPage() {
               Returns & Replacements Status Tracker
             </h2>
 
-            {!isAuthenticated ?
+            {!isAuthenticated ? (
               <div className="text-center py-12">
                 <PackageSearch className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-808 font-bold mb-1">
@@ -1403,14 +1575,14 @@ export default function HelpCenterPage() {
                   Sign In
                 </Link>
               </div>
-            : dataState.loadingReturns ?
+            ) : dataState.loadingReturns ? (
               <div className="text-center py-16 flex flex-col items-center justify-center">
                 <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
                 <p className="text-sm text-gray-500">
                   Loading returns history...
                 </p>
               </div>
-            : dataState.returnsList.length === 0 ?
+            ) : dataState.returnsList.length === 0 ? (
               <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl">
                 <PackageSearch className="w-12 h-12 text-gray-450 mx-auto mb-4" />
                 <p className="text-gray-805 font-bold mb-1">
@@ -1427,12 +1599,15 @@ export default function HelpCenterPage() {
                   Go to Orders
                 </Link>
               </div>
-            : <div className="space-y-8">
+            ) : (
+              <div className="space-y-8">
                 {dataState.returnsList.map((returnReq) => {
                   const typeLabel =
-                    returnReq.type === "return" ? "Return Request"
-                    : returnReq.type === "replacement" ? "Replacement Request"
-                    : "Refund Request";
+                    returnReq.type === "return"
+                      ? "Return Request"
+                      : returnReq.type === "replacement"
+                        ? "Replacement Request"
+                        : "Refund Request";
                   const variant = returnReq.orderItem?.variant;
                   const primaryImage = variant?.images?.[0]?.image_url;
 
@@ -1489,7 +1664,10 @@ export default function HelpCenterPage() {
                       {renderReturnTimeline(returnReq)}
 
                       {/* Tracking / Shipping Labels Section */}
-                      {(returnReq.return_label_url || returnReq.outbound_tracking_number || returnReq.return_tracking_number || returnReq.tracking_id) && (
+                      {(returnReq.return_label_url ||
+                        returnReq.outbound_tracking_number ||
+                        returnReq.return_tracking_number ||
+                        returnReq.tracking_id) && (
                         <div className="mt-6 p-4 bg-blue-50/50 border border-blue-100 rounded-2xl space-y-3">
                           <h5 className="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
                             <LinkIcon className="w-3.5 h-3.5" />
@@ -1498,25 +1676,39 @@ export default function HelpCenterPage() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             {returnReq.outbound_tracking_number && (
                               <div>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">Outbound Tracking #</span>
-                                <span className="font-semibold text-gray-800">{returnReq.outbound_tracking_number}</span>
+                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">
+                                  Outbound Tracking #
+                                </span>
+                                <span className="font-semibold text-gray-800">
+                                  {returnReq.outbound_tracking_number}
+                                </span>
                               </div>
                             )}
                             {returnReq.return_tracking_number && (
                               <div>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">Return Tracking #</span>
-                                <span className="font-semibold text-gray-805">{returnReq.return_tracking_number}</span>
+                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">
+                                  Return Tracking #
+                                </span>
+                                <span className="font-semibold text-gray-805">
+                                  {returnReq.return_tracking_number}
+                                </span>
                               </div>
                             )}
                             {returnReq.tracking_id && (
                               <div>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">Carrier Tracking Ref</span>
-                                <span className="font-semibold text-gray-805">{returnReq.tracking_id}</span>
+                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">
+                                  Carrier Tracking Ref
+                                </span>
+                                <span className="font-semibold text-gray-805">
+                                  {returnReq.tracking_id}
+                                </span>
                               </div>
                             )}
                             {returnReq.return_label_url && (
                               <div>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">Return Shipping Label</span>
+                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">
+                                  Return Shipping Label
+                                </span>
                                 <a
                                   href={returnReq.return_label_url}
                                   target="_blank"
@@ -1534,7 +1726,7 @@ export default function HelpCenterPage() {
                   );
                 })}
               </div>
-            }
+            )}
           </div>
         )}
       </div>

@@ -25,6 +25,7 @@ import AxiosAPI from "@/lib/axios";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { logOut } from "@/lib/features/auth/authSlice";
 import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 
 // Dummy Session Data
 const activeSessions = [
@@ -78,7 +79,6 @@ export default function SecuritySettingsPage() {
   // --- Actions ---
 
   const handleDeactivateClick = () => {
-    console.log("deactivate");
     setConfirmModalConfig({
       title: "Deactivate Account?",
       message:
@@ -88,7 +88,7 @@ export default function SecuritySettingsPage() {
       onConfirm: async () => {
         setIsProcessing(true);
         const res = await AxiosAPI.post(`/v1/users/${user?.id}/deactivate`);
-        console.log(res.data, "API RESPONSE");
+
         setIsProcessing(false);
         setIsConfirmModalOpen(false);
 
@@ -113,14 +113,13 @@ export default function SecuritySettingsPage() {
         router.push("/");
         setIsOtpModalOpen(false);
       } else {
-        alert("Invalid OTP");
+        toast.error("Invalid OTP");
         setTimeout(() => {
           setIsOtpModalOpen(false);
         }, 2000);
       }
     } catch (error) {
-      console.error("Invalid OTP", error);
-      alert("Invalid OTP");
+      toast.error("Invalid OTP");
       setTimeout(() => {
         setIsOtpModalOpen(false);
       }, 2000);
@@ -154,6 +153,7 @@ export default function SecuritySettingsPage() {
 
   return (
     <div className="w-full max-w-4xl mx-auto pb-12">
+      <Toaster />
       <div className="flex items-start gap-3 my-4 sm:hidden shrink-0">
         <button
           onClick={() => router.back()}
@@ -176,7 +176,6 @@ export default function SecuritySettingsPage() {
           Manage your password, active sessions, and secure your account.
         </p>
       </div>
-
       {/* --- SECTION 1: Password Management --- */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
         <div className="p-6 border-b border-gray-100 flex items-center gap-3 justify-between">
@@ -198,7 +197,6 @@ export default function SecuritySettingsPage() {
           </Link>
         </div>
       </div>
-
       {/* --- SECTION 2: Two-Factor Authentication --- */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
         <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -243,7 +241,6 @@ export default function SecuritySettingsPage() {
           </div>
         )}
       </div>
-
       {/* --- SECTION 3: Active Sessions (Login History) --- */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -307,7 +304,6 @@ export default function SecuritySettingsPage() {
           </button>
         </div>
       </div>
-
       {/* --- SECTION 4: Danger Zone --- */}
       <div className="bg-white rounded-2xl border border-red-200 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-red-100 bg-red-50/30">
@@ -356,7 +352,6 @@ export default function SecuritySettingsPage() {
           </button>
         </div>
       </div>
-
       <ConfirmationModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
@@ -367,7 +362,6 @@ export default function SecuritySettingsPage() {
         confirmText={confirmModalConfig.confirmText}
         isLoading={isProcessing}
       />
-
       {/* Phase 2: OTP Entry Modal */}
       <OtpVerificationModal
         isOpen={isOtpModalOpen}

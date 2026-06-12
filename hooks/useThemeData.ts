@@ -111,7 +111,6 @@ export function useThemeData() {
         cacheData(THEME_CACHE_KEY, merged);
       }
     } catch (err) {
-      console.warn("Using default theme layout configurations");
     } finally {
       setIsLoading(false);
     }

@@ -72,9 +72,7 @@ export default async function ShopLayout({
         };
       }
     }
-  } catch (err) {
-    console.error("Failed to pre-fetch storefront theme on server:", err);
-  }
+  } catch (err) {}
 
   return (
     <ThemeProvider theme={themeData}>

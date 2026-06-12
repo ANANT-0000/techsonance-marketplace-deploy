@@ -1,51 +1,59 @@
 // hooks/useAnalyticsDownload.ts
-import { useState, useCallback } from 'react';
-import AxiosAPI from '@/lib/axios';
-import { renderPdfInIframe } from '@/lib/renderPdf'; // Adjust path as needed
+import { useState, useCallback } from "react";
+import AxiosAPI from "@/lib/axios";
+import { renderPdfInIframe } from "@/lib/renderPdf"; // Adjust path as needed
 
 // ── Formatter Helpers ──
 function fmtINR(v: number) {
-    return '₹' + Math.round(v).toLocaleString('en-IN');
+  return "₹" + Math.round(v).toLocaleString("en-IN");
 }
 
 function fmtDate(iso: string) {
-    if (!iso) return '';
-    return new Date(iso).toLocaleDateString('en-IN', {
-        day: '2-digit', month: 'short', year: 'numeric',
-    });
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 const safe = (obj: unknown) =>
-    JSON.stringify(obj).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+  JSON.stringify(obj).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
 
 // ── Build Analytics HTML string ──
 function buildAnalyticsHtml(payload: any): string {
-    const {
-        meta,
-        summary,
-        monthlyTrend,
-        dailyRevenue,
-        topProducts,
-        categoryBreakdown,
-        orderStatusBreakdown,
-        topPromotions,
-    } = payload;
+  const {
+    meta,
+    summary,
+    monthlyTrend,
+    dailyRevenue,
+    topProducts,
+    categoryBreakdown,
+    orderStatusBreakdown,
+    topPromotions,
+  } = payload;
 
-    const STATUS_COLORS: Record<string, string> = {
-        delivered: '#10b981',
-        processing: '#3b82f6',
-        pending: '#f59e0b',
-        shipped: '#8b5cf6',
-        cancelled: '#ef4444',
-        returned: '#6b7280',
-    };
+  const STATUS_COLORS: Record<string, string> = {
+    delivered: "#10b981",
+    processing: "#3b82f6",
+    pending: "#f59e0b",
+    shipped: "#8b5cf6",
+    cancelled: "#ef4444",
+    returned: "#6b7280",
+  };
 
-    const CAT_PALETTE = [
-        '#3b82f6', '#10b981', '#8b5cf6', '#f59e0b',
-        '#ef4444', '#06b6d4', '#ec4899', '#84cc16',
-    ];
+  const CAT_PALETTE = [
+    "#3b82f6",
+    "#10b981",
+    "#8b5cf6",
+    "#f59e0b",
+    "#ef4444",
+    "#06b6d4",
+    "#ec4899",
+    "#84cc16",
+  ];
 
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -154,37 +162,55 @@ function buildAnalyticsHtml(payload: any): string {
   <div class="row col-equal">
     <div class="card">
       <div class="card-title" style="color:#f59e0b">Top Promotions Performance</div>
-      ${topPromotions.length > 0 ? `
+      ${
+        topPromotions.length > 0
+          ? `
       <table>
         <thead><tr><th>Promotion</th><th>Type</th><th>Used</th><th>Discount Given</th><th>Status</th></tr></thead>
-        <tbody>${topPromotions.map((p: any) => `
+        <tbody>${topPromotions
+          .map(
+            (p: any) => `
           <tr>
             <td style="font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.name}">${p.name}</td>
-            <td>${(p.promotionType || '').replace(/_/g, ' ')}</td>
+            <td>${(p.promotionType || "").replace(/_/g, " ")}</td>
             <td style="text-align:center">${p.timesUsed}</td>
             <td style="color:#ef4444;font-weight:600">${fmtINR(Number(p.totalDiscount))}</td>
-            <td><span class="badge ${p.status === 'ACTIVE' ? 'active' : p.status === 'EXPIRED' ? 'expired' : 'draft'}">${p.status}</span></td>
-          </tr>`).join('')}
+            <td><span class="badge ${p.status === "ACTIVE" ? "active" : p.status === "EXPIRED" ? "expired" : "draft"}">${p.status}</span></td>
+          </tr>`,
+          )
+          .join("")}
         </tbody>
-      </table>` : '<div style="padding:20px;text-align:center;color:#94a3b8">No promotions used in this period.</div>'}
+      </table>`
+          : '<div style="padding:20px;text-align:center;color:#94a3b8">No promotions used in this period.</div>'
+      }
     </div>
     <div class="card">
       <div class="card-title" style="color:#8b5cf6">Category Sales Details</div>
-      ${categoryBreakdown.length > 0 ? `
+      ${
+        categoryBreakdown.length > 0
+          ? `
       <table>
         <thead><tr><th>Category</th><th>Revenue</th><th>Units</th><th>Share</th></tr></thead>
-        <tbody>${categoryBreakdown.map((c: any, i: number) => {
-        const total = categoryBreakdown.reduce((a: number, x: any) => a + x.revenue, 0);
-        const share = total > 0 ? ((c.revenue / total) * 100).toFixed(1) : '0';
-        return `<tr>
+        <tbody>${categoryBreakdown
+          .map((c: any, i: number) => {
+            const total = categoryBreakdown.reduce(
+              (a: number, x: any) => a + x.revenue,
+              0,
+            );
+            const share =
+              total > 0 ? ((c.revenue / total) * 100).toFixed(1) : "0";
+            return `<tr>
             <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${CAT_PALETTE[i % CAT_PALETTE.length]};margin-right:6px"></span>${c.name}</td>
             <td style="font-weight:600">${fmtINR(c.revenue)}</td>
             <td>${c.unitsSold}</td>
             <td style="color:#64748b">${share}%</td>
           </tr>`;
-    }).join('')}
+          })
+          .join("")}
         </tbody>
-      </table>` : '<div style="padding:20px;text-align:center;color:#94a3b8">No category data.</div>'}
+      </table>`
+          : '<div style="padding:20px;text-align:center;color:#94a3b8">No category data.</div>'
+      }
     </div>
   </div>
 
@@ -192,21 +218,25 @@ function buildAnalyticsHtml(payload: any): string {
     <div class="card-title" style="color:#06b6d4">Product Performance Details</div>
     <table>
       <thead><tr><th>#</th><th>Product Name</th><th>SKU</th><th>Units Sold</th><th>Revenue</th><th>Avg. Price</th></tr></thead>
-      <tbody>${topProducts.map((p: any, i: number) => `
+      <tbody>${topProducts
+        .map(
+          (p: any, i: number) => `
         <tr>
           <td style="color:#94a3b8;font-weight:600">#${i + 1}</td>
-          <td style="font-weight:600">${p.name || 'N/A'}</td>
+          <td style="font-weight:600">${p.name || "N/A"}</td>
           <td style="font-family:monospace;color:#64748b">${p.sku}</td>
           <td>${p.unitsSold}</td>
           <td style="font-weight:600;color:#10b981">${fmtINR(p.revenue)}</td>
-          <td style="color:#64748b">${p.unitsSold > 0 ? fmtINR(p.revenue / p.unitsSold) : '—'}</td>
-        </tr>`).join('')}
+          <td style="color:#64748b">${p.unitsSold > 0 ? fmtINR(p.revenue / p.unitsSold) : "—"}</td>
+        </tr>`,
+        )
+        .join("")}
       </tbody>
     </table>
   </div>
 
   <div class="footer">
-    Techsonance Marketplace — Confidential Analytics Report &nbsp;·&nbsp; Generated ${new Date(meta.generatedAt).toLocaleString('en-IN')}
+    Techsonance Marketplace — Confidential Analytics Report &nbsp;·&nbsp; Generated ${new Date(meta.generatedAt).toLocaleString("en-IN")}
   </div>
 </div>
 
@@ -306,50 +336,47 @@ new Chart(document.getElementById('statusChart'), {
 // ── The Hook ──
 
 export function useAnalyticsDownload() {
-    const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-    const downloadAnalyticsPdf = useCallback(async (
-        token: string | null,
-        startDate?: Date,
-        endDate?: Date
-    ) => {
-        setIsGenerating(true);
-        try {
-            const params: Record<string, string> = {};
-            if (startDate) params.startDate = startDate.toISOString();
-            if (endDate) params.endDate = endDate.toISOString();
+  const downloadAnalyticsPdf = useCallback(
+    async (token: string | null, startDate?: Date, endDate?: Date) => {
+      setIsGenerating(true);
+      try {
+        const params: Record<string, string> = {};
+        if (startDate) params.startDate = startDate.toISOString();
+        if (endDate) params.endDate = endDate.toISOString();
 
-            if (!token) {
-                throw new Error('No token provided');
-            }
-            const res = await AxiosAPI.get('/v1/vendors/analytics/pdf-data', {
-                headers: { Authorization: `Bearer ${token}` },
-                params,
-            });
-
-            if (res.status !== 200) {
-                throw new Error(`HTTP ${res.status}`);
-            }
-
-            const payload = res.data.data;
-
-            // Build HTML string
-            const html = buildAnalyticsHtml(payload);
-
-            // Dynamic filename based on date
-            const timestamp = new Date().toISOString().split('T')[0];
-            const filename = `analytics-report-${timestamp}.pdf`;
-
-            // Render to PDF silently in the background
-            await renderPdfInIframe(html, filename);
-
-        } catch (err) {
-            console.error('[useAnalyticsDownload] Failed:', err);
-            throw err;
-        } finally {
-            setIsGenerating(false);
+        if (!token) {
+          throw new Error("No token provided");
         }
-    }, []);
+        const res = await AxiosAPI.get("/v1/vendors/analytics/pdf-data", {
+          headers: { Authorization: `Bearer ${token}` },
+          params,
+        });
 
-    return { downloadAnalyticsPdf, isGenerating };
+        if (res.status !== 200) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const payload = res.data.data;
+
+        // Build HTML string
+        const html = buildAnalyticsHtml(payload);
+
+        // Dynamic filename based on date
+        const timestamp = new Date().toISOString().split("T")[0];
+        const filename = `analytics-report-${timestamp}.pdf`;
+
+        // Render to PDF silently in the background
+        await renderPdfInIframe(html, filename);
+      } catch (err) {
+        throw err;
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [],
+  );
+
+  return { downloadAnalyticsPdf, isGenerating };
 }

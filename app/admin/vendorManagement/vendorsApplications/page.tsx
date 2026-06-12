@@ -14,6 +14,7 @@ import { formatStructure, formatDate } from "@/lib/utils";
 import { DocumentsSection } from "@/components/admin/DocumentSection";
 import { authToken } from "@/utils/authToken";
 import { redirect } from "next/navigation";
+import toast from "react-hot-toast";
 
 /* ── Main Page ── */
 export default function VendorsApplicationsPage() {
@@ -31,7 +32,7 @@ export default function VendorsApplicationsPage() {
         setVendorApplications(applications.data);
       })
       .catch((error) => {
-        console.error("Error fetching vendor applications:", error);
+        toast.error("Error fetching vendor applications");
       });
   }, [vendorApplications.length]);
   const onApprove = async (vendorId: string) => {
@@ -52,7 +53,7 @@ export default function VendorsApplicationsPage() {
         ),
       );
     } catch (error) {
-      console.error("Error approving vendor:", error);
+      toast.error("Error approving vendor");
     }
   };
   const onReject = async (vendorId: string) => {
@@ -73,7 +74,7 @@ export default function VendorsApplicationsPage() {
         ),
       );
     } catch (error) {
-      console.error("Error rejecting vendor:", error);
+      toast.error("Error rejecting vendor");
     }
   };
   return (

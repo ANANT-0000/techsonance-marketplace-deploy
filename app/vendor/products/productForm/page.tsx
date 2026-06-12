@@ -19,9 +19,7 @@ const getWarehouseOptions = async (token: string, setWarehouseOptions: any) => {
         res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name })),
       );
     })
-    .catch((error) => {
-      console.error("Error fetching warehouse options:", error);
-    });
+    .catch((error) => {});
 };
 const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
   await fetchVendorsProductsCategory(token)
@@ -30,9 +28,7 @@ const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
         res.data.map((c: any) => ({ value: c.id, label: c.name })),
       );
     })
-    .catch((error) => {
-      console.error("Error fetching category options:", error);
-    });
+    .catch((error) => {});
 };
 
 const getTaxSlabsOptions = async (token: string, setTaxSlabsOptions: any) => {
@@ -45,9 +41,7 @@ const getTaxSlabsOptions = async (token: string, setTaxSlabsOptions: any) => {
         })),
       );
     })
-    .catch((error) => {
-      console.error("Error fetching tax rates options:", error);
-    });
+    .catch((error) => {});
 };
 export default function ProductFormPage() {
   const { user } = useAppSelector((state) => state.auth);

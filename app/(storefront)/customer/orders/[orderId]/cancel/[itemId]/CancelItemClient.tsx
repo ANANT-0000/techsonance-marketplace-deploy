@@ -21,8 +21,26 @@ const CANCEL_REASONS = [
   "Other",
 ];
 
+export enum CancelItemActionType {
+  SET_ITEM = 'SET_ITEM',
+  SET_REASON = 'SET_REASON',
+  SET_COMMENTS = 'SET_COMMENTS',
+  SET_SUBMITTING = 'SET_SUBMITTING',
+  SET_ERROR = 'SET_ERROR',
+}
+
+export interface CancelItemPayload {
+  quantity: number;
+  price: string | number;
+  variant: {
+      variant_name: string;
+      images: { image_url: string }[];
+  };
+  [key: string]: any;
+}
+
 interface State {
-  itemToCancel: any;
+  itemToCancel: CancelItemPayload | null;
   selectedReason: string;
   additionalComments: string;
   isSubmitting: boolean;
@@ -30,23 +48,23 @@ interface State {
 }
 
 type Action =
-  | { type: "SET_ITEM"; payload: any }
-  | { type: "SET_REASON"; payload: string }
-  | { type: "SET_COMMENTS"; payload: string }
-  | { type: "SET_SUBMITTING"; payload: boolean }
-  | { type: "SET_ERROR"; payload: string };
+  | { type: CancelItemActionType.SET_ITEM; payload: CancelItemPayload | null }
+  | { type: CancelItemActionType.SET_REASON; payload: string }
+  | { type: CancelItemActionType.SET_COMMENTS; payload: string }
+  | { type: CancelItemActionType.SET_SUBMITTING; payload: boolean }
+  | { type: CancelItemActionType.SET_ERROR; payload: string };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case "SET_ITEM":
+    case CancelItemActionType.SET_ITEM:
       return { ...state, itemToCancel: action.payload };
-    case "SET_REASON":
+    case CancelItemActionType.SET_REASON:
       return { ...state, selectedReason: action.payload, error: "" };
-    case "SET_COMMENTS":
+    case CancelItemActionType.SET_COMMENTS:
       return { ...state, additionalComments: action.payload };
-    case "SET_SUBMITTING":
+    case CancelItemActionType.SET_SUBMITTING:
       return { ...state, isSubmitting: action.payload };
-    case "SET_ERROR":
+    case CancelItemActionType.SET_ERROR:
       return { ...state, error: action.payload, isSubmitting: false };
     default:
       return state;
@@ -74,7 +92,7 @@ export default function CancelItemClient() {
     const getOrder = async () => {
       const res = await fetchOrderItemDetails(itemId, token);
       if (res?.data) {
-        dispatch({ type: "SET_ITEM", payload: res.data });
+        dispatch({ type: CancelItemActionType.SET_ITEM, payload: res.data });
       }
     };
     getOrder();
@@ -84,17 +102,17 @@ export default function CancelItemClient() {
     e.preventDefault();
     if (!state.selectedReason) {
       dispatch({
-        type: "SET_ERROR",
+        type: CancelItemActionType.SET_ERROR,
         payload: "Please select a cancellation reason.",
       });
       return;
     }
-    dispatch({ type: "SET_SUBMITTING", payload: true });
+    dispatch({ type: CancelItemActionType.SET_SUBMITTING, payload: true });
 
     try {
       const fullReason = `${state.selectedReason} - ${state.additionalComments}`;
       if (!userId || !itemId || !token) {
-        dispatch({ type: "SET_ERROR", payload: "User not found." });
+        dispatch({ type: CancelItemActionType.SET_ERROR, payload: "User not found." });
         return;
       }
 
@@ -108,13 +126,13 @@ export default function CancelItemClient() {
         router.back();
       } else {
         dispatch({
-          type: "SET_ERROR",
+          type: CancelItemActionType.SET_ERROR,
           payload: "Failed to cancel item. Please try again.",
         });
       }
     } catch (err) {
       dispatch({
-        type: "SET_ERROR",
+        type: CancelItemActionType.SET_ERROR,
         payload: "An error occurred. Please contact support.",
       });
     }
@@ -226,7 +244,7 @@ export default function CancelItemClient() {
                         checked={isSelected}
                         onChange={(e) =>
                           dispatch({
-                            type: "SET_REASON",
+                            type: CancelItemActionType.SET_REASON,
                             payload: e.target.value,
                           })
                         }
@@ -260,7 +278,7 @@ export default function CancelItemClient() {
               rows={3}
               value={state.additionalComments}
               onChange={(e) =>
-                dispatch({ type: "SET_COMMENTS", payload: e.target.value })
+                dispatch({ type: CancelItemActionType.SET_COMMENTS, payload: e.target.value })
               }
               placeholder="Tell us more about why you are cancelling..."
               className="w-full p-4 text-sm sm:text-base bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none resize-none transition-all placeholder:text-gray-400 font-medium"

@@ -49,7 +49,6 @@ export function useStoreFrontCmsData() {
         cacheData(`${STOREFRONT_CACHE_KEY}_${currentLang}`, parsed);
       }
     } catch (err) {
-      console.warn("Using default static storefront promotions");
     } finally {
       setIsLoading(false);
     }

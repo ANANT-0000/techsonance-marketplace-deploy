@@ -98,7 +98,6 @@ export default function PolicyFormPage() {
   }, [editId, token, reset]);
   const onError = (formErrors: any) => {};
   const onSubmit = async (data: PolicyFormSchemaType) => {
-    console.log("submitting");
     setGlobalError(null);
     try {
       const result = editId
@@ -159,6 +158,7 @@ export default function PolicyFormPage() {
                   className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                   {...register("policy_name")}
                 />
+
                 {errors.policy_name && (
                   <p className="text-xs text-red-500">
                     {errors.policy_name.message}
@@ -202,6 +202,7 @@ export default function PolicyFormPage() {
                     className="border border-gray-300 rounded-lg px-4 py-2"
                     {...register("duration_value", { valueAsNumber: true })}
                   />
+
                   {errors.duration_value && (
                     <p className="text-xs text-red-500">
                       {errors.duration_value.message}
@@ -278,6 +279,7 @@ export default function PolicyFormPage() {
                   className="border border-gray-300 rounded-lg px-4 py-2"
                   {...register("claim_contact_email")}
                 />
+
                 {errors.claim_contact_email && (
                   <p className="text-xs text-red-500">
                     {errors.claim_contact_email.message}
@@ -294,6 +296,7 @@ export default function PolicyFormPage() {
                   className="border border-gray-300 rounded-lg px-4 py-2"
                   {...register("claim_contact_phone")}
                 />
+
                 {errors.claim_contact_phone && (
                   <p className="text-xs text-red-500">
                     {errors.claim_contact_phone.message}
@@ -311,6 +314,7 @@ export default function PolicyFormPage() {
                 className="w-5 h-5 accent-blue-600"
                 {...register("generates_document")}
               />
+
               <span className="text-sm font-medium text-gray-700">
                 Generates Warranty PDF/Document
               </span>
@@ -321,6 +325,7 @@ export default function PolicyFormPage() {
                 className="w-5 h-5 accent-blue-600"
                 {...register("is_active")}
               />
+
               <span className="text-sm font-medium text-gray-700">
                 Policy is Active
               </span>

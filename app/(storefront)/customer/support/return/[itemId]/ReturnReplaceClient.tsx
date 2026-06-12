@@ -31,8 +31,29 @@ export enum ReturnReplaceTypeEnum {
     REPLACEMENT = "replacement"
 }
 
+export enum ReturnReplaceActionType {
+  SET_TARGET_ITEM = 'SET_TARGET_ITEM',
+  SET_REQUEST_TYPE = 'SET_REQUEST_TYPE',
+  SET_REASON = 'SET_REASON',
+  SET_COMMENTS = 'SET_COMMENTS',
+  ADD_FILES = 'ADD_FILES',
+  REMOVE_FILE = 'REMOVE_FILE',
+  SET_SUBMITTING = 'SET_SUBMITTING',
+  SET_ERROR = 'SET_ERROR',
+}
+
+export interface ReturnItemPayload {
+  quantity: number;
+  price: string | number;
+  variant: {
+      variant_name: string;
+      images: { image_url: string }[];
+  };
+  [key: string]: any;
+}
+
 interface State {
-    targetItem: any;
+    targetItem: ReturnItemPayload | null;
     requestType: ReturnReplaceTypeEnum;
     selectedReason: string;
     comments: string;
@@ -43,33 +64,33 @@ interface State {
 }
 
 type Action =
-    | { type: "SET_TARGET_ITEM"; payload: any }
-    | { type: "SET_REQUEST_TYPE"; payload: ReturnReplaceTypeEnum }
-    | { type: "SET_REASON"; payload: string }
-    | { type: "SET_COMMENTS"; payload: string }
-    | { type: "ADD_FILES"; payload: { files: File[]; urls: string[] } }
-    | { type: "REMOVE_FILE"; payload: number }
-    | { type: "SET_SUBMITTING"; payload: boolean }
-    | { type: "SET_ERROR"; payload: string };
+    | { type: ReturnReplaceActionType.SET_TARGET_ITEM; payload: ReturnItemPayload | null }
+    | { type: ReturnReplaceActionType.SET_REQUEST_TYPE; payload: ReturnReplaceTypeEnum }
+    | { type: ReturnReplaceActionType.SET_REASON; payload: string }
+    | { type: ReturnReplaceActionType.SET_COMMENTS; payload: string }
+    | { type: ReturnReplaceActionType.ADD_FILES; payload: { files: File[]; urls: string[] } }
+    | { type: ReturnReplaceActionType.REMOVE_FILE; payload: number }
+    | { type: ReturnReplaceActionType.SET_SUBMITTING; payload: boolean }
+    | { type: ReturnReplaceActionType.SET_ERROR; payload: string };
 
 function reducer(state: State, action: Action): State {
     switch (action.type) {
-        case "SET_TARGET_ITEM": return { ...state, targetItem: action.payload };
-        case "SET_REQUEST_TYPE": return { ...state, requestType: action.payload };
-        case "SET_REASON": return { ...state, selectedReason: action.payload };
-        case "SET_COMMENTS": return { ...state, comments: action.payload };
-        case "ADD_FILES": return {
+        case ReturnReplaceActionType.SET_TARGET_ITEM: return { ...state, targetItem: action.payload };
+        case ReturnReplaceActionType.SET_REQUEST_TYPE: return { ...state, requestType: action.payload };
+        case ReturnReplaceActionType.SET_REASON: return { ...state, selectedReason: action.payload };
+        case ReturnReplaceActionType.SET_COMMENTS: return { ...state, comments: action.payload };
+        case ReturnReplaceActionType.ADD_FILES: return {
             ...state,
             proofFiles: action.payload.files,
             previewUrls: action.payload.urls
         };
-        case "REMOVE_FILE": return {
+        case ReturnReplaceActionType.REMOVE_FILE: return {
             ...state,
             proofFiles: state.proofFiles.filter((_, i) => i !== action.payload),
             previewUrls: state.previewUrls.filter((_, i) => i !== action.payload)
         };
-        case "SET_SUBMITTING": return { ...state, isSubmitting: action.payload };
-        case "SET_ERROR": return { ...state, error: action.payload };
+        case ReturnReplaceActionType.SET_SUBMITTING: return { ...state, isSubmitting: action.payload };
+        case ReturnReplaceActionType.SET_ERROR: return { ...state, error: action.payload };
         default: return state;
     }
 }
@@ -96,7 +117,7 @@ export default function ReturnReplaceClient() {
         const getOrder = async () => {
             const res = await fetchOrderItemDetails(itemId, token);
             if (res?.data) {
-                dispatch({ type: "SET_TARGET_ITEM", payload: res.data });
+                dispatch({ type: ReturnReplaceActionType.SET_TARGET_ITEM, payload: res.data });
             }
         };
         getOrder();
@@ -113,37 +134,37 @@ export default function ReturnReplaceClient() {
             const newFiles = Array.from(e.target.files);
             const combined = [...state.proofFiles, ...newFiles].slice(0, 3);
             const urls = combined.map((f) => URL.createObjectURL(f));
-            dispatch({ type: "ADD_FILES", payload: { files: combined, urls } });
+            dispatch({ type: ReturnReplaceActionType.ADD_FILES, payload: { files: combined, urls } });
         }
     };
 
     const removeFile = (indexToRemove: number) => {
         URL.revokeObjectURL(state.previewUrls[indexToRemove]);
-        dispatch({ type: "REMOVE_FILE", payload: indexToRemove });
+        dispatch({ type: ReturnReplaceActionType.REMOVE_FILE, payload: indexToRemove });
     };
 
     const isProofRequired = PROOF_REQUIRED_REASONS.includes(state.selectedReason);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch({ type: "SET_ERROR", payload: "" });
+        dispatch({ type: ReturnReplaceActionType.SET_ERROR, payload: "" });
 
         if (!state.selectedReason) {
-            dispatch({ type: "SET_ERROR", payload: "Please select a reason for the request." });
+            dispatch({ type: ReturnReplaceActionType.SET_ERROR, payload: "Please select a reason for the request." });
             return;
         }
 
         if (isProofRequired && state.proofFiles.length === 0) {
-            dispatch({ type: "SET_ERROR", payload: "Please upload at least one photo showing the defect/damage." });
+            dispatch({ type: ReturnReplaceActionType.SET_ERROR, payload: "Please upload at least one photo showing the defect/damage." });
             return;
         }
 
         if (!user?.id || !token) {
-            dispatch({ type: "SET_ERROR", payload: "User ID is required. Please log in and try again." });
+            dispatch({ type: ReturnReplaceActionType.SET_ERROR, payload: "User ID is required. Please log in and try again." });
             return;
         }
 
-        dispatch({ type: "SET_SUBMITTING", payload: true });
+        dispatch({ type: ReturnReplaceActionType.SET_SUBMITTING, payload: true });
         try {
             const formData = new FormData();
             formData.append("order_item_id", itemId);
@@ -159,14 +180,14 @@ export default function ReturnReplaceClient() {
                 );
                 setTimeout(() => router.back(), 1500);
             } else {
-                dispatch({ type: "SET_ERROR", payload: "Failed to submit request. Please try again." });
+                dispatch({ type: ReturnReplaceActionType.SET_ERROR, payload: "Failed to submit request. Please try again." });
             }
         } catch (err: any) {
             const message = err?.message || "An error occurred. Please try again.";
-            dispatch({ type: "SET_ERROR", payload: message });
+            dispatch({ type: ReturnReplaceActionType.SET_ERROR, payload: message });
             toast.error(message);
         } finally {
-            dispatch({ type: "SET_SUBMITTING", payload: false });
+            dispatch({ type: ReturnReplaceActionType.SET_SUBMITTING, payload: false });
         }
     };
 
@@ -232,7 +253,7 @@ export default function ReturnReplaceClient() {
                                 return (
                                     <div
                                         key={type}
-                                        onClick={() => dispatch({ type: "SET_REQUEST_TYPE", payload: type as ReturnReplaceTypeEnum })}
+                                        onClick={() => dispatch({ type: ReturnReplaceActionType.SET_REQUEST_TYPE, payload: type as ReturnReplaceTypeEnum })}
                                         className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 ${isSelected
                                             ? 'border-theme-primary/90 bg-white shadow-sm'
                                             : 'border-gray-200 hover:border-theme-primary/90 hover:bg-theme-primary/5'
@@ -270,7 +291,7 @@ export default function ReturnReplaceClient() {
                         <div className="relative">
                             <select
                                 value={state.selectedReason}
-                                onChange={(e) => dispatch({ type: "SET_REASON", payload: e.target.value })}
+                                onChange={(e) => dispatch({ type: ReturnReplaceActionType.SET_REASON, payload: e.target.value })}
                                 className="w-full text-sm sm:text-base px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-theme-primary/90 focus:border-theme-primary-foreground/90 outline-none transition-all appearance-none font-medium text-gray-700 cursor-pointer"
                             >
                                 <option value="" disabled>Select a reason...</option>
@@ -343,7 +364,7 @@ export default function ReturnReplaceClient() {
                         <textarea
                             rows={4}
                             value={state.comments}
-                            onChange={(e) => dispatch({ type: "SET_COMMENTS", payload: e.target.value })}
+                            onChange={(e) => dispatch({ type: ReturnReplaceActionType.SET_COMMENTS, payload: e.target.value })}
                             placeholder="Please describe the issue in detail..."
                             className="w-full p-4 text-sm sm:text-base bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-theme-primary/90 focus:border-theme-primary/90 outline-none resize-none transition-all"
                         />

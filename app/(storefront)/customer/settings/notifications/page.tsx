@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bell, Mail, Moon, Save, Undo, Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
@@ -10,7 +16,9 @@ import { RootState } from "@/lib/store";
 import AxiosAPI from "@/lib/axios";
 
 export default function NotificationSettingsPage() {
-  const { user, isAuthenticated } = useAppSelector((state: RootState) => state.auth);
+  const { user, isAuthenticated } = useAppSelector(
+    (state: RootState) => state.auth,
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -35,7 +43,9 @@ export default function NotificationSettingsPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const res = await AxiosAPI.get(`/v1/users/${user?.id}/notification-settings`);
+      const res = await AxiosAPI.get(
+        `/v1/users/${user?.id}/notification-settings`,
+      );
       if (res.data) {
         setSettings({
           email_tickets: res.data.email_tickets ?? true,
@@ -48,7 +58,6 @@ export default function NotificationSettingsPage() {
         });
       }
     } catch (err) {
-      console.error("Failed to load settings from API, using defaults:", err);
     } finally {
       setLoading(false);
     }
@@ -58,12 +67,14 @@ export default function NotificationSettingsPage() {
     if (!user?.id) return;
     try {
       setSaving(true);
-      const res = await AxiosAPI.post(`/v1/users/${user?.id}/notification-settings`, settings);
+      const res = await AxiosAPI.post(
+        `/v1/users/${user?.id}/notification-settings`,
+        settings,
+      );
       if (res.data) {
         toast.success("Preferences updated successfully");
       }
     } catch (err) {
-      console.error("Failed to save settings:", err);
       toast.error("Failed to update preferences");
     } finally {
       setSaving(false);
@@ -77,7 +88,10 @@ export default function NotificationSettingsPage() {
     }));
   };
 
-  const handleTimeChange = (key: "quiet_hours_start" | "quiet_hours_end", value: string) => {
+  const handleTimeChange = (
+    key: "quiet_hours_start" | "quiet_hours_end",
+    value: string,
+  ) => {
     setSettings((prev) => ({
       ...prev,
       [key]: value,
@@ -88,8 +102,12 @@ export default function NotificationSettingsPage() {
     return (
       <div className="max-w-2xl mx-auto py-16 text-center">
         <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-bold text-gray-900 mb-1">Authentication Required</h3>
-        <p className="text-sm text-gray-500 mb-6">Please log in to manage your notification settings.</p>
+        <h3 className="text-lg font-bold text-gray-900 mb-1">
+          Authentication Required
+        </h3>
+        <p className="text-sm text-gray-500 mb-6">
+          Please log in to manage your notification settings.
+        </p>
       </div>
     );
   }
@@ -112,7 +130,9 @@ export default function NotificationSettingsPage() {
               <Bell className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold text-gray-900">Notification Settings</CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-900">
+                Notification Settings
+              </CardTitle>
               <CardDescription className="text-xs text-gray-505 mt-0.5">
                 Customize when and how you receive alerts and messages.
               </CardDescription>
@@ -126,11 +146,15 @@ export default function NotificationSettingsPage() {
               <Mail className="w-4 h-4 text-blue-600" />
               Email Notifications
             </h3>
-            
+
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-semibold text-gray-800">Support Ticket Updates</p>
-                <p className="text-xs text-gray-500">Receive replies and status updates for your support cases.</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  Support Ticket Updates
+                </p>
+                <p className="text-xs text-gray-500">
+                  Receive replies and status updates for your support cases.
+                </p>
               </div>
               <input
                 type="checkbox"
@@ -142,8 +166,12 @@ export default function NotificationSettingsPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-semibold text-gray-800">Order Updates</p>
-                <p className="text-xs text-gray-500">Receipts, confirmations, and shipping tracking updates.</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  Order Updates
+                </p>
+                <p className="text-xs text-gray-500">
+                  Receipts, confirmations, and shipping tracking updates.
+                </p>
               </div>
               <input
                 type="checkbox"
@@ -155,8 +183,12 @@ export default function NotificationSettingsPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-semibold text-gray-800">Returns & Replacements</p>
-                <p className="text-xs text-gray-500">Status changes and processing updates on return requests.</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  Returns & Replacements
+                </p>
+                <p className="text-xs text-gray-500">
+                  Status changes and processing updates on return requests.
+                </p>
               </div>
               <input
                 type="checkbox"
@@ -168,8 +200,13 @@ export default function NotificationSettingsPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-semibold text-gray-800">Newsletter & Offers</p>
-                <p className="text-xs text-gray-500">Receive news, personalized recommendations and discount offers.</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  Newsletter & Offers
+                </p>
+                <p className="text-xs text-gray-500">
+                  Receive news, personalized recommendations and discount
+                  offers.
+                </p>
               </div>
               <input
                 type="checkbox"
@@ -187,13 +224,18 @@ export default function NotificationSettingsPage() {
               Quiet Hours (Do Not Disturb)
             </h3>
             <p className="text-xs text-gray-500 leading-relaxed">
-              Mute push and in-app notifications during specified times. Email alerts will still arrive but won't trigger browser alerts.
+              Mute push and in-app notifications during specified times. Email
+              alerts will still arrive but won't trigger browser alerts.
             </p>
-            
+
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-semibold text-gray-800">In-App Notifications</p>
-                <p className="text-xs text-gray-500">Show floating alerts and notification badges on website.</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  In-App Notifications
+                </p>
+                <p className="text-xs text-gray-500">
+                  Show floating alerts and notification badges on website.
+                </p>
               </div>
               <input
                 type="checkbox"
@@ -205,20 +247,28 @@ export default function NotificationSettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Quiet Hours Start</label>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Quiet Hours Start
+                </label>
                 <input
                   type="time"
                   value={settings.quiet_hours_start}
-                  onChange={(e) => handleTimeChange("quiet_hours_start", e.target.value)}
+                  onChange={(e) =>
+                    handleTimeChange("quiet_hours_start", e.target.value)
+                  }
                   className="w-full text-xs px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all text-gray-700 font-medium"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Quiet Hours End</label>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Quiet Hours End
+                </label>
                 <input
                   type="time"
                   value={settings.quiet_hours_end}
-                  onChange={(e) => handleTimeChange("quiet_hours_end", e.target.value)}
+                  onChange={(e) =>
+                    handleTimeChange("quiet_hours_end", e.target.value)
+                  }
                   className="w-full text-xs px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all text-gray-700 font-medium"
                 />
               </div>

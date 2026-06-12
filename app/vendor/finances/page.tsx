@@ -1,25 +1,34 @@
-'use client';
+"use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { ChevronDown, ChevronUp, Wallet, IndianRupee, TrendingUp, Clock, ArrowDownToLine, Search, RefreshCw } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Wallet,
+  IndianRupee,
+  TrendingUp,
+  Clock,
+  ArrowDownToLine,
+  Search,
+  RefreshCw,
+} from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { TableRowSkeleton } from "@/components/common/skeletons";
 import Link from "next/link";
 import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
 import { Pagination } from "@/components/common/Pagination";
- 
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 // Mirrors the shape returned by FinancesService.getVendorFinancial()
 // data.earnings[]
 interface EarningRecord {
-  id: string;              // payment.id or "calc-{order.id}"
-  order_id: string;        // orders.id
+  id: string; // payment.id or "calc-{order.id}"
+  order_id: string; // orders.id
   //   gross_amount: string;    // orders.total_amount  (string decimal)
 
-  net_earning: string;     // gross - fee
-  status: 'PENDING' | 'CLEARED' | 'REVERSED';
+  net_earning: string; // gross - fee
+  status: "PENDING" | "CLEARED" | "REVERSED";
   created_at: string | Date;
   transaction_ref: string; // payments.transaction_ref or "N/A"
 }
@@ -54,7 +63,10 @@ function formatINR(amount: string | number) {
 }
 
 function shortId(uuid: string) {
-  return uuid.replace(/^calc-/, "").split("-")[0].toUpperCase();
+  return uuid
+    .replace(/^calc-/, "")
+    .split("-")[0]
+    .toUpperCase();
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -66,6 +78,7 @@ function StatusBadge({ status }: { status: string }) {
         Cleared
       </span>
     );
+
   if (s === "REVERSED")
     return (
       <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-600 border border-red-200 py-1 px-3 rounded-full text-xs font-semibold">
@@ -73,6 +86,7 @@ function StatusBadge({ status }: { status: string }) {
         Reversed
       </span>
     );
+
   // PENDING
   return (
     <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-xs font-semibold">
@@ -97,10 +111,14 @@ function SummaryCard({
   color: string;
 }) {
   return (
-    <div className={`flex items-center gap-4 bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-4 min-w-[200px] flex-1`}>
+    <div
+      className={`flex items-center gap-4 bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-4 min-w-[200px] flex-1`}
+    >
       <span className={`p-2.5 rounded-xl ${color}`}>{icon}</span>
       <div>
-        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-0.5">{label}</p>
+        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-0.5">
+          {label}
+        </p>
         <p className="text-xl font-bold text-gray-900 flex items-center gap-0.5">
           <IndianRupee size={16} className="text-gray-600" />
           {value}
@@ -113,8 +131,6 @@ function SummaryCard({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function EarningsPage() {
-
-
   // ── state ──
   const [earnings, setEarnings] = useState<EarningRecord[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -135,32 +151,37 @@ export default function EarningsPage() {
   const [itemsPerPage, setItemPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const offset = (currentPage - 1) * itemsPerPage;
-  const token = authToken()
+  const token = authToken();
   // ── fetch ──
-  const fetchEarnings = async (search: string, offset: number, statusFilter: string, date: Date | undefined, sortby: "asc" | "desc", token: string) => {
+  const fetchEarnings = async (
+    search: string,
+    offset: number,
+    statusFilter: string,
+    date: Date | undefined,
+    sortby: "asc" | "desc",
+    token: string,
+  ) => {
     setLoading(true);
     setError(null);
     try {
-
-      const response = await AxiosAPI.get(`/v1/finances/earnings?search=${debouncedSearch ?? ""}&offset=${offset ?? 0}&limit=${itemsPerPage}&status=${statusFilter ?? ""}&date=${date?.toISOString() ?? ""}&sortby=${sortby ?? ""}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await AxiosAPI.get(
+        `/v1/finances/earnings?search=${debouncedSearch ?? ""}&offset=${offset ?? 0}&limit=${itemsPerPage}&status=${statusFilter ?? ""}&date=${date?.toISOString() ?? ""}&sortby=${sortby ?? ""}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
-      console.log(response.data)
-      if (response.status !== 200) throw new Error(`HTTP ${response.status}: ${response.data.message}`);
+      );
+      if (response.status !== 200)
+        throw new Error(`HTTP ${response.status}: ${response.data.message}`);
 
-
-      setEarnings(response.data?.data.
-        earnings
-        ?? []);
+      setEarnings(response.data?.data.earnings ?? []);
       setClearedEarnings(response.data?.data.total_cleared_earnings ?? "0.00");
       setPendingEarnings(response.data?.data.total_pending_earnings ?? "0.00");
       setTotalTransactions(response.data?.data.total_transactions ?? 0);
       const totalTransactions = response.data?.data.total_transactions;
       setTotalPages(Math.ceil(totalTransactions / itemsPerPage) || 1);
     } catch (err: any) {
-      console.error("Error fetching earnings:", err);
       setError("Failed to load earnings. Please try again.");
       setEarnings(null);
     } finally {
@@ -180,11 +201,11 @@ export default function EarningsPage() {
     }, 500); // 500ms delay
 
     return () => clearTimeout(debounceTimer);
-  }, [search])
+  }, [search]);
   const clearDate = () => {
     setDate(undefined);
     setCalendarOpen(false);
-  }
+  };
 
   // ─────────────────────────────────────────────────────────────────────────────
   return (
@@ -196,8 +217,12 @@ export default function EarningsPage() {
             <Wallet size={22} className="text-emerald-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 leading-tight">Earnings & Settlements</h1>
-            <p className="text-xs text-gray-400 mt-0.5">Vendor financial ledger — orders × payments</p>
+            <h1 className="text-2xl font-bold text-gray-800 leading-tight">
+              Earnings & Settlements
+            </h1>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Vendor financial ledger — orders × payments
+            </p>
           </div>
           {!loading && earnings && (
             <span className="ml-1 bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full">
@@ -207,7 +232,10 @@ export default function EarningsPage() {
         </div>
 
         <button
-          onClick={() => token && fetchEarnings(search, offset, statusFilter, date, sortBy, token)}
+          onClick={() =>
+            token &&
+            fetchEarnings(search, offset, statusFilter, date, sortBy, token)
+          }
           className="flex items-center gap-2 text-sm border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 rounded-xl px-4 py-2 transition-colors font-medium shadow-sm"
         >
           <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
@@ -225,6 +253,7 @@ export default function EarningsPage() {
             value={formatINR(clearedEarnings)}
             sub={clearedEarnings}
           />
+
           <SummaryCard
             icon={<Clock size={18} className="text-amber-500" />}
             label="Pending Earnings"
@@ -232,7 +261,6 @@ export default function EarningsPage() {
             value={formatINR(pendingEarnings)}
             sub={pendingEarnings}
           />
-
         </div>
       )}
 
@@ -293,13 +321,13 @@ export default function EarningsPage() {
           )}
 
           {/* {date && (
-            <button
-              onClick={clearDate}
-              className="text-xs text-gray-400 hover:text-red-500 transition-colors underline underline-offset-2"
-            >
-              Clear date
-            </button>
-          )} */}
+             <button
+               onClick={clearDate}
+               className="text-xs text-gray-400 hover:text-red-500 transition-colors underline underline-offset-2"
+             >
+               Clear date
+             </button>
+            )} */}
         </span>
 
         {/* Calendar dropdown */}
@@ -308,7 +336,10 @@ export default function EarningsPage() {
             <Calendar
               mode="single"
               selected={date}
-              onSelect={(d) => { setDate(d); setCalendarOpen(false); }}
+              onSelect={(d) => {
+                setDate(d);
+                setCalendarOpen(false);
+              }}
               className="rounded-xl bg-white"
               captionLayout="dropdown"
             />
@@ -329,10 +360,16 @@ export default function EarningsPage() {
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 text-left">
               <th className="p-4 w-10">
-                <input type="checkbox" className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500" />
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500"
+                />
               </th>
               {TABLE_HEADERS.map((h) => (
-                <th key={h} className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th
+                  key={h}
+                  className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                >
                   {h}
                 </th>
               ))}
@@ -343,7 +380,10 @@ export default function EarningsPage() {
               <TableRowSkeleton columns={TABLE_HEADERS.length + 1} rows={10} />
             ) : earnings?.length === 0 ? (
               <tr>
-                <td colSpan={TABLE_HEADERS.length + 1} className="py-16 text-center text-gray-400 text-sm">
+                <td
+                  colSpan={TABLE_HEADERS.length + 1}
+                  className="py-16 text-center text-gray-400 text-sm"
+                >
                   <Wallet size={36} className="mx-auto mb-3 opacity-25" />
                   {earnings?.length === 0
                     ? "No earning records found for this vendor."
@@ -351,10 +391,18 @@ export default function EarningsPage() {
                 </td>
               </tr>
             ) : (
-              earnings && Array.isArray(earnings) && earnings.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+              earnings &&
+              Array.isArray(earnings) &&
+              earnings.map((item) => (
+                <tr
+                  key={item.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   <td className="p-4">
-                    <input type="checkbox" className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500" />
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500"
+                    />
                   </td>
 
                   {/* TRANSACTION ID */}
@@ -385,15 +433,9 @@ export default function EarningsPage() {
                     </span>
                   </td>
 
-
                   <td className="p-4 text-sm text-gray-600">
                     ₹{formatINR(item.net_earning)}
                   </td>
-
-
-
-
-
 
                   {/* STATUS (derived from payments.payment_status) */}
                   <td className="p-4">
@@ -425,7 +467,11 @@ export default function EarningsPage() {
         </table>
       </div>
 
-      <Pagination count={currentPage} setCount={setCurrentPage} totalPages={totalPages} />
+      <Pagination
+        count={currentPage}
+        setCount={setCurrentPage}
+        totalPages={totalPages}
+      />
     </section>
   );
 }
