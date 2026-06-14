@@ -23,12 +23,12 @@ export interface OrderType {
 function ItemStatusBadge({ status }: { status: string }) {
     const s = status?.toLowerCase();
     if (s === 'delivered')
-        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full"><CheckCircle2 size={9} />{ORDER_CARD_TEXT.STATUS_DELIVERED}</span>;
+        return <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full"><CheckCircle2 size={9} />{ORDER_CARD_TEXT.STATUS_DELIVERED}</span>;
     if (s === 'pending' || s === 'processing')
-        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full"><Truck size={9} />{status}</span>;
+        return <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full"><Truck size={9} />{status}</span>;
     if (s === 'cancelled')
-        return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full"><XCircle size={9} />{ORDER_CARD_TEXT.STATUS_CANCELLED}</span>;
-    return <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full capitalize">{status}</span>;
+        return <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full"><XCircle size={9} />{ORDER_CARD_TEXT.STATUS_CANCELLED}</span>;
+    return <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full capitalize">{status}</span>;
 }
 
 function ReturnBadge({ returnRequest }: { returnRequest: ReturnRequest }) {
@@ -40,7 +40,7 @@ function ReturnBadge({ returnRequest }: { returnRequest: ReturnRequest }) {
     };
     const color = colorMap[returnRequest.status?.toLowerCase()] ?? 'bg-gray-100 text-gray-600 border-gray-200';
     return (
-        <span className={`inline-flex items-center gap-1 text-[10px] font-semibold border px-2 py-0.5 rounded-full ${color}`}>
+        <span className={`inline-flex items-center gap-1 text-theme-tiny font-semibold border px-2 py-0.5 rounded-full ${color}`}>
             <RotateCcw size={9} />
             {ORDER_CARD_TEXT.RETURN} · {returnRequest.status}
         </span>
@@ -60,21 +60,21 @@ function OrderItemRow({ item, highlighted }: { item: OrderItemType; highlighted:
             <div className="flex-1 py-3 pr-3 flex flex-col justify-between gap-1 min-w-0">
                 <Link
                     href={`shipping/${item.variant.id}`}
-                    className="font-semibold text-gray-900 text-sm line-clamp-2 hover:underline leading-snug"
+                    className="font-semibold text-gray-900 text-theme-body-sm line-clamp-2 hover:underline leading-snug"
                 >
                     {item.variant.variant_name}
                 </Link>
                 <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className="text-xs text-gray-500">Qty: {item.quantity}</span>
-                    <span className="text-xs text-gray-400">·</span>
-                    <span className="text-xs font-semibold text-gray-800">₹{formatCurrency(Number(item.price))}</span>
+                    <span className="text-theme-caption text-gray-500">Qty: {item.quantity}</span>
+                    <span className="text-theme-caption text-gray-400">·</span>
+                    <span className="text-theme-caption font-semibold text-gray-800">₹{formatCurrency(Number(item.price))}</span>
                     <ItemStatusBadge status={item.order_status} />
                     {item.return_request && <ReturnBadge returnRequest={item.return_request} />}
                 </div>
                 {item.order_status === OrderStatusEnum.DELIVERED && !item.return_request && (
                     <motion.button
                         whileTap={{ scale: 0.95 }}
-                        className="self-start mt-1 text-xs px-3 py-1 border border-gray-300 rounded-full hover:bg-gray-50 font-medium text-gray-700 transition-colors"
+                        className="self-start mt-1 text-theme-caption px-3 py-1 border border-gray-300 rounded-full hover:bg-gray-50 font-medium text-gray-700 transition-colors"
                     >
                         {ORDER_CARD_TEXT.WRITE_REVIEW}
                     </motion.button>
@@ -97,7 +97,7 @@ function AddressDropdown({ address, isMobile }: { address: AddressPayload; isMob
     }, []);
 
     const block = (
-        <div className="text-xs sm:text-sm text-gray-700 space-y-0.5">
+        <div className="text-theme-caption sm:text-theme-body-sm text-gray-700 space-y-0.5">
             <p className="font-semibold text-gray-900">{address.name}</p>
             {address.address_line_1 && <p>{address.address_line_1}</p>}
             {address.address_line_2 && <p>{address.address_line_2}</p>}
@@ -110,11 +110,11 @@ function AddressDropdown({ address, isMobile }: { address: AddressPayload; isMob
         return (
             <div>
                 <button
-                    className="flex items-center justify-between w-full text-blue-500 hover:text-blue-700 text-sm font-medium focus:outline-none"
+                    className="flex items-center justify-between w-full text-blue-500 hover:text-blue-700 text-theme-body-sm font-medium focus:outline-none"
                     onClick={() => setOpen((p) => !p)}
                 >
                     <span className="truncate max-w-[80%]">{address.name || ORDER_CARD_TEXT.NA}</span>
-                    <motion.span animate={{ rotate: open ? 180 : 0 }} className="text-[10px] ml-1">▼</motion.span>
+                    <motion.span animate={{ rotate: open ? 180 : 0 }} className="text-theme-tiny ml-1">▼</motion.span>
                 </button>
                 <AnimatePresence>
                     {open && (
@@ -135,11 +135,11 @@ function AddressDropdown({ address, isMobile }: { address: AddressPayload; isMob
     return (
         <div className="relative" ref={ref}>
             <button
-                className="flex items-center gap-1 text-blue-500 hover:text-blue-700 text-sm font-medium focus:outline-none"
+                className="flex items-center gap-1 text-blue-500 hover:text-blue-700 text-theme-body-sm font-medium focus:outline-none"
                 onClick={() => setOpen((p) => !p)}
             >
                 {address.name || ORDER_CARD_TEXT.NA}
-                <span className="text-[10px]">▼</span>
+                <span className="text-theme-tiny">▼</span>
             </button>
             <AnimatePresence>
                 {open && (
@@ -188,17 +188,17 @@ export const OrderCard = ({
         return (
             <motion.div className="w-full flex flex-col border border-gray-200 shadow-sm rounded-xl p-4 gap-4 bg-white">
                 <div className="flex justify-between items-start border-b border-gray-100 pb-3">
-                    <p className="text-xs text-gray-400">
+                    <p className="text-theme-caption text-gray-400">
                         {ORDER_CARD_TEXT.ORDERED} {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </p>
                     <div className="text-right">
-                        <p className="text-xs text-gray-400 mb-0.5">{ORDER_CARD_TEXT.TOTAL}</p>
-                        <p className="text-sm font-bold text-gray-900">₹{formatCurrency(Number(order.total_amount))}</p>
+                        <p className="text-theme-caption text-gray-400 mb-0.5">{ORDER_CARD_TEXT.TOTAL}</p>
+                        <p className="text-theme-body-sm font-bold text-gray-900">₹{formatCurrency(Number(order.total_amount))}</p>
                     </div>
                 </div>
 
                 <div className="border-b border-gray-100 pb-3">
-                    <p className="text-xs text-gray-400 mb-1">{ORDER_CARD_TEXT.SHIP_TO}</p>
+                    <p className="text-theme-caption text-gray-400 mb-1">{ORDER_CARD_TEXT.SHIP_TO}</p>
                     {order.address && <AddressDropdown address={order.address} isMobile={true} />}
                 </div>
 
@@ -209,12 +209,12 @@ export const OrderCard = ({
                 </div>
 
                 <div className="flex justify-between items-center pt-1">
-                    <Link href={`orders/${order.id}`} className="text-xs font-medium text-blue-500 hover:underline">
+                    <Link href={`orders/${order.id}`} className="text-theme-caption font-medium text-blue-500 hover:underline">
                         {ORDER_CARD_TEXT.VIEW_DETAILS}
                     </Link>
                     {order.shipping?.tracking_url && (
                         <a href={order.shipping.tracking_url} target="_blank" rel="noopener noreferrer"
-                            className="text-xs font-medium text-gray-500 hover:text-gray-800 flex items-center gap-1">
+                            className="text-theme-caption font-medium text-gray-500 hover:text-gray-800 flex items-center gap-1">
                             <Truck size={12} /> {ORDER_CARD_TEXT.TRACK}
                         </a>
                     )}
@@ -228,27 +228,27 @@ export const OrderCard = ({
             <header className="flex justify-between items-center px-5 py-3.5 bg-gray-50 border-b border-gray-200">
                 <div className="flex gap-6 items-center">
                     <div>
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.ORDER_PLACED}</p>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.ORDER_PLACED}</p>
+                        <p className="text-theme-body-sm text-gray-700">
                             {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </p>
                     </div>
                     <div>
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.TOTAL}</p>
-                        <p className="text-sm font-semibold text-gray-800">₹{formatCurrency(Number(order.total_amount))}</p>
+                        <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.TOTAL}</p>
+                        <p className="text-theme-body-sm font-semibold text-gray-800">₹{formatCurrency(Number(order.total_amount))}</p>
                     </div>
                     {order.address && (
                         <div>
-                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.SHIP_TO}</p>
+                            <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.SHIP_TO}</p>
                             <AddressDropdown address={order.address} isMobile={false} />
                         </div>
                     )}
                     {order.payment && (
                         <div>
-                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.PAYMENT}</p>
-                            <p className="text-sm text-gray-700 flex items-center gap-1.5">
+                            <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.PAYMENT}</p>
+                            <p className="text-theme-body-sm text-gray-700 flex items-center gap-1.5">
                                 {order.payment.payment_method}
-                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${order.payment.payment_status === 'completed' ? 'bg-emerald-50 text-emerald-700'
+                                <span className={`text-theme-tiny font-semibold px-1.5 py-0.5 rounded-full ${order.payment.payment_status === 'completed' ? 'bg-emerald-50 text-emerald-700'
                                     : order.payment.payment_status === 'refunded' ? 'bg-blue-50 text-blue-700'
                                         : 'bg-amber-50 text-amber-700'
                                     }`}>
@@ -259,8 +259,8 @@ export const OrderCard = ({
                     )}
                 </div>
                 <div className="text-right flex flex-col gap-1">
-                    <p className="text-[10px] text-gray-400 font-mono">#{order.id.split('-')[0].toUpperCase()}</p>
-                    <div className="flex items-center gap-3 text-sm">
+                    <p className="text-theme-tiny text-gray-400 font-mono">#{order.id.split('-')[0].toUpperCase()}</p>
+                    <div className="flex items-center gap-3 text-theme-body-sm">
                         <Link href={`orders/${order.id}`} className="text-blue-500 hover:underline font-medium">
                             {ORDER_CARD_TEXT.VIEW_DETAILS_HEADER}
                         </Link>
@@ -275,7 +275,7 @@ export const OrderCard = ({
             </header>
 
             {showBanner && (
-                <div className="px-5 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-700 font-medium flex items-center gap-2">
+                <div className="px-5 py-2 bg-blue-50 border-b border-blue-100 text-theme-caption text-blue-700 font-medium flex items-center gap-2">
                     <Package size={13} />
                     {matchingItems.length} {ORDER_CARD_TEXT.MATCH_FILTER_1} {order.items.length} {ORDER_CARD_TEXT.MATCH_FILTER_2}
                 </div>

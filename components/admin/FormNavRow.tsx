@@ -16,7 +16,7 @@ export function FormNavRow({
                 <button
                     type="button"
                     onClick={onPrev}
-                    className="flex items-center gap-2 text-sm text-gray-600 border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 px-5 py-2.5 rounded-xl transition-all"
+                    className="flex items-center gap-2 text-theme-body-sm text-gray-600 border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 px-5 py-2.5 rounded-xl transition-all"
                 >
                     <ChevronLeft size={15} />
                     {FORM_NAV_ROW_TEXT.PREVIOUS}
@@ -26,7 +26,7 @@ export function FormNavRow({
                 <button
                     type="button"
                     onClick={onNext}
-                    className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all"
+                    className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white text-theme-body-sm font-semibold px-6 py-2.5 rounded-xl transition-all"
                 >
                     {FORM_NAV_ROW_TEXT.CONTINUE}
                     <ChevronRight size={15} />

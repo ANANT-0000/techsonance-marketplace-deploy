@@ -35,20 +35,20 @@ export function PromoBannerDesktop({
         <div className="max-w-screen-xl mx-auto px-6 lg:px-16 xl:px-24 w-full">
           <div className="max-w-lg text-white">
             {subtitle && (
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/70 mb-4">
+              <p className="text-theme-tiny font-bold uppercase tracking-[0.3em] text-white/70 mb-4">
                 {subtitle}
               </p>
             )}
-            <h2 className="text-4xl lg:text-5xl font-serif tracking-tight leading-[1.05] mb-4">
+            <h2 className="text-theme-h2 lg:text-theme-h1 font-serif tracking-tight leading-[1.05] mb-4">
               {title}
             </h2>
             {desc && (
-              <p className="text-sm text-white/75 font-light leading-relaxed mb-8 max-w-sm">
+              <p className="text-theme-body-sm text-white/75 font-light leading-relaxed mb-8 max-w-sm">
                 {desc}
               </p>
             )}
             <Link href="/store">
-              <button className="bg-white text-black hover:bg-gray-100 transition-all duration-300 px-8 py-3 text-[11px] uppercase tracking-[0.2em] font-bold">
+              <button className="bg-white text-black hover:bg-gray-100 transition-all duration-300 px-8 py-3 text-theme-xxs uppercase tracking-[0.2em] font-bold">
                 {btnText || PROMO_BANNER_TEXT.SHOP_NOW}
               </button>
             </Link>

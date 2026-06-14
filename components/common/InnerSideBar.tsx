@@ -44,7 +44,7 @@ export function InnerSideBar({ path, links, isOpen, isNotOpen }: { path: string,
                 {
                     links.map((section, index) => (
                         <div key={index} className="mb-6 pr-4">
-                            <h3 className="text-gray-500 text-lg font-bold uppercase mb-3">{section.section}</h3>
+                            <h3 className="text-gray-500 text-theme-h6 font-bold uppercase mb-3">{section.section}</h3>
                             <ul>
                                 {
                                     section.list.map((link, linkIndex) => {

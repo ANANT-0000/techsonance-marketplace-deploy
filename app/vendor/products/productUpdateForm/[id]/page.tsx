@@ -10,6 +10,7 @@ import {
   Inventory,
   ProductResponseType,
   ProductStatusEnum,
+  ProductImageType,
 } from "@/utils/Types";
 import {
   ProductFormInput,
@@ -28,7 +29,7 @@ interface ProductImage {
   id: string;
   image_url: string;
   alt_text?: string;
-  imgType: "main" | "gallery";
+  imgType: ProductImageType;
   is_primary: boolean;
 }
 
@@ -181,11 +182,11 @@ export default function ProductUpdateFormPage() {
 
           // Fixed: Images array is at the root level, not inside 'product'
           productMedia:
-            exitingProduct?.images?.filter((img) => img?.imgType === "main") ||
+            exitingProduct?.images?.filter((img) => img?.imgType === ProductImageType.MAIN) ||
             [],
           featureMedia:
             exitingProduct?.images?.filter(
-              (img) => img?.imgType === "gallery",
+              (img) => img?.imgType === ProductImageType.GALLERY,
             ) || [],
 
           // Note: 'category_id' isn't in the provided JSON, but kept here if your schema expects it

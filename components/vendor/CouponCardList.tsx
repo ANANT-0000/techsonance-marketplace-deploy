@@ -39,7 +39,7 @@ useEffect(() => {
     return (
         <div className="mb-8">
             <div className="flex justify-between items-center mb-4 px-1">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <h2 className="text-theme-h5 font-bold text-gray-800 flex items-center gap-2">
                     <Tag size={20} className="text-blue-600" /> {COUPON_CARD_TEXT.TITLE}
                 </h2>
             </div>
@@ -51,8 +51,8 @@ useEffect(() => {
             ) : !coupons || coupons.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 bg-white border border-gray-200 rounded-2xl border-dashed">
                     <Tag size={40} className="text-gray-300 mb-3" />
-                    <p className="text-sm font-medium text-gray-600">{COUPON_CARD_TEXT.EMPTY.TITLE}</p>
-                    <p className="text-xs text-gray-400 mt-1">{COUPON_CARD_TEXT.EMPTY.DESC}</p>
+                    <p className="text-theme-body-sm font-medium text-gray-600">{COUPON_CARD_TEXT.EMPTY.TITLE}</p>
+                    <p className="text-theme-caption text-gray-400 mt-1">{COUPON_CARD_TEXT.EMPTY.DESC}</p>
                 </div>
             ) : (
                 // Used Tailwind arbitrary variants to hide the scrollbar cleanly
@@ -74,15 +74,15 @@ useEffect(() => {
                                     {/* Header: Code & Badges */}
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="max-w-[70%]">
-                                            <h3 className="text-xl font-black text-gray-800 tracking-tight uppercase border-b-2 border-dashed border-gray-200 inline-block pb-1 truncate w-full">
+                                            <h3 className="text-theme-h5 font-black text-gray-800 tracking-tight uppercase border-b-2 border-dashed border-gray-200 inline-block pb-1 truncate w-full">
                                                 {coupon.code}
                                             </h3>
-                                            <p className="text-xs text-gray-500 font-medium mt-1.5 line-clamp-1"  >
+                                            <p className="text-theme-caption text-gray-500 font-medium mt-1.5 line-clamp-1"  >
                                                 {coupon.description}
                                             </p>
                                         </div>
                                         <div className="flex flex-col items-end gap-1.5">
-                                            <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md ${
+                                            <span className={`px-2 py-1 text-theme-tiny font-bold uppercase tracking-wider rounded-md ${
                                                 isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                                             }`}>
                                                 {isActive ? COUPON_CARD_TEXT.STATUS.ACTIVE : COUPON_CARD_TEXT.STATUS.EXPIRED}
@@ -98,8 +98,8 @@ useEffect(() => {
                                     <div className="space-y-3 mb-5">
                                         {/* Primary Highlight */}
                                         <div className="bg-blue-50/50 rounded-xl p-3 border border-blue-100 flex justify-between items-center">
-                                            <span className="text-blue-800 font-semibold text-sm">{COUPON_CARD_TEXT.DISCOUNT.LABEL}</span>
-                                            <span className="font-black text-blue-600 text-lg">
+                                            <span className="text-blue-800 font-semibold text-theme-body-sm">{COUPON_CARD_TEXT.DISCOUNT.LABEL}</span>
+                                            <span className="font-black text-blue-600 text-theme-h6">
                                                 {coupon.discount_type === 'percentage' 
                                                     ? `${coupon.discount_value}${COUPON_CARD_TEXT.DISCOUNT.PCT_OFF}` 
                                                     : `₹${coupon.discount_value}${COUPON_CARD_TEXT.DISCOUNT.AMT_OFF}`}
@@ -107,7 +107,7 @@ useEffect(() => {
                                         </div>
 
                                         {/* Detailed Conditions Grid */}
-                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div className="grid grid-cols-2 gap-2 text-theme-caption">
                                             {/* Dates */}
                                             <div className="col-span-2 flex items-center justify-between text-gray-600 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
                                                 <span className="flex items-center gap-1.5 font-medium"><Calendar size={13}/> {COUPON_CARD_TEXT.LABELS.VALIDITY}</span>
@@ -164,7 +164,7 @@ useEffect(() => {
 
                                 <button 
                                     onClick={() => onEdit(coupon.id)}
-                                    className="w-full py-2.5 bg-white hover:bg-gray-50 text-gray-700 text-sm font-bold rounded-xl transition-colors border border-gray-200 shadow-sm mt-2"
+                                    className="w-full py-2.5 bg-white hover:bg-gray-50 text-gray-700 text-theme-body-sm font-bold rounded-xl transition-colors border border-gray-200 shadow-sm mt-2"
                                 >
                                     {COUPON_CARD_TEXT.LABELS.EDIT_RULES}
                                 </button>

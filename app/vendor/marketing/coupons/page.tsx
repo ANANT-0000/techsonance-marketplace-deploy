@@ -111,8 +111,8 @@ export default function CouponsPage() {
       {/* ── Page header ── */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Discount Coupons</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-theme-h4 font-bold text-gray-800">Discount Coupons</h1>
+          <p className="text-theme-body-sm text-gray-500 mt-1">
             Manage promo codes customers apply at checkout.
           </p>
         </div>
@@ -129,51 +129,51 @@ export default function CouponsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
               Active Coupons
             </span>
             <span className="bg-emerald-50 text-emerald-600 p-2 rounded-lg">
               <Zap size={18} />
             </span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">
+          <h3 className="text-theme-h4 font-bold text-gray-800">
             {loading ? "—" : activeCoupons}
           </h3>
-          <p className="text-xs text-gray-500 mt-1 font-medium">
+          <p className="text-theme-caption text-gray-500 mt-1 font-medium">
             Currently live
           </p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
               Expired
             </span>
             <span className="bg-gray-100 text-gray-500 p-2 rounded-lg">
               <Calendar size={18} />
             </span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">
+          <h3 className="text-theme-h4 font-bold text-gray-800">
             {loading ? "—" : expiredCoupons}
           </h3>
-          <p className="text-xs text-gray-500 mt-1 font-medium">
+          <p className="text-theme-caption text-gray-500 mt-1 font-medium">
             Past validity
           </p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
               Total Redemptions
             </span>
             <span className="bg-blue-50 text-blue-600 p-2 rounded-lg">
               <TrendingUp size={18} />
             </span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">
+          <h3 className="text-theme-h4 font-bold text-gray-800">
             {loading ? "—" : totalRedemptions}
           </h3>
-          <p className="text-xs text-gray-500 mt-1 font-medium">
+          <p className="text-theme-caption text-gray-500 mt-1 font-medium">
             All-time uses
           </p>
         </div>
@@ -190,7 +190,7 @@ export default function CouponsPage() {
           <input
             type="text"
             placeholder="Search by code or description…"
-            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all"
+            className="w-full pl-10 pr-4 py-2 text-theme-body-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -224,12 +224,12 @@ export default function CouponsPage() {
                     <div className="flex-shrink-0 p-2 bg-indigo-50 rounded-xl text-indigo-600 group-hover:bg-indigo-100 transition-colors">
                       <Tag size={18} />
                     </div>
-                    <span className="font-mono text-base font-bold tracking-widest text-gray-900 truncate">
+                    <span className="font-mono text-theme-body font-bold tracking-widest text-gray-900 truncate">
                       {coupon.code}
                     </span>
                   </div>
                   <span
-                    className={`flex-shrink-0 ml-2 px-2.5 py-1 text-[11px] font-bold rounded-full border ${
+                    className={`flex-shrink-0 ml-2 px-2.5 py-1 text-theme-xxs font-bold rounded-full border ${
                       isActive
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                         : isExpired
@@ -243,21 +243,21 @@ export default function CouponsPage() {
 
                 {/* Description + discount pill */}
                 <div className="mb-4 flex-grow">
-                  <p className="text-sm font-semibold text-gray-800 mb-2 leading-snug">
+                  <p className="text-theme-body-sm font-semibold text-gray-800 mb-2 leading-snug">
                     {coupon.description ?? (
                       <span className="text-gray-400 italic">
                         No description
                       </span>
                     )}
                   </p>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-100">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-theme-caption font-bold rounded-lg border border-blue-100">
                     {formatDiscount(coupon)}
                   </span>
                 </div>
 
                 {/* Footer: expiry + usage */}
                 <div className="border-t border-gray-100 pt-4 space-y-2.5 mt-auto">
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-theme-caption text-gray-500">
                     <span className="flex items-center gap-1.5">
                       <Calendar size={13} />
                       Expires
@@ -272,7 +272,7 @@ export default function CouponsPage() {
                   </div>
 
                   {coupon.total_used !== undefined && (
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center justify-between text-theme-caption text-gray-500">
                       <span className="flex items-center gap-1.5">
                         <Activity size={13} />
                         Redemptions
@@ -311,10 +311,10 @@ export default function CouponsPage() {
               <div className="p-4 bg-gray-50 rounded-2xl mb-4">
                 <Ticket size={32} className="text-gray-300" />
               </div>
-              <h3 className="text-base font-bold text-gray-800 mb-1">
+              <h3 className="text-theme-body font-bold text-gray-800 mb-1">
                 No coupons found
               </h3>
-              <p className="text-sm text-gray-500 max-w-xs mb-6">
+              <p className="text-theme-body-sm text-gray-500 max-w-xs mb-6">
                 {searchTerm
                   ? "No coupons match your search. Try a different code or description."
                   : "You haven't created any promo codes yet. Start with your first one."}

@@ -294,16 +294,16 @@ export default function VendorLoginPage() {
           <div>
             <div className="inline-flex items-center gap-2 bg-white/15 rounded-full px-3 py-1.5 mb-6">
               <span className="w-2 h-2 rounded-full bg-emerald-300 block" />
-              <span className="text-xs text-white font-medium tracking-wide">
+              <span className="text-theme-caption text-white font-medium tracking-wide">
                 Vendor Portal
               </span>
             </div>
-            <h2 className="text-3xl font-bold text-white leading-snug mb-3">
+            <h2 className="text-theme-h3 font-bold text-white leading-snug mb-3">
               Grow your business
               <br />
               with us
             </h2>
-            <p className="text-sm text-white/65 leading-relaxed max-w-[260px]">
+            <p className="text-theme-body-sm text-white/65 leading-relaxed max-w-[260px]">
               Manage products, track orders, and reach thousands of customers —
               all in one place.
             </p>
@@ -327,8 +327,8 @@ export default function VendorLoginPage() {
                   className="bg-white/10 rounded-xl p-3.5 flex-1"
                 >
                   <div className="text-white/50 mb-1">{s.icon}</div>
-                  <div className="text-xl font-bold text-white">{s.num}</div>
-                  <div className="text-[11px] text-white/55 mt-0.5">
+                  <div className="text-theme-h5 font-bold text-white">{s.num}</div>
+                  <div className="text-theme-xxs text-white/55 mt-0.5">
                     {s.label}
                   </div>
                 </div>
@@ -341,7 +341,7 @@ export default function VendorLoginPage() {
             </div>
           </div>
 
-          <div className="text-[11px] text-white/35 mt-6">
+          <div className="text-theme-xxs text-white/35 mt-6">
             © 2025 Techsonance Marketplace. All rights reserved.
           </div>
         </div>
@@ -351,13 +351,13 @@ export default function VendorLoginPage() {
           {/* IDLE */}
           {uiState === "idle" && (
             <div>
-              <p className="text-[11px] font-semibold tracking-widest uppercase text-gray-400 mb-5">
+              <p className="text-theme-xxs font-semibold tracking-widest uppercase text-gray-400 mb-5">
                 Vendor login
               </p>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              <h1 className="text-theme-h4 font-bold text-gray-900 mb-1">
                 Welcome back
               </h1>
-              <p className="text-sm text-gray-500 mb-7">
+              <p className="text-theme-body-sm text-gray-500 mb-7">
                 Enter your details to access your store dashboard.
               </p>
 
@@ -367,7 +367,7 @@ export default function VendorLoginPage() {
               >
                 {/* Email */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 tracking-wide">
+                  <label className="block text-theme-caption font-semibold text-gray-600 mb-1.5 tracking-wide">
                     Business email address
                   </label>
                   <div className="relative">
@@ -378,12 +378,12 @@ export default function VendorLoginPage() {
                       type="text"
                       placeholder="you@business.com"
                       autoComplete="username"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition placeholder:text-gray-300"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-theme-body-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition placeholder:text-gray-300"
                       {...register("email")}
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-red-500 text-xs mt-1">
+                    <p className="text-red-500 text-theme-caption mt-1">
                       {errors.email.message}
                     </p>
                   )}
@@ -392,12 +392,12 @@ export default function VendorLoginPage() {
                 {/* Password */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-semibold text-gray-600 tracking-wide">
+                    <label className="text-theme-caption font-semibold text-gray-600 tracking-wide">
                       Password
                     </label>
                     <a
                       href="#"
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-theme-caption text-blue-600 hover:underline"
                     >
                       Forgot password?
                     </a>
@@ -424,7 +424,7 @@ export default function VendorLoginPage() {
                       type={showPass ? "text" : "password"}
                       placeholder="••••••••••"
                       autoComplete="current-password"
-                      className="w-full pl-10 pr-11 py-3 border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition placeholder:text-gray-300"
+                      className="w-full pl-10 pr-11 py-3 border border-gray-200 rounded-xl text-theme-body-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition placeholder:text-gray-300"
                       {...register("password")}
                     />
                     <button
@@ -437,18 +437,18 @@ export default function VendorLoginPage() {
                     </button>
                   </div>
                   {errors.password ? (
-                    <p className="text-red-500 text-xs mt-1 max-w-xs">
+                    <p className="text-red-500 text-theme-caption mt-1 max-w-xs">
                       {errors.password.message}
                     </p>
                   ) : (
-                    <p className="text-gray-400 text-xs mt-1">
+                    <p className="text-gray-400 text-theme-caption mt-1">
                       Must be at least 8 characters.
                     </p>
                   )}
                 </div>
 
                 {error && (
-                  <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600">
+                  <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-theme-body-sm text-red-600">
                     <AlertCircle size={15} className="flex-shrink-0" /> {error}
                   </div>
                 )}
@@ -456,7 +456,7 @@ export default function VendorLoginPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full mt-1 bg-[#1a56db] hover:bg-[#1648c0] active:scale-[.98] disabled:opacity-60 text-white font-semibold text-sm rounded-xl py-3.5 transition flex items-center justify-center gap-2"
+                  className="w-full mt-1 bg-[#1a56db] hover:bg-[#1648c0] active:scale-[.98] disabled:opacity-60 text-white font-semibold text-theme-body-sm rounded-xl py-3.5 transition flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -472,7 +472,7 @@ export default function VendorLoginPage() {
                 </button>
               </form>
 
-              <p className="text-center text-sm text-gray-500 mt-5">
+              <p className="text-center text-theme-body-sm text-gray-500 mt-5">
                 Don't have a business account?{" "}
                 <Link
                   href="/auth/vendorRegister"
@@ -487,17 +487,17 @@ export default function VendorLoginPage() {
           {/* LOADING */}
           {uiState === "loading" && (
             <div className="flex flex-col items-center text-center">
-              <p className="text-[11px] font-semibold tracking-widest uppercase text-gray-400 mb-1">
+              <p className="text-theme-xxs font-semibold tracking-widest uppercase text-gray-400 mb-1">
                 Signing you in
               </p>
-              <p className="text-xs text-gray-400 mb-6">
+              <p className="text-theme-caption text-gray-400 mb-6">
                 This will only take a moment
               </p>
               <div className="w-full flex flex-col gap-2.5">
                 {STEPS.map((label, i) => (
                   <div
                     key={i}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${stepStyle[steps[i]]}`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-theme-body-sm font-medium transition-all ${stepStyle[steps[i]]}`}
                   >
                     <div className="w-6 h-6 rounded-full bg-white border border-gray-100 flex items-center justify-center flex-shrink-0">
                       <StepIcon status={steps[i]} />
@@ -515,10 +515,10 @@ export default function VendorLoginPage() {
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-5">
                 <Check size={28} className="text-green-600" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1">
+              <h2 className="text-theme-h6 font-bold text-gray-900 mb-1">
                 You're in!
               </h2>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-theme-body-sm text-gray-500 mb-6">
                 Store verified. Taking you to your dashboard…
               </p>
               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden mb-2">
@@ -527,7 +527,7 @@ export default function VendorLoginPage() {
                   style={{ width: `${redirectPct}%` }}
                 />
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-theme-caption text-gray-400">
                 Redirecting in {Math.max(0, countdown)}s
               </p>
             </div>
@@ -539,10 +539,10 @@ export default function VendorLoginPage() {
               <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-5 animate-bounce">
                 <AlertCircle size={28} className="text-amber-600" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900 mb-2">
+              <h2 className="text-theme-h6 font-bold text-gray-900 mb-2">
                 Temporary Password
               </h2>
-              <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+              <p className="text-theme-body-sm text-gray-500 mb-6 leading-relaxed">
                 You logged in with a temporary generated password. For security,
                 please set a new personal password.
               </p>
@@ -551,7 +551,7 @@ export default function VendorLoginPage() {
                   onClick={() => {
                     router.push(`/vendor/settings/change-password`);
                   }}
-                  className="w-full bg-[#1a56db] hover:bg-[#1648c0] text-white font-semibold text-sm rounded-xl py-3 transition cursor-pointer"
+                  className="w-full bg-[#1a56db] hover:bg-[#1648c0] text-white font-semibold text-theme-body-sm rounded-xl py-3 transition cursor-pointer"
                 >
                   Change Password Now
                 </button>
@@ -559,7 +559,7 @@ export default function VendorLoginPage() {
                   onClick={() => {
                     router.push(`/vendor`);
                   }}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl py-3 transition  cursor-pointer"
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-theme-body-sm rounded-xl py-3 transition  cursor-pointer"
                 >
                   Skip for Now
                 </button>
@@ -573,10 +573,10 @@ export default function VendorLoginPage() {
               <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-5">
                 <X size={28} className="text-red-500" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1">
+              <h2 className="text-theme-h6 font-bold text-gray-900 mb-1">
                 Login failed
               </h2>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-theme-body-sm text-gray-500 mb-6">
                 {error || "Invalid credentials. Please try again."}
               </p>
               <button
@@ -584,7 +584,7 @@ export default function VendorLoginPage() {
                   setUiState("idle");
                   setSteps(["pending", "pending", "pending"]);
                 }}
-                className="bg-[#1a56db] hover:bg-[#1648c0] text-white font-semibold text-sm rounded-xl px-8 py-3 transition"
+                className="bg-[#1a56db] hover:bg-[#1648c0] text-white font-semibold text-theme-body-sm rounded-xl px-8 py-3 transition"
               >
                 Try again
               </button>

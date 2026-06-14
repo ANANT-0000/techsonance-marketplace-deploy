@@ -1,4 +1,4 @@
-export * from './constants';
+export * from "./constants";
 export * from "./common";
 export * from "./admin";
 export * from "./vendor";
@@ -7,11 +7,16 @@ export * from "./dynamicFields";
 export * from "./storefront";
 export * from "./authText";
 export * from "./vendorText";
-
-export const CMS_CACHE_KEY = 'techsonance_cms_home';
-export const BANNERS_CACHE_KEY = 'techsonance_banners_home';
-export const CATEGORIES_CACHE_KEY = 'techsonance_categories_home';
-export const LANG_KEY = 'techsonance_locale';
-export const NAVBAR_CACHE_KEY = 'techsonance_cms_navbar';
-export const STOREFRONT_CACHE_KEY = 'techsonance_cms_storefront';
-export const THEME_CACHE_KEY = 'techsonance_cms_theme';
+export const DEFAULT_LANG = "en";
+export const ENV_DEVELOPMENT = "development";
+export const REACT_SCAN_SCRIPT_URL =
+  "https://unpkg.com/react-scan/dist/auto.global.js";
+export const SCRIPT_STRATEGY = "beforeInteractive";
+export const CROSS_ORIGIN = "anonymous";
+export const CMS_CACHE_KEY = "techsonance_cms_home";
+export const BANNERS_CACHE_KEY = "techsonance_banners_home";
+export const CATEGORIES_CACHE_KEY = "techsonance_categories_home";
+export const LANG_KEY = "techsonance_locale";
+export const NAVBAR_CACHE_KEY = "techsonance_cms_navbar";
+export const STOREFRONT_CACHE_KEY = "techsonance_cms_storefront";
+export const THEME_CACHE_KEY = "techsonance_cms_theme";

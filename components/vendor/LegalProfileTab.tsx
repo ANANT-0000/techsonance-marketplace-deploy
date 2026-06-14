@@ -54,7 +54,7 @@ export function LegalProfileTab({ token }: { token: string }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-8">
       <section>
-        <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <h3 className="text-theme-body-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
           {LEGAL_PROFILE_TAB_TEXT.SECTIONS.LEGAL_ID}
         </h3>
@@ -89,7 +89,7 @@ export function LegalProfileTab({ token }: { token: string }) {
       </section>
 
       <section>
-        <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <h3 className="text-theme-body-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
           {LEGAL_PROFILE_TAB_TEXT.SECTIONS.CONTACT}
         </h3>

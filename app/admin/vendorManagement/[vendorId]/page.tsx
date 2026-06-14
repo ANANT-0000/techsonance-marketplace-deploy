@@ -286,7 +286,7 @@ export default function VendorDetailPage() {
       {/* Top Navigation */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors my-6 font-medium"
+        className="flex items-center gap-2 text-theme-body-sm text-gray-500 hover:text-blue-600 transition-colors my-6 font-medium"
       >
         <ArrowLeft size={16} />
         Back to Vendors
@@ -300,20 +300,20 @@ export default function VendorDetailPage() {
               <ShieldAlert size={24} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-amber-800">
+              <h2 className="text-theme-h6 font-bold text-amber-800">
                 Verification Pending
               </h2>
-              <p className="text-sm text-amber-700 mt-1">
+              <p className="text-theme-body-sm text-amber-700 mt-1">
                 This vendor has applied to join the marketplace. Review their
                 company details and KYC documents below before granting access.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
-            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-amber-300 text-amber-700 hover:bg-amber-100 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-amber-300 text-amber-700 hover:bg-amber-100 px-4 py-2.5 rounded-xl text-theme-body-sm font-semibold transition-colors">
               <XCircle size={16} /> Reject
             </button>
-            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-amber-500 text-white hover:bg-amber-600 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm">
+            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-amber-500 text-white hover:bg-amber-600 px-4 py-2.5 rounded-xl text-theme-body-sm font-semibold transition-colors shadow-sm">
               <CheckCircle2 size={16} /> Approve Vendor
             </button>
           </div>
@@ -328,7 +328,7 @@ export default function VendorDetailPage() {
               <Store size={32} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+              <h1 className="text-theme-h4 font-bold text-gray-800 flex items-center gap-3">
                 <span className="capitalize">
                   {vendorData.company.company_name}
                 </span>
@@ -336,7 +336,7 @@ export default function VendorDetailPage() {
                   <ShieldCheck size={20} className="text-emerald-500" />
                 )}
               </h1>
-              <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+              <div className="flex flex-wrap items-center gap-4 mt-2 text-theme-body-sm text-gray-500">
                 <span className="flex items-center gap-1.5 font-mono bg-gray-50 px-2 py-0.5 rounded border border-gray-100">
                   <Globe size={14} /> {vendorData.company.company_domain}
                 </span>
@@ -350,7 +350,7 @@ export default function VendorDetailPage() {
           {/* Master Suspend Button */}
           {!isPending && (
             <div>
-              <button className="flex items-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
+              <button className="flex items-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-xl text-theme-body-sm font-semibold transition-colors">
                 <ShieldAlert size={16} /> Suspend Storefront
               </button>
             </div>
@@ -360,34 +360,34 @@ export default function VendorDetailPage() {
         {/* KPI Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-gray-100">
           <div className="bg-gray-50 p-4 rounded-xl">
-            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
+            <p className="text-gray-500 text-theme-caption font-semibold uppercase tracking-wider mb-1">
               Total Revenue
             </p>
-            <p className="text-2xl font-bold text-gray-800">
+            <p className="text-theme-h4 font-bold text-gray-800">
               ₹{vendorData.stats.total_revenue.toLocaleString()}
             </p>
           </div>
           <div className="bg-gray-50 p-4 rounded-xl">
-            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
+            <p className="text-gray-500 text-theme-caption font-semibold uppercase tracking-wider mb-1">
               Total Orders
             </p>
-            <p className="text-2xl font-bold text-gray-800">
+            <p className="text-theme-h4 font-bold text-gray-800">
               {vendorData.stats.total_orders}
             </p>
           </div>
           <div className="bg-gray-50 p-4 rounded-xl">
-            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
+            <p className="text-gray-500 text-theme-caption font-semibold uppercase tracking-wider mb-1">
               Catalog Size
             </p>
-            <p className="text-2xl font-bold text-gray-800">
+            <p className="text-theme-h4 font-bold text-gray-800">
               {vendorData.stats.active_products}
             </p>
           </div>
           <div className="bg-gray-50 p-4 rounded-xl">
-            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
+            <p className="text-gray-500 text-theme-caption font-semibold uppercase tracking-wider mb-1">
               Customers
             </p>
-            <p className="text-2xl font-bold text-gray-800">
+            <p className="text-theme-h4 font-bold text-gray-800">
               {vendorData.stats.total_customers}
             </p>
           </div>
@@ -404,7 +404,7 @@ export default function VendorDetailPage() {
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex items-center gap-2 pb-3 text-sm font-semibold transition-colors relative ${activeTab === tab.id ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800'
+                        className={`flex items-center gap-2 pb-3 text-theme-body-sm font-semibold transition-colors relative ${activeTab === tab.id ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800'
                             }`}
                     >
                         <tab.icon size={16} />
@@ -423,18 +423,18 @@ export default function VendorDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Company Details */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <h3 className="text-theme-h6 font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <Briefcase size={18} className="text-blue-500" /> Company Info
               </h3>
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Legal Name</p>
+                  <p className="text-theme-body-sm text-gray-500 mb-1">Legal Name</p>
                   <p className="font-medium text-gray-800 capitalize">
                     {vendorData.company.company_name}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">
+                  <p className="text-theme-body-sm text-gray-500 mb-1">
                     Business Structure
                   </p>
                   <p className="font-medium text-gray-800 capitalize">
@@ -442,7 +442,7 @@ export default function VendorDetailPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Status</p>
+                  <p className="text-theme-body-sm text-gray-500 mb-1">Status</p>
                   <p className="font-medium text-gray-800 capitalize">
                     {vendorData.company.company_status}
                   </p>
@@ -452,24 +452,24 @@ export default function VendorDetailPage() {
 
             {/* Owner Details */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <h3 className="text-theme-h6 font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <User size={18} className="text-blue-500" /> Primary Owner
               </h3>
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Full Name</p>
+                  <p className="text-theme-body-sm text-gray-500 mb-1">Full Name</p>
                   <p className="font-medium text-gray-800 capitalize">
                     {vendorData.owner.first_name} {vendorData.owner.last_name}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Contact Details</p>
+                  <p className="text-theme-body-sm text-gray-500 mb-1">Contact Details</p>
                   <div className="flex flex-col gap-1.5 mt-1">
-                    <p className="text-sm font-medium text-gray-800 flex items-center gap-2 truncate">
+                    <p className="text-theme-body-sm font-medium text-gray-800 flex items-center gap-2 truncate">
                       <Mail size={14} className="text-gray-400 shrink-0" />{" "}
                       {vendorData.owner.email}
                     </p>
-                    <p className="text-sm font-medium text-gray-800 flex items-center gap-2">
+                    <p className="text-theme-body-sm font-medium text-gray-800 flex items-center gap-2">
                       <Phone size={14} className="text-gray-400 shrink-0" />{" "}
                       {vendorData.owner.phone_number}
                     </p>
@@ -480,11 +480,11 @@ export default function VendorDetailPage() {
 
             {/* KYC Documents */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <h3 className="text-theme-h6 font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FileText size={18} className="text-blue-500" /> KYC Documents
               </h3>
               {vendorData.documents.length === 0 ? (
-                <p className="text-sm text-gray-500">No documents uploaded.</p>
+                <p className="text-theme-body-sm text-gray-500">No documents uploaded.</p>
               ) : (
                 <div className="space-y-2 max-h-[160px] overflow-y-auto pr-2">
                   {vendorData.documents.map((doc) => (
@@ -495,7 +495,7 @@ export default function VendorDetailPage() {
                       rel="noopener noreferrer"
                       className="flex items-center justify-between p-2.5 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors group"
                     >
-                      <span className="text-xs font-bold text-gray-600 group-hover:text-blue-700 uppercase tracking-wide">
+                      <span className="text-theme-caption font-bold text-gray-600 group-hover:text-blue-700 uppercase tracking-wide">
                         {doc.document_type.replace(/_/g, " ")}
                       </span>
                       <ExternalLink
@@ -512,21 +512,21 @@ export default function VendorDetailPage() {
           {/* ROW 2: License & Subscription Management */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <h3 className="text-theme-h6 font-bold text-gray-800 flex items-center gap-2">
                 <Key size={18} className="text-indigo-500" /> License &
                 Subscription
               </h3>
               {/* Dynamic Status Badge */}
               {vendorData.license.status === LicenseStatus.TRIAL ? (
-                <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-theme-caption font-bold uppercase tracking-wider flex items-center gap-1.5">
                   <Clock size={14} /> Trial Active
                 </span>
               ) : vendorData.license.status === LicenseStatus.ACTIVE ? (
-                <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-theme-caption font-bold uppercase tracking-wider">
                   Active License
                 </span>
               ) : (
-                <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-theme-caption font-bold uppercase tracking-wider">
                   {vendorData.license.status}
                 </span>
               )}
@@ -535,15 +535,15 @@ export default function VendorDetailPage() {
             <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Plan Info */}
               <div>
-                <p className="text-sm text-gray-500 mb-1">Current Plan</p>
-                <p className="text-xl font-bold text-gray-800">
+                <p className="text-theme-body-sm text-gray-500 mb-1">Current Plan</p>
+                <p className="text-theme-h5 font-bold text-gray-800">
                   {vendorData.license.plan_name}
                 </p>
 
                 {vendorData.license.is_trial &&
                   vendorData.license.trial_ends_at && (
                     <div className="mt-4 p-3 bg-indigo-50 rounded-xl border border-indigo-100">
-                      <p className="text-xs font-semibold text-indigo-800 mb-2">
+                      <p className="text-theme-caption font-semibold text-indigo-800 mb-2">
                         Trial Ends in{" "}
                         {calculateTrialDays(vendorData.license.trial_ends_at)}{" "}
                         Days
@@ -554,7 +554,7 @@ export default function VendorDetailPage() {
                           style={{ width: "45%" }}
                         ></div>
                       </div>
-                      <p className="text-xs text-indigo-600 mt-2">
+                      <p className="text-theme-caption text-indigo-600 mt-2">
                         {new Date(
                           vendorData.license.trial_ends_at,
                         ).toLocaleDateString()}
@@ -566,7 +566,7 @@ export default function VendorDetailPage() {
               {/* Validity Period */}
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1 flex items-center gap-1.5">
+                  <p className="text-theme-body-sm text-gray-500 mb-1 flex items-center gap-1.5">
                     <CalendarDays size={14} /> License Issued
                   </p>
                   <p className="font-medium text-gray-800">
@@ -577,7 +577,7 @@ export default function VendorDetailPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1 flex items-center gap-1.5">
+                  <p className="text-theme-body-sm text-gray-500 mb-1 flex items-center gap-1.5">
                     <AlertOctagon size={14} /> License Expiry
                   </p>
                   <p className="font-medium text-gray-800">
@@ -594,27 +594,27 @@ export default function VendorDetailPage() {
                 {vendorData.license.is_trial ? (
                   <>
                     <button
-                      className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm cursor-pointer"
+                      className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-theme-body-sm font-semibold transition-colors shadow-sm cursor-pointer"
                       onClick={handleActivateClick}
                     >
                       <CheckCircle2 size={16} /> Activate Full License
                     </button>
                     <button
-                      className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer"
+                      className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2.5 rounded-xl text-theme-body-sm font-semibold transition-colors cursor-pointer"
                       onClick={handleExtendTrial}
                     >
                       <Clock size={16} /> Extend Trial +14 Days
                     </button>
                   </>
                 ) : (
-                  <button className="w-full flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer">
+                  <button className="w-full flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2.5 rounded-xl text-theme-body-sm font-semibold transition-colors cursor-pointer">
                     <Power size={16} onClick={handleDeactivateClick} />{" "}
                     Deactivate License
                   </button>
                 )}
 
                 <button
-                  className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-700 hover:bg-red-100 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors mt-2 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-700 hover:bg-red-100 px-4 py-2.5 rounded-xl text-theme-body-sm font-semibold transition-colors mt-2 cursor-pointer"
                   onClick={handleSuspendClick}
                 >
                   <ShieldAlert size={16} /> Emergency Suspend Store
@@ -640,7 +640,7 @@ export default function VendorDetailPage() {
         {/* {activeTab === 'orders' && (
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <h3 className="text-theme-h6 font-bold text-gray-800 flex items-center gap-2">
                                 <ShoppingBag size={18} className="text-blue-500" /> Recent Orders
                             </h3>
                         </div>
@@ -648,10 +648,10 @@ export default function VendorDetailPage() {
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
-                                        <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Order ID</th>
-                                        <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                                        <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
-                                        <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">Order ID</th>
+                                        <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                                        <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -659,17 +659,17 @@ export default function VendorDetailPage() {
                                     {vendorData.recent_orders && vendorData.recent_orders.length > 0 ? (
                                         vendorData.recent_orders.map((order: any) => (
                                             <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="p-4 font-mono text-sm font-semibold text-blue-600">
+                                                <td className="p-4 font-mono text-theme-body-sm font-semibold text-blue-600">
                                                     #{order.id.split('-')[0].toUpperCase()}
                                                 </td>
-                                                <td className="p-4 text-sm text-gray-600">
+                                                <td className="p-4 text-theme-body-sm text-gray-600">
                                                     {new Date(order.created_at).toLocaleDateString('en-GB')}
                                                 </td>
-                                                <td className="p-4 text-sm font-bold text-gray-800">
+                                                <td className="p-4 text-theme-body-sm font-bold text-gray-800">
                                                     ₹{Number(order.total_amount || 0).toLocaleString()}
                                                 </td>
                                                 <td className="p-4">
-                                                    <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-md text-xs font-semibold capitalize">
+                                                    <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-md text-theme-caption font-semibold capitalize">
                                                         {order.order_status || 'Pending'}
                                                     </span>
                                                 </td>
@@ -677,7 +677,7 @@ export default function VendorDetailPage() {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={4} className="p-8 text-center text-gray-400 text-sm">
+                                            <td colSpan={4} className="p-8 text-center text-gray-400 text-theme-body-sm">
                                                 <ShoppingBag size={32} className="mx-auto mb-2 opacity-20" />
                                                 No recent orders found for this vendor.
                                             </td>
@@ -702,22 +702,22 @@ export default function VendorDetailPage() {
                              
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-                                        <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5"><Activity size={14} /> Total Transactions</p>
-                                        <p className="text-2xl font-bold text-gray-800">{financials.total_transactions}</p>
+                                        <p className="text-gray-500 text-theme-caption font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5"><Activity size={14} /> Total Transactions</p>
+                                        <p className="text-theme-h4 font-bold text-gray-800">{financials.total_transactions}</p>
                                     </div>
                                     <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-                                        <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5"><CheckCircle2 size={14} className="text-emerald-500" /> Cleared Revenue</p>
-                                        <p className="text-2xl font-bold text-emerald-600">₹{Number(financials.total_cleared_earnings).toLocaleString()}</p>
+                                        <p className="text-gray-500 text-theme-caption font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5"><CheckCircle2 size={14} className="text-emerald-500" /> Cleared Revenue</p>
+                                        <p className="text-theme-h4 font-bold text-emerald-600">₹{Number(financials.total_cleared_earnings).toLocaleString()}</p>
                                     </div>
                                     <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-                                        <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5"><Clock size={14} className="text-amber-500" /> Pending Revenue</p>
-                                        <p className="text-2xl font-bold text-amber-600">₹{Number(financials.total_pending_earnings).toLocaleString()}</p>
+                                        <p className="text-gray-500 text-theme-caption font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5"><Clock size={14} className="text-amber-500" /> Pending Revenue</p>
+                                        <p className="text-theme-h4 font-bold text-amber-600">₹{Number(financials.total_pending_earnings).toLocaleString()}</p>
                                     </div>
                                 </div>
 
                                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                                     <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                                        <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                        <h3 className="text-theme-h6 font-bold text-gray-800 flex items-center gap-2">
                                             <DollarSign size={18} className="text-emerald-500" /> Revenue Ledger
                                         </h3>
                                     </div>
@@ -725,27 +725,27 @@ export default function VendorDetailPage() {
                                         <table className="w-full text-left border-collapse">
                                             <thead className="bg-gray-50 border-b border-gray-200">
                                                 <tr>
-                                                    <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Transaction Ref</th>
-                                                    <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Order ID</th>
-                                                    <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                                                    <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Net Earning</th>
-                                                    <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                                    <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">Transaction Ref</th>
+                                                    <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">Order ID</th>
+                                                    <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                                                    <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">Net Earning</th>
+                                                    <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
                                                 {financials.earnings.length > 0 ? (
                                                     financials.earnings.map((earning) => (
                                                         <tr key={earning.id} className="hover:bg-gray-50 transition-colors">
-                                                            <td className="p-4 font-mono text-sm text-gray-500 truncate max-w-[150px]" title={earning.transaction_ref}>
+                                                            <td className="p-4 font-mono text-theme-body-sm text-gray-500 truncate max-w-[150px]" title={earning.transaction_ref}>
                                                                 {earning.transaction_ref}
                                                             </td>
-                                                            <td className="p-4 font-mono text-sm font-semibold text-blue-600">
+                                                            <td className="p-4 font-mono text-theme-body-sm font-semibold text-blue-600">
                                                                 #{earning.order_id.split('-')[0].toUpperCase()}
                                                             </td>
-                                                            <td className="p-4 text-sm text-gray-600">
+                                                            <td className="p-4 text-theme-body-sm text-gray-600">
                                                                 {new Date(earning.created_at).toLocaleDateString('en-GB')}
                                                             </td>
-                                                            <td className="p-4 text-sm font-bold text-gray-800">
+                                                            <td className="p-4 text-theme-body-sm font-bold text-gray-800">
                                                                 ₹{Number(earning.net_earning).toLocaleString()}
                                                             </td>
                                                             <td className="p-4">
@@ -755,7 +755,7 @@ export default function VendorDetailPage() {
                                                     ))
                                                 ) : (
                                                     <tr>
-                                                        <td colSpan={5} className="p-8 text-center text-gray-400 text-sm">
+                                                        <td colSpan={5} className="p-8 text-center text-gray-400 text-theme-body-sm">
                                                             No financial records found for this vendor.
                                                         </td>
                                                     </tr>

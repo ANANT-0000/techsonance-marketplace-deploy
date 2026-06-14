@@ -28,12 +28,12 @@ export default function AuditLogPage() {
             <Navbar title="Audit Log" />
             <main className="admin_vendorManagement">
                 <header className="flex justify-between items-center my-6">
-                    <h1 className="font-bold text-2xl">Manage Vendor domains, and platform access.</h1>
+                    <h1 className="font-bold text-theme-h4">Manage Vendor domains, and platform access.</h1>
                 </header>
                 <div className={"border-2 justify-between rounded-lg flex border-gray-400 items-center px-4 py-2 gap-4 bg-white filter " + (theme === 'light' ? '' : 'invert')}>
                     <span className="border flex flex-3 items-center justify-between gap-0 border-gray-400 px-4 rounded-lg">
                         <button className="rounded-full w-8 h-8"><img className="w-6 h-6" src={searchImgDark} alt="search icon" /></button>
-                        <input type="text" className="text-xl py-2 px-4 w-full" placeholder="Search by name, email or domain" />
+                        <input type="text" className="text-theme-h5 py-2 px-4 w-full" placeholder="Search by name, email or domain" />
                     </span>
                     <span className="flex gap-4">
                         <select className="vendor_filter" name="status" id="status">

@@ -90,8 +90,8 @@ export function DocUploadInput({
             <FileText size={16} className="text-blue-500" />
           </div>
           <div className="text-left">
-            <p className="font-semibold text-gray-800 text-sm">{title}</p>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="font-semibold text-gray-800 text-theme-body-sm">{title}</p>
+            <p className="text-theme-caption text-gray-400 mt-0.5">
               {uploadedCount} {DOC_UPLOAD_TEXT.STATUS.OF} {typeList.length} {DOC_UPLOAD_TEXT.STATUS.UPLOADED}
               {requiredFields.length > 0 && (
                 <span className="ml-2 text-red-500">
@@ -119,13 +119,13 @@ export function DocUploadInput({
       {/* Missing doc errors */}
       {missingDocs.length > 0 && (
         <div className="px-5 py-3 bg-red-50 border-b border-red-100">
-          <p className="text-xs font-semibold text-red-600 mb-1 flex items-center gap-1">
+          <p className="text-theme-caption font-semibold text-red-600 mb-1 flex items-center gap-1">
             <AlertCircle size={12} />
             {DOC_UPLOAD_TEXT.ERRORS.MISSING_HEADER}
           </p>
           <ul className="list-disc list-inside space-y-0.5">
             {missingDocs.map((label) => (
-              <li key={label} className="text-xs text-red-500">
+              <li key={label} className="text-theme-caption text-red-500">
                 {label}
               </li>
             ))}
@@ -157,7 +157,7 @@ export function DocUploadInput({
                 {/* Index */}
                 <span
                   className={[
-                    "shrink-0 w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center mt-0.5",
+                    "shrink-0 w-7 h-7 rounded-full text-theme-caption font-bold flex items-center justify-center mt-0.5",
                     hasFile
                       ? "bg-emerald-100 text-emerald-700"
                       : isMissing
@@ -171,22 +171,22 @@ export function DocUploadInput({
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <p className="text-sm font-semibold text-gray-700">
+                    <p className="text-theme-body-sm font-semibold text-gray-700">
                       {field.label}
                     </p>
                     {isRequired ? (
-                      <span className="text-[10px] text-red-500 font-medium bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">
+                      <span className="text-theme-tiny text-red-500 font-medium bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">
                         {DOC_UPLOAD_TEXT.LABELS.REQUIRED}
                       </span>
                     ) : (
-                      <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                      <span className="text-theme-tiny text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
                         {DOC_UPLOAD_TEXT.LABELS.OPTIONAL}
                       </span>
                     )}
                   </div>
 
                   {field.helperText && !hasFile && (
-                    <p className="text-xs text-gray-400 mb-2">
+                    <p className="text-theme-caption text-gray-400 mb-2">
                       {field.helperText}
                     </p>
                   )}
@@ -195,10 +195,10 @@ export function DocUploadInput({
                     <div className="flex items-center gap-2 bg-white border border-emerald-200 rounded-xl px-3 py-2">
                       <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-gray-700 truncate">
+                        <p className="text-theme-caption font-medium text-gray-700 truncate">
                           {entry!.file!.name}
                         </p>
-                        <p className="text-[10px] text-gray-400">
+                        <p className="text-theme-tiny text-gray-400">
                           {fmtSize(entry!.file!.size)}
                         </p>
                       </div>
@@ -214,7 +214,7 @@ export function DocUploadInput({
                   ) : (
                     <label className="cursor-pointer flex items-center gap-2 border-2 border-dashed border-gray-200 hover:border-blue-300 rounded-xl px-4 py-2.5 transition-colors group">
                       <Upload size={14} className="text-gray-400 group-hover:text-blue-500 transition-colors shrink-0" />
-                      <span className="text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
+                      <span className="text-theme-caption text-gray-500 group-hover:text-blue-600 transition-colors">
                         {DOC_UPLOAD_TEXT.ACTIONS.UPLOAD_HINT}
                       </span>
                       <input

@@ -127,7 +127,7 @@ export function SequenceResetSelect({ value, onChange, name }: SequenceResetSele
             setAutoSelected(false);
             onChange(e.target.value);
           }}
-          className="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg
+          className="w-full px-3 py-2 text-theme-body-sm bg-white border border-gray-200 rounded-lg
                      focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent
                      transition-all appearance-none pr-8"
         >
@@ -145,7 +145,7 @@ export function SequenceResetSelect({ value, onChange, name }: SequenceResetSele
       </div>
 
       {/* Contextual info strip */}
-      <div className="flex flex-col gap-1 px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-[11px] text-gray-500">
+      <div className="flex flex-col gap-1 px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-theme-xxs text-gray-500">
         <div className="flex items-center gap-1.5">
           <Globe size={11} className="text-gray-400 shrink-0" />
           <span>
@@ -155,7 +155,7 @@ export function SequenceResetSelect({ value, onChange, name }: SequenceResetSele
             </span>
             {autoSelected && (
               <span className="ml-1.5 bg-blue-50 text-blue-600 border border-blue-100
-                               px-1.5 py-0.5 rounded text-[10px] font-semibold">
+                               px-1.5 py-0.5 rounded text-theme-tiny font-semibold">
                 {SEQUENCE_RESET_SELECT_TEXT.AUTO_SELECTED}
               </span>
             )}

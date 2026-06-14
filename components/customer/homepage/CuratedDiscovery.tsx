@@ -87,13 +87,13 @@ export function CuratedDiscovery({
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-[0.25em] text-purple-600 uppercase mb-2">
+            <span className="inline-flex items-center gap-1 text-theme-tiny font-bold tracking-[0.25em] text-purple-600 uppercase mb-2">
               <Sparkles size={12} /> {CURATED_DISCOVERY_TEXT.LIVE_CURATION}
             </span>
-            <h2 className="text-3xl font-serif tracking-tight text-gray-900 leading-tight">
+            <h2 className="text-theme-h3 font-serif tracking-tight text-gray-900 leading-tight">
               {displayTitle}
             </h2>
-            <p className="text-xs text-gray-400 mt-2 max-w-lg">
+            <p className="text-theme-caption text-gray-400 mt-2 max-w-lg">
               {displaySubtitle}
             </p>
           </div>
@@ -131,10 +131,10 @@ export function CuratedDiscovery({
             ))
           ) : products.length === 0 ? (
             <div className="w-full text-center py-12 text-slate-450 bg-white border border-dashed border-slate-200 rounded-3xl">
-              <p className="text-sm">{CURATED_DISCOVERY_TEXT.NO_ITEMS}</p>
+              <p className="text-theme-body-sm">{CURATED_DISCOVERY_TEXT.NO_ITEMS}</p>
               <Link
                 href="/store"
-                className="text-xs text-purple-600 font-bold hover:underline mt-2 inline-block"
+                className="text-theme-caption text-purple-600 font-bold hover:underline mt-2 inline-block"
               >
                 {CURATED_DISCOVERY_TEXT.VIEW_ALL}
               </Link>

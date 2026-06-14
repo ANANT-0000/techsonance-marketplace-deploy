@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { fetchAddToCart, fetchRemoveFromCart } from "@/utils/customerApiClient";
 import { useEffect, useRef, useState } from "react";
 import { authToken } from "@/utils/authToken";
-import { Variant } from "@/utils/Types";
+import { Variant, ProductImageType } from "@/utils/Types";
 import { ADD_TO_CART_TEXT } from "@/constants/customerText";
 
 interface AddToCartProps {
@@ -46,6 +46,72 @@ export function AddToCart({
     cartId?: string;
   } | null>(null);
 
+  const [resolvedVariant, setResolvedVariant] = useState<Variant | undefined>(productVariant);
+
+  useEffect(() => {
+    if (productVariant && productVariant.price !== undefined) {
+      setResolvedVariant(productVariant);
+      return;
+    }
+    
+    let active = true;
+    const loadVariantDetails = async () => {
+      try {
+        const { fetchProductVariantDetails } = await import("@/utils/commonAPiClient");
+        const res = await fetchProductVariantDetails(productVariantId);
+        if (active && res && res.success && res.data) {
+          const vData = res.data;
+          let imagesArray: any[] = [];
+          if (Array.isArray(vData.images)) {
+            imagesArray = vData.images.map((img: any, idx: number) => ({
+              id: img.id || String(idx),
+              image_url: img.image_url || img.imageUrl,
+              alt_text: img.alt_text || vData.variant_name,
+              is_primary: img.is_primary || idx === 0,
+              imgType: img.imgType || ProductImageType.MAIN,
+            }));
+          } else if (typeof vData.images === "string") {
+            imagesArray = [
+              {
+                id: "primary",
+                image_url: vData.images,
+                alt_text: vData.variant_name,
+                is_primary: true,
+                imgType: ProductImageType.MAIN,
+              },
+            ];
+          }
+
+          const transformedVariant: Variant = {
+            id: vData.id,
+            variant_name: vData.variant_name,
+            sku: vData.sku,
+            price: vData.price,
+            status: vData.status,
+            product_id: vData.product_id || "",
+            images: imagesArray,
+            attributes: [],
+            stock_quantity: vData.stock_quantity ?? 9999,
+            created_at: "",
+            updated_at: "",
+            seo_meta: null,
+            inventory: {
+              stock_quantity: vData.stock_quantity ?? 9999,
+              warehouse_id: "",
+            },
+          } as any;
+          setResolvedVariant(transformedVariant);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch variant details in AddToCart:", err);
+      }
+    };
+    loadVariantDetails();
+    return () => {
+      active = false;
+    };
+  }, [productVariantId, productVariant]);
+
   const cartItem = items?.find(
     (item) => item.productVariantId === productVariantId,
   );
@@ -66,7 +132,7 @@ export function AddToCart({
           cartItemId: "",
           productVariantId,
           quantity: optimisticQuantity,
-          productVariant,
+          productVariant: resolvedVariant,
         }),
       );
 
@@ -88,7 +154,7 @@ export function AddToCart({
         cartItemId: cartItem?.cartItemId ?? "",
         productVariantId,
         quantity: optimisticQuantity,
-        productVariant,
+        productVariant: resolvedVariant,
       }),
     );
 
@@ -122,7 +188,7 @@ export function AddToCart({
           cartItemId: cartResponse.cart_item_id,
           productVariantId: cartResponse.product_variant_id,
           quantity: cartResponse.quantity,
-          productVariant,
+          productVariant: resolvedVariant,
         }),
       );
     } catch (error: any) {
@@ -140,7 +206,7 @@ export function AddToCart({
               cartItemId: prevCartItemId ?? "",
               productVariantId,
               quantity: prevQuantity,
-              productVariant,
+              productVariant: resolvedVariant,
             }),
           );
         }
@@ -223,7 +289,7 @@ export function AddToCart({
             cartItemId: prevCartItemId,
             productVariantId,
             quantity: prevQuantity,
-            productVariant,
+            productVariant: resolvedVariant,
           }),
         );
       }
@@ -256,7 +322,7 @@ export function AddToCart({
             ) : (
               <ShoppingCart className="w-4 h-4 shrink-0" />
             )}
-            <span className="text-[12px] sm:text-[13px] font-semibold tracking-wide whitespace-nowrap">
+            <span className="text-theme-caption sm:text-xs-plus font-semibold tracking-wide whitespace-nowrap">
               {ADD_TO_CART_TEXT.ADD}
             </span>
           </motion.button>
@@ -286,7 +352,7 @@ export function AddToCart({
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 8, opacity: 0 }}
                 transition={{ duration: 0.12 }}
-                className="font-bold text-xs sm:text-sm min-w-[20px] text-center tabular-nums grow"
+                className="font-bold text-theme-caption sm:text-theme-body-sm min-w-[20px] text-center tabular-nums grow"
               >
                 {quantity}
               </motion.span>

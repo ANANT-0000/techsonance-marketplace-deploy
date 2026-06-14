@@ -182,7 +182,7 @@ export default function WriteReviewPage() {
         >
           <ArrowLeft size={24} className="text-gray-700" />
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">Write a Review</h1>
+        <h1 className="text-theme-h4 font-bold text-gray-900">Write a Review</h1>
       </div>
 
       {/* Product Summary Card */}
@@ -195,10 +195,10 @@ export default function WriteReviewPage() {
             className="w-20 h-20 object-contain bg-[#f7f7f7] rounded-lg mix-blend-multiply"
           />
           <div>
-            <p className="font-semibold text-gray-900 text-lg">
+            <p className="font-semibold text-gray-900 text-theme-h6">
               {state.targetItem.variant.variant_name}
             </p>
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-gray-500 text-theme-body-sm mt-1">
               Purchased in this order
             </p>
           </div>
@@ -211,14 +211,14 @@ export default function WriteReviewPage() {
         className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-200"
       >
         {state.error && (
-          <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-xl flex items-center gap-2 text-sm border border-red-100">
+          <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-xl flex items-center gap-2 text-theme-body-sm border border-red-100">
             <AlertCircle size={16} /> {state.error}
           </div>
         )}
 
         {/* 1. Star Rating */}
         <div className="mb-8 flex flex-col items-center sm:items-start">
-          <h2 className="text-lg font-bold text-gray-900 mb-3">
+          <h2 className="text-theme-h6 font-bold text-gray-900 mb-3">
             Overall Rating
           </h2>
           <div className="flex gap-2">
@@ -251,7 +251,7 @@ export default function WriteReviewPage() {
               </button>
             ))}
           </div>
-          <p className="text-sm text-gray-500 mt-2 font-medium">
+          <p className="text-theme-body-sm text-gray-500 mt-2 font-medium">
             {state.rating === 1 && "Terrible"}
             {state.rating === 2 && "Poor"}
             {state.rating === 3 && "Fair"}
@@ -265,10 +265,10 @@ export default function WriteReviewPage() {
 
         {/* 2. Written Review */}
         <div className="mb-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-1">
+          <h2 className="text-theme-h6 font-bold text-gray-900 mb-1">
             Add a written review
           </h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-theme-body-sm text-gray-500 mb-4">
             Share your experience to help other buyers make better choices.
           </p>
           <textarea
@@ -283,7 +283,7 @@ export default function WriteReviewPage() {
             placeholder="What did you like or dislike? What should other shoppers know?"
             className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-gray-50/50"
           ></textarea>
-          <p className="text-xs text-gray-400 mt-2 text-right">
+          <p className="text-theme-caption text-gray-400 mt-2 text-right">
             {state.reviewText && state.reviewText.length} characters
           </p>
         </div>

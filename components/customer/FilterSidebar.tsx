@@ -55,7 +55,7 @@ function DesktopSidebarContent({
             {/* Desktop Categories (Left-Aligned Checkboxes) */}
             {categories.length > 0 && (
                 <section>
-                    <h2 className="text-[15px] font-bold text-gray-900 mb-4">{FILTER_SIDEBAR_TEXT.CATEGORY}</h2>
+                    <h2 className="text-theme-body-plus font-bold text-gray-900 mb-4">{FILTER_SIDEBAR_TEXT.CATEGORY}</h2>
                     <div className="flex flex-col gap-3">
                         {categories.map((cat) => {
                             const isSelected = filters.selectedCategories.includes(cat.id);
@@ -64,7 +64,7 @@ function DesktopSidebarContent({
                                     <div className={`w-4 h-4 rounded-[4px] flex items-center justify-center border transition-colors ${isSelected ? 'bg-theme-primary border-theme-primary' : 'border-gray-300 bg-white group-hover:border-gray-400'}`}>
                                         {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
                                     </div>
-                                    <span className={`text-[14px] ${isSelected ? 'text-gray-900 font-medium' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                                    <span className={`text-theme-body-sm ${isSelected ? 'text-gray-900 font-medium' : 'text-gray-500 group-hover:text-gray-700'}`}>
                                         {cat.name}
                                     </span>
                                     <input 
@@ -88,7 +88,7 @@ function DesktopSidebarContent({
                     onClick={() => setIsPriceOpen(!isPriceOpen)}
                     className="flex items-center justify-between w-full mb-4 group"
                 >
-                    <h2 className="text-[15px] font-bold text-gray-900">{FILTER_SIDEBAR_TEXT.PRICE_RANGE}</h2>
+                    <h2 className="text-theme-body-plus font-bold text-gray-900">{FILTER_SIDEBAR_TEXT.PRICE_RANGE}</h2>
                     {isPriceOpen ? <ChevronUp size={16} className="text-gray-400 group-hover:text-gray-600" /> : <ChevronDown size={16} className="text-gray-400 group-hover:text-gray-600" />}
                 </button>
 
@@ -102,22 +102,22 @@ function DesktopSidebarContent({
                         >
                             <div className="flex items-center gap-3">
                                 <div className="flex-1 flex items-center border border-gray-200 rounded-lg px-3 py-2 bg-white focus-within:border-gray-400 transition-colors">
-                                    <span className="text-gray-500 mr-1 text-[13px]">$</span>
+                                    <span className="text-gray-500 mr-1 text-theme-caption-lg">$</span>
                                     <input
                                         type="number"
                                         value={filters.minPrice}
                                         onChange={(e) => onFiltersChange({ ...filters, minPrice: Math.max(0, Number(e.target.value)) })}
-                                        className="w-full bg-transparent outline-none text-sm font-medium text-gray-900"
+                                        className="w-full bg-transparent outline-none text-theme-body-sm font-medium text-gray-900"
                                     />
                                 </div>
-                                <span className="text-gray-400 text-sm">{FILTER_SIDEBAR_TEXT.TO}</span>
+                                <span className="text-gray-400 text-theme-body-sm">{FILTER_SIDEBAR_TEXT.TO}</span>
                                 <div className="flex-1 flex items-center border border-gray-200 rounded-lg px-3 py-2 bg-white focus-within:border-gray-400 transition-colors">
-                                    <span className="text-gray-500 mr-1 text-[13px]">$</span>
+                                    <span className="text-gray-500 mr-1 text-theme-caption-lg">$</span>
                                     <input
                                         type="number"
                                         value={filters.maxPrice}
                                         onChange={(e) => onFiltersChange({ ...filters, maxPrice: Math.min(DEFAULT_MAX, Number(e.target.value)) })}
-                                        className="w-full bg-transparent outline-none text-sm font-medium text-gray-900"
+                                        className="w-full bg-transparent outline-none text-theme-body-sm font-medium text-gray-900"
                                     />
                                 </div>
                             </div>
@@ -171,7 +171,7 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                     className="bg-[#0A0A0B] text-white px-4 py-1.5 rounded-full flex items-center gap-2 shadow-md hover:bg-black transition-colors"
                 >
                     <SlidersHorizontal size={14} />
-                    <span className="font-semibold text-sm">{FILTER_SIDEBAR_TEXT.FILTER}</span>
+                    <span className="font-semibold text-theme-body-sm">{FILTER_SIDEBAR_TEXT.FILTER}</span>
                 </button>
             </div>
 
@@ -200,8 +200,8 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                             <div className="flex-shrink-0 pt-3 pb-4 px-6 border-b border-gray-100 flex flex-col items-center relative bg-white">
                                 <div className="w-10 h-1 bg-gray-300 rounded-full mb-5" />
                                 <div className="w-full flex items-center justify-between">
-                                    <h2 className="text-xl font-bold text-gray-900">{FILTER_SIDEBAR_TEXT.FILTERS}</h2>
-                                    <button onClick={handleClearAll} className="text-[15px] font-semibold text-theme-primary hover:text-theme-secondary transition-colors">
+                                    <h2 className="text-theme-h5 font-bold text-gray-900">{FILTER_SIDEBAR_TEXT.FILTERS}</h2>
+                                    <button onClick={handleClearAll} className="text-theme-body-plus font-semibold text-theme-primary hover:text-theme-secondary transition-colors">
                                         {FILTER_SIDEBAR_TEXT.CLEAR_ALL}
                                     </button>
                                 </div>
@@ -211,13 +211,13 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8 pb-32">
                                 {/* Sort By Pills */}
                                 <section>
-                                    <h3 className="text-[16px] font-bold text-gray-900 mb-4">{FILTER_SIDEBAR_TEXT.SORT_BY}</h3>
+                                    <h3 className="text-theme-body font-bold text-gray-900 mb-4">{FILTER_SIDEBAR_TEXT.SORT_BY}</h3>
                                     <div className="flex flex-wrap gap-2.5">
                                         {SORT_OPTIONS.map((opt) => (
                                             <button
                                                 key={opt.value}
                                                 onClick={() => onSortChange(opt.value)}
-                                                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-colors border ${
+                                                className={`px-5 py-2.5 rounded-full text-theme-body-sm font-medium transition-colors border ${
                                                     sortBy === opt.value
                                                         ? 'bg-[#0A0A0B] text-white border-[#0A0A0B]'
                                                         : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
@@ -231,7 +231,7 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
 
                                 {/* Price Range Visual */}
                                 <section>
-                                    <h3 className="text-[16px] font-bold text-gray-900 mb-5">{FILTER_SIDEBAR_TEXT.PRICE_RANGE}</h3>
+                                    <h3 className="text-theme-body font-bold text-gray-900 mb-5">{FILTER_SIDEBAR_TEXT.PRICE_RANGE}</h3>
                                     <div className="w-full bg-theme-primary/10 h-2.5 rounded-full mb-4 relative">
                                         <div 
                                             className="absolute h-full bg-theme-primary rounded-full"
@@ -241,7 +241,7 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                                             }}
                                         />
                                     </div>
-                                    <div className="flex items-center justify-between text-[15px] font-medium text-gray-700">
+                                    <div className="flex items-center justify-between text-theme-body-plus font-medium text-gray-700">
                                         <span>$0</span>
                                         <span>$5000+</span>
                                     </div>
@@ -249,13 +249,13 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
 
                                 {/* Category (Right-Aligned Checkboxes) */}
                                 <section>
-                                    <h3 className="text-[16px] font-bold text-gray-900 mb-4">{FILTER_SIDEBAR_TEXT.CATEGORY}</h3>
+                                    <h3 className="text-theme-body font-bold text-gray-900 mb-4">{FILTER_SIDEBAR_TEXT.CATEGORY}</h3>
                                     <div className="flex flex-col gap-5">
                                         {categories.map((cat) => {
                                             const isSelected = filters.selectedCategories.includes(cat.id);
                                             return (
                                                 <label key={cat.id} className="flex items-center justify-between cursor-pointer group">
-                                                    <span className="text-gray-700 text-[15px]">{cat.name}</span>
+                                                    <span className="text-gray-700 text-theme-body-plus">{cat.name}</span>
                                                     <div className={`w-5 h-5 rounded-[4px] flex items-center justify-center border transition-colors ${isSelected ? 'bg-[#0A0A0B] border-[#0A0A0B]' : 'border-gray-300 bg-white group-hover:border-gray-400'}`}>
                                                         {isSelected && <Check size={14} className="text-white" strokeWidth={3} />}
                                                     </div>
@@ -276,7 +276,7 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
                             <div className="absolute bottom-8 left-0 right-0 p-4 border-t border-gray-100 bg-white">
                                 <button
                                     onClick={() => setIsOpen(false)}
-                                    className="w-full bg-[#0A0A0B] hover:bg-black text-white font-semibold py-4 rounded-[12px] text-[15px] transition-colors"
+                                    className="w-full bg-[#0A0A0B] hover:bg-black text-white font-semibold py-4 rounded-[12px] text-theme-body-plus transition-colors"
                                 >
                                     {FILTER_SIDEBAR_TEXT.APPLY} {totalResults} {FILTER_SIDEBAR_TEXT.RESULTS}
                                 </button>

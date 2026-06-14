@@ -292,7 +292,7 @@ export default function LocationsPage() {
                           />
 
                           {fieldError && (
-                            <p className="text-red-600 text-sm">
+                            <p className="text-red-600 text-theme-body-sm">
                               {fieldError.message as string}
                             </p>
                           )}
@@ -308,7 +308,7 @@ export default function LocationsPage() {
 
                           <label
                             htmlFor={field.id}
-                            className="text-sm font-semibold text-gray-700 cursor-pointer"
+                            className="text-theme-body-sm font-semibold text-gray-700 cursor-pointer"
                           >
                             {field.label}
                           </label>
@@ -343,7 +343,7 @@ export default function LocationsPage() {
 
       <section className="w-full p-6 bg-white rounded-lg border border-gray-200 shadow-sm mx-auto">
         <div className="w-full flex justify-between items-center mb-6 border-b pb-4">
-          <h1 className="text-2xl font-bold text-gray-800">Pickup Locations</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">Pickup Locations</h1>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -387,13 +387,13 @@ export default function LocationsPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       {location.address.is_default && (
-                        <span className="inline-block py-1 px-3 rounded-full text-xs font-bold text-blue-700 bg-blue-100 mb-3">
+                        <span className="inline-block py-1 px-3 rounded-full text-theme-caption font-bold text-blue-700 bg-blue-100 mb-3">
                           Default Location
                         </span>
                       )}
-                      <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                      <h2 className="text-theme-h6 font-bold text-gray-900 flex items-center gap-2">
                         {location.warehouse_name}
-                        <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded border">
+                        <span className="text-theme-caption font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded border">
                           {location.address.address_type &&
                             location.address.address_type
                               .charAt(0)
@@ -401,7 +401,7 @@ export default function LocationsPage() {
                               location.address.address_type.slice(1)}
                         </span>
                       </h2>
-                      <p className="text-gray-600 text-sm mt-1">
+                      <p className="text-gray-600 text-theme-body-sm mt-1">
                         {location.address.address_line_1},{" "}
                         {location.address.city},<br />
                         {location.address.state} ,{" "}
@@ -409,7 +409,7 @@ export default function LocationsPage() {
                         {location.address.country}
                       </p>
 
-                      <div className="flex gap-6 mt-3 text-sm text-gray-500">
+                      <div className="flex gap-6 mt-3 text-theme-body-sm text-gray-500">
                         {location.address.number && (
                           <p>
                             <span className="font-semibold text-gray-700">

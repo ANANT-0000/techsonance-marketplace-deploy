@@ -23,10 +23,10 @@ export const RegistrationSuccessModal = ({ isOpen, onClose }: RegistrationSucces
           <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-5 ring-4 ring-emerald-100">
             <CheckCircle2 className="w-11 h-11 text-emerald-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-theme-h4 font-bold text-gray-900 mb-2">
             {REGISTRATION_SUCCESS_MODAL_TEXT.TITLE}
           </h2>
-          <p className="text-gray-500 text-sm mb-7 text-balance">
+          <p className="text-gray-500 text-theme-body-sm mb-7 text-balance">
             {REGISTRATION_SUCCESS_MODAL_TEXT.DESCRIPTION}
           </p>
           <div className="w-full space-y-3 mb-6">
@@ -35,10 +35,10 @@ export const RegistrationSuccessModal = ({ isOpen, onClose }: RegistrationSucces
                 <Clock className="w-5 h-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                <p className="text-theme-xxs font-semibold text-gray-400 uppercase tracking-wider">
                   {REGISTRATION_SUCCESS_MODAL_TEXT.ESTIMATED_REVIEW}
                 </p>
-                <p className="text-sm font-semibold text-gray-700">
+                <p className="text-theme-body-sm font-semibold text-gray-700">
                   {REGISTRATION_SUCCESS_MODAL_TEXT.DAYS}
                 </p>
               </div>
@@ -48,10 +48,10 @@ export const RegistrationSuccessModal = ({ isOpen, onClose }: RegistrationSucces
                 <Mail className="w-5 h-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                <p className="text-theme-xxs font-semibold text-gray-400 uppercase tracking-wider">
                   {REGISTRATION_SUCCESS_MODAL_TEXT.CREDENTIALS_DELIVERY}
                 </p>
-                <p className="text-sm font-semibold text-gray-700">
+                <p className="text-theme-body-sm font-semibold text-gray-700">
                   {REGISTRATION_SUCCESS_MODAL_TEXT.SENT_TO_EMAIL}
                 </p>
               </div>
@@ -59,11 +59,11 @@ export const RegistrationSuccessModal = ({ isOpen, onClose }: RegistrationSucces
           </div>
           <button
             onClick={onClose}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-2xl transition-colors text-sm"
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-2xl transition-colors text-theme-body-sm"
           >
             {REGISTRATION_SUCCESS_MODAL_TEXT.BACK_TO_HOME} <ArrowRight size={16} />
           </button>
-          <p className="text-xs text-gray-400 mt-4">
+          <p className="text-theme-caption text-gray-400 mt-4">
             {REGISTRATION_SUCCESS_MODAL_TEXT.NEED_HELP}{" "}
             <a href="mailto:support@platform.com" className="underline">
               support@platform.com

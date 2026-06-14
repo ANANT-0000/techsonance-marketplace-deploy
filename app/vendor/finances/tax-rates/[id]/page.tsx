@@ -188,13 +188,13 @@ export default function TaxSlabFormPage() {
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">
           <Percent size={22} className="text-blue-500" />
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-theme-h4 font-bold text-gray-800">
             {isEditMode ? "Edit Tax Rule & Rate" : "New Tax Rule & Rate"}
           </h1>
         </div>
         <Link
           href={`/vendor/finances/tax-rates`}
-          className="flex items-center gap-2 text-sm bg-white border border-gray-200 text-gray-700 rounded-xl px-5 py-2.5 shadow-sm hover:bg-gray-50"
+          className="flex items-center gap-2 text-theme-body-sm bg-white border border-gray-200 text-gray-700 rounded-xl px-5 py-2.5 shadow-sm hover:bg-gray-50"
         >
           <ArrowLeft size={16} /> Back to Rates
         </Link>
@@ -222,7 +222,7 @@ export default function TaxSlabFormPage() {
 
                 return (
                   <div key={field.name} className={spanClass}>
-                    <label className="text-sm font-semibold text-gray-700 block mb-1.5">
+                    <label className="text-theme-body-sm font-semibold text-gray-700 block mb-1.5">
                       {field.label}
                       {field.required && (
                         <span className="text-red-500 ml-0.5">*</span>
@@ -242,10 +242,10 @@ export default function TaxSlabFormPage() {
                       ))}
                     </select>
                     {field.note && (
-                      <p className="text-xs text-gray-400 mt-1">{field.note}</p>
+                      <p className="text-theme-caption text-gray-400 mt-1">{field.note}</p>
                     )}
                     {errors[field.name] && (
-                      <span className="text-xs text-red-500 mt-1 block">
+                      <span className="text-theme-caption text-red-500 mt-1 block">
                         This field is required
                       </span>
                     )}
@@ -257,7 +257,7 @@ export default function TaxSlabFormPage() {
               if (field.type === "textarea") {
                 return (
                   <div key={field.name} className={spanClass}>
-                    <label className="text-sm font-semibold text-gray-700 block mb-1.5">
+                    <label className="text-theme-body-sm font-semibold text-gray-700 block mb-1.5">
                       {field.label}{" "}
                       {field.required && (
                         <span className="text-red-500">*</span>
@@ -271,10 +271,10 @@ export default function TaxSlabFormPage() {
                     />
 
                     {field.note && (
-                      <p className="text-xs text-gray-400 mt-1">{field.note}</p>
+                      <p className="text-theme-caption text-gray-400 mt-1">{field.note}</p>
                     )}
                     {errors[field.name] && (
-                      <span className="text-xs text-red-500 mt-1 block">
+                      <span className="text-theme-caption text-red-500 mt-1 block">
                         This field is required
                       </span>
                     )}
@@ -293,7 +293,7 @@ export default function TaxSlabFormPage() {
                         className="w-5 h-5 text-blue-500 bg-gray-50 border-gray-300 rounded focus:ring-blue-400"
                       />
 
-                      <label className="ml-2 text-sm font-semibold text-gray-700">
+                      <label className="ml-2 text-theme-body-sm font-semibold text-gray-700">
                         {field.label}
                       </label>
                     </div>
@@ -304,7 +304,7 @@ export default function TaxSlabFormPage() {
               // ── 4. DEFAULT (INPUT) RENDERER ──
               return (
                 <div key={field.name} className={spanClass}>
-                  <label className="text-sm font-semibold text-gray-700 block mb-1.5">
+                  <label className="text-theme-body-sm font-semibold text-gray-700 block mb-1.5">
                     {field.label}{" "}
                     {field.required && <span className="text-red-500">*</span>}
                   </label>
@@ -317,10 +317,10 @@ export default function TaxSlabFormPage() {
                   />
 
                   {field.note && (
-                    <p className="text-xs text-gray-400 mt-1">{field.note}</p>
+                    <p className="text-theme-caption text-gray-400 mt-1">{field.note}</p>
                   )}
                   {errors[field.name] && (
-                    <span className="text-xs text-red-500 mt-1 block">
+                    <span className="text-theme-caption text-red-500 mt-1 block">
                       This field is required
                     </span>
                   )}

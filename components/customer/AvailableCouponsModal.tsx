@@ -55,7 +55,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                 <div className="p-4 sm:p-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
                     <div className="flex items-center gap-2">
                         <Tag className="text-theme-primary" size={20} />
-                        <h3 className="font-bold text-gray-900 text-base sm:text-lg">{AVAILABLE_COUPONS_MODAL_TEXT.TITLE}</h3>
+                        <h3 className="font-bold text-gray-900 text-theme-body sm:text-theme-h6">{AVAILABLE_COUPONS_MODAL_TEXT.TITLE}</h3>
                     </div>
                     <button onClick={onClose} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-500 hover:text-gray-800 transition-colors shadow-sm">
                         <X size={18} />
@@ -67,7 +67,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center lg:py-12 py-6 gap-3">
                             <Loader2 className="animate-spin text-theme-primary" size={32} />
-                            <p className="text-sm text-gray-500 font-medium">{AVAILABLE_COUPONS_MODAL_TEXT.FINDING}</p>
+                            <p className="text-theme-body-sm text-gray-500 font-medium">{AVAILABLE_COUPONS_MODAL_TEXT.FINDING}</p>
                         </div>
                     ) :coupons && Array.isArray(coupons) &&  coupons.length === 0 ? (
                         <div className="text-center lg:py-12 py-6">
@@ -75,7 +75,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                 <Tag className="text-gray-400" size={28} />
                             </div>
                             <h4 className="text-gray-800 font-bold mb-1">{AVAILABLE_COUPONS_MODAL_TEXT.NO_OFFERS}</h4>
-                            <p className="text-gray-500 text-sm">{AVAILABLE_COUPONS_MODAL_TEXT.NO_OFFERS_DESC}</p>
+                            <p className="text-gray-500 text-theme-body-sm">{AVAILABLE_COUPONS_MODAL_TEXT.NO_OFFERS_DESC}</p>
                         </div>
                     ) : (
                   coupons && Array.isArray(coupons) &&       coupons.map((coupon) => {
@@ -97,14 +97,14 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                     {/* Top Row: Discount & Apply Button */}
                                     <div className="flex justify-between items-start gap-2">
                                         <div className="flex flex-col">
-                                            <span className={`text-xl sm:text-2xl font-black tracking-tight leading-tight ${isLocked ? 'text-gray-600' : 'text-theme-primary'}`}>
+                                            <span className={`text-theme-h5 sm:text-theme-h4 font-black tracking-tight leading-tight ${isLocked ? 'text-gray-600' : 'text-theme-primary'}`}>
                                                 {coupon.discount_type === 'percentage' 
                                                     ? `${coupon.discount_value}% ${AVAILABLE_COUPONS_MODAL_TEXT.OFF}` 
                                                     : `₹${coupon.discount_value} ${AVAILABLE_COUPONS_MODAL_TEXT.OFF}`}
                                             </span>
                                             
                                             <div className="flex items-center gap-2 mt-1">
-                                                <span className="bg-gray-100 px-2 py-0.5 rounded text-[10px] sm:text-xs font-bold text-gray-700 border border-gray-200 border-dashed uppercase truncate max-w-[120px] sm:max-w-[150px]" title={coupon.code}>
+                                                <span className="bg-gray-100 px-2 py-0.5 rounded text-theme-tiny sm:text-theme-caption font-bold text-gray-700 border border-gray-200 border-dashed uppercase truncate max-w-[120px] sm:max-w-[150px]" title={coupon.code}>
                                                     {coupon.code}
                                                 </span>
                                             </div>
@@ -113,7 +113,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                         <button 
                                             onClick={() => !isLocked && onSelect(coupon)}
                                             disabled={isLocked}
-                                            className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm flex-shrink-0 ${
+                                            className={`px-4 sm:px-5 py-2 rounded-xl text-theme-caption sm:text-theme-body-sm font-bold transition-all shadow-sm flex-shrink-0 ${
                                                 isLocked 
                                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                                     : 'bg-gray-900 text-white hover:bg-black hover:shadow-md active:scale-95'
@@ -124,7 +124,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                     </div>
 
                                     {/* Description */}
-                                  {coupon.description &&  <p className="text-[13px] sm:text-sm text-gray-600 font-medium leading-snug">
+                                  {coupon.description &&  <p className="text-theme-caption-lg sm:text-theme-body-sm text-gray-600 font-medium leading-snug">
                                         {coupon.description}
                                     </p>}
 
@@ -133,7 +133,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                         
                                         {/* Min Spend Rule - Takes full width on mobile if needed */}
                                         {coupon.min_order_amount && (
-                                            <div className="col-span-1 sm:col-span-2 text-xs text-gray-500 flex items-start sm:items-center gap-1.5 leading-tight">
+                                            <div className="col-span-1 sm:col-span-2 text-theme-caption text-gray-500 flex items-start sm:items-center gap-1.5 leading-tight">
                                                 <AlertCircle size={14} className={`flex-shrink-0 mt-0.5 sm:mt-0 ${isLocked ? "text-amber-500" : "text-gray-400"}`} />
                                                 {isLocked ? (
                                                     <span className="text-amber-600 font-semibold">
@@ -148,12 +148,12 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                         {/* Meta Boxes Container */}
                                         <div className="col-span-1 sm:col-span-2 flex flex-wrap gap-2 mt-1">
                                             {coupon.max_discount_amount && (
-                                                <div className="flex-1 min-w-[100px] text-[10px] sm:text-[11px] text-gray-500 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100">
+                                                <div className="flex-1 min-w-[100px] text-theme-tiny sm:text-theme-xxs text-gray-500 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100">
                                                     <span className="font-semibold text-gray-700">{AVAILABLE_COUPONS_MODAL_TEXT.MAX_DISCOUNT}</span><br/>
                                                     ₹{coupon.max_discount_amount}
                                                 </div>
                                             )}
-                                            <div className="flex-1 min-w-[100px] text-[10px] sm:text-[11px] text-gray-500 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100">
+                                            <div className="flex-1 min-w-[100px] text-theme-tiny sm:text-theme-xxs text-gray-500 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100">
                                                 <span className="font-semibold text-gray-700 flex items-center gap-1">
                                                     <Clock size={10} className="flex-shrink-0" /> {AVAILABLE_COUPONS_MODAL_TEXT.VALID_TILL}
                                                 </span>

@@ -34,21 +34,21 @@ export function TestimonialsDesktop({ getField }: { getField: (k: string) => any
                   />
                 ))}
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed font-light italic mb-6">
+              <p className="text-theme-body-sm text-gray-600 leading-relaxed font-light italic mb-6">
                 "{t.text}"
               </p>
               <div className="flex items-center gap-3 pt-4 border-t border-gray-50">
                 <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-[11px] font-bold"
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-theme-xxs font-bold"
                   style={{ background: `hsl(${i * 80 + 200}, 55%, 55%)` }}
                 >
                   {t.name ? t.name[0] : "C"}
                 </div>
                 <div>
-                  <p className="text-[13px] font-semibold text-gray-900">
+                  <p className="text-theme-caption-lg font-semibold text-gray-900">
                     {t.name}
                   </p>
-                  <p className="text-[11px] text-gray-400">{t.location || t.role}</p>
+                  <p className="text-theme-xxs text-gray-400">{t.location || t.role}</p>
                 </div>
               </div>
             </div>

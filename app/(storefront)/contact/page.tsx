@@ -76,17 +76,17 @@ export default function Contact() {
         style={{ backgroundImage: `url(${heroContent?.heroImg || ""})` }}
       >
         <div className="absolute inset-0 bg-black/35 z-0" />
-        <h2 className="text-2xl font-medium text-white relative z-10">
+        <h2 className="text-theme-h4 font-medium text-white relative z-10">
           {heroContent?.heroTitle}
         </h2>
-        <h1 className="text-4xl font-bold text-white relative z-10">
+        <h1 className="text-theme-h2 font-bold text-white relative z-10">
           {heroContent?.heroDesc}
         </h1>
       </section>
       <section className="w-full mt-6 mb-8 mx-auto  ">
         <div className="flex  items-start justify-center mx-auto gap-16 flex-wrap   ">
           <div className=" ">
-            <h1 className="font-bold text-2xl mb-4">Message Your Problem</h1>
+            <h1 className="font-bold text-theme-h4 mb-4">Message Your Problem</h1>
             <span className="mt-6 flex flex-col justify-center items-start gap-6 px-6">
               {contactList?.map((contact: any) => (
                 <div

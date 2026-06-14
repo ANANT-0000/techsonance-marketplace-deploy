@@ -26,7 +26,7 @@ export function ItemListPanel({
   return (
     <Card className="rounded-2xl border border-gray-100 shadow-sm">
       <CardHeader className="pb-2 pt-4 px-4 lg:px-5">
-        <CardTitle className="flex items-center gap-2 text-[15px] font-semibold text-gray-900">
+        <CardTitle className="flex items-center gap-2 text-theme-body-plus font-semibold text-gray-900">
           <div className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0">
             {isQuickBuy
               ? <ShoppingCart className="w-3.5 h-3.5 text-gray-600" />
@@ -36,7 +36,7 @@ export function ItemListPanel({
           {isQuickBuy ? ITEM_LIST_PANEL_TEXT.YOUR_ITEM : (
             <span>
               {ITEM_LIST_PANEL_TEXT.CART_ITEMS}
-              <span className="ml-1.5 text-[11px] font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
+              <span className="ml-1.5 text-theme-xxs font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
                 {cartItems.length}
               </span>
             </span>
@@ -63,7 +63,7 @@ export function ItemListPanel({
               onQtyChange={onQuickBuyQtyChange}
             />
           ) : (
-            <p className="text-sm text-gray-400 text-center py-6">{ITEM_LIST_PANEL_TEXT.LOADING}</p>
+            <p className="text-theme-body-sm text-gray-400 text-center py-6">{ITEM_LIST_PANEL_TEXT.LOADING}</p>
           )
         ) : (
           <AnimatePresence>
@@ -72,7 +72,7 @@ export function ItemListPanel({
                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
                   <ShoppingBag size={18} className="text-gray-400" />
                 </div>
-                <p className="text-sm text-gray-400 font-medium">{ITEM_LIST_PANEL_TEXT.EMPTY_CART}</p>
+                <p className="text-theme-body-sm text-gray-400 font-medium">{ITEM_LIST_PANEL_TEXT.EMPTY_CART}</p>
               </div>
             ) : (
               <div className="space-y-2.5">

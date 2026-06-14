@@ -18,20 +18,20 @@ import { PROMO_CONFIG_TEXT } from '@/constants/vendorText';
 
 // ── Reusable Styles ──
 const fieldBase =
-  "w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all bg-white";
+  "w-full px-3 py-2 text-theme-body-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all bg-white";
 const labelBase =
-  "block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5";
+  "block text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-1.5";
 
 // Helper: small helper text below a field
 const HelperText = ({ children }: { children: React.ReactNode }) => (
-  <p className="mt-1 text-xs text-gray-400">{children}</p>
+  <p className="mt-1 text-theme-caption text-gray-400">{children}</p>
 );
 
 // Helper: section divider with title inside the form
 const SectionLabel = ({ icon, label }: { icon: string; label: string }) => (
   <div className="col-span-2 flex items-center gap-2 pt-1 pb-0.5">
-    <span className="text-base">{icon}</span>
-    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+    <span className="text-theme-body">{icon}</span>
+    <span className="text-theme-caption font-bold text-gray-500 uppercase tracking-widest">
       {label}
     </span>
     <div className="flex-1 h-px bg-gray-100" />
@@ -93,7 +93,7 @@ function MultiVariantSelect({
       <label className={labelBase}>{label}</label>
       <div className="rounded-xl border border-gray-200 bg-white divide-y divide-gray-100 max-h-48 overflow-y-auto">
         {variantOptions.length === 0 && (
-          <p className="px-3 py-2 text-xs text-gray-400 italic">
+          <p className="px-3 py-2 text-theme-caption text-gray-400 italic">
             {PROMO_CONFIG_TEXT.COMMON.LOADING_VARIANTS}
           </p>
         )}
@@ -114,13 +114,13 @@ function MultiVariantSelect({
               />
               <div className="min-w-0 flex-1">
                 <p
-                  className="text-sm font-medium text-gray-800 truncate"
+                  className="text-theme-body-sm font-medium text-gray-800 truncate"
                   title={opt.name}
                 >
                   {opt.name}
                 </p>
                 {(opt.sku || opt.price !== undefined) && (
-                  <p className="text-xs text-gray-400 truncate">
+                  <p className="text-theme-caption text-gray-400 truncate">
                     {opt.sku && `${PROMO_CONFIG_TEXT.COMMON.SKU}: ${opt.sku}`}
                     {opt.sku && opt.price !== undefined && " · "}
                     {opt.price !== undefined && `₹${opt.price}`}
@@ -129,7 +129,7 @@ function MultiVariantSelect({
               </div>
               {opt.stock !== undefined && (
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
+                  className={`text-theme-caption px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
                     opt.stock > 0
                       ? "bg-green-50 text-green-700"
                       : "bg-red-50 text-red-500"
@@ -143,7 +143,7 @@ function MultiVariantSelect({
         })}
       </div>
       {selectedIds.length > 0 && (
-        <p className="mt-1.5 text-xs text-blue-500 font-medium">
+        <p className="mt-1.5 text-theme-caption text-blue-500 font-medium">
           {selectedIds.length} {selectedIds.length > 1 ? PROMO_CONFIG_TEXT.COMMON.VARIANTS_S : PROMO_CONFIG_TEXT.COMMON.VARIANT_S}{" "}
           {PROMO_CONFIG_TEXT.COMMON.SELECTED_VARIANTS}
         </p>
@@ -212,7 +212,7 @@ function TieredDiscountBuilder({
           <button
             type="button"
             onClick={() => removeTier(i)}
-            className="mb-0.5 h-9 w-9 flex items-center justify-center rounded-xl border border-red-200 text-red-400 hover:bg-red-50 transition-colors text-lg"
+            className="mb-0.5 h-9 w-9 flex items-center justify-center rounded-xl border border-red-200 text-red-400 hover:bg-red-50 transition-colors text-theme-h6"
             title={PROMO_CONFIG_TEXT.ACTIONS.REMOVE_TIER}
           >
             ×
@@ -222,7 +222,7 @@ function TieredDiscountBuilder({
       <button
         type="button"
         onClick={addTier}
-        className="w-full py-2 rounded-xl border border-dashed border-blue-300 text-blue-500 text-xs font-semibold hover:bg-blue-50 transition-colors"
+        className="w-full py-2 rounded-xl border border-dashed border-blue-300 text-blue-500 text-theme-caption font-semibold hover:bg-blue-50 transition-colors"
       >
         {PROMO_CONFIG_TEXT.ACTIONS.ADD_TIER}
       </button>
@@ -271,7 +271,7 @@ function VariantSelect({
                     {opt.name}
                   </span>
                   {opt.price !== undefined && (
-                    <span className="text-xs text-gray-400 flex-shrink-0">
+                    <span className="text-theme-caption text-gray-400 flex-shrink-0">
                       ₹{opt.price}
                     </span>
                   )}
@@ -282,7 +282,7 @@ function VariantSelect({
         </SelectContent>
       </Select>
       {selected && (
-        <div className="mt-1.5 flex gap-3 text-xs text-gray-500">
+        <div className="mt-1.5 flex gap-3 text-theme-caption text-gray-500">
           {selected.sku && <span>{PROMO_CONFIG_TEXT.COMMON.SKU}: {selected.sku}</span>}
           {selected.price !== undefined && <span>{PROMO_CONFIG_TEXT.COMMON.PRICE}: ₹{selected.price}</span>}
           {selected.stock !== undefined && (
@@ -412,7 +412,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_20}
                   className={fieldBase + " pr-8"}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm font-semibold">
                   %
                 </span>
               </div>
@@ -429,7 +429,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_500}
                   className={fieldBase + " pl-7"}
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm">
                   ₹
                 </span>
               </div>
@@ -450,7 +450,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_299}
                   className={fieldBase + " pl-7"}
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm">
                   ₹
                 </span>
               </div>
@@ -468,7 +468,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.OPTIONAL}
                   className={fieldBase + " pl-7"}
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm">
                   ₹
                 </span>
               </div>
@@ -519,7 +519,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_100}
                   className={fieldBase + " pl-7"}
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm">
                   ₹
                 </span>
               </div>
@@ -539,7 +539,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_499}
                   className={fieldBase + " pl-7"}
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm">
                   ₹
                 </span>
               </div>
@@ -557,7 +557,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.OPTIONAL}
                   className={fieldBase + " pl-7"}
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm">
                   ₹
                 </span>
               </div>
@@ -658,7 +658,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.FULL_FREE}
                   className={fieldBase + " pr-8"}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm font-semibold">
                   %
                 </span>
               </div>
@@ -692,7 +692,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.OPTIONAL}
                   className={fieldBase + " pl-7"}
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm">
                   ₹
                 </span>
               </div>
@@ -779,7 +779,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.HUNDRED}
                   className={fieldBase + " pr-8"}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm font-semibold">
                   %
                 </span>
               </div>
@@ -857,7 +857,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_100}
                   className={fieldBase + " pl-7"}
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm">
                   ₹
                 </span>
               </div>
@@ -895,7 +895,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_499}
                   className={fieldBase + " pl-7"}
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm">
                   ₹
                 </span>
               </div>
@@ -1037,7 +1037,7 @@ export function PromotionConfigurator({
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_499}
                   className={fieldBase + " pl-7"}
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm">
                   ₹
                 </span>
               </div>
@@ -1084,7 +1084,7 @@ export function PromotionConfigurator({
                     placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_10}
                     className={fieldBase + " pr-8"}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm font-semibold">
                     %
                   </span>
                 </div>

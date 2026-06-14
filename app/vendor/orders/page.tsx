@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { searchImgDark } from "@/constants/common";
-import {
-  ChevronDown,
-  ChevronUp,
-  Download,
-  Printer,
-  Package,
-} from "lucide-react";
+import { Printer, Package } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Pagination } from "@/components/common/Pagination";
 import { TableRowSkeleton } from "@/components/common/skeletons";
@@ -17,9 +10,15 @@ import {
   fetchVendorOrderList,
 } from "@/utils/vendorApiClient";
 import Link from "next/link";
-import { OrderStatus as OrderStatusType, OrderStatusEnum } from "@/utils/Types";
+import {
+  OrderStatus as OrderStatusType,
+  OrderStatusEnum,
+  ReturnType,
+  UserStatusEnum,
+} from "@/utils/Types";
 import { redirect } from "next/navigation";
 import { authToken } from "@/utils/authToken";
+import { UiText } from "@/constants/ui-text";
 
 interface OrderAddressType {
   name: string;
@@ -43,32 +42,21 @@ interface OrderPaymentType {
 
 interface OrderItemType {
   quantity: number;
-  order_status: string;
+  order_status: OrderStatusType;
   return_request?: {
-    type: string;
+    type: ReturnType;
   };
 }
 
 interface OrderType {
   id: string;
   total_amount: string;
-  order_status: string;
+  order_status: OrderStatusType;
   created_at: string;
   items: OrderItemType[];
   address: OrderAddressType;
   payment: OrderPaymentType;
 }
-export const orderTableHeader = [
-  "Order ID",
-  "Total Amount",
-  "Qty",
-  "Status",
-  "Customer",
-  "Payment",
-  "Location",
-  "Date",
-  "Actions",
-];
 
 const getStatusBadges = (statuses: string | string[]) => {
   const statusArray = (Array.isArray(statuses) ? statuses : [statuses]).filter(
@@ -79,62 +67,62 @@ const getStatusBadges = (statuses: string | string[]) => {
   );
   const renderBadge = (status: string, index: number) => {
     switch (status) {
-      case "pending":
+      case OrderStatusEnum.PENDING:
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-xs font-semibold"
+            className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
           >
-            ● Pending
+            ● {UiText.ORDERS.PENDING}
           </span>
         );
 
-      case "delivered":
+      case OrderStatusEnum.DELIVERED:
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-xs font-semibold"
+            className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
           >
-            ● Delivered
+            ● {UiText.ORDERS.DELIVERED}
           </span>
         );
 
-      case "active":
+      case UserStatusEnum.ACTIVE:
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 py-1 px-3 rounded-full text-xs font-semibold"
+            className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
           >
-            ● Active
+            ● {UiText.ORDERS.ACTIVE}
           </span>
         );
 
-      case "cancelled":
+      case OrderStatusEnum.CANCELLED:
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-xs font-semibold capitalize"
+            className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize"
           >
-            ● {status}
+            ● {UiText.ORDERS.CANCELLED}
           </span>
         );
 
-      case "shipped":
+      case OrderStatusEnum.SHIPPED:
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-violet-50 text-violet-700 border border-violet-200 py-1 px-3 rounded-full text-xs font-semibold"
+            className="inline-flex items-center gap-1 bg-violet-50 text-violet-700 border border-violet-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
           >
-            ● Shipped
+            ● {UiText.ORDERS.SHIPPED}
           </span>
         );
 
-      case "return":
-      case "replacement":
+      case ReturnType.RETURN:
+      case ReturnType.REPLACEMENT:
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 border border-purple-200 py-1 px-3 rounded-full text-xs font-semibold capitalize"
+            className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 border border-purple-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize"
           >
             ● {status}
           </span>
@@ -144,7 +132,7 @@ const getStatusBadges = (statuses: string | string[]) => {
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-xs font-semibold capitalize"
+            className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize"
           >
             ● {status}
           </span>
@@ -165,9 +153,9 @@ const getPaymentBadge = (method: string, status: string) => {
   const isPaid = status === "Paid" || status === "success";
   return (
     <span
-      className={`inline-flex items-center py-1 px-3 rounded-full text-xs font-semibold border ${isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-600 border-gray-200"}`}
+      className={`inline-flex items-center py-1 px-3 rounded-full text-theme-caption font-semibold border ${isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-600 border-gray-200"}`}
     >
-      {method || "N/A"}
+      {method || UiText.ORDERS.NA}
     </span>
   );
 };
@@ -176,7 +164,9 @@ export default function OrdersPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [orderStatus, setOrderStatus] = useState<OrderStatusType>("");
+  const [orderStatus, setOrderStatus] = useState<OrderStatusType>(
+    OrderStatusEnum.PENDING,
+  );
   const [sortBy, setSortBy] = useState<string>("desc");
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
@@ -185,6 +175,19 @@ export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const offset = (currentPage - 1) * itemsPerPage;
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const orderTableHeader = [
+    UiText.ORDERS.TABLE_HEADERS.ORDER_ID,
+    UiText.ORDERS.TABLE_HEADERS.TOTAL_AMOUNT,
+    UiText.ORDERS.TABLE_HEADERS.QTY,
+    UiText.ORDERS.TABLE_HEADERS.STATUS,
+    UiText.ORDERS.TABLE_HEADERS.CUSTOMER,
+    UiText.ORDERS.TABLE_HEADERS.PAYMENT,
+    UiText.ORDERS.TABLE_HEADERS.LOCATION,
+    UiText.ORDERS.TABLE_HEADERS.DATE,
+    UiText.ORDERS.TABLE_HEADERS.ACTIONS,
+  ];
+
   const handleDateChange = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
     setIsOpen(false);
@@ -242,7 +245,7 @@ export default function OrdersPage() {
       const invoices = res.data;
 
       if (!invoices || invoices.length === 0) {
-        alert("No generated invoices found for these orders yet.");
+        alert(UiText.ORDERS.NO_INVOICES_WARNING);
         return;
       }
 
@@ -266,9 +269,9 @@ export default function OrdersPage() {
         }
       }
 
-      setSelectedOrders([]); // Clear selection on success
-    } catch (error) {
-      alert("Failed to download invoices.");
+      setSelectedOrders([]);
+    } catch {
+      alert(UiText.ORDERS.FAILED_DOWNLOAD_INVOICES);
     } finally {
       setIsDownloading(false);
     }
@@ -279,9 +282,11 @@ export default function OrdersPage() {
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">
           <Package size={22} className="text-blue-500" />
-          <h1 className="text-2xl font-bold text-gray-800">Orders</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">
+            {UiText.ORDERS.TITLE}
+          </h1>
           {orders && orders.length > 0 && (
-            <span className="ml-2 bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+            <span className="ml-2 bg-blue-100 text-blue-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
               {orders.length}
             </span>
           )}
@@ -292,87 +297,55 @@ export default function OrdersPage() {
             <button
               onClick={handleBulkDownload}
               disabled={isDownloading}
-              className="flex items-center gap-2 font-semibold text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm disabled:opacity-50"
+              className="flex items-center gap-2 font-semibold text-theme-body-sm bg-purple-500 hover:bg-purple-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm disabled:opacity-50"
             >
               <Printer size={16} />
               {isDownloading
-                ? "Downloading..."
-                : `Print Invoices (${selectedOrders.length})`}
+                ? UiText.ORDERS.DOWNLOADING
+                : `${UiText.ORDERS.PRINT_INVOICES} (${selectedOrders.length})`}
             </button>
           )}
-          {/* <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
-                         <Download size={16} /> Export CSV
-                     </button> */}
         </div>
       </header>
 
       {/* Filter Bar */}
       <div className="relative flex flex-wrap justify-between rounded-xl items-center py-3 px-4 gap-3 bg-white border border-gray-200 shadow-sm mb-4">
-        {/* Search */}
-        {/* <span className="flex flex-1 min-w-[220px] items-center gap-2 border border-gray-200 bg-gray-50 py-2 px-3 rounded-xl focus-within:border-blue-400 focus-within:bg-white transition-colors">
-                     <img className="w-5 h-5 opacity-50 shrink-0" src={searchImgDark} alt="search icon" />
-                     <input
-                         type="text"
-                         className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
-                         placeholder="Search by name, email or domain"
-                     />
-                 </span> */}
-
         {/* Filters */}
         <span className="flex flex-wrap gap-3 items-center">
           <select
             name=""
-            className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
+            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
             id=""
             onChange={(e) => setOrderStatus(e.target.value as OrderStatusType)}
             value={orderStatus}
           >
-            <option value="">All</option>
-            <option value={OrderStatusEnum.PENDING}>Pending</option>
-            <option value={OrderStatusEnum.PROCESSING}>Processing</option>
-            <option value={OrderStatusEnum.SHIPPED}>Shipped</option>
-            <option value={OrderStatusEnum.DELIVERED}>Delivered</option>
-            <option value={OrderStatusEnum.CANCELLED}>Cancelled</option>
+            <option value="">{UiText.ORDERS.ALL}</option>
+            <option value={OrderStatusEnum.PENDING}>
+              {UiText.ORDERS.PENDING}
+            </option>
+            <option value={OrderStatusEnum.PROCESSING}>
+              {UiText.ORDERS.PROCESSING}
+            </option>
+            <option value={OrderStatusEnum.SHIPPED}>
+              {UiText.ORDERS.SHIPPED}
+            </option>
+            <option value={OrderStatusEnum.DELIVERED}>
+              {UiText.ORDERS.DELIVERED}
+            </option>
+            <option value={OrderStatusEnum.CANCELLED}>
+              {UiText.ORDERS.CANCELLED}
+            </option>
           </select>
 
           <select
-            className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
+            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             name="sort_by"
           >
-            <option value="desc">Newest First</option>
-            <option value="asc">Oldest First</option>
+            <option value="desc">{UiText.ORDERS.NEWEST_FIRST}</option>
+            <option value="asc">{UiText.ORDERS.OLDEST_FIRST}</option>
           </select>
-          {/* 
-                     {isOpen ? (
-                         <button
-                             onClick={() => setIsOpen(false)}
-                             className="flex items-center gap-2 text-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
-                         >
-                             {date ? date.toDateString() : "Select Date"}
-                             <ChevronUp size={16} />
-                         </button>
-                     ) : (
-                         <button
-                             onClick={() => setIsOpen(true)}
-                             className="flex items-center gap-2 text-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
-                         >
-                             {date ? date.toDateString() : "Select Date"}
-                             <ChevronDown size={16} />
-                         </button>
-                     )}
-                       {isOpen && (
-                         <div className="absolute right-4 top-full mt-2 z-20 shadow-lg rounded-xl overflow-hidden border border-gray-200">
-                             <Calendar
-                                 mode="single"
-                                 selected={date}
-                                 onSelect={handleDateChange}
-                                 className="rounded-xl bg-white"
-                                 captionLayout="dropdown"
-                             />
-                         </div>
-                     )} */}
         </span>
       </div>
 
@@ -394,7 +367,7 @@ export default function OrdersPage() {
               {orderTableHeader.map((header) => (
                 <th
                   key={header}
-                  className="p-4 text-xs Rent-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  className="p-4 text-theme-caption Rent-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
                 >
                   {header}
                 </th>
@@ -408,10 +381,10 @@ export default function OrdersPage() {
               <tr>
                 <td
                   colSpan={10}
-                  className="py-16 text-center text-gray-400 text-sm"
+                  className="py-16 text-center text-gray-400 text-theme-body-sm"
                 >
                   <Package size={36} className="mx-auto mb-3 opacity-30" />
-                  No orders found.
+                  {UiText.ORDERS.NO_ORDERS}
                 </td>
               </tr>
             ) : (
@@ -432,7 +405,7 @@ export default function OrdersPage() {
 
                   {/* ORDER ID */}
                   <td className="p-4">
-                    <span className="font-mono text-sm font-semibold text-gray-800">
+                    <span className="font-mono text-theme-body-sm font-semibold text-gray-800">
                       #{item.id.split("-")[0].toUpperCase()}
                     </span>
                   </td>
@@ -445,7 +418,7 @@ export default function OrdersPage() {
                   </td>
 
                   {/* QTY */}
-                  <td className="p-4 text-gray-600 text-sm">
+                  <td className="p-4 text-gray-600 text-theme-body-sm">
                     {item.items?.reduce(
                       (total, cur) => total + cur.quantity,
                       0,
@@ -464,8 +437,8 @@ export default function OrdersPage() {
                   </td>
 
                   {/* CUSTOMER */}
-                  <td className="p-4 text-sm text-gray-700 font-medium whitespace-nowrap">
-                    {item.address?.name || "N/A"}
+                  <td className="p-4 text-theme-body-sm text-gray-700 font-medium whitespace-nowrap">
+                    {item.address?.name || UiText.ORDERS.NA}
                   </td>
 
                   {/* PAYMENT */}
@@ -477,7 +450,7 @@ export default function OrdersPage() {
                   </td>
 
                   {/* LOCATION */}
-                  <td className="p-4 text-sm text-gray-500 whitespace-nowrap max-w-[200px] truncate">
+                  <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap max-w-[200px] truncate">
                     {[
                       item.address?.city,
                       item.address?.state,
@@ -485,11 +458,11 @@ export default function OrdersPage() {
                       item.address?.postal_code,
                     ]
                       .filter(Boolean)
-                      .join(", ") || "N/A"}
+                      .join(", ") || UiText.ORDERS.NA}
                   </td>
 
                   {/* DATE */}
-                  <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
+                  <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap">
                     {new Date(item.created_at).toLocaleDateString("en-GB")}
                   </td>
 
@@ -497,9 +470,9 @@ export default function OrdersPage() {
                   <td className="p-4">
                     <Link
                       href={`orders/${item.id}`}
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                      className="text-theme-caption font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
                     >
-                      View →
+                      {UiText.ORDERS.VIEW_ARROW}
                     </Link>
                   </td>
                 </tr>

@@ -136,7 +136,7 @@ export function SearchBar({
           }}
           autoFocus // Automatically focus input when component mounts
           placeholder={placeholder}
-          className="flex-1 text-sm text-gray-800 placeholder:text-gray-400 outline-none bg-transparent min-w-0"
+          className="flex-1 text-theme-body-sm text-gray-800 placeholder:text-gray-400 outline-none bg-transparent min-w-0"
         />
 
         <AnimatePresence>
@@ -178,7 +178,7 @@ export function SearchBar({
                   <button
                     onMouseDown={(e) => e.preventDefault()} // Prevent input blur before click registers
                     onClick={() => handleSuggestionClick(s.name)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-theme-body-sm text-gray-700 hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left"
                   >
                     <Search size={13} className="text-gray-300 flex-shrink-0" />
                     <SuggestionText text={s.name} query={value} />

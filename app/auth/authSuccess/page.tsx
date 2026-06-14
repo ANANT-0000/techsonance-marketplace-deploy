@@ -144,7 +144,7 @@ function AuthSuccessHandler() {
                 />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">
               Completing Sign In...
             </h2>
             <p className="text-slate-600">
@@ -172,7 +172,7 @@ function AuthSuccessHandler() {
                 </svg>
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Success!</h2>
+            <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">Success!</h2>
             <p className="text-slate-600">
               You've been signed in successfully. Redirecting...
             </p>
@@ -198,13 +198,13 @@ function AuthSuccessHandler() {
                 </svg>
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">
               Authentication Failed
             </h2>
             <p className="text-slate-600 mb-4">
               {errorMessage || "An error occurred during sign in"}
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="text-theme-body-sm text-slate-500">
               Redirecting to login page...
             </p>
           </div>

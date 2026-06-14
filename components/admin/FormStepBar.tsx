@@ -20,7 +20,7 @@ export function FormStepBar({ current }: { current: number }) {
                                 {done ? <CheckCircle2 size={16} /> : <Icon size={15} />}
                             </div>
                             <span className={[
-                                "text-[10px] font-semibold whitespace-nowrap",
+                                "text-theme-tiny font-semibold whitespace-nowrap",
                                 active ? "text-slate-800" : done ? "text-emerald-600" : "text-gray-400",
                             ].join(" ")}>
                                 {step.label}

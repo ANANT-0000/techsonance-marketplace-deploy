@@ -94,10 +94,10 @@ export const COMPLIANCE_REGEX: Record<
 
 // ─── Shared input style ───────────────────────────────────────────────────────
 const inputCls =
-  "w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all";
+  "w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-theme-body-sm text-gray-800 placeholder:text-gray-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all";
 const labelCls =
-  "block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5";
-const errorCls = "mt-1.5 text-xs text-red-600 flex items-center gap-1";
+  "block text-theme-caption font-semibold text-gray-600 uppercase tracking-wide mb-1.5";
+const errorCls = "mt-1.5 text-theme-caption text-red-600 flex items-center gap-1";
 
 // ─── StepIndicator ────────────────────────────────────────────────────────────
 function StepIndicator({ current, total }: { current: number; total: number }) {
@@ -127,7 +127,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
               </div>
               <span
                 className={[
-                  "text-[11px] font-semibold whitespace-nowrap",
+                  "text-theme-xxs font-semibold whitespace-nowrap",
                   active
                     ? "text-blue-600"
                     : done
@@ -364,14 +364,14 @@ export default function VendorRegisterPage() {
         <div className="max-w-2xl mx-auto">
           {/* Page title */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
+            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-theme-caption font-semibold px-3 py-1.5 rounded-full mb-4">
               <Building2 size={13} />
               Vendor Registration
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
+            <h1 className="text-theme-h3 font-bold text-gray-900 tracking-tight mb-2">
               Business Registration
             </h1>
-            <p className="text-gray-500 text-sm text-balance max-w-md mx-auto">
+            <p className="text-gray-500 text-theme-body-sm text-balance max-w-md mx-auto">
               Set up your organisation profile, configure your storefront
               domain, and complete compliance requirements.
             </p>
@@ -393,10 +393,10 @@ export default function VendorRegisterPage() {
               {formStep === 0 && (
                 <section>
                   <div className="mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-theme-h5 font-bold text-gray-900">
                       Organization Details
                     </h2>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p className="text-gray-500 text-theme-body-sm mt-1">
                       Basic information about your business and primary contact.
                     </p>
                   </div>
@@ -464,7 +464,7 @@ export default function VendorRegisterPage() {
                         className={inputCls}
                         placeholder="owner@company.com"
                       />
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-theme-caption text-gray-400 mt-1">
                         Your login credentials will be sent to this email after
                         approval.
                       </p>
@@ -482,7 +482,7 @@ export default function VendorRegisterPage() {
                       <div className="flex gap-2">
                         <select
                           {...register("country_code")}
-                          className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 bg-white outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all w-32 shrink-0"
+                          className="border border-gray-200 rounded-xl px-3 py-2.5 text-theme-body-sm text-gray-700 bg-white outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all w-32 shrink-0"
                         >
                           <option value="">Code</option>
                           {COUNTRY_CODES.map((c) => (
@@ -555,10 +555,10 @@ export default function VendorRegisterPage() {
               {formStep === 1 && (
                 <section>
                   <div className="mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-theme-h5 font-bold text-gray-900">
                       Storefront Domain
                     </h2>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p className="text-gray-500 text-theme-body-sm mt-1">
                       Choose a unique subdomain for your vendor storefront.
                       Customers will access your store at this URL.
                     </p>
@@ -570,10 +570,10 @@ export default function VendorRegisterPage() {
                   <div className="flex">
                     <input
                       {...register("company_domain")}
-                      className="flex-[2] border-2 border-r-0 border-gray-200 rounded-l-xl px-4 py-2.5 text-sm font-mono text-gray-800 placeholder:text-gray-400 outline-none focus:border-blue-400 transition-all bg-white"
+                      className="flex-[2] border-2 border-r-0 border-gray-200 rounded-l-xl px-4 py-2.5 text-theme-body-sm font-mono text-gray-800 placeholder:text-gray-400 outline-none focus:border-blue-400 transition-all bg-white"
                       placeholder="your-store"
                     />
-                    <span className="border-2 border-gray-200 bg-gray-50 rounded-r-xl px-4 py-2.5 text-sm text-gray-500 flex items-center whitespace-nowrap select-none">
+                    <span className="border-2 border-gray-200 bg-gray-50 rounded-r-xl px-4 py-2.5 text-theme-body-sm text-gray-500 flex items-center whitespace-nowrap select-none">
                       .platform.com
                     </span>
                   </div>
@@ -588,7 +588,7 @@ export default function VendorRegisterPage() {
                     ].map((hint) => (
                       <li
                         key={hint}
-                        className="flex items-center gap-2 text-xs text-gray-400"
+                        className="flex items-center gap-2 text-theme-caption text-gray-400"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" />
                         {hint}
@@ -602,10 +602,10 @@ export default function VendorRegisterPage() {
               {formStep === 2 && (
                 <section>
                   <div className="mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-theme-h5 font-bold text-gray-900">
                       Legal & Financial Compliance
                     </h2>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p className="text-gray-500 text-theme-body-sm mt-1">
                       Required regulatory identifiers for your jurisdiction. All
                       required fields must pass format validation.
                     </p>
@@ -668,10 +668,10 @@ export default function VendorRegisterPage() {
               {formStep === 3 && (
                 <section>
                   <div className="mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-theme-h5 font-bold text-gray-900">
                       Legal Business Documents
                     </h2>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p className="text-gray-500 text-theme-body-sm mt-1">
                       Upload clear, legible copies of all required business
                       registration documents. Accepted formats: PDF, JPG, PNG.
                     </p>
@@ -687,7 +687,7 @@ export default function VendorRegisterPage() {
 
                   {/* Global submit error */}
                   {globalError && (
-                    <div className="mt-4 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">
+                    <div className="mt-4 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-theme-body-sm">
                       {globalError}
                     </div>
                   )}
@@ -700,7 +700,7 @@ export default function VendorRegisterPage() {
                   <button
                     type="button"
                     onClick={prevStep}
-                    className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 border border-gray-200 hover:border-gray-300 bg-white rounded-xl px-5 py-2.5 transition-all"
+                    className="flex items-center gap-2 text-theme-body-sm font-semibold text-gray-600 hover:text-gray-900 border border-gray-200 hover:border-gray-300 bg-white rounded-xl px-5 py-2.5 transition-all"
                   >
                     <ChevronLeft size={16} />
                     Previous
@@ -708,7 +708,7 @@ export default function VendorRegisterPage() {
                 ) : (
                   <Link
                     href="/auth/vendorLogin"
-                    className="text-sm text-gray-400 hover:text-blue-600 underline underline-offset-2 transition-colors"
+                    className="text-theme-body-sm text-gray-400 hover:text-blue-600 underline underline-offset-2 transition-colors"
                   >
                     Already registered? Log in
                   </Link>
@@ -718,7 +718,7 @@ export default function VendorRegisterPage() {
                   <button
                     type="button"
                     onClick={nextStep}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all shadow-sm shadow-blue-200"
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-theme-body-sm font-semibold px-6 py-2.5 rounded-xl transition-all shadow-sm shadow-blue-200"
                   >
                     Continue
                     <ChevronRight size={16} />
@@ -727,7 +727,7 @@ export default function VendorRegisterPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all shadow-sm shadow-emerald-200"
+                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-theme-body-sm font-semibold px-6 py-2.5 rounded-xl transition-all shadow-sm shadow-emerald-200"
                   >
                     {isSubmitting ? (
                       <>
@@ -745,7 +745,7 @@ export default function VendorRegisterPage() {
               </div>
 
               {/* Step counter */}
-              <p className="text-center text-xs text-gray-400">
+              <p className="text-center text-theme-caption text-gray-400">
                 Step {formStep + 1} of {STEPS.length}
               </p>
             </form>

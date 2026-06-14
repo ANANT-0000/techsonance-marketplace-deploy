@@ -40,11 +40,11 @@ export function BestSelling({
         transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.4 }}
         className='text-primary lg:w-[60%] w-full flex flex-col justify-center gap-4'
       >
-        <h2 className='text-primary lg:text-4xl text-2xl font-black tracking-tight'>
+        <h2 className='text-primary lg:text-theme-h2 text-theme-h4 font-black tracking-tight'>
           {product?.title}
         </h2>
 
-        <p className="lg:text-lg text-primary leading-relaxed max-w-xl">
+        <p className="lg:text-theme-h6 text-primary leading-relaxed max-w-xl">
           {product?.description}
         </p>
 
@@ -56,10 +56,10 @@ export function BestSelling({
         />
 
         <div className="flex flex-col">
-          <span className="text-3xl font-black text-primary">
+          <span className="text-theme-h3 font-black text-primary">
             {isInView ? <Counter value={parseInt(product?.satisfaction || "0")} /> : "0"}%
           </span>
-          <p className="uppercase text-xs font-bold tracking-widest text-primary">
+          <p className="uppercase text-theme-caption font-bold tracking-widest text-primary">
             {BEST_SELLING_TEXT.CUSTOMER_SATISFACTION}
           </p>
         </div>

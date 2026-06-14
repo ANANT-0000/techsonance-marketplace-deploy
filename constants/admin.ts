@@ -1,4 +1,19 @@
-import { ActiveInstanceType, AuditLogEntryType, SupportTicketType, VendorApplicationStatusEnum, VendorApplicationType, VendorManagementEntryType, VendorRequestEntryType, type NavLinkType } from "@/utils/Types";
+import {
+  ActiveInstanceType,
+  AuditLogEntryType,
+  SupportTicketType,
+  VendorApplicationStatusEnum,
+  VendorApplicationType,
+  VendorManagementEntryType,
+  VendorRequestEntryType,
+  type NavLinkType,
+  InstanceStatus,
+  VendorManagementStatus,
+  VendorRequestStatus,
+  SupportTicketStatus,
+  TicketMessageTypeEnum,
+} from "@/utils/Types";
+
 // ============================================================
 // ADMIN NAVIGATION LINKS
 // ============================================================
@@ -25,63 +40,58 @@ export const ADMIN_DASHBOARD_STATS = {
   systemsOperations: 99.9,
 };
 
-
-
 export const ACTIVE_INSTANCES: ActiveInstanceType[] = [
-  { id: 201, name: "Shree Electronics", email: "contact@shreeelectronics.in", status: "Healthy" },
-  { id: 202, name: "FashionHub", email: "support@fashionhub.com", status: "Healthy" },
-  { id: 203, name: "GreenMart Organics", email: "sales@greenmart.org", status: "High Load" },
-  { id: 204, name: "TechWorld Solutions", email: "info@techworld.io", status: "Healthy" },
-  { id: 205, name: "Royal Furnishings", email: "service@royalfurnishings.in", status: "High Load" },
-  { id: 206, name: "BookNest", email: "help@booknest.co", status: "Healthy" },
-  { id: 207, name: "UrbanStyle Apparel", email: "care@urbanstyle.com", status: "Healthy" },
-  { id: 208, name: "KitchenKing Supplies", email: "orders@kitchenking.in", status: "High Load" },
-  { id: 209, name: "GlowBeauty Cosmetics", email: "support@glowbeauty.in", status: "Healthy" },
-  { id: 210, name: "MegaMart Traders", email: "sales@megamart.biz", status: "Healthy" },
-  { id: 211, name: "SoundCraft Audio", email: "info@soundcraft.audio", status: "Healthy" },
-  { id: 212, name: "InstrumentsPlus", email: "sales@instrumentsplus.com", status: "Degraded" },
+  { id: 201, name: "Shree Electronics", email: "contact@shreeelectronics.in", status: InstanceStatus.HEALTHY },
+  { id: 202, name: "FashionHub", email: "support@fashionhub.com", status: InstanceStatus.HEALTHY },
+  { id: 203, name: "GreenMart Organics", email: "sales@greenmart.org", status: InstanceStatus.HIGH_LOAD },
+  { id: 204, name: "TechWorld Solutions", email: "info@techworld.io", status: InstanceStatus.HEALTHY },
+  { id: 205, name: "Royal Furnishings", email: "service@royalfurnishings.in", status: InstanceStatus.HIGH_LOAD },
+  { id: 206, name: "BookNest", email: "help@booknest.co", status: InstanceStatus.HEALTHY },
+  { id: 207, name: "UrbanStyle Apparel", email: "care@urbanstyle.com", status: InstanceStatus.HEALTHY },
+  { id: 208, name: "KitchenKing Supplies", email: "orders@kitchenking.in", status: InstanceStatus.HIGH_LOAD },
+  { id: 209, name: "GlowBeauty Cosmetics", email: "support@glowbeauty.in", status: InstanceStatus.HEALTHY },
+  { id: 210, name: "MegaMart Traders", email: "sales@megamart.biz", status: InstanceStatus.HEALTHY },
+  { id: 211, name: "SoundCraft Audio", email: "info@soundcraft.audio", status: InstanceStatus.HEALTHY },
+  { id: 212, name: "InstrumentsPlus", email: "sales@instrumentsplus.com", status: InstanceStatus.DEGRADED },
 ];
 
 // ============================================================
 // ADMIN — VENDOR MANAGEMENT MOCK DATA
 // ============================================================
 
-
 export const VENDOR_LIST: VendorManagementEntryType[] = [
-  { id: 201, name: "Shree Electronics", email: "contact@shreeelectronics.in", domain: "shreeelectronics.in", status: "Pending", revenue: 69951 },
-  { id: 202, name: "FashionHub", email: "support@fashionhub.com", domain: "fashionhub.com", status: "Active", revenue: 67863 },
-  { id: 203, name: "GreenMart Organics", email: "sales@greenmart.org", domain: "greenmart.org", status: "Suspended", revenue: 33578 },
-  { id: 204, name: "TechWorld Solutions", email: "info@techworld.io", domain: "techworld.io", status: "Active", revenue: 48867 },
-  { id: 205, name: "Royal Furnishings", email: "service@royalfurnishings.in", domain: "royalfurnishings.in", status: "Suspended", revenue: 94217 },
-  { id: 206, name: "BookNest", email: "help@booknest.co", domain: "booknest.co", status: "Pending", revenue: 49228 },
-  { id: 207, name: "UrbanStyle Apparel", email: "care@urbanstyle.com", domain: "urbanstyle.com", status: "Active", revenue: 84513 },
-  { id: 208, name: "KitchenKing Supplies", email: "orders@kitchenking.in", domain: "kitchenking.in", status: "Active", revenue: 68074 },
-  { id: 209, name: "GlowBeauty Cosmetics", email: "support@glowbeauty.in", domain: "glowbeauty.in", status: "Suspended", revenue: 98671 },
-  { id: 210, name: "MegaMart Traders", email: "sales@megamart.biz", domain: "megamart.biz", status: "Active", revenue: 24579 },
-  { id: 211, name: "SoundCraft Audio", email: "info@soundcraft.audio", domain: "soundcraft.audio", status: "Active", revenue: 112450 },
-  { id: 212, name: "VibeStation Music", email: "hello@vibestation.co", domain: "vibestation.co", status: "Pending", revenue: 15890 },
-  { id: 213, name: "BeatMakers Hub", email: "support@beatmakers.hub", domain: "beatmakers.hub", status: "Active", revenue: 76340 },
-  { id: 214, name: "AudioPrime Gear", email: "sales@audioprime.com", domain: "audioprime.com", status: "Active", revenue: 91200 },
-  { id: 215, name: "ProSound Warehouse", email: "orders@prosound.in", domain: "prosound.in", status: "Suspended", revenue: 45670 },
+  { id: 201, name: "Shree Electronics", email: "contact@shreeelectronics.in", domain: "shreeelectronics.in", status: VendorManagementStatus.PENDING, revenue: 69951 },
+  { id: 202, name: "FashionHub", email: "support@fashionhub.com", domain: "fashionhub.com", status: VendorManagementStatus.ACTIVE, revenue: 67863 },
+  { id: 203, name: "GreenMart Organics", email: "sales@greenmart.org", domain: "greenmart.org", status: VendorManagementStatus.SUSPENDED, revenue: 33578 },
+  { id: 204, name: "TechWorld Solutions", email: "info@techworld.io", domain: "techworld.io", status: VendorManagementStatus.ACTIVE, revenue: 48867 },
+  { id: 205, name: "Royal Furnishings", email: "service@royalfurnishings.in", domain: "royalfurnishings.in", status: VendorManagementStatus.SUSPENDED, revenue: 94217 },
+  { id: 206, name: "BookNest", email: "help@booknest.co", domain: "booknest.co", status: VendorManagementStatus.PENDING, revenue: 49228 },
+  { id: 207, name: "UrbanStyle Apparel", email: "care@urbanstyle.com", domain: "urbanstyle.com", status: VendorManagementStatus.ACTIVE, revenue: 84513 },
+  { id: 208, name: "KitchenKing Supplies", email: "orders@kitchenking.in", domain: "kitchenking.in", status: VendorManagementStatus.ACTIVE, revenue: 68074 },
+  { id: 209, name: "GlowBeauty Cosmetics", email: "support@glowbeauty.in", domain: "glowbeauty.in", status: VendorManagementStatus.SUSPENDED, revenue: 98671 },
+  { id: 210, name: "MegaMart Traders", email: "sales@megamart.biz", domain: "megamart.biz", status: VendorManagementStatus.ACTIVE, revenue: 24579 },
+  { id: 211, name: "SoundCraft Audio", email: "info@soundcraft.audio", domain: "soundcraft.audio", status: VendorManagementStatus.ACTIVE, revenue: 112450 },
+  { id: 212, name: "VibeStation Music", email: "hello@vibestation.co", domain: "vibestation.co", status: VendorManagementStatus.PENDING, revenue: 15890 },
+  { id: 213, name: "BeatMakers Hub", email: "support@beatmakers.hub", domain: "beatmakers.hub", status: VendorManagementStatus.ACTIVE, revenue: 76340 },
+  { id: 214, name: "AudioPrime Gear", email: "sales@audioprime.com", domain: "audioprime.com", status: VendorManagementStatus.ACTIVE, revenue: 91200 },
+  { id: 215, name: "ProSound Warehouse", email: "orders@prosound.in", domain: "prosound.in", status: VendorManagementStatus.SUSPENDED, revenue: 45670 },
 ];
 
 // ============================================================
 // ADMIN — APPROVE VENDOR REQUESTS MOCK DATA
 // ============================================================
 
-
 export const VENDOR_REQUESTS: VendorRequestEntryType[] = [
-  { id: 301, businessName: "Shree Electronics", ownerName: "Rajesh Kumar", email: "rajesh@shreeelectronics.in", phone: "+91 98765 11111", category: "Electronics", submittedAt: "2026-02-28T10:00:00Z", status: "Pending" },
-  { id: 302, businessName: "VibeStation Music", ownerName: "Priya Sharma", email: "priya@vibestation.co", phone: "+91 98765 22222", category: "Musical Instruments", submittedAt: "2026-03-01T14:30:00Z", status: "Pending" },
-  { id: 303, businessName: "BeatMakers Hub", ownerName: "Amit Patel", email: "amit@beatmakers.hub", phone: "+91 98765 33333", category: "Music Production", submittedAt: "2026-03-02T09:15:00Z", status: "Pending" },
-  { id: 304, businessName: "MelodyWave Studios", ownerName: "Sneha Reddy", email: "sneha@melodywave.in", phone: "+91 98765 44444", category: "Recording Equipment", submittedAt: "2026-03-03T11:45:00Z", status: "Pending" },
-  { id: 305, businessName: "TuneBox India", ownerName: "Vikram Singh", email: "vikram@tunebox.in", phone: "+91 98765 55555", category: "DJ Equipment", submittedAt: "2026-03-04T16:20:00Z", status: "Pending" },
+  { id: 301, businessName: "Shree Electronics", ownerName: "Rajesh Kumar", email: "rajesh@shreeelectronics.in", phone: "+91 98765 11111", category: "Electronics", submittedAt: "2026-02-28T10:00:00Z", status: VendorRequestStatus.PENDING },
+  { id: 302, businessName: "VibeStation Music", ownerName: "Priya Sharma", email: "priya@vibestation.co", phone: "+91 98765 22222", category: "Musical Instruments", submittedAt: "2026-03-01T14:30:00Z", status: VendorRequestStatus.PENDING },
+  { id: 303, businessName: "BeatMakers Hub", ownerName: "Amit Patel", email: "amit@beatmakers.hub", phone: "+91 98765 33333", category: "Music Production", submittedAt: "2026-03-02T09:15:00Z", status: VendorRequestStatus.PENDING },
+  { id: 304, businessName: "MelodyWave Studios", ownerName: "Sneha Reddy", email: "sneha@melodywave.in", phone: "+91 98765 44444", category: "Recording Equipment", submittedAt: "2026-03-03T11:45:00Z", status: VendorRequestStatus.PENDING },
+  { id: 305, businessName: "TuneBox India", ownerName: "Vikram Singh", email: "vikram@tunebox.in", phone: "+91 98765 55555", category: "DJ Equipment", submittedAt: "2026-03-04T16:20:00Z", status: VendorRequestStatus.PENDING },
 ];
 
 // ============================================================
 // ADMIN — AUDIT LOG MOCK DATA
 // ============================================================
-
 
 // export const AUDIT_LOG_DATA: AuditLogEntryType[] = [
 //   { id: 1, timestamp: "Oct 24, 14:45:12", actor: "akash jain", tenant: "System(Global)", actionType: "Active", targetEntity: "Vendor #882", details: "View JSON", ipAddress: "192.168.1.12" },
@@ -105,21 +115,19 @@ export const VENDOR_REQUESTS: VendorRequestEntryType[] = [
 // ADMIN — SUPPORT TICKETS MOCK DATA
 // ============================================================
 
-
-
 export const SUPPORT_TICKETS: SupportTicketType[] = [
   {
     id: "TK-1024",
     title: "Payment Gateway Error",
     company: "ShoesWorld Inc.",
     email: "admin@shoesworld.com",
-    status: "active",
+    status: SupportTicketStatus.ACTIVE,
     time: "2m ago",
     messages: [
-      { id: 1, sender: "John Doe", role: "Vendor Admin", text: "Hi, we are trying to process payments but getting a 500 error on checkout. It says 'API Key Invalid'. Can you check?", time: "10:30 AM", type: "vendor" },
-      { id: 2, sender: "System Bot", role: "Bot", text: "Thank you for reaching out. A Super Admin has been notified and will review your configuration shortly.", time: "10:31 AM", type: "system" },
-      { id: 3, sender: "You", role: "Super Admin", text: "Hello John, I checked your configuration. It seems your API Secret Key was rotated yesterday. Please update it in Settings > Payments.", time: "10:45 AM", type: "super_admin" },
-      { id: 4, sender: "John Doe", role: "Vendor Admin", text: "Ah, I missed that. Updating it now... verify in a moment.", time: "10:48 AM", type: "vendor" },
+      { id: 1, sender: "John Doe", role: "Vendor Admin", text: "Hi, we are trying to process payments but getting a 500 error on checkout. It says 'API Key Invalid'. Can you check?", time: "10:30 AM", type: TicketMessageTypeEnum.VENDOR },
+      { id: 2, sender: "System Bot", role: "Bot", text: "Thank you for reaching out. A Super Admin has been notified and will review your configuration shortly.", time: "10:31 AM", type: TicketMessageTypeEnum.SYSTEM },
+      { id: 3, sender: "You", role: "Super Admin", text: "Hello John, I checked your configuration. It seems your API Secret Key was rotated yesterday. Please update it in Settings > Payments.", time: "10:45 AM", type: TicketMessageTypeEnum.SUPER_ADMIN },
+      { id: 4, sender: "John Doe", role: "Vendor Admin", text: "Ah, I missed that. Updating it now... verify in a moment.", time: "10:48 AM", type: TicketMessageTypeEnum.VENDOR },
     ],
   },
   {
@@ -127,11 +135,11 @@ export const SUPPORT_TICKETS: SupportTicketType[] = [
     title: "Domain Verification Failed",
     company: "TechWorld Inc.",
     email: "support@techworld.com",
-    status: "pending",
+    status: SupportTicketStatus.PENDING,
     time: "15m ago",
     messages: [
-      { id: 1, sender: "Alice Wang", role: "Vendor Admin", text: "We added the CNAME record but domain verification is still showing as failed. Our DNS provider confirmed it is propagated.", time: "11:00 AM", type: "vendor" },
-      { id: 2, sender: "System Bot", role: "Bot", text: "Domain verification request received. Checking DNS records...", time: "11:01 AM", type: "system" },
+      { id: 1, sender: "Alice Wang", role: "Vendor Admin", text: "We added the CNAME record but domain verification is still showing as failed. Our DNS provider confirmed it is propagated.", time: "11:00 AM", type: TicketMessageTypeEnum.VENDOR },
+      { id: 2, sender: "System Bot", role: "Bot", text: "Domain verification request received. Checking DNS records...", time: "11:01 AM", type: TicketMessageTypeEnum.SYSTEM },
     ],
   },
   {
@@ -139,12 +147,12 @@ export const SUPPORT_TICKETS: SupportTicketType[] = [
     title: "Request for Limit Increase",
     company: "FashionHub Inc.",
     email: "billing@fashionhub.com",
-    status: "closed",
+    status: SupportTicketStatus.CLOSED,
     time: "1h ago",
     messages: [
-      { id: 1, sender: "Neha Gupta", role: "Vendor Admin", text: "We need to increase our product listing limit from 500 to 2000. Our catalog has grown significantly.", time: "09:00 AM", type: "vendor" },
-      { id: 2, sender: "You", role: "Super Admin", text: "Hi Neha, I've upgraded your plan to Premium which allows up to 5000 listings. The changes are effective immediately.", time: "09:15 AM", type: "super_admin" },
-      { id: 3, sender: "Neha Gupta", role: "Vendor Admin", text: "Thank you so much! I can see the new limit now. Closing this ticket.", time: "09:20 AM", type: "vendor" },
+      { id: 1, sender: "Neha Gupta", role: "Vendor Admin", text: "We need to increase our product listing limit from 500 to 2000. Our catalog has grown significantly.", time: "09:00 AM", type: TicketMessageTypeEnum.VENDOR },
+      { id: 2, sender: "You", role: "Super Admin", text: "Hi Neha, I've upgraded your plan to Premium which allows up to 5000 listings. The changes are effective immediately.", time: "09:15 AM", type: TicketMessageTypeEnum.SUPER_ADMIN },
+      { id: 3, sender: "Neha Gupta", role: "Vendor Admin", text: "Thank you so much! I can see the new limit now. Closing this ticket.", time: "09:20 AM", type: TicketMessageTypeEnum.VENDOR },
     ],
   },
   {
@@ -152,11 +160,11 @@ export const SUPPORT_TICKETS: SupportTicketType[] = [
     title: "Product Image Upload Failing",
     company: "SoundCraft Audio",
     email: "support@soundcraft.audio",
-    status: "active",
+    status: SupportTicketStatus.ACTIVE,
     time: "30m ago",
     messages: [
-      { id: 1, sender: "Ravi Kumar", role: "Vendor Admin", text: "Images larger than 2MB are failing to upload with a timeout error. This started happening since the last platform update.", time: "10:00 AM", type: "vendor" },
-      { id: 2, sender: "System Bot", role: "Bot", text: "Upload issue detected. Escalating to engineering team.", time: "10:01 AM", type: "system" },
+      { id: 1, sender: "Ravi Kumar", role: "Vendor Admin", text: "Images larger than 2MB are failing to upload with a timeout error. This started happening since the last platform update.", time: "10:00 AM", type: TicketMessageTypeEnum.VENDOR },
+      { id: 2, sender: "System Bot", role: "Bot", text: "Upload issue detected. Escalating to engineering team.", time: "10:01 AM", type: TicketMessageTypeEnum.SYSTEM },
     ],
   },
   {
@@ -164,10 +172,10 @@ export const SUPPORT_TICKETS: SupportTicketType[] = [
     title: "Incorrect Revenue Report",
     company: "AudioPrime Gear",
     email: "accounts@audioprime.com",
-    status: "pending",
+    status: SupportTicketStatus.PENDING,
     time: "45m ago",
     messages: [
-      { id: 1, sender: "Deepak Verma", role: "Vendor Admin", text: "The monthly revenue report for February shows ₹0 revenue, but we had over 200 orders. Please investigate.", time: "09:30 AM", type: "vendor" },
+      { id: 1, sender: "Deepak Verma", role: "Vendor Admin", text: "The monthly revenue report for February shows ₹0 revenue, but we had over 200 orders. Please investigate.", time: "09:30 AM", type: TicketMessageTypeEnum.VENDOR },
     ],
   },
 ];
@@ -197,7 +205,6 @@ export const ADMIN_CHART_DATA = {
 // ADMIN — VENDOR APPLICATIONS MOCK DATA (Approve Vendors)
 // ============================================================
 
-
 export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
   {
     business_profile: {
@@ -205,7 +212,7 @@ export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
       owner_name: "marcus vance",
       owner_email: "vance.logistics@provider.net",
       submission_date: "january 22, 2026",
-      status: VendorApplicationStatusEnum.ACCEPTED
+      status: VendorApplicationStatusEnum.ACCEPTED,
     },
     submitted_documents: [
       { file_name: "fleet_insurance_2026.pdf", size: "4.2 mb", uploaded_at: "10 minutes ago" },
@@ -223,7 +230,7 @@ export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
       owner_name: "elena rodriguez",
       owner_email: "elena@urbangreen.co",
       submission_date: "january 25, 2026",
-      status: VendorApplicationStatusEnum.PENDING
+      status: VendorApplicationStatusEnum.PENDING,
     },
     submitted_documents: [
       { file_name: "health_dept_cert.pdf", size: "2.8 mb", uploaded_at: "1 day ago" },
@@ -241,7 +248,7 @@ export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
       owner_name: "hiroshi tanaka",
       owner_email: "h.tanaka@quantumlabs.io",
       submission_date: "january 27, 2026",
-      status: VendorApplicationStatusEnum.REJECTED
+      status: VendorApplicationStatusEnum.REJECTED,
     },
     submitted_documents: [
       { file_name: "ip_declaration.pdf", size: "0.5 mb", uploaded_at: "45 minutes ago" },
@@ -254,4 +261,3 @@ export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
     }
   }
 ];
-

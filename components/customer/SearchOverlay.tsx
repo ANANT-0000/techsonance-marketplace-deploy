@@ -192,7 +192,7 @@ function OverlayBody({ onClose, initialQuery = '' }: OverlayBodyProps) {
                     onChange={(e) => dispatch({ type: OA.SET_QUERY, payload: e.target.value })}
                     onKeyDown={handleKeyDown}
                     placeholder={SEARCH_OVERLAY_TEXT.PLACEHOLDER}
-                    className="flex-1 text-[15px] text-gray-900 placeholder:text-gray-400 outline-none bg-transparent"
+                    className="flex-1 text-theme-body-plus text-gray-900 placeholder:text-gray-400 outline-none bg-transparent"
                 />
                 <div className="flex items-center gap-2 shrink-0">
                     {state.isLoading && <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />}
@@ -219,12 +219,12 @@ function OverlayBody({ onClose, initialQuery = '' }: OverlayBodyProps) {
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.12 }}
                         >
-                            <p className="px-5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                            <p className="px-5 py-1.5 text-theme-tiny font-bold text-gray-400 uppercase tracking-widest">
                                 {SEARCH_OVERLAY_TEXT.SUGGESTED_PRODUCTS}
                             </p>
                             {state.suggestions.length === 0 && !state.isLoading ? (
-                                <p className="px-5 py-6 text-sm text-gray-400 text-center">
-                                    {SEARCH_OVERLAY_TEXT.NO_MATCHES} <kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-gray-600">Enter</kbd> {SEARCH_OVERLAY_TEXT.TO_SEARCH_ANYWAY}
+                                <p className="px-5 py-6 text-theme-body-sm text-gray-400 text-center">
+                                    {SEARCH_OVERLAY_TEXT.NO_MATCHES} <kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-theme-xxs font-mono text-gray-600">Enter</kbd> {SEARCH_OVERLAY_TEXT.TO_SEARCH_ANYWAY}
                                 </p>
                             ) : (
                                 state.suggestions.map((s) => (
@@ -234,7 +234,7 @@ function OverlayBody({ onClose, initialQuery = '' }: OverlayBodyProps) {
                                         className="w-full flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors text-left group"
                                     >
                                         <Search className="w-4 h-4 text-gray-300 shrink-0" />
-                                        <span className="flex-1 text-sm text-gray-700 truncate">
+                                        <span className="flex-1 text-theme-body-sm text-gray-700 truncate">
                                             <HighlightMatch text={s.name} query={state.query} />
                                         </span>
                                         <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 shrink-0 transition-colors" />
@@ -253,7 +253,7 @@ function OverlayBody({ onClose, initialQuery = '' }: OverlayBodyProps) {
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.12 }}
                         >
-                            <p className="px-5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                            <p className="px-5 py-1.5 text-theme-tiny font-bold text-gray-400 uppercase tracking-widest">
                                 {SEARCH_OVERLAY_TEXT.RECENT_SEARCHES}
                             </p>
                             {state.recent.map((term) => (
@@ -263,7 +263,7 @@ function OverlayBody({ onClose, initialQuery = '' }: OverlayBodyProps) {
                                     className="w-full flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors text-left group"
                                 >
                                     <Clock className="w-4 h-4 text-gray-300 shrink-0" />
-                                    <span className="flex-1 text-sm text-gray-600 truncate">{term}</span>
+                                    <span className="flex-1 text-theme-body-sm text-gray-600 truncate">{term}</span>
                                     <button
                                         onClick={(e) => handleRemoveRecent(term, e)}
                                         className="w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-gray-200"
@@ -286,7 +286,7 @@ function OverlayBody({ onClose, initialQuery = '' }: OverlayBodyProps) {
                             className="px-5 py-6 flex flex-col items-center gap-2 text-center"
                         >
                             <TrendingUp className="w-8 h-8 text-gray-200" />
-                            <p className="text-sm text-gray-400">{SEARCH_OVERLAY_TEXT.START_TYPING}</p>
+                            <p className="text-theme-body-sm text-gray-400">{SEARCH_OVERLAY_TEXT.START_TYPING}</p>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -397,7 +397,7 @@ function MobileDrawer({ open, onClose }: MobileDrawerProps) {
                     >
                         {/* Drag handle */}
                         <div className="flex items-center justify-between px-5 pt-4 pb-1">
-                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{SEARCH_OVERLAY_TEXT.SEARCH_UPPER}</span>
+                            <span className="text-theme-caption font-bold text-gray-500 uppercase tracking-wider">{SEARCH_OVERLAY_TEXT.SEARCH_UPPER}</span>
                             <button
                                 onClick={onClose}
                                 className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
@@ -438,12 +438,12 @@ export function SearchTrigger({ className }: { className?: string }) {
             <button
                 ref={triggerRef}
                 onClick={() => setOpen((v) => !v)}
-                className="hidden lg:flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-500 font-medium transition-colors min-w-[200px]"
+                className="hidden lg:flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-theme-body-sm text-gray-500 font-medium transition-colors min-w-[200px]"
                 aria-label="Open search"
             >
                 <Search className="w-4 h-4 text-gray-400" />
                 <span>{SEARCH_OVERLAY_TEXT.SEARCH_TRIGGER}</span>
-                <kbd className="ml-auto text-[10px] font-mono bg-white border border-gray-200 px-1.5 py-0.5 rounded text-gray-400">
+                <kbd className="ml-auto text-theme-tiny font-mono bg-white border border-gray-200 px-1.5 py-0.5 rounded text-gray-400">
                     ⌘K
                 </kbd>
             </button>

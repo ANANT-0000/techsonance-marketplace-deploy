@@ -1,3 +1,6 @@
+import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
+import { CheckCircle2, Clock, Package, Truck, XCircle } from "lucide-react";
+
 export const UILabels = {
   SECTIONS: {
     BRAND_HIGHLIGHT_BLOCK: "Brand Highlight Block",
@@ -8,7 +11,8 @@ export const UILabels = {
     CURATED_DISCOVERY_PRODUCTS_SLIDER: "Curated Discovery Products Slider",
     FOOTER_COLUMNS: "Footer Columns",
     HERO_BLOCK: "Hero Block",
-    HERO_BLOCK_LEGACY__USED_IF_NO_CAROUSEL_SLIDES_ABOVE: "Hero Block (Legacy — used if no carousel slides above)",
+    HERO_BLOCK_LEGACY__USED_IF_NO_CAROUSEL_SLIDES_ABOVE:
+      "Hero Block (Legacy — used if no carousel slides above)",
     HERO_CAROUSEL_SLIDES: "Hero Carousel Slides",
     INTERACTIVE_HERO_OPTIONS_ENHANCED: "Interactive Hero Options (Enhanced)",
     MIDDLE_PROMO_BANNER: "Middle Promo Banner",
@@ -51,8 +55,10 @@ export const UILabels = {
     BUTTON_TEXT: "Button Text",
     CTA_ACTION_BUTTON_LINK_URL: "CTA Action Button Link (URL)",
     CTA_ACTION_BUTTON_TEXT: "CTA Action Button Text",
-    CARD_BACKGROUND_COLOR_OVERRIDES_AUTODETECT_FROM_IMAGE: "Card Background Color (overrides auto-detect from image)",
-    CARD_BACKGROUND_COLOR_OVERRIDES_AUTODETECT: "Card Background Color (overrides auto-detect)",
+    CARD_BACKGROUND_COLOR_OVERRIDES_AUTODETECT_FROM_IMAGE:
+      "Card Background Color (overrides auto-detect from image)",
+    CARD_BACKGROUND_COLOR_OVERRIDES_AUTODETECT:
+      "Card Background Color (overrides auto-detect)",
     COLUMN_HEADER: "Column Header",
     CURATION_CATEGORY_TYPE: "Curation Category Type",
     CUSTOMER_NAME: "Customer Name",
@@ -93,13 +99,16 @@ export const UILabels = {
     NEWSLETTER_TITLE: "Newsletter Title",
     PROMO_BANNER_IMAGE: "Promo Banner Image",
     PROMO_CARD_BACKGROUND_IMAGE: "Promo Card Background Image",
+    LOCATION: "Location",
     ROLE__DESIGNATION: "Role / Designation",
     SECTION_BACKGROUND_COLOR: "Section Background Color",
-    SECTION_BACKGROUND_COLOR_FALLBACK_IF_NO_IMAGE_OR_TRANSPARENT: "Section Background Color (fallback if no image or transparent)",
+    SECTION_BACKGROUND_COLOR_FALLBACK_IF_NO_IMAGE_OR_TRANSPARENT:
+      "Section Background Color (fallback if no image or transparent)",
     SECTION_IMAGE: "Section Image",
     SECTION_TITLE: "Section Title",
     SHORT_DESCRIPTION: "Short Description",
-    SLIDE_BACKGROUND_COLOR_USED_WHEN_STYLE_IS_CUSTOM: "Slide Background Color (used when style is Custom)",
+    SLIDE_BACKGROUND_COLOR_USED_WHEN_STYLE_IS_CUSTOM:
+      "Slide Background Color (used when style is Custom)",
     SLIDE_BANNER_IMAGE: "Slide Banner Image",
     SOCIAL_PROOF_HEADER_TITLE: "Social Proof Header Title",
     STAT_LABEL_EG_PRODUCTS: "Stat Label (e.g. Products)",
@@ -118,5 +127,46 @@ export const UILabels = {
     VIDEO_HERO_DESCRIPTION: "Video Hero Description",
     VIDEO_HERO_EYEBROW__TAG: "Video Hero Eyebrow / Tag",
     VIDEO_HERO_TITLE: "Video Hero Title",
-  }
+  },
 };
+
+export const STATUS_CONFIG: Partial<Record<
+  OrderStatus,
+  {
+    label: string;
+    className: string;
+    icon: React.ComponentType<any>;
+    dot: string;
+  }
+>> = {
+  [OrderStatusEnum.PENDING]: {
+    label: "Pending",
+    className: "bg-amber-50 text-amber-700 border border-amber-200",
+    icon: Clock,
+    dot: "bg-amber-400",
+  },
+  [OrderStatusEnum.PROCESSING]: {
+    label: "Processing",
+    className: "bg-blue-50 text-blue-700 border border-blue-200",
+    icon: Package,
+    dot: "bg-blue-400",
+  },
+  [OrderStatusEnum.SHIPPED]: {
+    label: "Shipped",
+    className: "bg-violet-50 text-violet-700 border border-violet-200",
+    icon: Truck,
+    dot: "bg-violet-400",
+  },
+  [OrderStatusEnum.DELIVERED]: {
+    label: "Delivered",
+    className: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    icon: CheckCircle2,
+    dot: "bg-emerald-400",
+  },
+  [OrderStatusEnum.CANCELLED]: {
+    label: "Cancelled",
+    className: "bg-red-50 text-red-700 border border-red-200",
+    icon: XCircle,
+    dot: "bg-red-400",
+  },
+} as const;

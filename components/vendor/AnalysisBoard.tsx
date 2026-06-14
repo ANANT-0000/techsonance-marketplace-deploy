@@ -186,7 +186,7 @@ function DateRangePicker({
         <Button
           variant="outline"
           size="sm"
-          className="h-9 gap-2 text-sm font-normal"
+          className="h-9 gap-2 text-theme-body-sm font-normal"
         >
           <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="hidden sm:inline">
@@ -204,7 +204,7 @@ function DateRangePicker({
         <div className="flex flex-col sm:flex-row">
           {/* Presets sidebar */}
           <div className="flex sm:flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-gray-300  sm:w-36">
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1 hidden sm:block">
+            <p className="text-theme-xxs font-medium text-muted-foreground uppercase tracking-wide mb-1 hidden sm:block">
               {ANALYSIS_BOARD_TEXT.DATE_PICKER.QUICK_SELECT}
             </p>
             {PRESETS.map((preset) => (
@@ -212,7 +212,7 @@ function DateRangePicker({
                 key={preset.key}
                 onClick={() => applyPreset(preset)}
                 className={cn(
-                  "text-left text-xs px-2.5 py-1.5 rounded-md transition-colors w-full",
+                  "text-left text-theme-caption px-2.5 py-1.5 rounded-md transition-colors w-full",
                   activePreset === preset.key
                     ? "bg-primary text-primary-foreground font-medium"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -275,7 +275,7 @@ function MetricCard({
     <Card className="relative overflow-hidden transition-shadow hover:shadow-md">
       <CardContent className="pt-5 pb-4 px-5">
         <div className="flex items-start justify-between mb-3">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide leading-none">
+          <p className="text-theme-caption font-medium text-muted-foreground uppercase tracking-wide leading-none">
             {title}
           </p>
           <div
@@ -284,14 +284,14 @@ function MetricCard({
             {icon}
           </div>
         </div>
-        <p className="text-2xl font-semibold tracking-tight text-foreground leading-none mb-1.5">
+        <p className="text-theme-h4 font-semibold tracking-tight text-foreground leading-none mb-1.5">
           {value}
         </p>
-        {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+        {sub && <p className="text-theme-caption text-muted-foreground">{sub}</p>}
         {trend && (
           <div
             className={cn(
-              "flex items-center gap-1 mt-2 text-xs font-medium",
+              "flex items-center gap-1 mt-2 text-theme-caption font-medium",
               trend.positive === true && "text-emerald-600",
               trend.positive === false && "text-rose-500",
               trend.positive === null && "text-muted-foreground",
@@ -313,8 +313,8 @@ function MetricCard({
 function TrendTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-popover border border-gray-300  rounded-lg shadow-lg p-3 text-sm min-w-[160px]">
-      <p className="font-medium mb-2 text-foreground text-xs uppercase tracking-wide">
+    <div className="bg-popover border border-gray-300  rounded-lg shadow-lg p-3 text-theme-body-sm min-w-[160px]">
+      <p className="font-medium mb-2 text-foreground text-theme-caption uppercase tracking-wide">
         {label}
       </p>
       {payload.map((entry: any) => (
@@ -345,7 +345,7 @@ function PieTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   const entry = payload[0];
   return (
-    <div className="bg-popover border border-gray-300  rounded-lg shadow-lg p-3 text-sm">
+    <div className="bg-popover border border-gray-300  rounded-lg shadow-lg p-3 text-theme-body-sm">
       <p className="font-medium capitalize text-foreground">{entry.name}</p>
       <p className="text-muted-foreground mt-0.5">{fmtINR(entry.value)}</p>
     </div>
@@ -375,17 +375,17 @@ function SkuBars({ products }: { products: TopProduct[] }) {
                 />
 
                 <span
-                  className="text-xs font-mono text-muted-foreground truncate"
+                  className="text-theme-caption font-mono text-muted-foreground truncate"
                   title={product.sku}
                 >
                   {product.sku}
                 </span>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                <span className="text-xs text-muted-foreground">
+                <span className="text-theme-caption text-muted-foreground">
                   {sharePct}%
                 </span>
-                <span className="text-sm font-semibold text-foreground">
+                <span className="text-theme-body-sm font-semibold text-foreground">
                   {fmtINR(product.revenue)}
                 </span>
               </div>
@@ -402,11 +402,11 @@ function SkuBars({ products }: { products: TopProduct[] }) {
 
       {/* Total row */}
       <div className="pt-3 mt-1 border-t border-gray-300  flex justify-between items-center">
-        <span className="text-xs text-muted-foreground">
+        <span className="text-theme-caption text-muted-foreground">
           {ANALYSIS_BOARD_TEXT.METRICS.TOTAL_TOP}
           {products.length})
         </span>
-        <span className="text-sm font-semibold text-foreground">
+        <span className="text-theme-body-sm font-semibold text-foreground">
           {fmtINR(total)}
         </span>
       </div>
@@ -457,7 +457,7 @@ function PnLBreakdown({ summary }: { summary: AnalyticsSummary }) {
           key={line.label}
           className="flex justify-between items-center py-2.5 border-b border-gray-300  last:border-0"
         >
-          <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+          <span className="text-theme-body-sm text-muted-foreground flex items-center gap-1.5">
             {line.deduct && line.amount > 0 && (
               <TrendingDown className="h-3.5 w-3.5 text-rose-400 flex-shrink-0" />
             )}
@@ -465,7 +465,7 @@ function PnLBreakdown({ summary }: { summary: AnalyticsSummary }) {
           </span>
           <span
             className={cn(
-              "text-sm font-medium tabular-nums",
+              "text-theme-body-sm font-medium tabular-nums",
               line.deduct && line.amount > 0
                 ? "text-rose-500"
                 : "text-foreground",
@@ -482,13 +482,13 @@ function PnLBreakdown({ summary }: { summary: AnalyticsSummary }) {
           <span className="font-semibold text-foreground">
             {ANALYSIS_BOARD_TEXT.METRICS.NET_PROFIT}
           </span>
-          <span className="text-lg font-bold text-emerald-600 tabular-nums">
+          <span className="text-theme-h6 font-bold text-emerald-600 tabular-nums">
             {fmtINR(summary.netEarnings)}
           </span>
         </div>
         {/* Visual margin bar */}
         <div className="space-y-1">
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-theme-caption text-muted-foreground">
             <span>{ANALYSIS_BOARD_TEXT.METRICS.MARGIN}</span>
             <span className="font-medium text-emerald-600">{netPct}%</span>
           </div>
@@ -499,7 +499,7 @@ function PnLBreakdown({ summary }: { summary: AnalyticsSummary }) {
             />
           </div>
         </div>
-        <div className="flex justify-between text-xs text-muted-foreground pt-1">
+        <div className="flex justify-between text-theme-caption text-muted-foreground pt-1">
           <span>{ANALYSIS_BOARD_TEXT.METRICS.TOTAL_DEDUCTIONS}</span>
           <span className="text-rose-500 font-medium">
             {fmtINR(deductions)}
@@ -525,7 +525,7 @@ function InsightRow({
 }) {
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-gray-300  last:border-0">
-      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+      <span className="flex items-center gap-2 text-theme-body-sm text-muted-foreground">
         <span
           className={`h-6 w-6 rounded-md flex items-center justify-center flex-shrink-0 ${color}`}
         >
@@ -533,7 +533,7 @@ function InsightRow({
         </span>
         {label}
       </span>
-      <span className="text-sm font-semibold text-foreground tabular-nums">
+      <span className="text-theme-body-sm font-semibold text-foreground tabular-nums">
         {value}
       </span>
     </div>
@@ -569,7 +569,7 @@ function DerivedInsights({
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium flex items-center gap-2">
+        <CardTitle className="text-theme-body font-medium flex items-center gap-2">
           <BarChart3 className="h-4 w-4 text-muted-foreground" />
           {ANALYSIS_BOARD_TEXT.TABLES.DERIVED_INSIGHTS}
         </CardTitle>
@@ -662,10 +662,10 @@ function DonutChart({
         className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10"
         aria-hidden="true"
       >
-        <span className="text-lg font-bold text-foreground leading-none">
+        <span className="text-theme-h6 font-bold text-foreground leading-none">
           {fmtShort(total)}
         </span>
-        <span className="text-xs text-muted-foreground mt-0.5">
+        <span className="text-theme-caption text-muted-foreground mt-0.5">
           {ANALYSIS_BOARD_TEXT.METRICS.TOTAL_LOWER}
         </span>
       </div>
@@ -701,7 +701,7 @@ function CategoryTable({ data }: { data: CategoryPerformance[] }) {
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wide pb-2 border-b border-gray-300 ">
+      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 text-theme-xxs font-medium text-muted-foreground uppercase tracking-wide pb-2 border-b border-gray-300 ">
         <span>{ANALYSIS_BOARD_TEXT.TABLES.CATEGORY}</span>
         <span className="text-right">
           {ANALYSIS_BOARD_TEXT.METRICS.REVENUE}
@@ -725,13 +725,13 @@ function CategoryTable({ data }: { data: CategoryPerformance[] }) {
                   style={{ background: COLORS[i % COLORS.length] }}
                 />
 
-                <span className="text-sm capitalize truncate">{cat.name}</span>
+                <span className="text-theme-body-sm capitalize truncate">{cat.name}</span>
               </div>
-              <span className="text-sm font-semibold text-right tabular-nums">
+              <span className="text-theme-body-sm font-semibold text-right tabular-nums">
                 {fmtINR(cat.value)}
               </span>
               <div className="flex items-center gap-1.5 justify-end w-14">
-                <span className="text-xs text-muted-foreground tabular-nums">
+                <span className="text-theme-caption text-muted-foreground tabular-nums">
                   {share}%
                 </span>
               </div>
@@ -739,7 +739,7 @@ function CategoryTable({ data }: { data: CategoryPerformance[] }) {
           );
         })}
       </div>
-      <div className="pt-3 flex justify-between border-t border-grey-200  text-sm">
+      <div className="pt-3 flex justify-between border-t border-grey-200  text-theme-body-sm">
         <span className="text-muted-foreground">
           {ANALYSIS_BOARD_TEXT.TABLES.TOTAL}
         </span>
@@ -832,7 +832,7 @@ export default function AnalysisBoard() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 h-64 text-muted-foreground">
         <AlertCircle className="h-8 w-8 text-muted-foreground/50" />
-        <p className="text-sm">Failed to load analytics. Please try again.</p>
+        <p className="text-theme-body-sm">Failed to load analytics. Please try again.</p>
         <Button variant="outline" size="sm" onClick={fetchAnalytics}>
           <RefreshCw className="mr-2 h-3.5 w-3.5" /> Retry
         </Button>
@@ -859,10 +859,10 @@ export default function AnalysisBoard() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          <h1 className="text-theme-h5 font-semibold tracking-tight text-foreground">
             Analytics Overview
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-theme-caption text-muted-foreground mt-0.5">
             Showing data for {days} day{days !== 1 ? "s" : ""}
             {" · "}Last updated {format(new Date(), "MMM d, h:mm a")}
           </p>
@@ -969,10 +969,10 @@ export default function AnalysisBoard() {
           <Card className="lg:col-span-2">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium">
+                <CardTitle className="text-theme-body font-medium">
                   Revenue &amp; Order Trend
                 </CardTitle>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-4 text-theme-caption text-muted-foreground">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-sm bg-[#378ADD] inline-block opacity-70" />
                     Revenue
@@ -1083,7 +1083,7 @@ export default function AnalysisBoard() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium">
+              <CardTitle className="text-theme-body font-medium">
                 Profit &amp; Loss
               </CardTitle>
             </CardHeader>
@@ -1099,12 +1099,12 @@ export default function AnalysisBoard() {
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium">
+                <CardTitle className="text-theme-body font-medium">
                   Top Variants
                 </CardTitle>
                 <Badge
                   variant="secondary"
-                  className="text-xs font-mono font-normal"
+                  className="text-theme-caption font-mono font-normal"
                 >
                   SKU
                 </Badge>
@@ -1114,7 +1114,7 @@ export default function AnalysisBoard() {
               {topProducts.length > 0 ? (
                 <SkuBars products={topProducts} />
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-8">
+                <p className="text-theme-body-sm text-muted-foreground text-center py-8">
                   No product data.
                 </p>
               )}
@@ -1125,7 +1125,7 @@ export default function AnalysisBoard() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium">
+              <CardTitle className="text-theme-body font-medium">
                 Revenue by Category
               </CardTitle>
             </CardHeader>
@@ -1134,7 +1134,7 @@ export default function AnalysisBoard() {
                 {categoryPerformance.map((cat, i) => (
                   <span
                     key={cat.name}
-                    className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                    className="flex items-center gap-1.5 text-theme-caption text-muted-foreground"
                   >
                     <span
                       className="w-2 h-2 rounded-sm inline-block flex-shrink-0"
@@ -1158,7 +1158,7 @@ export default function AnalysisBoard() {
           {/* Category breakdown table */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium">
+              <CardTitle className="text-theme-body font-medium">
                 Category Breakdown
               </CardTitle>
             </CardHeader>

@@ -43,13 +43,13 @@ export default function RoleList({
       {roles.map((role) => (
         <div key={role.id} className="p-3 border-b last:border-0">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-mono text-gray-800">
+            <span className="text-theme-body-sm font-mono text-gray-800">
               {role.role_name}
             </span>
             {isAdmin && (
               <button
                 onClick={() => onDelete(role.id)}
-                className="text-xs text-red-400 hover:text-red-600"
+                className="text-theme-caption text-red-400 hover:text-red-600"
               >
                 {ROLES_TEXT.DELETE}
               </button>
@@ -62,7 +62,7 @@ export default function RoleList({
               {role.permissions.map((p: any) => (
                 <span
                   key={p.id}
-                  className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 rounded-2xl px-2 py-0.5"
+                  className="inline-flex items-center gap-1 text-theme-caption bg-gray-100 text-gray-600 rounded-2xl px-2 py-0.5"
                 >
                   {p.permission_name}
                   {isAdmin && (

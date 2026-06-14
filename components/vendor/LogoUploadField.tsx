@@ -34,12 +34,12 @@ export function LogoUploadField({ label, value, fieldName, onFileSelect, hint }:
         {displayUrl ? (
           <>
             <img src={displayUrl} alt={label} className="h-16 object-contain" />
-            <span className="text-xs text-gray-400 group-hover:text-gray-600">{LOGO_UPLOAD_TEXT.REPLACE}</span>
+            <span className="text-theme-caption text-gray-400 group-hover:text-gray-600">{LOGO_UPLOAD_TEXT.REPLACE}</span>
           </>
         ) : (
           <>
             <Upload size={20} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
-            <span className="text-xs text-gray-400">{LOGO_UPLOAD_TEXT.UPLOAD}</span>
+            <span className="text-theme-caption text-gray-400">{LOGO_UPLOAD_TEXT.UPLOAD}</span>
           </>
         )}
         <input ref={ref} type="file" accept="image/*" className="hidden" onChange={handleFile} />

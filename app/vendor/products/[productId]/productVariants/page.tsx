@@ -23,8 +23,9 @@ import { StatusConfirmationModal } from "@/components/common/StatusConfirmationM
 import { authToken } from "@/utils/authToken";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { redirect, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import toast from "react-hot-toast";
+import { PRODUCT_VARIANTS_TEXT } from "@/constants";
 
 interface ProductVariant {
   id: string;
@@ -36,6 +37,79 @@ interface ProductVariant {
   images: ProductImage[] | null;
 }
 
+enum VariantListingActionType {
+  SET_VARIANTS = "SET_VARIANTS",
+  SET_STATUS_TOGGLE = "SET_STATUS_TOGGLE",
+  SET_LOADING = "SET_LOADING",
+  SET_SHOW_MODAL = "SET_SHOW_MODAL",
+  CONFIRM_STATUS_UPDATE = "CONFIRM_STATUS_UPDATE",
+}
+
+interface VariantListingState {
+  variants: ProductVariant[];
+  status: ProductVariantStatus;
+  isActive: boolean;
+  loading: boolean;
+  showModal: boolean;
+  selectedVariantId: string | null;
+}
+
+type VariantListingAction =
+  | { type: VariantListingActionType.SET_VARIANTS; payload: ProductVariant[] }
+  | {
+      type: VariantListingActionType.SET_STATUS_TOGGLE;
+      payload: { variantId: string; currentStatus: ProductVariantStatus };
+    }
+  | { type: VariantListingActionType.SET_LOADING; payload: boolean }
+  | { type: VariantListingActionType.SET_SHOW_MODAL; payload: boolean }
+  | {
+      type: VariantListingActionType.CONFIRM_STATUS_UPDATE;
+      payload: ProductVariantStatus;
+    };
+
+const initialState: VariantListingState = {
+  variants: [],
+  status: ProductVariantStatus.INACTIVE,
+  isActive: false,
+  loading: false,
+  showModal: false,
+  selectedVariantId: null,
+};
+
+function variantListingReducer(
+  state: VariantListingState,
+  action: VariantListingAction,
+): VariantListingState {
+  switch (action.type) {
+    case VariantListingActionType.SET_VARIANTS:
+      return { ...state, variants: action.payload };
+    case VariantListingActionType.SET_STATUS_TOGGLE:
+      return {
+        ...state,
+        showModal: true,
+        status: action.payload.currentStatus,
+        isActive: action.payload.currentStatus === ProductVariantStatus.ACTIVE,
+        selectedVariantId: action.payload.variantId,
+      };
+    case VariantListingActionType.SET_LOADING:
+      return { ...state, loading: action.payload };
+    case VariantListingActionType.SET_SHOW_MODAL:
+      return { ...state, showModal: action.payload };
+    case VariantListingActionType.CONFIRM_STATUS_UPDATE:
+      return {
+        ...state,
+        status: action.payload,
+        variants: state.variants.map((v) =>
+          v.id === state.selectedVariantId
+            ? { ...v, status: action.payload }
+            : v,
+        ),
+      };
+    default:
+      return state;
+  }
+}
+
 export default function VariantListingPage() {
   const { productId } = useParams<{ productId: string }>();
   const { user } = useAppSelector((state) => state.auth);
@@ -45,52 +119,59 @@ export default function VariantListingPage() {
   if (!token) {
     redirect("/auth/vendorLogin");
   }
-  const [variants, setVariants] = useState<ProductVariant[]>([]);
+
+  const [state, dispatch] = useReducer(variantListingReducer, initialState);
+  const { variants, status, isActive, loading, showModal, selectedVariantId } =
+    state;
 
   useEffect(() => {
     fetchProductVariants(productId, token)
       .then((res) => {
-        setVariants(res.data);
+        dispatch({
+          type: VariantListingActionType.SET_VARIANTS,
+          payload: res.data,
+        });
       })
       .catch((error) => {});
   }, [productId, token]);
-  const [status, setStatus] = useState(ProductVariantStatus.INACTIVE);
-  const [isActive, setIsActive] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
-    null,
-  );
 
   const handleStatusToggle = (
     variantId: string,
     currentStatus: ProductVariantStatus,
   ) => {
-    setShowModal(true);
-    setStatus(currentStatus);
-    setIsActive(currentStatus === ProductVariantStatus.ACTIVE);
-    setSelectedVariantId(variantId);
+    dispatch({
+      type: VariantListingActionType.SET_STATUS_TOGGLE,
+      payload: { variantId, currentStatus },
+    });
   };
+
   const handleConfirm = async () => {
-    setLoading(true);
+    dispatch({ type: VariantListingActionType.SET_LOADING, payload: true });
     if (!token) {
       toast.error("Authentication Token not found");
       return;
     }
-    const isActive = status === ProductVariantStatus.ACTIVE;
-    const nextStatus = isActive
+    const isCurrentlyActive = status === ProductVariantStatus.ACTIVE;
+    const nextStatus = isCurrentlyActive
       ? ProductVariantStatus.INACTIVE
       : ProductVariantStatus.ACTIVE;
     try {
       await updateProductVariantStatus(selectedVariantId!, nextStatus, token);
-      setStatus(nextStatus);
+      dispatch({
+        type: VariantListingActionType.CONFIRM_STATUS_UPDATE,
+        payload: nextStatus,
+      });
       toast.success("Status updated successfully");
     } catch (err) {
     } finally {
-      setLoading(false);
-      setShowModal(false);
+      dispatch({ type: VariantListingActionType.SET_LOADING, payload: false });
+      dispatch({
+        type: VariantListingActionType.SET_SHOW_MODAL,
+        payload: false,
+      });
     }
   };
+
   return (
     <main className="min-h-screen w-full px-2 pb-10 pt-2 ">
       <div className="mx-auto  space-y-8">
@@ -103,36 +184,39 @@ export default function VariantListingPage() {
               <ArrowLeft size={18} />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                Product Variants
+              <h1 className="text-theme-h4 font-bold text-slate-900 tracking-tight">
+                {PRODUCT_VARIANTS_TEXT.TITLE}
               </h1>
-              <p className="text-sm text-slate-500 mt-0.5">
-                Manage stock, pricing, and details for each variation.
+              <p className="text-theme-body-sm text-slate-500 mt-0.5">
+                {PRODUCT_VARIANTS_TEXT.SUBTITLE}
               </p>
             </div>
           </div>
           <span className="flex gap-4 justify-between">
             <Link
               href={`/vendor/products/productForm/${productId}`}
-              className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200"
+              className="flex items-center gap-2 bg-blue-600 text-white text-theme-body-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200"
             >
               <Edit size={16} />
-              Edit Main Product
+              {PRODUCT_VARIANTS_TEXT.BTN_EDIT_PRODUCT}
             </Link>
             <Link
               href={`/vendor/products/variantForm/${productId}`}
-              className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200"
+              className="flex items-center gap-2 bg-blue-600 text-white text-theme-body-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-blue-700 active:scale-95 transition shadow-md shadow-blue-200"
             >
               <Plus size={16} />
-              Add Variant
+              {PRODUCT_VARIANTS_TEXT.BTN_ADD_VARIANT}
             </Link>
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           <Layers size={16} className="text-indigo-400" />
-          <span className="text-sm font-semibold text-slate-600">
-            {variants.length} Variant{variants.length !== 1 ? "s" : ""}
+          <span className="text-theme-body-sm font-semibold text-slate-600">
+            {variants.length}{" "}
+            {variants.length !== 1
+              ? PRODUCT_VARIANTS_TEXT.STATS_VARIANTS
+              : PRODUCT_VARIANTS_TEXT.STATS_VARIANT}
           </span>
         </div>
 
@@ -141,17 +225,17 @@ export default function VariantListingPage() {
             <div className="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
               <Package size={36} className="text-slate-300" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-700">
-              No variants yet
+            <h3 className="text-theme-h6 font-semibold text-slate-700">
+              {PRODUCT_VARIANTS_TEXT.EMPTY.TITLE}
             </h3>
-            <p className="text-slate-400 text-sm mt-1 mb-6">
-              This product has no variations. Create one to get started.
+            <p className="text-slate-400 text-theme-body-sm mt-1 mb-6">
+              {PRODUCT_VARIANTS_TEXT.EMPTY.DESC}
             </p>
             <Link
               href={`/vendor/products/variantForm/${productId}`}
-              className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-blue-700 transition shadow-md shadow-blue-200"
+              className="inline-flex items-center gap-2 bg-blue-600 text-white text-theme-body-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-blue-700 transition shadow-md shadow-blue-200"
             >
-              <Plus size={15} /> Create First Variant
+              <Plus size={15} /> {PRODUCT_VARIANTS_TEXT.EMPTY.BTN_CREATE}
             </Link>
           </div>
         ) : (
@@ -170,17 +254,17 @@ export default function VariantListingPage() {
                   {/* SKU + Status row */}
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-                        SKU
+                      <p className="text-theme-tiny font-semibold text-slate-400 uppercase tracking-widest">
+                        {PRODUCT_VARIANTS_TEXT.CARD.SKU}
                       </p>
-                      <p className="text-sm font-bold text-slate-800 font-mono mt-0.5">
+                      <p className="text-theme-body-sm font-bold text-slate-800 font-mono mt-0.5">
                         {variant.sku || "—"}
                       </p>
                     </div>
 
                     {/* Status */}
                     <span
-                      className={`inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-xs font-semibold border ${
+                      className={`inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-theme-caption font-semibold border ${
                         variant.status === ProductVariantStatus.ACTIVE
                           ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                           : "bg-gray-100 text-gray-500 border-gray-200"
@@ -192,14 +276,15 @@ export default function VariantListingPage() {
 
                   {variant.attributes.length > 0 && (
                     <div>
-                      <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                        <Tag size={10} /> Attributes
+                      <p className="text-theme-body-sm font-semibold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                        <Tag size={10} />{" "}
+                        {PRODUCT_VARIANTS_TEXT.CARD.ATTRIBUTES}
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {variant.attributes.map((attr, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center gap-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm  font-medium px-2 py-1 rounded-lg"
+                            className="flex items-center gap-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-theme-body-sm  font-medium px-2 py-1 rounded-lg"
                           >
                             <span className="text-indigo-400 font-semibold">
                               {attr.name}:
@@ -215,23 +300,23 @@ export default function VariantListingPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-                        Price
+                      <p className="text-theme-tiny font-semibold text-slate-400 uppercase tracking-widest">
+                        {PRODUCT_VARIANTS_TEXT.CARD.PRICE}
                       </p>
-                      <p className="text-lg font-bold text-slate-900 mt-0.5">
+                      <p className="text-theme-h6 font-bold text-slate-900 mt-0.5">
                         ₹{formatCurrency(variant.price)}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex gap-4">
-                    {/* <DeleteBtn id={variant.id} style="mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:border-red-400 hover:text-red-600 hover:bg-red-50 active:scale-95 transition-all" toDelete="VARIANT" vendorId={vendorId} variantId={variant.id} /> */}
+                    {/* <DeleteBtn id={variant.id} style="mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 text-theme-body-sm font-semibold hover:border-red-400 hover:text-red-600 hover:bg-red-50 active:scale-95 transition-all" toDelete="VARIANT" vendorId={vendorId} variantId={variant.id} /> */}
                     <Link
                       href={`/vendor/products/variantUpdateForm/${variant.id}`}
-                      className="mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 active:scale-95 transition-all"
+                      className="mt-auto flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 text-theme-body-sm font-semibold hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 active:scale-95 transition-all"
                     >
                       <Edit size={14} />
-                      Edit Variant
+                      {PRODUCT_VARIANTS_TEXT.CARD.BTN_EDIT}
                     </Link>
                     <button
                       onClick={() =>
@@ -241,7 +326,7 @@ export default function VariantListingPage() {
                         )
                       }
                       disabled={loading}
-                      className={`flex items-center gap-1.5 py-2.5 px-4 rounded-xl text-xs font-semibold border transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
+                      className={`flex items-center gap-1.5 py-2.5 px-4 rounded-xl text-theme-caption font-semibold border transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
                     ${
                       variant.status === ProductVariantStatus.ACTIVE
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300"
@@ -255,10 +340,10 @@ export default function VariantListingPage() {
                       )}
 
                       {loading
-                        ? "Saving..."
+                        ? PRODUCT_VARIANTS_TEXT.CARD.SAVING
                         : variant.status === ProductVariantStatus.ACTIVE
-                          ? "Active"
-                          : "Inactive"}
+                          ? PRODUCT_VARIANTS_TEXT.CARD.STATUS_ACTIVE
+                          : PRODUCT_VARIANTS_TEXT.CARD.STATUS_INACTIVE}
                     </button>
                   </div>
                 </div>
@@ -270,7 +355,12 @@ export default function VariantListingPage() {
       {showModal && (
         <StatusConfirmationModal
           onConfirm={handleConfirm}
-          onCancel={() => setShowModal(false)}
+          onCancel={() =>
+            dispatch({
+              type: VariantListingActionType.SET_SHOW_MODAL,
+              payload: false,
+            })
+          }
           isActive={isActive}
         />
       )}

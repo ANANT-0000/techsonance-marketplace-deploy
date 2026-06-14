@@ -129,10 +129,10 @@ export function AccountReactivation({
                             <div className="p-4 rounded-full bg-indigo-50 text-indigo-600 mb-5 border border-indigo-100">
                                 <UserCheck size={36} strokeWidth={2} />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">
+                            <h3 className="text-theme-h5 font-bold text-gray-900 mb-2">
                                 {ACCOUNT_REACTIVATION_TEXT.HEADER_INFO}
                             </h3>
-                            <p className="text-sm text-gray-500 mb-8 px-2 leading-relaxed">
+                            <p className="text-theme-body-sm text-gray-500 mb-8 px-2 leading-relaxed">
                                 {ACCOUNT_REACTIVATION_TEXT.DESC_INFO}
                             </p>
 
@@ -140,7 +140,7 @@ export function AccountReactivation({
                                 <button
                                     onClick={handleSendCode}
                                     disabled={isLoading}
-                                    className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-sm transition-colors disabled:opacity-70 flex justify-center items-center gap-2"
+                                    className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-theme-body-sm shadow-sm transition-colors disabled:opacity-70 flex justify-center items-center gap-2"
                                 >
                                     {isLoading ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -151,7 +151,7 @@ export function AccountReactivation({
                                 <button
                                     onClick={onClose}
                                     disabled={isLoading}
-                                    className="w-full py-3 rounded-xl bg-white border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                    className="w-full py-3 rounded-xl bg-white border border-gray-200 text-gray-600 font-semibold text-theme-body-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
                                 >
                                     {ACCOUNT_REACTIVATION_TEXT.BTN_CANCEL}
                                 </button>
@@ -165,10 +165,10 @@ export function AccountReactivation({
                             <div className="p-4 rounded-full bg-blue-50 text-blue-600 mb-5 border border-blue-100">
                                 <ShieldCheck size={36} strokeWidth={2} />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">
+                            <h3 className="text-theme-h5 font-bold text-gray-900 mb-2">
                                 {ACCOUNT_REACTIVATION_TEXT.HEADER_OTP}
                             </h3>
-                            <p className="text-sm text-gray-500 mb-8 px-2 leading-relaxed">
+                            <p className="text-theme-body-sm text-gray-500 mb-8 px-2 leading-relaxed">
                                 {ACCOUNT_REACTIVATION_TEXT.DESC_OTP_1}<span className="font-semibold text-gray-800">{emailMasked}</span>{ACCOUNT_REACTIVATION_TEXT.DESC_OTP_2}
                             </p>
 
@@ -185,7 +185,7 @@ export function AccountReactivation({
                                             onKeyDown={(e) => handleKeyDown(e, index)}
                                             onPaste={handlePaste}
                                             disabled={isLoading}
-                                            className="w-11 h-14 sm:w-12 sm:h-14 text-center text-xl font-bold text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50"
+                                            className="w-11 h-14 sm:w-12 sm:h-14 text-center text-theme-h5 font-bold text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50"
                                         />
                                     ))}
                                 </div>
@@ -193,7 +193,7 @@ export function AccountReactivation({
                                 <button
                                     type="submit"
                                     disabled={isLoading || otp.join("").length !== 6}
-                                    className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm transition-colors disabled:opacity-70 flex justify-center items-center gap-2"
+                                    className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-theme-body-sm shadow-sm transition-colors disabled:opacity-70 flex justify-center items-center gap-2"
                                 >
                                     {isLoading ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -203,7 +203,7 @@ export function AccountReactivation({
                                 </button>
                             </form>
 
-                            <div className="mt-6 text-sm text-gray-500">
+                            <div className="mt-6 text-theme-body-sm text-gray-500">
                                 {ACCOUNT_REACTIVATION_TEXT.RESEND_PROMPT}
                                 {timeLeft > 0 ? (
                                     <span className="font-medium text-gray-400">{ACCOUNT_REACTIVATION_TEXT.RESEND_IN}{timeLeft}s</span>
@@ -226,16 +226,16 @@ export function AccountReactivation({
                             <div className="p-4 rounded-full bg-emerald-50 text-emerald-600 mb-5 border border-emerald-100">
                                 <CheckCircle2 size={48} strokeWidth={2} />
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                            <h3 className="text-theme-h4 font-bold text-gray-900 mb-2">
                                 {ACCOUNT_REACTIVATION_TEXT.HEADER_SUCCESS}
                             </h3>
-                            <p className="text-sm text-gray-500 mb-8 px-2 leading-relaxed">
+                            <p className="text-theme-body-sm text-gray-500 mb-8 px-2 leading-relaxed">
                                 {ACCOUNT_REACTIVATION_TEXT.DESC_SUCCESS}
                             </p>
 
                             <button
                                 onClick={onSuccess}
-                                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition-colors flex justify-center items-center gap-2"
+                                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-theme-body-sm shadow-sm transition-colors flex justify-center items-center gap-2"
                             >
                                 {ACCOUNT_REACTIVATION_TEXT.BTN_CONTINUE} <ArrowRight size={16} />
                             </button>

@@ -64,7 +64,7 @@ export default function PlanSelectionStep({ selectedPlanId, onChange }: Props) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-500">
+      <p className="text-theme-body-sm text-gray-500">
         {PLAN_SELECTION_TEXT.MESSAGES.SUBTITLE_PREFIX}{plans[0]?.trial_days ?? 14}{PLAN_SELECTION_TEXT.MESSAGES.SUBTITLE_SUFFIX}
       </p>
 
@@ -87,7 +87,7 @@ export default function PlanSelectionStep({ selectedPlanId, onChange }: Props) {
                 selected ? 'ring-2 ring-blue-100' : '',
               ].join(' ')}
             >
-              <span className={`text-xs font-semibold px-2 py-1 rounded-md ${BADGE_STYLES[meta.badgeVariant]}`}>
+              <span className={`text-theme-caption font-semibold px-2 py-1 rounded-md ${BADGE_STYLES[meta.badgeVariant]}`}>
                 {meta.badge}
               </span>
 
@@ -96,18 +96,18 @@ export default function PlanSelectionStep({ selectedPlanId, onChange }: Props) {
                 <span className="font-semibold text-gray-900">{plan.display_name}</span>
               </div>
 
-              <p className="text-2xl font-semibold text-gray-900 mt-2">
+              <p className="text-theme-h4 font-semibold text-gray-900 mt-2">
                 {Number(plan.price_monthly) === 0
                   ? PLAN_SELECTION_TEXT.MESSAGES.FREE
                   : `₹${Number(plan.price_monthly).toLocaleString()}`}
                 {Number(plan.price_monthly) > 0 && (
-                  <span className="text-sm font-normal text-gray-400">{PLAN_SELECTION_TEXT.MESSAGES.AFTER_TRIAL}</span>
+                  <span className="text-theme-body-sm font-normal text-gray-400">{PLAN_SELECTION_TEXT.MESSAGES.AFTER_TRIAL}</span>
                 )}
               </p>
 
               <div className="border-t border-gray-100 mt-3 pt-3 space-y-1.5">
                 {features.map(f => (
-                  <div key={f.label} className={`flex items-center gap-2 text-sm ${f.included ? 'text-gray-700' : 'text-gray-400'}`}>
+                  <div key={f.label} className={`flex items-center gap-2 text-theme-body-sm ${f.included ? 'text-gray-700' : 'text-gray-400'}`}>
                     {f.included
                       ? <Check size={13} className="text-green-600 shrink-0" />
                       : <Minus size={13} className="shrink-0" />}
@@ -120,7 +120,7 @@ export default function PlanSelectionStep({ selectedPlanId, onChange }: Props) {
         })}
       </div>
 
-      <p className="text-xs text-gray-400 text-center">
+      <p className="text-theme-caption text-gray-400 text-center">
         {PLAN_SELECTION_TEXT.MESSAGES.FOOTER_PREFIX}{plans[0]?.trial_days ?? 14}{PLAN_SELECTION_TEXT.MESSAGES.FOOTER_SUFFIX}
       </p>
     </div>

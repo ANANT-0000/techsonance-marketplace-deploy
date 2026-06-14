@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef, useTransition } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -41,8 +41,8 @@ export default function CompanyIdentityPage() {
     <div className="w-full mx-auto px-4 py-8">
       {/* Page header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Company Identity</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-theme-h4 font-bold text-gray-900 tracking-tight">Company Identity</h1>
+        <p className="text-theme-body-sm text-gray-500 mt-1">
           Configure how your company appears on invoices, warranty cards and all generated documents.
         </p>
       </div>
@@ -53,7 +53,7 @@ export default function CompanyIdentityPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-theme-body-sm font-medium whitespace-nowrap transition-all ${
               activeTab === tab.id
                 ? 'bg-white text-gray-900 shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'
@@ -73,7 +73,7 @@ export default function CompanyIdentityPage() {
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="text-sm text-gray-500 mb-6 -mt-4"
+            className="text-theme-body-sm text-gray-500 mb-6 -mt-4"
           >
             {tab.description}
           </motion.p>
@@ -90,7 +90,7 @@ export default function CompanyIdentityPage() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18 }}
           >
-            {activeTab === 'branding' && <BrandingTab token={token} />}
+            {activeTab === 'branding' && <BrandingTab />}
             {activeTab === 'legal' && <LegalProfileTab token={token} />}
             {activeTab === 'documents' && <DocumentConfigTab token={token} />}
           </motion.div>

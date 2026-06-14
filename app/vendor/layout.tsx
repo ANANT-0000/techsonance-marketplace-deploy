@@ -13,6 +13,12 @@ import Navbar from "@/components/vendor/Navbar";
 import AxiosAPI from "@/lib/axios";
 import { TrialBanner } from "@/components/vendor/TrialBanner";
 
+const STATUS_PAYMENT_REQUIRED = 402;
+const BILLING_REDIRECT_URL = "/vendor/settings/billing?reason=expired";
+const VENDOR_BASE_PATH = "/vendor";
+const VENDOR_LOGIN_PATH = "/auth/vendorLogin";
+const ROOT_PATH = "/";
+
 export default function VendorLayout({
   children,
 }: {
@@ -26,16 +32,16 @@ export default function VendorLayout({
   const router = useRouter();
   useEffect(() => {
     if (!isAuthenticated || role !== UserRole.Vendor) {
-      router.replace(`/`);
+      router.replace(ROOT_PATH);
     }
   }, []);
   // Axios interceptor in lib/axios.ts
   AxiosAPI.interceptors.response.use(
     (res) => res,
     (err) => {
-      if (err.response?.status === 402) {
+      if (err.response?.status === STATUS_PAYMENT_REQUIRED) {
         // Subscription expired — redirect to upgrade
-        window.location.href = `/vendor/settings/billing?reason=expired`;
+        window.location.href = BILLING_REDIRECT_URL;
       }
       return Promise.reject(err);
     },
@@ -43,10 +49,10 @@ export default function VendorLayout({
   return (
     <>
       <main className={`flex w-full`}>
-        <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={`/vendor`} />
+        <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={VENDOR_BASE_PATH} />
         <ProtectedRoute
           allowedRoles={[UserRole.Vendor, UserRole.Admin]}
-          loginPath="/auth/vendorLogin"
+          loginPath={VENDOR_LOGIN_PATH}
         >
           <div className="flex-1 flex flex-col min-h-screen">
             <TrialBanner vendorId={vendorId as string} />

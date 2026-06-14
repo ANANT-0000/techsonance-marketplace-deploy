@@ -53,7 +53,7 @@ const PriceTicker = ({ value }: { value: number }) => {
       key={displayValue}
       initial={{ y: 10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="inline-block font-bold text-xl text-foreground"
+      className="inline-block font-bold text-theme-h5 text-foreground"
     >
       ₹{formatCurrency(value)}
     </motion.span>
@@ -86,16 +86,16 @@ const CartItemCard = ({ item }: { item: CartItemListResponse }) => (
 
         {/* Content Container */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          <h3 className="text-sm md:text-base font-bold text-foreground line-clamp-2 leading-snug">
+          <h3 className="text-theme-body-sm md:text-theme-body font-bold text-foreground line-clamp-2 leading-snug">
             {item.productVariant.variant_name}
           </h3>
-          <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
+          <p className="text-theme-caption text-muted-foreground mt-0.5 sm:mt-1">
             Standard Variant
           </p>
 
           <div className="flex items-center justify-between mt-3 gap-2">
             {/* Price (Truncated so it doesn't break layout if number is huge) */}
-            <p className="text-sm sm:text-base font-bold text-foreground truncate min-w-0">
+            <p className="text-theme-body-sm sm:text-theme-body font-bold text-foreground truncate min-w-0">
               ₹{formatCurrency(Number(item.productVariant.price))}
             </p>
 
@@ -126,7 +126,7 @@ const CouponRow = ({
   onRemove: () => void;
 }) => (
   <div className="mt-6 pt-6 border-t border-border">
-    <p className="text-sm font-semibold text-foreground mb-3">Promo Code</p>
+    <p className="text-theme-body-sm font-semibold text-foreground mb-3">Promo Code</p>
     <AnimatePresence mode="wait">
       {selectedCoupon ? (
         <motion.div
@@ -139,17 +139,17 @@ const CouponRow = ({
           <div className="flex items-center gap-3 min-w-0">
             <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
             <div className="min-w-0">
-              <p className="text-sm font-bold text-emerald-800 uppercase tracking-wide truncate">
+              <p className="text-theme-body-sm font-bold text-emerald-800 uppercase tracking-wide truncate">
                 {selectedCoupon.code}
               </p>
-              <p className="text-xs text-emerald-600 font-medium mt-0.5">
+              <p className="text-theme-caption text-emerald-600 font-medium mt-0.5">
                 Saving ₹{formatCurrency(discountAmount)}
               </p>
             </div>
           </div>
           <button
             onClick={onRemove}
-            className="text-emerald-600 hover:text-red-600 font-medium text-xs hover:underline transition-colors shrink-0 ml-2"
+            className="text-emerald-600 hover:text-red-600 font-medium text-theme-caption hover:underline transition-colors shrink-0 ml-2"
           >
             Remove
           </button>
@@ -165,11 +165,11 @@ const CouponRow = ({
         >
           <div className="flex items-center gap-3">
             <Tag size={18} className="text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-theme-body-sm font-medium text-gray-700">
               View Available Coupons
             </span>
           </div>
-          <span className="text-xs font-bold text-gray-900 bg-white border border-gray-200 px-3 py-1 rounded-md shadow-sm">
+          <span className="text-theme-caption font-bold text-gray-900 bg-white border border-gray-200 px-3 py-1 rounded-md shadow-sm">
             Select
           </span>
         </motion.button>
@@ -207,11 +207,11 @@ const OrderSummary = ({
     <div className="space-y-4">
       <Card className="w-full rounded-2xl shadow-sm border-border">
         <CardContent className="p-5 sm:p-6">
-          <h2 className="text-lg font-bold text-foreground mb-6">
+          <h2 className="text-theme-h6 font-bold text-foreground mb-6">
             Order Summary
           </h2>
 
-          <div className="space-y-4 text-sm text-muted-foreground">
+          <div className="space-y-4 text-theme-body-sm text-muted-foreground">
             <div className="flex justify-between">
               <span>Subtotal</span>
               <span className="text-foreground">
@@ -221,7 +221,7 @@ const OrderSummary = ({
             <div className="flex justify-between">
               <span>Estimated Shipping</span>
               {shippingFee === 0 ? (
-                <span className="text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full text-xs">
+                <span className="text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full text-theme-caption">
                   Free
                 </span>
               ) : (
@@ -254,7 +254,7 @@ const OrderSummary = ({
             <Separator className="my-4" />
 
             <div className="flex justify-between items-center text-foreground">
-              <span className="font-bold text-lg">Total</span>
+              <span className="font-bold text-theme-h6">Total</span>
               <PriceTicker value={finalPrice} />
             </div>
           </div>
@@ -271,11 +271,11 @@ const OrderSummary = ({
               mode={BuyBtnMode.CART}
               id={cartList[0]?.cart_id}
               selectedCoupon={selectedCoupon}
-              styles="w-full py-4 text-base font-medium rounded-xl shadow-md bg-black hover:bg-gray-800 text-white flex items-center justify-center gap-2 transition-all"
+              styles="w-full py-4 text-theme-body font-medium rounded-xl shadow-md bg-black hover:bg-gray-800 text-white flex items-center justify-center gap-2 transition-all"
             />
           </div>
 
-          <div className="mt-6 flex flex-col items-center gap-3 text-xs text-muted-foreground">
+          <div className="mt-6 flex flex-col items-center gap-3 text-theme-caption text-muted-foreground">
             <p className="flex items-center gap-1.5">
               <ShieldCheck size={14} /> Secure SSL Checkout
             </p>
@@ -291,10 +291,10 @@ const OrderSummary = ({
       <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 flex items-start gap-3">
         <Truck className="text-blue-600 shrink-0 mt-0.5" size={20} />
         <div>
-          <h4 className="text-sm font-bold text-blue-900">
+          <h4 className="text-theme-body-sm font-bold text-blue-900">
             Complimentary Shipping
           </h4>
-          <p className="text-xs text-blue-700 mt-1">
+          <p className="text-theme-caption text-blue-700 mt-1">
             Orders over ₹500 qualify for free express delivery worldwide.
           </p>
         </div>
@@ -424,9 +424,9 @@ export default function CartClient() {
     <main className="min-h-screen bg-gray-50/30 ">
       {/* Cleaner Mobile header */}
       <div className="flex items-center gap-3 px-4 pt-6 pb-4 sm:hidden">
-        <h1 className="font-bold text-xl text-foreground">Your Cart</h1>
+        <h1 className="font-bold text-theme-h5 text-foreground">Your Cart</h1>
         {totalItemCount > 0 && (
-          <span className="ml-auto text-sm font-medium text-muted-foreground">
+          <span className="ml-auto text-theme-body-sm font-medium text-muted-foreground">
             ({totalItemCount})
           </span>
         )}
@@ -435,10 +435,10 @@ export default function CartClient() {
       <div className="max-w-[1200px] mx-auto lg:px-8 px-4 py-2 lg:py-10">
         {/* Desktop title */}
         <div className="hidden sm:block mb-8">
-          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
+          <h1 className="text-theme-h3 font-extrabold text-foreground tracking-tight">
             Your Bag
           </h1>
-          <p className="text-base text-muted-foreground mt-2">
+          <p className="text-theme-body text-muted-foreground mt-2">
             Review your selection before checkout.
           </p>
         </div>
@@ -461,10 +461,10 @@ export default function CartClient() {
             className="flex flex-col items-center justify-center text-center py-24 border-2 border-dashed border-border rounded-2xl bg-white"
           >
             <ShoppingBag size={48} className="text-gray-300 mb-4" />
-            <p className="text-lg font-semibold text-foreground">
+            <p className="text-theme-h6 font-semibold text-foreground">
               Your cart is empty
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-theme-body-sm text-muted-foreground mt-1">
               Add some items to get started
             </p>
             <Button

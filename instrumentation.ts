@@ -1,7 +1,8 @@
 import * as Sentry from "@sentry/nextjs";
+import { ENV_DEVELOPMENT } from "./constants";
 
 export async function register() {
-  if (process.env.NODE_ENV !== "development") {
+  if (process.env.NODE_ENV !== ENV_DEVELOPMENT) {
     return;
   }
 
@@ -15,6 +16,6 @@ export async function register() {
 }
 
 export const onRequestError =
-  process.env.NODE_ENV === "development"
+  process.env.NODE_ENV === ENV_DEVELOPMENT
     ? Sentry.captureRequestError
     : undefined;

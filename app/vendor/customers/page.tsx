@@ -42,25 +42,25 @@ const getCustomerStatusBadge = (status: string) => {
   switch (status?.toUpperCase()) {
     case "ACTIVE":
       return (
-        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
           ● Active
         </span>
       );
     case "SUSPENDED":
       return (
-        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
           ● Suspended
         </span>
       );
     case "DEACTIVATED":
       return (
-        <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
           ● Deactivated
         </span>
       );
     default:
       return (
-        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-xs font-semibold capitalize">
+        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize">
           ● {status || "Pending"}
         </span>
       );
@@ -102,14 +102,14 @@ export default function VendorCustomersPage() {
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">
           <Users size={22} className="text-blue-500" />
-          <h1 className="text-2xl font-bold text-gray-800">Customers</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">Customers</h1>
           {customers && customers.length > 0 && (
-            <span className="ml-2 bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+            <span className="ml-2 bg-blue-100 text-blue-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
               {customers.length}
             </span>
           )}
         </div>
-        {/* <button className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+        {/* <button className="flex items-center gap-2 font-semibold text-theme-body-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                     <Download size={16} />
                     Export CSV
                 </button> */}
@@ -126,7 +126,7 @@ export default function VendorCustomersPage() {
           />
           <input
             type="text"
-            className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
+            className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
             placeholder="Search by name or email"
           />
         </span>
@@ -134,7 +134,7 @@ export default function VendorCustomersPage() {
         {/* Filters */}
         <span className="flex flex-wrap gap-3 items-center">
           <select
-            className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
+            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
             onChange={(e) => setStatusFilter(e.target.value)}
             value={statusFilter}
           >
@@ -144,7 +144,7 @@ export default function VendorCustomersPage() {
           </select>
 
           <select
-            className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
+            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
           >
@@ -155,7 +155,7 @@ export default function VendorCustomersPage() {
           {isOpen ? (
             <button
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 text-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
+              className="flex items-center gap-2 text-theme-body-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
             >
               {date ? date.toDateString() : "Select Date"}
               <ChevronUp size={16} />
@@ -163,7 +163,7 @@ export default function VendorCustomersPage() {
           ) : (
             <button
               onClick={() => setIsOpen(true)}
-              className="flex items-center gap-2 text-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
+              className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
             >
               {date ? date.toDateString() : "Select Date"}
               <ChevronDown size={16} />
@@ -197,7 +197,7 @@ export default function VendorCustomersPage() {
               {customerTableHeader.map((header) => (
                 <th
                   key={header}
-                  className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
                 >
                   {header}
                 </th>
@@ -209,7 +209,7 @@ export default function VendorCustomersPage() {
               <tr>
                 <td
                   colSpan={9}
-                  className="py-16 text-center text-gray-400 text-sm"
+                  className="py-16 text-center text-gray-400 text-theme-body-sm"
                 >
                   <Users size={36} className="mx-auto mb-3 opacity-30" />
                   No customers found.
@@ -231,7 +231,7 @@ export default function VendorCustomersPage() {
 
                   {/* CUSTOMER ID */}
                   <td className="p-4">
-                    <span className="font-mono text-sm font-semibold text-gray-800">
+                    <span className="font-mono text-theme-body-sm font-semibold text-gray-800">
                       #{customer.id.split("-")[0].toUpperCase()}
                     </span>
                   </td>
@@ -239,7 +239,7 @@ export default function VendorCustomersPage() {
                   {/* NAME */}
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-theme-caption shrink-0">
                         {customer.first_name.charAt(0)}
                         {customer.last_name.charAt(0)}
                       </div>
@@ -255,7 +255,7 @@ export default function VendorCustomersPage() {
                   </td>
 
                   {/* JOINED DATE */}
-                  <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
+                  <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap">
                     {new Date(customer.created_at).toLocaleDateString("en-GB")}
                   </td>
                 </tr>

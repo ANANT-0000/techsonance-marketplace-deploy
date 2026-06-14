@@ -27,7 +27,8 @@ export const fetchProductVariantDetails = async (id: string) => {
       `${BASE_API_URL}/v1/product-variant/details/${id}`,
       {
         method: "GET",
-        cache: "no-cache",
+        cache: "force-cache",
+        next: { revalidate: 60 },
         headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
@@ -99,8 +100,8 @@ export const fetchProductVendorProducts = async (
   try {
     const response = await fetch(url, {
       method: "GET",
-
-      cache: "no-store",
+      cache: "force-cache",
+      next: { revalidate: 60 },
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -150,8 +151,8 @@ export const fetchProductProducts = async (
   try {
     const response = await fetch(url, {
       method: "GET",
-
-      cache: "no-store",
+      cache: "force-cache",
+      next: { revalidate: 60 },
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -185,7 +186,8 @@ export const fetchProductOptions = async (): Promise<
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/products/options`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
+      next: { revalidate: 300 },
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -225,7 +227,8 @@ export const fetchHomepageProducts = async (
       `${BASE_API_URL}/v1/products/homepage?limit=${limit}`,
       {
         method: "GET",
-        cache: "no-store",
+        cache: "force-cache",
+        next: { revalidate: 60 },
         headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,

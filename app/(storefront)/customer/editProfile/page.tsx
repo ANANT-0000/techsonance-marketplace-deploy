@@ -85,7 +85,7 @@ export default function EditProfilePage() {
         >
           <ChevronLeft size={20} />
         </button>
-        <h1 className="font-bold text-xl text-gray-900">Edit Profile</h1>
+        <h1 className="font-bold text-theme-h5 text-gray-900">Edit Profile</h1>
       </div>
 
       <form
@@ -97,7 +97,7 @@ export default function EditProfilePage() {
           <div key={field.id} className="flex flex-col gap-1.5">
             <label
               htmlFor={field.id}
-              className="text-sm font-semibold text-gray-700"
+              className="text-theme-body-sm font-semibold text-gray-700"
             >
               {field.label}
             </label>
@@ -106,14 +106,14 @@ export default function EditProfilePage() {
               type={field.type}
               placeholder={field.placeholder}
               {...register(field.id as keyof ProfileEditData)}
-              className={`w-full border rounded-lg shadow-sm sm:text-sm p-2.5 transition-all outline-none focus:ring-2 ${
+              className={`w-full border rounded-lg shadow-sm sm:text-theme-body-sm p-2.5 transition-all outline-none focus:ring-2 ${
                 errors[field.id as keyof ProfileEditData]
                   ? "border-red-400 focus:ring-red-100"
                   : "border-gray-300 focus:ring-blue-100 focus:border-blue-500"
               }`}
             />
             {errors[field.id as keyof ProfileEditData] && (
-              <p className="text-red-500 text-xs flex items-center gap-1 font-medium mt-1">
+              <p className="text-red-500 text-theme-caption flex items-center gap-1 font-medium mt-1">
                 <AlertCircle size={12} />
                 {errors[field.id as keyof ProfileEditData]?.message}
               </p>
@@ -125,14 +125,14 @@ export default function EditProfilePage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
+            className="px-6 py-2.5 bg-blue-600 text-white text-theme-body-sm font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
           >
             {isSubmitting ? "Saving..." : "Save Changes"}
           </button>
           <button
             type="button"
             onClick={handleCancel}
-            className="px-6 py-2.5 bg-gray-100 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-200 transition-colors"
+            className="px-6 py-2.5 bg-gray-100 text-gray-700 text-theme-body-sm font-bold rounded-xl hover:bg-gray-200 transition-colors"
           >
             Cancel
           </button>

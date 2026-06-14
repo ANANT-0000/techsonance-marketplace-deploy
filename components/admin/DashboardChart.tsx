@@ -63,7 +63,7 @@ export function DashboardChart() {
                         value={timeframe}
                         onChange={(e) => setTimeframe(e.target.value as keyof typeof dataSets)}
                         className="appearance-none bg-transparent border border-gray-200 rounded-md px-3 py-1 align-middle
-                        pr-8 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        pr-8 text-theme-body-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                     >
                         <option value="30d">{DASHBOARD_CHART_TEXT.LAST_30_DAYS}</option>
                         <option value="6m">{DASHBOARD_CHART_TEXT.LAST_6_MONTHS}</option>

@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
+import { ENV_DEVELOPMENT } from "./constants";
 
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === ENV_DEVELOPMENT) {
   Sentry.init({
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
@@ -13,6 +14,6 @@ if (process.env.NODE_ENV === "development") {
 }
 
 export const onRouterTransitionStart =
-  process.env.NODE_ENV === "development"
+  process.env.NODE_ENV === ENV_DEVELOPMENT
     ? Sentry.captureRouterTransitionStart
     : undefined;

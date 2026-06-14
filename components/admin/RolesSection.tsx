@@ -27,7 +27,7 @@ export default async function RolesSection({
 
   return (
     <div>
-      <h2 className="text-sm font-semibold text-gray-700 mb-3">
+      <h2 className="text-theme-body-sm font-semibold text-gray-700 mb-3">
         {ROLES_TEXT.ROLES_TITLE}
       </h2>
 
@@ -36,12 +36,12 @@ export default async function RolesSection({
           // value={name}
           name="role"
           placeholder="e.g. MODERATOR"
-          className="flex-1 border border-gray-300 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:border-gray-500"
+          className="flex-1 border border-gray-300 rounded-xl px-3 py-1.5 text-theme-body-sm focus:outline-none focus:border-gray-500"
         />
 
         <button
           type="submit"
-          className="border border-gray-300 rounded-xl px-4 py-1.5  text-sm hover:bg-gray-50"
+          className="border border-gray-300 rounded-xl px-4 py-1.5  text-theme-body-sm hover:bg-gray-50"
         >
           {ROLES_TEXT.ADD}
         </button>
@@ -50,7 +50,7 @@ export default async function RolesSection({
         {roles.length > 0 ? (
           <RoleList roles={roles} adminId={adminId} />
         ) : (
-          <p className="text-sm text-gray-500">{ROLES_TEXT.NO_ROLES_FOUND}</p>
+          <p className="text-theme-body-sm text-gray-500">{ROLES_TEXT.NO_ROLES_FOUND}</p>
         )}
       </Suspense>
     </div>

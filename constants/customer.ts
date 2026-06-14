@@ -61,7 +61,7 @@ export const FOOTER_CONTENT: FooterSectionType[] = [
         header: 'Connect with Us',
         links: [
             { title: 'Email', url: 'mailto:support@soundsphere.com', icon: 'email', category: 'contact' },
-            { title: 'Eklingpura Chouraha, Ahmedabad Main Road F(NH 8- Near Mahadev Hotel) Udaipur, India- 313002', url: 'https://www.google.com/maps/place/Sound+Sphere/@37.7749,-122.4194,15z/data=!4m5!3m4!1s0x0:0x0!8m2!3d37.7749!4d-122.4194', icon: 'location', styles: 'text-sm', category: 'contact' },
+            { title: 'Eklingpura Chouraha, Ahmedabad Main Road F(NH 8- Near Mahadev Hotel) Udaipur, India- 313002', url: 'https://www.google.com/maps/place/Sound+Sphere/@37.7749,-122.4194,15z/data=!4m5!3m4!1s0x0:0x0!8m2!3d37.7749!4d-122.4194', icon: 'location', styles: 'text-theme-body-sm', category: 'contact' },
             // { title: 'Facebook', url: 'https://www.facebook.com/soundsphere', icon: 'facebook', styles: ' bg-blue-500 text-white rounded p-1', category: 'social' },
 
             // { title: 'Instagram', url: 'https://www.instagram.com/soundsphere', icon: 'instagram', styles: 'bg-pink-500 text-white rounded p-1', category: 'social' },

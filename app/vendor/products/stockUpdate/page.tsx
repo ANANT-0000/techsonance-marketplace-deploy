@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import {
   PackageSearch,
   ArrowUpDown,
@@ -23,6 +23,7 @@ import {
 import { TableRowSkeleton } from "@/components/common/skeletons";
 import { ConfirmationModal } from "@/components/common/ConfirmationModal";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { STOCK_MANAGER_TEXT } from "@/constants";
 
 export const stockTableHeader = [
   "Product / Variant",
@@ -57,41 +58,148 @@ const stockBarColor: Record<"out" | "low" | "ok", string> = {
 
 const STEP_OPTIONS = [2, 5, 10, 25, 50];
 
+enum StockManagerActionType {
+  SET_LOADING = "SET_LOADING",
+  SET_VARIANTS = "SET_VARIANTS",
+  SET_SEARCH_QUERY = "SET_SEARCH_QUERY",
+  SET_STATUS_FILTER = "SET_STATUS_FILTER",
+  SET_SORT_BY = "SET_SORT_BY",
+  OPEN_MODAL = "OPEN_MODAL",
+  CLOSE_MODAL = "CLOSE_MODAL",
+  SET_EDIT_STOCK_VALUE = "SET_EDIT_STOCK_VALUE",
+  SET_IS_SAVING = "SET_IS_SAVING",
+  SET_CONFIRM_CONFIG = "SET_CONFIRM_CONFIG",
+  SET_IS_STATUS_UPDATING = "SET_IS_STATUS_UPDATING",
+  UPDATE_VARIANT_STOCK = "UPDATE_VARIANT_STOCK",
+  UPDATE_VARIANT_STATUS = "UPDATE_VARIANT_STATUS",
+}
+
+interface StockManagerState {
+  loading: boolean;
+  variants: any[];
+  searchQuery: string;
+  statusFilter: string;
+  sortBy: string;
+  activeModalItem: any | null;
+  editStockValue: number;
+  adjustmentStep: number;
+  isSaving: boolean;
+  confirmConfig: {
+    isOpen: boolean;
+    variantId: string;
+    currentStatus: string;
+    productName: string;
+  } | null;
+  isStatusUpdating: boolean;
+}
+
+type StockManagerAction =
+  | { type: StockManagerActionType.SET_LOADING; payload: boolean }
+  | { type: StockManagerActionType.SET_VARIANTS; payload: any[] }
+  | { type: StockManagerActionType.SET_SEARCH_QUERY; payload: string }
+  | { type: StockManagerActionType.SET_STATUS_FILTER; payload: string }
+  | { type: StockManagerActionType.SET_SORT_BY; payload: string }
+  | { type: StockManagerActionType.OPEN_MODAL; payload: any }
+  | { type: StockManagerActionType.CLOSE_MODAL }
+  | { type: StockManagerActionType.SET_EDIT_STOCK_VALUE; payload: number }
+  | { type: StockManagerActionType.SET_IS_SAVING; payload: boolean }
+  | { type: StockManagerActionType.SET_CONFIRM_CONFIG; payload: StockManagerState["confirmConfig"] }
+  | { type: StockManagerActionType.SET_IS_STATUS_UPDATING; payload: boolean }
+  | { type: StockManagerActionType.UPDATE_VARIANT_STOCK; payload: { variantId: string; stock: number } }
+  | { type: StockManagerActionType.UPDATE_VARIANT_STATUS; payload: { variantId: string; status: string } };
+
+const initialState: StockManagerState = {
+  loading: true,
+  variants: [],
+  searchQuery: "",
+  statusFilter: "",
+  sortBy: "stock_asc",
+  activeModalItem: null,
+  editStockValue: 0,
+  adjustmentStep: 10,
+  isSaving: false,
+  confirmConfig: null,
+  isStatusUpdating: false,
+};
+
+function stockManagerReducer(state: StockManagerState, action: StockManagerAction): StockManagerState {
+  switch (action.type) {
+    case StockManagerActionType.SET_LOADING:
+      return { ...state, loading: action.payload };
+    case StockManagerActionType.SET_VARIANTS:
+      return { ...state, variants: action.payload };
+    case StockManagerActionType.SET_SEARCH_QUERY:
+      return { ...state, searchQuery: action.payload };
+    case StockManagerActionType.SET_STATUS_FILTER:
+      return { ...state, statusFilter: action.payload };
+    case StockManagerActionType.SET_SORT_BY:
+      return { ...state, sortBy: action.payload };
+    case StockManagerActionType.OPEN_MODAL:
+      return {
+        ...state,
+        activeModalItem: action.payload,
+        editStockValue: action.payload.stock,
+      };
+    case StockManagerActionType.CLOSE_MODAL:
+      return { ...state, activeModalItem: null };
+    case StockManagerActionType.SET_EDIT_STOCK_VALUE:
+      return { ...state, editStockValue: action.payload };
+    case StockManagerActionType.SET_IS_SAVING:
+      return { ...state, isSaving: action.payload };
+    case StockManagerActionType.SET_CONFIRM_CONFIG:
+      return { ...state, confirmConfig: action.payload };
+    case StockManagerActionType.SET_IS_STATUS_UPDATING:
+      return { ...state, isStatusUpdating: action.payload };
+    case StockManagerActionType.UPDATE_VARIANT_STOCK:
+      return {
+        ...state,
+        variants: state.variants.map((v) =>
+          v.variantId === action.payload.variantId
+            ? { ...v, stock: action.payload.stock }
+            : v
+        ),
+      };
+    case StockManagerActionType.UPDATE_VARIANT_STATUS:
+      return {
+        ...state,
+        variants: state.variants.map((v) =>
+          v.variantId === action.payload.variantId
+            ? { ...v, status: action.payload.status }
+            : v
+        ),
+      };
+    default:
+      return state;
+  }
+}
+
 export default function StockManagerPage() {
   const { user } = useAppSelector((state) => state.auth);
   const vendorId = (user && "vendor_id" in user ? user.vendor_id : "") ?? "";
   const token = authToken();
 
-  const [loading, setLoading] = useState(true);
-  const [variants, setVariants] = useState<any[]>([]);
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("stock_asc");
-
-  // Stock Edit Modal state
-  const [activeModalItem, setActiveModalItem] = useState<any | null>(null);
-  const [editStockValue, setEditStockValue] = useState<number>(0);
-  const [adjustmentStep, setAdjustmentStep] = useState<number>(10);
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Status Confirmation Modal state
-  const [confirmConfig, setConfirmConfig] = useState<{
-    isOpen: boolean;
-    variantId: string;
-    currentStatus: string;
-    productName: string;
-  } | null>(null);
-  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+  const [state, dispatch] = useReducer(stockManagerReducer, initialState);
+  const {
+    loading,
+    variants,
+    searchQuery,
+    statusFilter,
+    sortBy,
+    activeModalItem,
+    editStockValue,
+    isSaving,
+    confirmConfig,
+    isStatusUpdating,
+  } = state;
 
   const loadVariants = async () => {
-    setLoading(true);
+    dispatch({ type: StockManagerActionType.SET_LOADING, payload: true });
     try {
       const res = await fetchStockManagerVariants(token as string);
-      setVariants(res.data || []);
+      dispatch({ type: StockManagerActionType.SET_VARIANTS, payload: res.data || [] });
     } catch {
     } finally {
-      setLoading(false);
+      dispatch({ type: StockManagerActionType.SET_LOADING, payload: false });
     }
   };
 
@@ -106,11 +214,14 @@ export default function StockManagerPage() {
     currentStatus: string,
     productName: string,
   ) => {
-    setConfirmConfig({
-      isOpen: true,
-      variantId,
-      currentStatus,
-      productName,
+    dispatch({
+      type: StockManagerActionType.SET_CONFIRM_CONFIG,
+      payload: {
+        isOpen: true,
+        variantId,
+        currentStatus,
+        productName,
+      },
     });
   };
 
@@ -120,63 +231,54 @@ export default function StockManagerPage() {
     const { variantId, currentStatus } = confirmConfig;
     const nextStatus = currentStatus === "active" ? "inactive" : "active";
 
-    setIsStatusUpdating(true);
+    dispatch({ type: StockManagerActionType.SET_IS_STATUS_UPDATING, payload: true });
 
     // Optimistic UI update
-    setVariants((prev) =>
-      prev.map((v) =>
-        v.variantId === variantId ? { ...v, status: nextStatus } : v,
-      ),
-    );
+    dispatch({
+      type: StockManagerActionType.UPDATE_VARIANT_STATUS,
+      payload: { variantId, status: nextStatus },
+    });
 
     try {
       await updateProductVariantStatus(variantId, nextStatus, token as string);
-      setConfirmConfig(null);
+      dispatch({ type: StockManagerActionType.SET_CONFIRM_CONFIG, payload: null });
     } catch {
       alert("Failed to update status");
       // Revert if API fails
-      setVariants((prev) =>
-        prev.map((v) =>
-          v.variantId === variantId ? { ...v, status: currentStatus } : v,
-        ),
-      );
+      dispatch({
+        type: StockManagerActionType.UPDATE_VARIANT_STATUS,
+        payload: { variantId, status: currentStatus },
+      });
     } finally {
-      setIsStatusUpdating(false);
+      dispatch({ type: StockManagerActionType.SET_IS_STATUS_UPDATING, payload: false });
     }
   };
 
   const handleSaveStock = async () => {
     if (!activeModalItem) return;
     if (editStockValue < 0) return alert("Stock cannot be less than zero.");
-    setIsSaving(true);
+    dispatch({ type: StockManagerActionType.SET_IS_SAVING, payload: true });
     try {
       await quickUpdateStock(
         activeModalItem.variantId,
         editStockValue,
         token as string,
       );
-      setVariants((prev) =>
-        prev.map((v) =>
-          v.variantId === activeModalItem.variantId
-            ? { ...v, stock: editStockValue }
-            : v,
-        ),
-      );
-      setActiveModalItem(null);
+      dispatch({
+        type: StockManagerActionType.UPDATE_VARIANT_STOCK,
+        payload: { variantId: activeModalItem.variantId, stock: editStockValue },
+      });
+      dispatch({ type: StockManagerActionType.CLOSE_MODAL });
     } catch {
       alert("Failed to update stock.");
     } finally {
-      setIsSaving(false);
+      dispatch({ type: StockManagerActionType.SET_IS_SAVING, payload: false });
     }
   };
 
   const openModal = (item: any) => {
-    setActiveModalItem(item);
-    setEditStockValue(item.stock);
+    dispatch({ type: StockManagerActionType.OPEN_MODAL, payload: item });
   };
-
-  const adjustEdit = (delta: number) =>
-    setEditStockValue((prev) => Math.max(0, prev + delta));
 
   const filteredAndSorted = variants
     .filter((v) => {
@@ -208,6 +310,7 @@ export default function StockManagerPage() {
   // Config variables for the confirmation modal
   const isActivating = confirmConfig?.currentStatus !== "active";
 
+
   return (
     <main className="w-full min-h-screen px-4 sm:px-6 pb-12 relative">
       {/* ── Page Header ── */}
@@ -217,20 +320,20 @@ export default function StockManagerPage() {
             <Package size={18} className="text-stone-500" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-stone-800 tracking-tight leading-none">
-              Stock Manager
+            <h1 className="text-theme-h5 font-semibold text-stone-800 tracking-tight leading-none">
+              {STOCK_MANAGER_TEXT.HEADER.TITLE}
             </h1>
-            <p className="text-xs text-stone-400 mt-1">
-              Manage inventory locations, quantities, and visibility
+            <p className="text-theme-caption text-stone-400 mt-1">
+              {STOCK_MANAGER_TEXT.HEADER.SUBTITLE}
             </p>
           </div>
         </div>
         <button
           onClick={loadVariants}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border-2 border-stone-200 text-sm font-semibold text-stone-600 shadow-sm hover:bg-stone-50 transition-colors self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border-2 border-stone-200 text-theme-body-sm font-semibold text-stone-600 shadow-sm hover:bg-stone-50 transition-colors self-start sm:self-auto"
         >
           <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-          Refresh Data
+          {STOCK_MANAGER_TEXT.HEADER.REFRESH}
         </button>
       </header>
 
@@ -239,25 +342,25 @@ export default function StockManagerPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           {[
             {
-              label: "Total SKUs",
+              label: STOCK_MANAGER_TEXT.STATS.TOTAL_SKUS,
               value: totalVariants,
               color: "text-blue-600",
               bg: "bg-blue-50 border-blue-200",
             },
             {
-              label: "Low Stock",
+              label: STOCK_MANAGER_TEXT.STATS.LOW_STOCK,
               value: lowStockCount,
               color: "text-amber-600",
               bg: "bg-amber-50 border-amber-200",
             },
             {
-              label: "Out of Stock",
+              label: STOCK_MANAGER_TEXT.STATS.OUT_OF_STOCK,
               value: outOfStockCount,
               color: "text-red-600",
               bg: "bg-red-50 border-red-200",
             },
             {
-              label: "Healthy",
+              label: STOCK_MANAGER_TEXT.STATS.HEALTHY,
               value: healthyCount,
               color: "text-emerald-600",
               bg: "bg-emerald-50 border-emerald-200",
@@ -267,10 +370,10 @@ export default function StockManagerPage() {
               key={stat.label}
               className={`border-2 rounded-2xl px-5 py-4 flex flex-col gap-1 bg-white ${stat.bg}`}
             >
-              <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+              <p className="text-theme-caption font-semibold text-stone-500 uppercase tracking-wider">
                 {stat.label}
               </p>
-              <p className={`text-3xl font-extrabold ${stat.color}`}>
+              <p className={`text-theme-h3 font-extrabold ${stat.color}`}>
                 {stat.value}
               </p>
             </div>
@@ -288,10 +391,10 @@ export default function StockManagerPage() {
             />
             <input
               type="text"
-              placeholder="Search by product name or SKU…"
+              placeholder={STOCK_MANAGER_TEXT.FILTERS.SEARCH_PLACEHOLDER}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm bg-white border-2 border-stone-200 rounded-xl shadow-sm placeholder-stone-400 text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all"
+              onChange={(e) => dispatch({ type: StockManagerActionType.SET_SEARCH_QUERY, payload: e.target.value })}
+              className="w-full pl-9 pr-3 py-2 text-theme-body-sm bg-white border-2 border-stone-200 rounded-xl shadow-sm placeholder-stone-400 text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all"
             />
           </div>
           <div className="relative">
@@ -301,12 +404,12 @@ export default function StockManagerPage() {
             />
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="pl-8 pr-4 py-2 text-sm bg-white border-2 border-stone-200 rounded-xl shadow-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all cursor-pointer appearance-none"
+              onChange={(e) => dispatch({ type: StockManagerActionType.SET_STATUS_FILTER, payload: e.target.value })}
+              className="pl-8 pr-4 py-2 text-theme-body-sm bg-white border-2 border-stone-200 rounded-xl shadow-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all cursor-pointer appearance-none"
             >
-              <option value="">All statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="">{STOCK_MANAGER_TEXT.FILTERS.ALL_STATUSES}</option>
+              <option value="active">{STOCK_MANAGER_TEXT.FILTERS.STATUS_ACTIVE}</option>
+              <option value="inactive">{STOCK_MANAGER_TEXT.FILTERS.STATUS_INACTIVE}</option>
             </select>
           </div>
           <div className="relative">
@@ -316,31 +419,31 @@ export default function StockManagerPage() {
             />
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="pl-8 pr-4 py-2 text-sm bg-white border-2 border-stone-200 rounded-xl shadow-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all cursor-pointer appearance-none"
+              onChange={(e) => dispatch({ type: StockManagerActionType.SET_SORT_BY, payload: e.target.value })}
+              className="pl-8 pr-4 py-2 text-theme-body-sm bg-white border-2 border-stone-200 rounded-xl shadow-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all cursor-pointer appearance-none"
             >
-              <option value="stock_asc">Stock: Low → High</option>
-              <option value="stock_desc">Stock: High → Low</option>
-              <option value="name_asc">Name: A → Z</option>
+              <option value="stock_asc">{STOCK_MANAGER_TEXT.FILTERS.SORT_STOCK_ASC}</option>
+              <option value="stock_desc">{STOCK_MANAGER_TEXT.FILTERS.SORT_STOCK_DESC}</option>
+              <option value="name_asc">{STOCK_MANAGER_TEXT.FILTERS.SORT_NAME_ASC}</option>
             </select>
           </div>
         </div>
         {!loading && (
-          <span className="text-sm font-medium text-stone-500">
-            {filteredAndSorted.length} records matching
+          <span className="text-theme-body-sm font-medium text-stone-500">
+            {filteredAndSorted.length} {STOCK_MANAGER_TEXT.FILTERS.RECORDS_MATCHING}
           </span>
         )}
       </div>
 
       {/* ── Table ── */}
       <div className="w-full overflow-x-auto rounded-2xl border-2 border-stone-200 shadow-sm bg-white">
-        <table className="w-full table-auto min-w-[860px] border-collapse text-sm">
+        <table className="w-full table-auto min-w-[860px] border-collapse text-theme-body-sm">
           <thead>
             <tr className="bg-stone-50/80 text-left border-b border-stone-200">
               {stockTableHeader.map((col) => (
                 <th
                   key={col}
-                  className="p-4 text-xs font-semibold text-stone-500 uppercase tracking-wide whitespace-nowrap"
+                  className="p-4 text-theme-caption font-semibold text-stone-500 uppercase tracking-wide whitespace-nowrap"
                 >
                   {col}
                 </th>
@@ -354,7 +457,7 @@ export default function StockManagerPage() {
               <tr>
                 <td colSpan={6} className="p-16 text-center text-stone-400">
                   <Package size={40} className="mx-auto mb-3 opacity-30" />
-                  No inventory data matching your filters.
+                  {STOCK_MANAGER_TEXT.TABLE.NO_DATA}
                 </td>
               </tr>
             ) : (
@@ -379,7 +482,7 @@ export default function StockManagerPage() {
                       <span className="block font-semibold text-stone-800  truncate transition-colors leading-snug ">
                         {item.productName}
                       </span>
-                      <span className="inline-block text-[16px] font-medium text-stone-500 bg-stone-100 border border-stone-200 px-2 py-0.5 rounded-md mt-1.5 font-mono">
+                      <span className="inline-block text-theme-body font-medium text-stone-500 bg-stone-100 border border-stone-200 px-2 py-0.5 rounded-md mt-1.5 font-mono">
                         <span className="font-bold text-black/90">
                           {" "}
                           {item.attributes?.[0]?.name ?? ""} :
@@ -392,13 +495,13 @@ export default function StockManagerPage() {
                     </td>
 
                     {/* SKU */}
-                    <td className="py-4 pl-4 font-mono text-xs text-stone-500">
+                    <td className="py-4 pl-4 font-mono text-theme-caption text-stone-500">
                       {item.sku || "—"}
                     </td>
 
                     {/* Warehouse */}
                     <td className="p-4">
-                      <div className="flex items-center gap-2 text-sm text-stone-500">
+                      <div className="flex items-center gap-2 text-theme-body-sm text-stone-500">
                         <span className="w-1.5 h-1.5 rounded-full bg-stone-300 shrink-0" />
                         {item.warehouseName || "Primary Facility"}
                       </div>
@@ -417,7 +520,7 @@ export default function StockManagerPage() {
                                 : "border-stone-200 text-stone-800"
                           }`}
                         >
-                          <span className="text-sm font-bold tabular-nums leading-none">
+                          <span className="text-theme-body-sm font-bold tabular-nums leading-none">
                             {item.stock}
                           </span>
                         </div>
@@ -425,14 +528,14 @@ export default function StockManagerPage() {
                         {/* Proper Action Button */}
                         <button
                           type="button"
-                          className="inline-flex items-center justify-center h-8 gap-1.5 px-3 rounded-lg border border-stone-200 bg-white text-xs font-bold text-stone-600 shadow-sm hover:bg-stone-50 hover:border-stone-300 hover:text-stone-900 active:bg-stone-100 transition-all group/btn"
+                          className="inline-flex items-center justify-center h-8 gap-1.5 px-3 rounded-lg border border-stone-200 bg-white text-theme-caption font-bold text-stone-600 shadow-sm hover:bg-stone-50 hover:border-stone-300 hover:text-stone-900 active:bg-stone-100 transition-all group/btn"
                         >
                           <Edit
                             size={14}
                             strokeWidth={2.5}
                             className="text-stone-400 group-hover/btn:text-stone-600 transition-colors"
                           />
-                          Adjust
+                          {STOCK_MANAGER_TEXT.TABLE.BTN_ADJUST}
                         </button>
                       </div>
                     </td>
@@ -440,7 +543,7 @@ export default function StockManagerPage() {
                     {/* Status badge */}
                     <td className="p-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                        className={`inline-flex items-center gap-1.5 text-theme-caption font-semibold px-2.5 py-1 rounded-full border ${
                           item.status === "active"
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : "bg-stone-100 text-stone-500 border-stone-200"
@@ -454,7 +557,7 @@ export default function StockManagerPage() {
                           }`}
                         />
 
-                        {item.status === "active" ? "Active" : "Inactive"}
+                        {item.status === "active" ? STOCK_MANAGER_TEXT.TABLE.STATUS_ACTIVE : STOCK_MANAGER_TEXT.TABLE.STATUS_INACTIVE}
                       </span>
                     </td>
 
@@ -497,14 +600,14 @@ export default function StockManagerPage() {
 
       {/* ── Footer hint ── */}
       {!loading && filteredAndSorted.length > 0 && (
-        <p className="text-center text-xs text-stone-400 mt-5">
-          Showing{" "}
+        <p className="text-center text-theme-caption text-stone-400 mt-5">
+          {STOCK_MANAGER_TEXT.FOOTER.SHOWING}{" "}
           <span className="font-semibold text-stone-600">
             {filteredAndSorted.length}
           </span>{" "}
-          of {totalVariants} items. Click any{" "}
-          <span className="font-semibold text-stone-600">row</span> to edit
-          quantity.
+          {STOCK_MANAGER_TEXT.FOOTER.OF} {totalVariants} {STOCK_MANAGER_TEXT.FOOTER.ITEMS_CLICK_ANY}{" "}
+          <span className="font-semibold text-stone-600">{STOCK_MANAGER_TEXT.FOOTER.ROW}</span>{" "}
+          {STOCK_MANAGER_TEXT.FOOTER.TO_EDIT_QUANTITY}
         </p>
       )}
 
@@ -523,20 +626,20 @@ export default function StockManagerPage() {
               {/* Modal Header */}
               <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4 border-b border-stone-100">
                 <div>
-                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block mb-0.5">
-                    Inventory Adjustment
+                  <span className="text-theme-tiny font-bold text-stone-400 uppercase tracking-widest block mb-0.5">
+                    {STOCK_MANAGER_TEXT.MODAL.TITLE}
                   </span>
-                  <h3 className="text-base font-bold text-stone-800 line-clamp-1">
+                  <h3 className="text-theme-body font-bold text-stone-800 line-clamp-1">
                     {activeModalItem.productName}
                   </h3>
                   {activeModalItem.sku && (
-                    <p className="text-xs text-stone-400 font-mono mt-0.5">
+                    <p className="text-theme-caption text-stone-400 font-mono mt-0.5">
                       SKU: {activeModalItem.sku}
                     </p>
                   )}
                 </div>
                 <button
-                  onClick={() => setActiveModalItem(null)}
+                  onClick={() => dispatch({ type: StockManagerActionType.CLOSE_MODAL })}
                   className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors shrink-0"
                   aria-label="Close"
                 >
@@ -548,10 +651,10 @@ export default function StockManagerPage() {
               <div className="flex items-center justify-between px-5 py-4 bg-stone-50/50 border-b border-stone-100">
                 {/* Current */}
                 <div className="flex-1 text-center">
-                  <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-1">
-                    Current Stock
+                  <p className="text-theme-tiny font-semibold text-stone-400 uppercase tracking-wider mb-1">
+                    {STOCK_MANAGER_TEXT.MODAL.CURRENT_STOCK}
                   </p>
-                  <p className="text-2xl font-bold text-stone-400 tabular-nums">
+                  <p className="text-theme-h4 font-bold text-stone-400 tabular-nums">
                     {originalStock}
                   </p>
                 </div>
@@ -559,11 +662,11 @@ export default function StockManagerPage() {
                 {/* Arrow */}
                 <div className="flex flex-col items-center justify-center shrink-0 px-2">
                   <svg
-                    width="20"
-                    height="14"
-                    viewBox="0 0 20 14"
-                    fill="none"
-                    className="text-stone-300"
+                     width="20"
+                     height="14"
+                     viewBox="0 0 20 14"
+                     fill="none"
+                     className="text-stone-300"
                   >
                     <path
                       d="M1 7h18M13 1l6 6-6 6"
@@ -577,11 +680,11 @@ export default function StockManagerPage() {
 
                 {/* New value */}
                 <div className="flex-1 text-center">
-                  <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-1">
-                    New Value
+                  <p className="text-theme-tiny font-semibold text-stone-400 uppercase tracking-wider mb-1">
+                    {STOCK_MANAGER_TEXT.MODAL.NEW_VALUE}
                   </p>
                   <p
-                    className={`text-2xl font-bold tabular-nums ${
+                    className={`text-theme-h4 font-bold tabular-nums ${
                       delta === 0
                         ? "text-stone-800"
                         : delta > 0
@@ -598,9 +701,9 @@ export default function StockManagerPage() {
               <div className="px-5 py-6">
                 <label
                   htmlFor="stock-input"
-                  className="block text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2.5"
+                  className="block text-theme-xxs font-bold text-stone-400 uppercase tracking-wider mb-2.5"
                 >
-                  Set Exact Quantity
+                  {STOCK_MANAGER_TEXT.MODAL.SET_EXACT_QUANTITY}
                 </label>
                 <div className="relative rounded-xl shadow-sm">
                   <input
@@ -609,19 +712,20 @@ export default function StockManagerPage() {
                     min={0}
                     value={editStockValue}
                     onChange={(e) =>
-                      setEditStockValue(
-                        e.target.value === ""
+                      dispatch({
+                        type: StockManagerActionType.SET_EDIT_STOCK_VALUE,
+                        payload: e.target.value === ""
                           ? 0
                           : Math.max(0, parseInt(e.target.value, 10)),
-                      )
+                      })
                     }
-                    className="w-full border-2 border-stone-200 rounded-xl pl-4 pr-16 py-3 text-xl font-bold text-stone-800 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all tabular-nums"
+                    className="w-full border-2 border-stone-200 rounded-xl pl-4 pr-16 py-3 text-theme-h5 font-bold text-stone-800 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all tabular-nums"
                     autoFocus
                   />
 
                   <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <span className="text-[10px] font-bold text-stone-500 bg-stone-100 border border-stone-200/60 px-2.5 py-1.5 rounded-lg uppercase tracking-wide">
-                      Units
+                    <span className="text-theme-tiny font-bold text-stone-500 bg-stone-100 border border-stone-200/60 px-2.5 py-1.5 rounded-lg uppercase tracking-wide">
+                      {STOCK_MANAGER_TEXT.MODAL.UNITS}
                     </span>
                   </div>
                 </div>
@@ -632,20 +736,20 @@ export default function StockManagerPage() {
                 {/* Dynamic Delta Badge */}
                 <div className="flex-1 min-w-0">
                   {delta === 0 ? (
-                    <span className="text-xs font-medium text-stone-400 block">
-                      No changes to commit
+                    <span className="text-theme-caption font-medium text-stone-400 block">
+                      {STOCK_MANAGER_TEXT.MODAL.NO_CHANGES}
                     </span>
                   ) : (
                     <span
-                      className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-md ${
+                      className={`inline-flex items-center gap-1 text-theme-caption font-bold px-2.5 py-1 rounded-md ${
                         delta > 0
                           ? "bg-emerald-100 text-emerald-700"
                           : "bg-red-100 text-red-700"
                       }`}
                     >
                       {delta > 0
-                        ? `Stocking up: +${delta}`
-                        : `Reducing by: ${delta}`}
+                        ? `${STOCK_MANAGER_TEXT.MODAL.STOCKING_UP}${delta}`
+                        : `${STOCK_MANAGER_TEXT.MODAL.REDUCING_BY}${delta}`}
                     </span>
                   )}
                 </div>
@@ -653,18 +757,18 @@ export default function StockManagerPage() {
                 {/* Actions */}
                 <div className="flex items-center gap-2 shrink-0">
                   <button
-                    onClick={() => setActiveModalItem(null)}
-                    className="px-4 py-2.5 rounded-xl border border-stone-200 text-xs font-bold text-stone-600 bg-white hover:bg-stone-50 active:bg-stone-100 transition-colors"
+                    onClick={() => dispatch({ type: StockManagerActionType.CLOSE_MODAL })}
+                    className="px-4 py-2.5 rounded-xl border border-stone-200 text-theme-caption font-bold text-stone-600 bg-white hover:bg-stone-50 active:bg-stone-100 transition-colors"
                   >
-                    Cancel
+                    {STOCK_MANAGER_TEXT.MODAL.CANCEL}
                   </button>
                   <button
                     disabled={isSaving}
                     onClick={handleSaveStock}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50 text-xs font-bold shadow-sm transition-colors"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50 text-theme-caption font-bold shadow-sm transition-colors"
                   >
                     <Check size={16} strokeWidth={2.5} />
-                    {isSaving ? "Saving…" : "Commit"}
+                    {isSaving ? STOCK_MANAGER_TEXT.MODAL.SAVING : STOCK_MANAGER_TEXT.MODAL.COMMIT}
                   </button>
                 </div>
               </div>
@@ -676,7 +780,7 @@ export default function StockManagerPage() {
       {/* ── Status Confirmation Modal ── */}
       <ConfirmationModal
         isOpen={!!confirmConfig?.isOpen}
-        onClose={() => setConfirmConfig(null)}
+        onClose={() => dispatch({ type: StockManagerActionType.SET_CONFIRM_CONFIG, payload: null })}
         onConfirm={executeStatusToggle}
         isLoading={isStatusUpdating}
         title={isActivating ? "Publish Variant?" : "Deactivate Variant?"}
@@ -691,3 +795,4 @@ export default function StockManagerPage() {
     </main>
   );
 }
+

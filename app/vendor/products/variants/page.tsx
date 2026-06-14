@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { Pagination } from "@/components/common/Pagination";
 import { searchImgDark } from "@/constants/common";
 import {
@@ -8,18 +8,16 @@ import {
   RefreshCw,
   XCircle,
   CheckCircle,
-  Edit2,
   X,
-  Table,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { BASE_API_URL } from "@/constants";
-import { companyDomain } from "@/config";
 import { Address } from "@/utils/Types";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { authToken } from "@/utils/authToken";
 import { TableRowSkeleton } from "@/components/common/skeletons/TableRowSkeleton";
 import { INVENTORY_TEXT, AlertSeverity, StatusFilter } from "@/constants";
+import AxiosAPI from "@/lib/axios";
 
 interface InventoryLocation {
   inventory_id: string;
@@ -90,10 +88,10 @@ export const InventoryStats = ({
           key={stat.label}
           className={`border rounded-2xl px-6 py-4 flex flex-col gap-1 ${stat.bg}`}
         >
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <p className="text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">
             {stat.label}
           </p>
-          <p className={`text-3xl font-extrabold ${stat.color}`}>
+          <p className={`text-theme-h3 font-extrabold ${stat.color}`}>
             {stat.value}
           </p>
         </div>
@@ -125,44 +123,114 @@ async function fetchAlerts(
   return json.data ?? [];
 }
 
-async function updateStock(
-  inventoryId: string,
-  quantity: number,
-  token: string,
-) {
-  const domain = await getCompanyDomain();
+async function updateStock(inventoryId: string, quantity: number) {
+  const res = await AxiosAPI.patch(
+    `/v1/inventory/${inventoryId}`,
+    JSON.stringify({ quantity }),
+  );
+  return res;
+}
 
-  const res = await fetch(`${BASE_API_URL}/v1/inventory/${inventoryId}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      "company-domain": domain,
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ quantity }),
-  });
-  return res.json();
+// ─── useReducer Action Types & State ─────────────────────────────────────────
+enum InventoryActionType {
+  SET_INVENTORY_DATA = "SET_INVENTORY_DATA",
+  SET_LOADING = "SET_LOADING",
+  SET_SEARCH = "SET_SEARCH",
+  SET_STATUS_FILTER = "SET_STATUS_FILTER",
+  SET_EDIT_ID = "SET_EDIT_ID",
+  SET_EDIT_QTY = "SET_EDIT_QTY",
+  SET_SAVING = "SET_SAVING",
+  SET_COUNT = "SET_COUNT",
+}
+
+interface InventoryState {
+  inventory: InventoryItem[];
+  alerts: LowStockAlert[];
+  search: string;
+  statusFilter: StatusFilter;
+  loading: boolean;
+  editId: string | null;
+  editQty: number;
+  saving: boolean;
+  count: number;
+}
+
+const initialState: InventoryState = {
+  inventory: [],
+  alerts: [],
+  search: "",
+  statusFilter: StatusFilter.ALL,
+  loading: true,
+  editId: null,
+  editQty: 0,
+  saving: false,
+  count: 1,
+};
+
+type InventoryAction =
+  | {
+      type: InventoryActionType.SET_INVENTORY_DATA;
+      payload: { inventory: InventoryItem[]; alerts: LowStockAlert[] };
+    }
+  | { type: InventoryActionType.SET_LOADING; payload: boolean }
+  | { type: InventoryActionType.SET_SEARCH; payload: string }
+  | { type: InventoryActionType.SET_STATUS_FILTER; payload: StatusFilter }
+  | { type: InventoryActionType.SET_EDIT_ID; payload: string | null }
+  | { type: InventoryActionType.SET_EDIT_QTY; payload: number }
+  | { type: InventoryActionType.SET_SAVING; payload: boolean }
+  | { type: InventoryActionType.SET_COUNT; payload: number };
+
+function inventoryReducer(
+  state: InventoryState,
+  action: InventoryAction,
+): InventoryState {
+  switch (action.type) {
+    case InventoryActionType.SET_INVENTORY_DATA:
+      return {
+        ...state,
+        inventory: action.payload.inventory,
+        alerts: action.payload.alerts,
+      };
+    case InventoryActionType.SET_LOADING:
+      return { ...state, loading: action.payload };
+    case InventoryActionType.SET_SEARCH:
+      return { ...state, search: action.payload };
+    case InventoryActionType.SET_STATUS_FILTER:
+      return { ...state, statusFilter: action.payload };
+    case InventoryActionType.SET_EDIT_ID:
+      return { ...state, editId: action.payload };
+    case InventoryActionType.SET_EDIT_QTY:
+      return { ...state, editQty: action.payload };
+    case InventoryActionType.SET_SAVING:
+      return { ...state, saving: action.payload };
+    case InventoryActionType.SET_COUNT:
+      return { ...state, count: action.payload };
+    default:
+      return state;
+  }
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function InventoryPage() {
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [alerts, setAlerts] = useState<LowStockAlert[]>([]);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>(
-    StatusFilter.ALL,
-  );
-  const [loading, setLoading] = useState(true);
-  const [editId, setEditId] = useState<string | null>(null);
-  const [editQty, setEditQty] = useState<number>(0);
-  const [saving, setSaving] = useState(false);
-  const [count, setCount] = useState(1);
-  const pageSize = 8;
+  const [state, dispatch] = useReducer(inventoryReducer, initialState);
+  const {
+    inventory,
+    alerts,
+    search,
+    statusFilter,
+    loading,
+    editId,
+    editQty,
+    saving,
+    count,
+  } = state;
 
+  const pageSize = 8;
   const token = authToken();
+
   const reload = async () => {
     const domain = await getCompanyDomain();
-    setLoading(true);
+    dispatch({ type: InventoryActionType.SET_LOADING, payload: true });
     if (!token) {
       return;
     }
@@ -170,13 +238,17 @@ export default function InventoryPage() {
       fetchInventory(domain, token),
       fetchAlerts(domain, token),
     ]);
-    setInventory(inv);
-    setAlerts(alrt);
-    setLoading(false);
+    dispatch({
+      type: InventoryActionType.SET_INVENTORY_DATA,
+      payload: { inventory: inv, alerts: alrt },
+    });
+    dispatch({ type: InventoryActionType.SET_LOADING, payload: false });
   };
+
   useEffect(() => {
     reload();
   }, []);
+
   // ── Filtering ──
   const filtered = inventory.filter((item) => {
     const matchSearch =
@@ -185,21 +257,24 @@ export default function InventoryPage() {
     const matchStatus =
       statusFilter === StatusFilter.ALL ||
       (statusFilter === StatusFilter.OUT && item.isOutOfStock) ||
-      (statusFilter === StatusFilter.LOW && item.isLowStock && !item.isOutOfStock);
+      (statusFilter === StatusFilter.LOW &&
+        item.isLowStock &&
+        !item.isOutOfStock);
     return matchSearch && matchStatus;
   });
+
   const totalPages = Math.ceil(filtered.length / pageSize);
   const currentData = filtered.slice((count - 1) * pageSize, count * pageSize);
 
   // ── Stock update ──
   const handleSave = async (inventoryId: string) => {
-    setSaving(true);
+    dispatch({ type: InventoryActionType.SET_SAVING, payload: true });
     if (!token) {
       return;
     }
-    await updateStock(inventoryId, editQty, token);
-    setSaving(false);
-    setEditId(null);
+    await updateStock(inventoryId, editQty);
+    dispatch({ type: InventoryActionType.SET_SAVING, payload: false });
+    dispatch({ type: InventoryActionType.SET_EDIT_ID, payload: null });
     await reload();
   };
 
@@ -225,7 +300,7 @@ export default function InventoryPage() {
                 {alerts.map((alert) => (
                   <div
                     key={alert.inventoryId}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-theme-body-sm font-medium border ${
                       alert.isOutOfStock
                         ? "bg-red-100 border-red-300 text-red-700"
                         : "bg-yellow-100 border-yellow-300 text-yellow-700"
@@ -244,7 +319,7 @@ export default function InventoryPage() {
                         ? INVENTORY_TEXT.ALERTS.OUT_OF_STOCK
                         : `${alert.currentStock} ${INVENTORY_TEXT.ALERTS.LEFT}`}
                     </span>
-                    <span className="text-xs opacity-70">
+                    <span className="text-theme-caption opacity-70">
                       · {alert.warehouseName}
                     </span>
                   </div>
@@ -261,12 +336,15 @@ export default function InventoryPage() {
             <img className="w-5 h-5" src={searchImgDark} alt="search" />
             <input
               type="text"
-              className="py-2 px-3 w-64 text-sm outline-none bg-transparent"
+              className="py-2 px-3 w-64 text-theme-body-sm outline-none bg-transparent"
               placeholder={INVENTORY_TEXT.FILTERS.SEARCH_PLACEHOLDER}
               value={search}
               onChange={(e) => {
-                setSearch(e.target.value);
-                setCount(1);
+                dispatch({
+                  type: InventoryActionType.SET_SEARCH,
+                  payload: e.target.value,
+                });
+                dispatch({ type: InventoryActionType.SET_COUNT, payload: 1 });
               }}
             />
           </span>
@@ -276,10 +354,13 @@ export default function InventoryPage() {
               <button
                 key={f}
                 onClick={() => {
-                  setStatusFilter(f);
-                  setCount(1);
+                  dispatch({
+                    type: InventoryActionType.SET_STATUS_FILTER,
+                    payload: f,
+                  });
+                  dispatch({ type: InventoryActionType.SET_COUNT, payload: 1 });
                 }}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-colors ${
+                className={`px-4 py-2 rounded-xl text-theme-body-sm font-semibold border-2 transition-colors ${
                   statusFilter === f
                     ? f === StatusFilter.OUT
                       ? "bg-red-100 border-red-400 text-red-700"
@@ -298,7 +379,7 @@ export default function InventoryPage() {
             ))}
             <button
               onClick={reload}
-              className="px-4 py-2 rounded-xl text-sm font-semibold border-2 border-gray-300 bg-white text-gray-600 flex items-center gap-2 hover:bg-gray-50"
+              className="px-4 py-2 rounded-xl text-theme-body-sm font-semibold border-2 border-gray-300 bg-white text-gray-600 flex items-center gap-2 hover:bg-gray-50"
             >
               <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
               {INVENTORY_TEXT.FILTERS.REFRESH}
@@ -308,7 +389,7 @@ export default function InventoryPage() {
 
         {/* ── Table ───────────────────────────────────────────────── */}
         <div className="relative flex flex-col w-full overflow-auto bg-white border-2 border-gray-200 rounded-2xl">
-          <table className="w-full table-auto min-w-max text-sm">
+          <table className="w-full table-auto min-w-max text-theme-body-sm">
             <thead>
               <tr className="bg-gray-50 text-left">
                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
@@ -333,7 +414,6 @@ export default function InventoryPage() {
                 <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
                   {INVENTORY_TEXT.TABLE.HEADERS.PRICE}
                 </th>
-                {/* <th className="p-4 border-b border-gray-200 font-semibold text-gray-600 text-center">Adjust</th> */}
               </tr>
             </thead>
             <tbody>
@@ -347,7 +427,7 @@ export default function InventoryPage() {
                   </td>
                 </tr>
               ) : (
-                currentData.map((item, idx) => (
+                currentData.map((item) => (
                   <tr
                     key={item.variant_id}
                     className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
@@ -379,13 +459,15 @@ export default function InventoryPage() {
                     </td>
 
                     {/* SKU */}
-                    <td className="p-4 font-mono text-gray-500 text-xs">
+                    <td className="p-4 font-mono text-gray-500 text-theme-caption">
                       {item.sku}
                     </td>
-                    {/* Actvie */}
-                    <td className={`p-4 font-mono text-gray-500 text-xs `}>
+                    {/* Active */}
+                    <td
+                      className={`p-4 font-mono text-gray-500 text-theme-caption `}
+                    >
                       <span
-                        className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+                        className={`inline-flex items-center gap-1 text-theme-caption font-semibold px-2.5 py-0.5 rounded-full border ${
                           item.activeStatus === "active"
                             ? "bg-green-100 text-green-700  border-green-400"
                             : "text-gray-600 bg-gray-100  border-gray-400"
@@ -410,8 +492,13 @@ export default function InventoryPage() {
                             type="number"
                             min={0}
                             value={editQty}
-                            onChange={(e) => setEditQty(Number(e.target.value))}
-                            className="w-20 border-2 border-blue-400 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+                            onChange={(e) =>
+                              dispatch({
+                                type: InventoryActionType.SET_EDIT_QTY,
+                                payload: Number(e.target.value),
+                              })
+                            }
+                            className="w-20 border-2 border-blue-400 rounded-lg px-2 py-1 text-theme-body-sm outline-none focus:ring-2 focus:ring-blue-200"
                           />
                           <button
                             onClick={() => handleSave(item.variant_id)}
@@ -421,7 +508,12 @@ export default function InventoryPage() {
                             <CheckCircle size={16} />
                           </button>
                           <button
-                            onClick={() => setEditId(null)}
+                            onClick={() =>
+                              dispatch({
+                                type: InventoryActionType.SET_EDIT_ID,
+                                payload: null,
+                              })
+                            }
                             className="p-1 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300"
                           >
                             <X size={16} />
@@ -429,7 +521,7 @@ export default function InventoryPage() {
                         </div>
                       ) : (
                         <span
-                          className={`font-bold text-lg ${
+                          className={`font-bold text-theme-h6 ${
                             item.isOutOfStock
                               ? "text-red-600"
                               : item.isLowStock
@@ -445,16 +537,19 @@ export default function InventoryPage() {
                     {/* Status Badge */}
                     <td className="p-4">
                       {item.isOutOfStock ? (
-                        <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-300 text-xs font-bold px-2.5 py-1 rounded-full">
-                          <XCircle size={12} /> {INVENTORY_TEXT.TABLE.STATUS_OUT}
+                        <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-300 text-theme-caption font-bold px-2.5 py-1 rounded-full">
+                          <XCircle size={12} />{" "}
+                          {INVENTORY_TEXT.TABLE.STATUS_OUT}
                         </span>
                       ) : item.isLowStock ? (
-                        <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 border border-yellow-300 text-xs font-bold px-2.5 py-1 rounded-full">
-                          <AlertTriangle size={12} /> {INVENTORY_TEXT.TABLE.STATUS_LOW}
+                        <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 border border-yellow-300 text-theme-caption font-bold px-2.5 py-1 rounded-full">
+                          <AlertTriangle size={12} />{" "}
+                          {INVENTORY_TEXT.TABLE.STATUS_LOW}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 border border-green-300 text-xs font-bold px-2.5 py-1 rounded-full">
-                          <CheckCircle size={12} /> {INVENTORY_TEXT.TABLE.STATUS_IN}
+                        <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 border border-green-300 text-theme-caption font-bold px-2.5 py-1 rounded-full">
+                          <CheckCircle size={12} />{" "}
+                          {INVENTORY_TEXT.TABLE.STATUS_IN}
                         </span>
                       )}
                     </td>
@@ -463,18 +558,6 @@ export default function InventoryPage() {
                     <td className="p-4 font-semibold text-gray-700">
                       ₹{Number(item.price).toLocaleString()}
                     </td>
-
-                    {/* Adjust */}
-                    {/* <td className="p-4 text-center">
-                                            {editId !== item.variant_id && (
-                                                <button
-                                                    onClick={() => { setEditId(item.variant_id); setEditQty(item.total_stock); }}
-                                                    className="inline-flex items-center gap-1 px-3 py-1.5 border-2 border-blue-300 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-50 transition-colors"
-                                                >
-                                                    <Edit2 size={12} /> Restock
-                                                </button>
-                                            )}
-                                        </td> */}
                   </tr>
                 ))
               )}
@@ -484,11 +567,18 @@ export default function InventoryPage() {
 
         {/* ── Pagination ──────────────────────────────────────────── */}
         <div className="flex justify-between items-center mt-4">
-          <p className="text-sm text-gray-500">
-            {INVENTORY_TEXT.PAGINATION.SHOWING} {currentData.length} {INVENTORY_TEXT.PAGINATION.OF} {filtered.length} {INVENTORY_TEXT.PAGINATION.RECORDS}
+          <p className="text-theme-body-sm text-gray-500">
+            {INVENTORY_TEXT.PAGINATION.SHOWING} {currentData.length}{" "}
+            {INVENTORY_TEXT.PAGINATION.OF} {filtered.length}{" "}
+            {INVENTORY_TEXT.PAGINATION.RECORDS}
           </p>
           <Pagination
-            setCount={setCount}
+            setCount={(p) =>
+              dispatch({
+                type: InventoryActionType.SET_COUNT,
+                payload: typeof p === "function" ? p(count) : p,
+              })
+            }
             count={count}
             totalPages={totalPages || 1}
             style=""

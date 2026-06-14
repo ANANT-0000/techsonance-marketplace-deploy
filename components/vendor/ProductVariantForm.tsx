@@ -264,10 +264,10 @@ export const ProductVariantForm = ({
         {/* ── HEADER ── */}
         <header className="flex flex-wrap justify-between items-center mb-8 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-theme-h4 font-bold text-slate-900">
               {isEditMode ? PRODUCT_VARIANT_FORM_TEXT.PAGE.UPDATE.TITLE : PRODUCT_VARIANT_FORM_TEXT.PAGE.CREATE.TITLE}
             </h1>
-            <p className="text-sm text-slate-500 mt-0.5">
+            <p className="text-theme-body-sm text-slate-500 mt-0.5">
               {isEditMode
                 ? `Editing variant: ${existVariant?.variantName}`
                 : `Creating a new variation for product #${productId}`}
@@ -284,26 +284,26 @@ export const ProductVariantForm = ({
               size={18}
               className="text-indigo-500"
             />
-            <h2 className="text-base font-semibold text-slate-800">
+            <h2 className="text-theme-body font-semibold text-slate-800">
               {PRODUCT_VARIANT_FORM_TEXT.SECTIONS.DETAILS}
             </h2>
           </div>
           <div className="p-6 space-y-5">
             {/* Variant Name */}
             <div>
-              <label className="block mb-1.5 text-sm font-semibold text-slate-700">
+              <label className="block mb-1.5 text-theme-body-sm font-semibold text-slate-700">
                 {PRODUCT_VARIANT_FORM_TEXT.LABELS.NAME} <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
-                className="w-full border border-slate-200 rounded-lg px-4 py-2.5 bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-sm"
+                className="w-full border border-slate-200 rounded-lg px-4 py-2.5 bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-theme-body-sm"
                 placeholder={PRODUCT_VARIANT_FORM_TEXT.LABELS.NAME_PH}
                 {...register("variantName", {
                   required: "Variant name is required",
                 })}
               />
               {errors.variantName && (
-                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
                   <DynamicIcon
                     fallback={() => <p></p>}
                     name="alert-circle"
@@ -317,13 +317,13 @@ export const ProductVariantForm = ({
             {/* Attributes */}
             <div className="pt-2 border-t border-slate-100">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-semibold text-slate-700">
+                <h3 className="text-theme-body-sm font-semibold text-slate-700">
                   {PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_TITLE}
                 </h3>
                 <button
                   type="button"
                   onClick={() => appendAttribute({ name: "", value: "" })}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
+                  className="flex items-center gap-1.5 text-theme-caption font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
                 >
                   <DynamicIcon fallback={() => <p></p>} name="plus" size={14} />{" "}
                   {PRODUCT_VARIANT_FORM_TEXT.ACTIONS.ADD_ATTR}
@@ -347,12 +347,12 @@ export const ProductVariantForm = ({
                       />
                     </button>
                     <div className="mb-3">
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                      <label className="block text-theme-caption font-semibold text-slate-600 mb-1">
                         {PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_NAME}
                       </label>
                       <input
                         type="text"
-                        className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border rounded-lg px-3 py-2 text-theme-body-sm outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder={PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_NAME_PH}
                         {...register(`attributes.${index}.name`, {
                           required: "Required",
@@ -360,12 +360,12 @@ export const ProductVariantForm = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                      <label className="block text-theme-caption font-semibold text-slate-600 mb-1">
                         {PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_VAL}
                       </label>
                       <input
                         type="text"
-                        className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border rounded-lg px-3 py-2 text-theme-body-sm outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder={PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_VAL_PH}
                         {...register(`attributes.${index}.value`, {
                           required: "Required",
@@ -388,7 +388,7 @@ export const ProductVariantForm = ({
               size={18}
               className="text-blue-500"
             />
-            <h2 className="text-base font-semibold text-slate-800">
+            <h2 className="text-theme-body font-semibold text-slate-800">
               {PRODUCT_VARIANT_FORM_TEXT.SECTIONS.PRICING}
             </h2>
           </div>
@@ -397,12 +397,12 @@ export const ProductVariantForm = ({
               {Array.isArray(PRODUCT_FORM_PRICING_FIELDS) &&
                 PRODUCT_FORM_PRICING_FIELDS.map((field) => (
                   <div key={field.name} className="mb-4 flex-1">
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-theme-body-sm font-semibold text-slate-700 mb-1">
                       {field.label}
                     </label>
                     <input
                       type={field.type}
-                      className=" form_input w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                      className=" form_input w-full border rounded-lg px-4 py-2.5 text-theme-body-sm outline-none focus:ring-2 focus:ring-indigo-500"
                       placeholder={field.placeholder}
                       {...register(
                         field.name as keyof ProductVariantFormValuesType,
@@ -412,7 +412,7 @@ export const ProductVariantForm = ({
                     {errors[
                       field.name as keyof ProductVariantFormValuesType
                     ] && (
-                      <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                      <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
                         <DynamicIcon
                           fallback={() => <p></p>}
                           name="alert-circle"
@@ -428,11 +428,11 @@ export const ProductVariantForm = ({
                   </div>
                 ))}
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                <label className="block text-theme-body-sm font-semibold text-slate-700 mb-1">
                   {PRODUCT_VARIANT_FORM_TEXT.LABELS.WAREHOUSE}
                 </label>
                 <select
-                  className="form_input w-full border rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="form_input w-full border rounded-lg px-4 py-2.5 text-theme-body-sm outline-none focus:ring-2 focus:ring-indigo-500"
                   {...register(
                     "warehouseId" as keyof ProductVariantFormValuesType,
                     { required: "Please select a warehouse" },
@@ -459,7 +459,7 @@ export const ProductVariantForm = ({
               size={18}
               className="text-indigo-500"
             />
-            <h2 className="text-base font-semibold text-slate-800">
+            <h2 className="text-theme-body font-semibold text-slate-800">
               {PRODUCT_VARIANT_FORM_TEXT.SECTIONS.MEDIA}
             </h2>
           </div>
@@ -472,7 +472,7 @@ export const ProductVariantForm = ({
                   key={fieldName}
                   className="border border-slate-200 rounded-xl p-4 bg-slate-50"
                 >
-                  <h3 className="text-sm font-semibold text-slate-700 mb-3">
+                  <h3 className="text-theme-body-sm font-semibold text-slate-700 mb-3">
                     {label}
                   </h3>
 
@@ -500,10 +500,10 @@ export const ProductVariantForm = ({
                       size={32}
                       className="text-blue-400 group-hover:text-blue-600 transition mb-2"
                     />
-                    <p className="text-xs font-semibold text-blue-500 group-hover:text-blue-700">
+                    <p className="text-theme-caption font-semibold text-blue-500 group-hover:text-blue-700">
                       {PRODUCT_VARIANT_FORM_TEXT.ACTIONS.UPLOAD}
                     </p>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-theme-caption text-slate-400 mt-0.5">
                       {PRODUCT_VARIANT_FORM_TEXT.MEDIA_GUIDE.LIMITS}
                     </p>
                   </label>
@@ -558,14 +558,14 @@ export const ProductVariantForm = ({
           <button
             type="button"
             onClick={() => router.back()}
-            className="border border-slate-300 bg-white text-slate-700 text-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-slate-50 transition shadow-sm"
+            className="border border-slate-300 bg-white text-slate-700 text-theme-body-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-slate-50 transition shadow-sm"
           >
             {PRODUCT_VARIANT_FORM_TEXT.ACTIONS.CANCEL}
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold py-2.5 px-8 rounded-xl hover:bg-blue-700 transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-blue-600 text-white text-theme-body-sm font-semibold py-2.5 px-8 rounded-xl hover:bg-blue-700 transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>

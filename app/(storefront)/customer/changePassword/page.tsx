@@ -54,7 +54,7 @@ export default function PasswordForm() {
         >
           <ChevronLeft size={20} />
         </button>
-        <h1 className="font-bold text-xl text-gray-900">Change Password</h1>
+        <h1 className="font-bold text-theme-h5 text-gray-900">Change Password</h1>
       </div>
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
         <div className="p-6 border-b border-gray-100 flex items-center gap-3">
@@ -62,8 +62,8 @@ export default function PasswordForm() {
             <Key size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-800">Change Password</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="text-theme-h6 font-bold text-gray-800">Change Password</h2>
+            <p className="text-theme-body-sm text-gray-500">
               Ensure your account is using a long, random password to stay
               secure.
             </p>
@@ -72,34 +72,34 @@ export default function PasswordForm() {
         <div className="p-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-theme-body-sm font-medium text-gray-700 mb-1.5">
                 Current Password
               </label>
               <input
                 type="password"
-                className="w-full rounded-xl border border-gray-300 py-2.5 px-4 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full rounded-xl border border-gray-300 py-2.5 px-4 text-theme-body-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 placeholder="Enter current password"
                 {...register("current_password")}
               />
               {errors.current_password && (
-                <p className="text-red-500 text-sm">
+                <p className="text-red-500 text-theme-body-sm">
                   {errors.current_password.message}
                 </p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-theme-body-sm font-medium text-gray-700 mb-1.5">
                 New Password
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="w-full rounded-xl border border-gray-300 py-2.5 pl-4 pr-10 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full rounded-xl border border-gray-300 py-2.5 pl-4 pr-10 text-theme-body-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   placeholder="Enter new password"
                   {...register("new_password")}
                 />
                 {errors.new_password && (
-                  <p className="text-red-500 text-sm">
+                  <p className="text-red-500 text-theme-body-sm">
                     {errors.new_password.message}
                   </p>
                 )}
@@ -111,14 +111,14 @@ export default function PasswordForm() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-1.5">
+              <p className="text-theme-caption text-gray-500 mt-1.5">
                 Must be at least 8 characters long.
               </p>
             </div>
             <div className="pt-2">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-theme-body-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm"
               >
                 Update Password
               </button>

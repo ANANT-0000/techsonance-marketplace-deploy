@@ -1,16 +1,55 @@
+import { ENV_DEVELOPMENT } from "@/constants";
+
 const LANG_KEY = 'techsonance_locale';
+const LARGE_DATA_THRESHOLD = 15360; // 15KB
 
 export const cacheData = (key: string, data: any, ttlMs: number = 300000) => { // 5 minutes
   if (typeof window === 'undefined') return;
+
+  // Dev condition: If env is dev, do not cache
+  if (process.env.NODE_ENV === ENV_DEVELOPMENT) {
+    return;
+  }
+
   const item = {
     value: data,
     expiry: Date.now() + ttlMs,
   };
-  localStorage.setItem(key, JSON.stringify(item));
+
+  try {
+    const serialized = JSON.stringify(item);
+    
+    // Cache large data slowly (deferred to requestIdleCallback or setTimeout)
+    if (serialized.length > LARGE_DATA_THRESHOLD) {
+      const saveToCache = () => {
+        try {
+          localStorage.setItem(key, serialized);
+        } catch (e) {
+          console.warn('Failed to write large data to cache:', e);
+        }
+      };
+
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        window.requestIdleCallback(() => saveToCache(), { timeout: 2000 });
+      } else {
+        setTimeout(saveToCache, 500);
+      }
+    } else {
+      localStorage.setItem(key, serialized);
+    }
+  } catch (err) {
+    console.error('Failed to serialize cache data for key:', key, err);
+  }
 };
 
 export const getCachedData = (key: string) => {
   if (typeof window === 'undefined') return null;
+
+  // Dev condition: If env is dev, do not use caching
+  if (process.env.NODE_ENV === ENV_DEVELOPMENT) {
+    return null;
+  }
+
   const itemStr = localStorage.getItem(key);
   if (!itemStr) return null;
   try {

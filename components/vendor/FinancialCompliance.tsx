@@ -51,7 +51,7 @@ export default function FinancialCompliance({
 
   if (!country_code || fields.length === 0) {
     return (
-      <div className="mt-4 flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-400 text-sm">
+      <div className="mt-4 flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-400 text-theme-body-sm">
         <Info size={16} className="shrink-0" />
         {FINANCIAL_COMPLIANCE_TEXT.EMPTY_STATE}
       </div>
@@ -66,11 +66,11 @@ export default function FinancialCompliance({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ShieldCheck size={17} className="text-blue-500" />
-          <h3 className="font-semibold text-gray-800 text-sm">
+          <h3 className="font-semibold text-gray-800 text-theme-body-sm">
             {FINANCIAL_COMPLIANCE_TEXT.HEADER}
           </h3>
         </div>
-        <span className="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1 rounded-full font-medium">
+        <span className="text-theme-caption bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1 rounded-full font-medium">
           {requiredCount} {FINANCIAL_COMPLIANCE_TEXT.REQUIRED_COUNT}
         </span>
       </div>
@@ -97,13 +97,13 @@ export default function FinancialCompliance({
 
           return (
             <div key={field.value} className="group">
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+              <label className="flex items-center gap-1.5 text-theme-caption font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
                 {field.label}
                 {field.required && (
-                  <span className="text-red-500 text-sm leading-none">*</span>
+                  <span className="text-red-500 text-theme-body-sm leading-none">*</span>
                 )}
                 {!field.required && (
-                  <span className="text-[10px] text-gray-400 font-normal normal-case tracking-normal ml-1 bg-gray-100 px-1.5 py-0.5 rounded">
+                  <span className="text-theme-tiny text-gray-400 font-normal normal-case tracking-normal ml-1 bg-gray-100 px-1.5 py-0.5 rounded">
                     {FINANCIAL_COMPLIANCE_TEXT.OPTIONAL}
                   </span>
                 )}
@@ -121,7 +121,7 @@ export default function FinancialCompliance({
                     setTouched((prev) => ({ ...prev, [field.value]: true }))
                   }
                   className={[
-                    "w-full px-4 py-2.5 pr-10 rounded-xl border text-sm font-mono transition-all outline-none",
+                    "w-full px-4 py-2.5 pr-10 rounded-xl border text-theme-body-sm font-mono transition-all outline-none",
                     "bg-white placeholder:font-sans placeholder:text-gray-400",
                     showError
                       ? "border-red-300 bg-red-50 focus:border-red-400 focus:ring-2 focus:ring-red-100"
@@ -144,7 +144,7 @@ export default function FinancialCompliance({
 
               {/* Error message */}
               {showError && (
-                <p className="mt-1.5 text-xs text-red-600 flex items-start gap-1">
+                <p className="mt-1.5 text-theme-caption text-red-600 flex items-start gap-1">
                   <AlertCircle size={12} className="mt-0.5 shrink-0" />
                   {errorMsg}
                 </p>
@@ -152,7 +152,7 @@ export default function FinancialCompliance({
 
               {/* Helper text (shown when not erroring) */}
               {!showError && field.helperText && (
-                <p className="mt-1.5 text-xs text-gray-400 flex items-start gap-1">
+                <p className="mt-1.5 text-theme-caption text-gray-400 flex items-start gap-1">
                   <Info size={11} className="mt-0.5 shrink-0 text-gray-400" />
                   {field.helperText}
                 </p>
@@ -160,7 +160,7 @@ export default function FinancialCompliance({
 
               {/* Format hint when typing (not yet touched) */}
               {!isTouched && rule && val.length > 0 && (
-                <p className="mt-1 text-xs text-blue-500">
+                <p className="mt-1 text-theme-caption text-blue-500">
                   {FINANCIAL_COMPLIANCE_TEXT.FORMAT_HINT}
                 </p>
               )}

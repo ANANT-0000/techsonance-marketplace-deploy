@@ -4,8 +4,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import axios from "axios";
 import {
   createProductPolicy,
   fetchProductPolicyById,
@@ -13,23 +11,32 @@ import {
 } from "@/utils/vendorApiClient";
 import { authToken } from "@/utils/authToken";
 import { policyFormSchema, PolicyFormSchemaType } from "@/utils/validation";
+import { UiText } from "@/constants/ui-text";
+import { PolicyType } from "../page";
+
+export enum DurationUnit {
+  DAYS = "days",
+  MONTHS = "months",
+  YEARS = "years",
+  LIFETIME = "lifetime",
+}
 
 const policyTypes = [
-  { value: "warranty", label: "Warranty" },
-  { value: "guarantee", label: "Guarantee" },
-  { value: "exchange_only", label: "Exchange Only" },
-  { value: "no_return", label: "No Return (Final Sale)" },
-  { value: "extended_support", label: "Extended Support" },
-  { value: "none", label: "None" },
+  { value: PolicyType.WARRANTY, label: "Warranty" },
+  { value: PolicyType.GUARANTEE, label: "Guarantee" },
+  { value: PolicyType.EXCHANGE_ONLY, label: "Exchange Only" },
+  { value: PolicyType.NO_RETURN, label: "No Return (Final Sale)" },
+  { value: PolicyType.EXTENDED_SUPPORT, label: "Extended Support" },
+  { value: PolicyType.NONE, label: "None" },
 ] as const;
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
-const DOMAIN_HEADER = {
-  "company-domain":
-    typeof window !== "undefined" ? window.location.hostname : "",
-};
+interface PolicyFormPageProps {
+  labels?: typeof UiText;
+}
 
-export default function PolicyFormPage() {
+export default function PolicyFormPage({
+  labels = UiText,
+}: PolicyFormPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
@@ -45,7 +52,7 @@ export default function PolicyFormPage() {
     mode: "onChange",
     defaultValues: {
       policy_name: "",
-      policy_type: "none",
+      policy_type: PolicyType.NONE,
       duration_value: undefined,
       duration_unit: undefined,
       coverage_description: "",
@@ -64,10 +71,11 @@ export default function PolicyFormPage() {
   const token = authToken();
   const selectedType = watch("policy_type");
   const requiresDuration = [
-    "warranty",
-    "guarantee",
-    "extended_support",
-  ].includes(selectedType);
+    PolicyType.WARRANTY,
+    PolicyType.GUARANTEE,
+    PolicyType.EXTENDED_SUPPORT,
+  ].includes(selectedType as PolicyType);
+
   useEffect(() => {
     if (!editId || !token) return;
     setIsFetchingEdit(true);
@@ -75,7 +83,7 @@ export default function PolicyFormPage() {
       .then((result) => {
         const data = result?.data ?? result;
         if (!data) {
-          setGlobalError("Policy not found.");
+          setGlobalError(labels.POLICY_NOT_FOUND);
           return;
         }
         reset({
@@ -93,10 +101,17 @@ export default function PolicyFormPage() {
           is_active: data.is_active ?? true,
         });
       })
-      .catch(() => setGlobalError("Failed to load policy for editing."))
+      .catch(() => setGlobalError(labels.POLICY_LOAD_EDIT_ERROR))
       .finally(() => setIsFetchingEdit(false));
-  }, [editId, token, reset]);
-  const onError = (formErrors: any) => {};
+  }, [
+    editId,
+    token,
+    reset,
+    labels.POLICY_NOT_FOUND,
+    labels.POLICY_LOAD_EDIT_ERROR,
+  ]);
+
+  const onError = () => {};
   const onSubmit = async (data: PolicyFormSchemaType) => {
     setGlobalError(null);
     try {
@@ -105,12 +120,12 @@ export default function PolicyFormPage() {
         : await createProductPolicy(data, token!);
 
       if (result?.error || result?.statusCode >= 400) {
-        setGlobalError(result?.message ?? "Failed to save policy.");
+        setGlobalError(result?.message ?? labels.POLICY_SAVE_ERROR);
         return;
       }
       router.push("/vendor/configDocuments");
     } catch {
-      setGlobalError("Failed to save policy.");
+      setGlobalError(labels.POLICY_SAVE_ERROR);
     }
   };
 
@@ -118,17 +133,17 @@ export default function PolicyFormPage() {
     <>
       <main className="px-1 py-4 w-full max-w-5xl mx-auto">
         <header className="my-6">
-          <h1 className="font-bold text-2xl text-gray-800">
-            {editId ? "Edit Product Policy" : "Create New Product Policy"}
+          <h1 className="font-bold text-theme-h4 text-gray-800">
+            {editId ? labels.EDIT_POLICY : labels.CREATE_NEW_POLICY}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Define warranty or return rules to assign to products/categories.
+          <p className="text-theme-body-sm text-gray-500 mt-1">
+            {labels.POLICY_SUBTITLE}
           </p>
         </header>
 
         {isFetchingEdit && (
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-lg text-sm border border-blue-200 mb-4">
-            Loading policy data...
+          <div className="p-3 bg-blue-50 text-blue-600 rounded-lg text-theme-body-sm border border-blue-200 mb-4">
+            {labels.LOADING_POLICY_DATA}
           </div>
         )}
 
@@ -137,20 +152,20 @@ export default function PolicyFormPage() {
           className="w-full flex flex-col gap-6"
         >
           {globalError && (
-            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-200">
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-theme-body-sm border border-red-200">
               {globalError}
             </div>
           )}
 
           {/* Basic Details */}
           <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
-              Basic Details
+            <h2 className="text-theme-h6 font-bold text-gray-800 mb-4 border-b pb-2">
+              {labels.BASIC_DETAILS}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-600">
-                  Policy Name <span className="text-red-500">*</span>
+                <label className="text-theme-body-sm font-semibold text-gray-600">
+                  {labels.POLICY_NAME} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -160,21 +175,21 @@ export default function PolicyFormPage() {
                 />
 
                 {errors.policy_name && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-theme-caption text-red-500">
                     {errors.policy_name.message}
                   </p>
                 )}
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-600">
-                  Policy Type <span className="text-red-500">*</span>
+                <label className="text-theme-body-sm font-semibold text-gray-600">
+                  {labels.POLICY_TYPE} <span className="text-red-500">*</span>
                 </label>
                 <select
                   className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                   {...register("policy_type")}
                 >
-                  <option value="">Select Type</option>
+                  <option value="">{labels.SELECT_TYPE}</option>
                   {policyTypes.map((type) => (
                     <option key={type.value} value={type.value}>
                       {type.label}
@@ -182,7 +197,7 @@ export default function PolicyFormPage() {
                   ))}
                 </select>
                 {errors.policy_type && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-theme-caption text-red-500">
                     {errors.policy_type.message}
                   </p>
                 )}
@@ -192,8 +207,8 @@ export default function PolicyFormPage() {
             {requiresDuration && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Duration Value
+                  <label className="text-theme-body-sm font-semibold text-gray-600">
+                    {labels.DURATION_VALUE}
                   </label>
 
                   <input
@@ -204,23 +219,31 @@ export default function PolicyFormPage() {
                   />
 
                   {errors.duration_value && (
-                    <p className="text-xs text-red-500">
+                    <p className="text-theme-caption text-red-500">
                       {errors.duration_value.message}
                     </p>
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Duration Unit
+                  <label className="text-theme-body-sm font-semibold text-gray-600">
+                    {labels.DURATION_UNIT}
                   </label>
                   <select
                     className="border border-gray-300 rounded-lg px-4 py-2"
                     {...register("duration_unit")}
                   >
-                    <option value="days">Days</option>
-                    <option value="months">Months</option>
-                    <option value="years">Years</option>
-                    <option value="lifetime">Lifetime</option>
+                    <option value={DurationUnit.DAYS}>
+                      {labels.DURATION_UNITS.DAYS}
+                    </option>
+                    <option value={DurationUnit.MONTHS}>
+                      {labels.DURATION_UNITS.MONTHS}
+                    </option>
+                    <option value={DurationUnit.YEARS}>
+                      {labels.DURATION_UNITS.YEARS}
+                    </option>
+                    <option value={DurationUnit.LIFETIME}>
+                      {labels.DURATION_UNITS.LIFETIME}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -229,29 +252,29 @@ export default function PolicyFormPage() {
 
           {/* Coverage & Claims */}
           <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-            <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
-              Coverage & Claims Configuration
+            <h2 className="text-theme-h6 font-bold text-gray-800 mb-4 border-b pb-2">
+              {labels.COVERAGE_CLAIMS_CONFIG}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-600">
-                  Coverage Description
+                <label className="text-theme-body-sm font-semibold text-gray-600">
+                  {labels.COVERAGE_DESC}
                 </label>
                 <textarea
                   rows={3}
                   className="border border-gray-300 rounded-lg px-4 py-2"
-                  placeholder="What does this cover?"
+                  placeholder={labels.COVERAGE_PLACEHOLDER}
                   {...register("coverage_description")}
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-600">
-                  Exclusions
+                <label className="text-theme-body-sm font-semibold text-gray-600">
+                  {labels.EXCLUSIONS}
                 </label>
                 <textarea
                   rows={3}
                   className="border border-gray-300 rounded-lg px-4 py-2"
-                  placeholder="What is explicitly excluded?"
+                  placeholder={labels.EXCLUSIONS_PLACEHOLDER}
                   {...register("exclusions")}
                 />
               </div>
@@ -259,8 +282,8 @@ export default function PolicyFormPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-600">
-                  Service Provider
+                <label className="text-theme-body-sm font-semibold text-gray-600">
+                  {labels.SERVICE_PROVIDER}
                 </label>
                 <input
                   type="text"
@@ -270,8 +293,8 @@ export default function PolicyFormPage() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-600">
-                  Claim Email
+                <label className="text-theme-body-sm font-semibold text-gray-600">
+                  {labels.CLAIM_EMAIL}
                 </label>
                 <input
                   type="email"
@@ -281,14 +304,14 @@ export default function PolicyFormPage() {
                 />
 
                 {errors.claim_contact_email && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-theme-caption text-red-500">
                     {errors.claim_contact_email.message}
                   </p>
                 )}
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-600">
-                  Claim Phone
+                <label className="text-theme-body-sm font-semibold text-gray-600">
+                  {labels.CLAIM_PHONE}
                 </label>
                 <input
                   type="text"
@@ -298,7 +321,7 @@ export default function PolicyFormPage() {
                 />
 
                 {errors.claim_contact_phone && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-theme-caption text-red-500">
                     {errors.claim_contact_phone.message}
                   </p>
                 )}
@@ -315,8 +338,8 @@ export default function PolicyFormPage() {
                 {...register("generates_document")}
               />
 
-              <span className="text-sm font-medium text-gray-700">
-                Generates Warranty PDF/Document
+              <span className="text-theme-body-sm font-medium text-gray-700">
+                {labels.GENERATES_PDF}
               </span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
@@ -326,8 +349,8 @@ export default function PolicyFormPage() {
                 {...register("is_active")}
               />
 
-              <span className="text-sm font-medium text-gray-700">
-                Policy is Active
+              <span className="text-theme-body-sm font-medium text-gray-700">
+                {labels.POLICY_IS_ACTIVE}
               </span>
             </label>
           </section>
@@ -337,7 +360,7 @@ export default function PolicyFormPage() {
               href="/vendor/configDocuments"
               className="py-2.5 px-6 rounded-xl border border-gray-300 font-medium text-gray-700 hover:bg-gray-50"
             >
-              Cancel
+              {labels.CANCEL}
             </Link>
             <button
               type="submit"
@@ -345,10 +368,10 @@ export default function PolicyFormPage() {
               className="py-2.5 px-6 rounded-xl bg-blue-500 text-white font-bold hover:bg-blue-600 shadow-sm disabled:opacity-60"
             >
               {isSubmitting
-                ? "Saving..."
+                ? labels.SAVING
                 : editId
-                  ? "Update Policy"
-                  : "Save Policy"}
+                  ? labels.UPDATE_POLICY
+                  : labels.SAVE_POLICY}
             </button>
           </div>
         </form>

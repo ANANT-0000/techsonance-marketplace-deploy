@@ -21,6 +21,7 @@ import {
 } from "@/components/customer/homepage/InteractiveHero";
 import { CmsDataKey } from "@/constants/cms";
 import { UILabels } from "@/constants/ui-labels";
+import { UiText } from "@/constants/ui-text";
 
 export enum PageType {
   HOME = "home",
@@ -35,6 +36,11 @@ export enum PageType {
 export enum LangType {
   EN = "en",
   ES = "es",
+}
+
+export enum MoveDirection {
+  UP = "up",
+  DOWN = "down",
 }
 
 export type CmsDataPayload = Record<string, any>;
@@ -170,10 +176,10 @@ const toDatetimeLocal = (val: string) => {
 };
 
 function Field({ label, value, onChange, textarea, mono, type }: any) {
-  const cls = `w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-purple-400 ${mono ? "font-mono" : ""}`;
+  const cls = `w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-theme-body-sm focus:outline-none focus:border-purple-400 ${mono ? "font-mono" : ""}`;
   return (
     <div>
-      <label className="block text-xs font-bold text-gray-500 mb-1.5">
+      <label className="block text-theme-caption font-bold text-gray-500 mb-1.5">
         {label}
       </label>
       {textarea ? (
@@ -198,7 +204,7 @@ function Field({ label, value, onChange, textarea, mono, type }: any) {
 function ColorField({ label, value, onChange }: any) {
   return (
     <div>
-      <label className="block text-xs font-bold text-gray-500 mb-1.5">
+      <label className="block text-theme-caption font-bold text-gray-500 mb-1.5">
         {label}
       </label>
       <div className="flex gap-2">
@@ -213,7 +219,7 @@ function ColorField({ label, value, onChange }: any) {
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder="#000000"
-          className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-purple-400 font-mono"
+          className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-theme-body-sm focus:outline-none focus:border-purple-400 font-mono"
         />
       </div>
     </div>
@@ -224,10 +230,12 @@ function ImageUploadField({
   label,
   value,
   onChange,
+  labels = UiText,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  labels?: typeof UiText;
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -237,7 +245,7 @@ function ImageUploadField({
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      setError("File size must be under 5MB.");
+      setError(labels.SIZE_LIMIT_ERROR);
       return;
     }
 
@@ -260,7 +268,7 @@ function ImageUploadField({
         throw new Error("Upload succeeded but no URL returned.");
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Upload failed. Try again.");
+      setError(err?.response?.data?.message || labels.UPLOAD_FAILED);
     } finally {
       setUploading(false);
     }
@@ -268,7 +276,7 @@ function ImageUploadField({
 
   return (
     <div>
-      <label className="block text-xs font-bold text-gray-500 mb-1.5">
+      <label className="block text-theme-caption font-bold text-gray-500 mb-1.5">
         {label}
       </label>
       <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3">
@@ -276,7 +284,7 @@ function ImageUploadField({
           <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200 bg-white shadow-sm shrink-0">
             <img
               src={value}
-              alt="Preview"
+              alt={labels.PREVIEW}
               className="w-full h-full object-cover"
             />
           </div>
@@ -287,16 +295,16 @@ function ImageUploadField({
         )}
 
         <div className="flex-1 min-w-0">
-          <label className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-250 rounded-lg px-3 py-1.5 text-xs font-bold cursor-pointer transition-all">
+          <label className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-250 rounded-lg px-3 py-1.5 text-theme-caption font-bold cursor-pointer transition-all">
             {uploading ? (
               <>
                 <Loader2 size={12} className="animate-spin text-purple-600" />
-                <span>Uploading...</span>
+                <span>{labels.UPLOADING}</span>
               </>
             ) : (
               <>
                 <Upload size={12} className="text-gray-500" />
-                <span>Upload Image</span>
+                <span>{labels.UPLOAD_IMAGE}</span>
               </>
             )}
             <input
@@ -307,13 +315,15 @@ function ImageUploadField({
               className="hidden"
             />
           </label>
-          {error && <p className="text-[10px] text-red-500 mt-1">{error}</p>}
+          {error && (
+            <p className="text-theme-tiny text-red-500 mt-1">{error}</p>
+          )}
           {!error && value && (
             <p
-              className="text-[10px] text-emerald-600 mt-1 truncate"
+              className="text-theme-tiny text-emerald-600 mt-1 truncate"
               title={value}
             >
-              ✓ Cloudinary Image Attached
+              {labels.CLOUDINARY_ATTACHED}
             </p>
           )}
         </div>
@@ -325,13 +335,13 @@ function ImageUploadField({
 function SelectField({ label, value, onChange, options }: any) {
   return (
     <div>
-      <label className="block text-xs font-bold text-gray-500 mb-1.5">
+      <label className="block text-theme-caption font-bold text-gray-500 mb-1.5">
         {label}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-purple-400 font-semibold text-gray-750"
+        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-theme-body-sm focus:outline-none focus:border-purple-400 font-semibold text-gray-750"
       >
         {options.map((opt: any) => (
           <option key={opt.value} value={opt.value}>
@@ -349,9 +359,11 @@ function SelectField({ label, value, onChange, options }: any) {
 function SlideQueryPicker({
   value,
   onChange,
+  labels = UiText,
 }: {
   value: string;
   onChange: (v: string) => void;
+  labels?: typeof UiText;
 }) {
   const [categories, setCategories] = useState<string[]>([]);
   const [productTags, setProductTags] = useState<string[]>([]);
@@ -434,10 +446,10 @@ function SlideQueryPicker({
 
   return (
     <div className="md:col-span-2">
-      <label className="block text-xs font-bold text-gray-500 mb-1.5">
+      <label className="block text-theme-caption font-bold text-gray-500 mb-1.5">
         Slide Promotion — Pick what products to show
       </label>
-      <p className="text-[10px] text-gray-400 mb-3">
+      <p className="text-theme-tiny text-gray-400 mb-3">
         Click tags below to build the search query. Customers clicking the slide
         button will see matching products.
       </p>
@@ -445,21 +457,21 @@ function SlideQueryPicker({
       {/* Search filter */}
       <input
         type="text"
-        placeholder="Filter tags…"
+        placeholder={labels.FILTER_TAGS}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs mb-3 focus:outline-none focus:border-purple-400"
+        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-theme-caption mb-3 focus:outline-none focus:border-purple-400"
       />
 
       {/* Tag cloud */}
       {fetching ? (
-        <div className="flex items-center gap-2 text-xs text-gray-400 py-3">
+        <div className="flex items-center gap-2 text-theme-caption text-gray-400 py-3">
           <span className="animate-spin border-2 border-purple-400 border-t-transparent rounded-full w-4 h-4 inline-block" />
-          Loading products from your store…
+          {labels.LOADING_PRODUCTS}
         </div>
       ) : visible.length === 0 ? (
-        <p className="text-xs text-gray-400 py-2">
-          No matching tags. Try a different search.
+        <p className="text-theme-caption text-gray-400 py-2">
+          {labels.NO_MATCHING_TAGS}
         </p>
       ) : (
         <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
@@ -470,7 +482,7 @@ function SlideQueryPicker({
                 key={tag}
                 type="button"
                 onClick={() => toggle(tag)}
-                className={`px-3 py-1 rounded-full text-[11px] font-semibold border transition-all duration-150 ${
+                className={`px-3 py-1 rounded-full text-theme-xxs font-semibold border transition-all duration-150 ${
                   active
                     ? "bg-purple-600 text-white border-purple-600 shadow-sm"
                     : "bg-white text-gray-600 border-gray-200 hover:border-purple-300 hover:text-purple-700"
@@ -487,21 +499,21 @@ function SlideQueryPicker({
       {/* Selected summary */}
       <div className="mt-3 p-3 bg-gray-50 rounded-xl border border-dashed border-gray-200">
         {selected.length === 0 ? (
-          <p className="text-xs text-gray-400">
-            No tags selected — all products will show.
+          <p className="text-theme-caption text-gray-400">
+            {labels.NO_TAGS_SELECTED}
           </p>
         ) : (
           <>
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                  Selected ({selected.length})
+                <p className="text-theme-tiny font-bold text-gray-500 uppercase tracking-wider mb-1">
+                  {labels.SELECTED} ({selected.length})
                 </p>
                 <div className="flex flex-wrap gap-1">
                   {selected.map((t) => (
                     <span
                       key={t}
-                      className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      className="bg-purple-100 text-purple-700 text-theme-tiny font-bold px-2 py-0.5 rounded-full"
                     >
                       {t}
                     </span>
@@ -511,12 +523,12 @@ function SlideQueryPicker({
               <button
                 type="button"
                 onClick={clear}
-                className="text-[10px] text-red-400 hover:text-red-600 font-semibold mt-0.5 flex-shrink-0"
+                className="text-theme-tiny text-red-400 hover:text-red-600 font-semibold mt-0.5 flex-shrink-0"
               >
-                Clear all
+                {labels.CLEAR_ALL}
               </button>
             </div>
-            <p className="text-[10px] text-emerald-600 mt-2 font-mono">
+            <p className="text-theme-tiny text-emerald-600 mt-2 font-mono">
               ↳ /store?search={encodeURIComponent(selected.join(" "))}
             </p>
           </>
@@ -526,7 +538,13 @@ function SlideQueryPicker({
   );
 }
 
-const ProductPreviewCard = ({ productId }: { productId: string }) => {
+const ProductPreviewCard = ({
+  productId,
+  labels = UiText,
+}: {
+  productId: string;
+  labels?: typeof UiText;
+}) => {
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -556,8 +574,8 @@ const ProductPreviewCard = ({ productId }: { productId: string }) => {
 
   if (loading) {
     return (
-      <div className="text-[10px] text-slate-400 mt-1 animate-pulse">
-        Loading product preview...
+      <div className="text-theme-tiny text-slate-400 mt-1 animate-pulse">
+        {labels.LOADING_PREVIEW}
       </div>
     );
   }
@@ -579,7 +597,7 @@ const ProductPreviewCard = ({ productId }: { productId: string }) => {
           className="w-8 h-8 rounded object-cover border border-slate-100 shrink-0"
         />
       )}
-      <div className="text-[10px] leading-tight text-slate-500">
+      <div className="text-theme-tiny leading-tight text-slate-500">
         <span className="font-bold text-slate-700 block truncate">
           {product.name}
         </span>
@@ -589,7 +607,13 @@ const ProductPreviewCard = ({ productId }: { productId: string }) => {
   );
 };
 
-export default function CmsManagementPage() {
+interface CmsManagementPageProps {
+  labels?: typeof UiText;
+}
+
+export default function CmsManagementPage({
+  labels = UiText,
+}: CmsManagementPageProps) {
   const [state, dispatch] = useReducer(cmsReducer, initialState);
   const { page, lang, loading, saving, msg, data } = state;
 
@@ -607,8 +631,6 @@ export default function CmsManagementPage() {
       .catch(() => setProducts([]));
   }, []);
 
-  const token = authToken() || "";
-
   const load = async () => {
     if (page === PageType.THEME) {
       dispatch({ type: CmsActionType.FETCH_SUCCESS, payload: {} });
@@ -617,8 +639,6 @@ export default function CmsManagementPage() {
     dispatch({ type: CmsActionType.FETCH_START });
     try {
       const res = await AxiosAPI.get(`/v1/cms/${page}?lang=${lang}`);
-      // Backend wraps: { data: { content: '...' }, status, message }
-      // Must unwrap the envelope before reading content
       const cmsRow = res.data?.data ?? res.data;
       const raw = cmsRow?.content;
       let parsed = typeof raw === "string" ? JSON.parse(raw) : (raw ?? {});
@@ -647,17 +667,16 @@ export default function CmsManagementPage() {
     };
     try {
       await AxiosAPI.post("/v1/cms", payload);
-      // Clear ALL cache variants so the storefront picks up fresh data immediately
       localStorage.removeItem(`techsonance_cms_${page}_${lang}`);
-      localStorage.removeItem(`techsonance_cms_${page}`); // legacy key format
+      localStorage.removeItem(`techsonance_cms_${page}`);
       dispatch({
         type: CmsActionType.SAVE_SUCCESS,
-        payload: "Saved! Storefront will reflect changes on next page load.",
+        payload: labels.SAVE_SUCCESS,
       });
     } catch (err: any) {
       dispatch({
         type: CmsActionType.SAVE_FAILURE,
-        payload: `Save failed: ${err?.response?.data?.message || "Try again."}`,
+        payload: `${labels.SAVE_FAILED_PREFIX}${err?.response?.data?.message || labels.TRY_AGAIN}`,
       });
     }
   };
@@ -688,9 +707,9 @@ export default function CmsManagementPage() {
     });
   };
 
-  const moveItem = (index: number, direction: "up" | "down") => {
+  const moveItem = (index: number, direction: MoveDirection) => {
     const layout = [...(data.homepage_layout || [])];
-    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    const targetIndex = direction === MoveDirection.UP ? index - 1 : index + 1;
     if (targetIndex >= 0 && targetIndex < layout.length) {
       const temp = layout[index];
       layout[index] = layout[targetIndex];
@@ -736,31 +755,31 @@ export default function CmsManagementPage() {
     <div className="flex-1 bg-gray-50 p-6 lg:p-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Storefront CMS Manager
+          <h1 className="text-theme-h4 font-bold text-gray-900">
+            {labels.TITLE}
           </h1>
-          <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider">
-            Manage all storefront content dynamically
+          <p className="text-theme-caption text-gray-400 mt-1 uppercase tracking-wider">
+            {labels.SUBTITLE}
           </p>
         </div>
         <button
           onClick={save}
           disabled={saving || loading}
-          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm px-6 py-2.5 rounded-xl shadow disabled:opacity-50"
+          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-theme-body-sm px-6 py-2.5 rounded-xl shadow disabled:opacity-50"
         >
           {saving ? (
             <Loader2 size={16} className="animate-spin" />
           ) : (
             <Save size={16} />
           )}
-          {saving ? "Saving..." : "Save Changes"}
+          {saving ? labels.SAVING : labels.SAVE_CHANGES}
         </button>
       </div>
       {/* Tab + Lang selectors */}
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 mb-8 flex flex-col lg:flex-row gap-4">
         <div className="flex-1">
-          <p className="text-xs font-bold text-gray-400 uppercase mb-2">
-            Page / Section
+          <p className="text-theme-caption font-bold text-gray-400 uppercase mb-2">
+            {labels.PAGE_SECTION}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {PAGES.map((p) => (
@@ -769,7 +788,7 @@ export default function CmsManagementPage() {
                 onClick={() =>
                   dispatch({ type: CmsActionType.SET_PAGE, payload: p })
                 }
-                className={`px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${page === p ? "bg-purple-600 text-white border-purple-600" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-purple-300"}`}
+                className={`px-4 py-1.5 text-theme-caption font-bold rounded-lg border transition-all ${page === p ? "bg-purple-600 text-white border-purple-600" : "bg-gray-50 text-gray-600 border-gray-200 hover:border-purple-300"}`}
               >
                 {PAGE_LABELS[p]}
               </button>
@@ -778,8 +797,8 @@ export default function CmsManagementPage() {
         </div>
         {page !== PageType.THEME && (
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase mb-2">
-              Language
+            <p className="text-theme-caption font-bold text-gray-400 uppercase mb-2">
+              {labels.LANGUAGE}
             </p>
             <div className="flex gap-1.5">
               {([LangType.EN, LangType.ES] as LangType[]).map((l) => (
@@ -788,15 +807,15 @@ export default function CmsManagementPage() {
                   onClick={() =>
                     dispatch({ type: CmsActionType.SET_LANG, payload: l })
                   }
-                  className={`flex items-center gap-1 px-4 py-1.5 text-xs font-bold rounded-lg border transition-all ${lang === l ? "bg-purple-600 text-white border-purple-600" : "bg-gray-50 text-gray-600 border-gray-200"}`}
+                  className={`flex items-center gap-1 px-4 py-1.5 text-theme-caption font-bold rounded-lg border transition-all ${lang === l ? "bg-purple-600 text-white border-purple-600" : "bg-gray-50 text-gray-600 border-gray-200"}`}
                 >
                   {l === LangType.EN ? (
                     <>
-                      <Globe size={12} /> English
+                      <Globe size={12} /> {labels.ENGLISH}
                     </>
                   ) : (
                     <>
-                      <Languages size={12} /> Español
+                      <Languages size={12} /> {labels.ESPANOL}
                     </>
                   )}
                 </button>
@@ -808,7 +827,7 @@ export default function CmsManagementPage() {
 
       {msg && (
         <div
-          className={`flex items-center gap-2 p-4 rounded-xl mb-6 border text-sm font-semibold ${msg.ok ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}
+          className={`flex items-center gap-2 p-4 rounded-xl mb-6 border text-theme-body-sm font-semibold ${msg.ok ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}
         >
           <CheckCircle size={18} /> {msg.text}
         </div>
@@ -820,7 +839,7 @@ export default function CmsManagementPage() {
         </div>
       ) : page === PageType.THEME ? (
         <div className="space-y-6">
-          <BrandingTab token={token} />
+          <BrandingTab />
         </div>
       ) : (
         <form
@@ -851,10 +870,8 @@ export default function CmsManagementPage() {
                 }
               >
                 {(data?.[CmsDataKey.HERO_SLIDES] || []).length === 0 && (
-                  <p className="text-center text-gray-400 text-sm py-8">
-                    No slides yet. Click <strong>Add Slide</strong> to add hero
-                    carousel images. Each slide can link to a product search on
-                    the shop page.
+                  <p className="text-center text-gray-400 text-theme-body-sm py-8">
+                    {labels.NO_SLIDES}
                   </p>
                 )}
                 {(data?.[CmsDataKey.HERO_SLIDES] || []).map(
@@ -866,7 +883,7 @@ export default function CmsManagementPage() {
                       }
                     >
                       <div className="md:col-span-2">
-                        <p className="text-[10px] font-bold text-purple-500 uppercase tracking-widest mb-1">
+                        <p className="text-theme-tiny font-bold text-purple-500 uppercase tracking-widest mb-1">
                           Slide {idx + 1}
                         </p>
                       </div>
@@ -921,15 +938,15 @@ export default function CmsManagementPage() {
                         options={[
                           {
                             value: HeroLayout.CENTER_OVERLAY,
-                            label: "Centered Text Overlay",
+                            label: labels.LAYOUTS.CENTER_OVERLAY,
                           },
                           {
                             value: HeroLayout.LEFT_CONTENT_RIGHT_IMAGE,
-                            label: "Text Left, Image Right (Split)",
+                            label: labels.LAYOUTS.LEFT_SPLIT,
                           },
                           {
                             value: HeroLayout.RIGHT_CONTENT_LEFT_IMAGE,
-                            label: "Image Left, Text Right (Split)",
+                            label: labels.LAYOUTS.RIGHT_SPLIT,
                           },
                         ]}
                       />
@@ -947,15 +964,15 @@ export default function CmsManagementPage() {
                         options={[
                           {
                             value: HeroBgStyle.GRADIENT,
-                            label: "Automatic Edge Gradient",
+                            label: labels.BG_STYLES.GRADIENT,
                           },
                           {
                             value: HeroBgStyle.SOLID,
-                            label: "Automatic Edge Solid Color",
+                            label: labels.BG_STYLES.SOLID,
                           },
                           {
                             value: "custom",
-                            label: "Custom Color (Pick Below)",
+                            label: labels.BG_STYLES.CUSTOM,
                           },
                         ]}
                       />
@@ -986,6 +1003,7 @@ export default function CmsManagementPage() {
                             v,
                           )
                         }
+                        labels={labels}
                       />
                       <div className="md:col-span-2">
                         <ImageUploadField
@@ -999,94 +1017,12 @@ export default function CmsManagementPage() {
                               v,
                             )
                           }
+                          labels={labels}
                         />
                       </div>
                     </ListCard>
                   ),
                 )}
-              </Section>
-              <Section
-                title={
-                  UILabels.SECTIONS
-                    .HERO_BLOCK_LEGACY__USED_IF_NO_CAROUSEL_SLIDES_ABOVE
-                }
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field
-                    label={UILabels.FIELDS.SUBTITLE}
-                    value={data?.[CmsDataKey.HERO_SUBTITLE] || ""}
-                    onChange={(v: string) => set(CmsDataKey.HERO_SUBTITLE, v)}
-                  />
-                  <Field
-                    label={UILabels.FIELDS.BUTTON_TEXT}
-                    value={data?.[CmsDataKey.HERO_BTN_TEXT] || ""}
-                    onChange={(v: string) => set(CmsDataKey.HERO_BTN_TEXT, v)}
-                  />
-                  <SelectField
-                    label={UILabels.FIELDS.LAYOUT_STYLE}
-                    value={
-                      data?.[CmsDataKey.HERO_LAYOUT] ||
-                      HeroLayout.CENTER_OVERLAY
-                    }
-                    onChange={(v: string) => set(CmsDataKey.HERO_LAYOUT, v)}
-                    options={[
-                      {
-                        value: HeroLayout.CENTER_OVERLAY,
-                        label: "Centered Text Overlay",
-                      },
-                      {
-                        value: HeroLayout.LEFT_CONTENT_RIGHT_IMAGE,
-                        label: "Text Left, Image Right (Split)",
-                      },
-                      {
-                        value: HeroLayout.RIGHT_CONTENT_LEFT_IMAGE,
-                        label: "Image Left, Text Right (Split)",
-                      },
-                    ]}
-                  />
-                  <SelectField
-                    label={UILabels.FIELDS.BACKGROUND_STYLE}
-                    value={
-                      data?.[CmsDataKey.HERO_BG_STYLE] || HeroBgStyle.GRADIENT
-                    }
-                    onChange={(v: string) => set(CmsDataKey.HERO_BG_STYLE, v)}
-                    options={[
-                      {
-                        value: HeroBgStyle.GRADIENT,
-                        label: "Automatic Edge Gradient",
-                      },
-                      {
-                        value: HeroBgStyle.SOLID,
-                        label: "Automatic Edge Solid Color",
-                      },
-                      { value: "custom", label: "Custom Color (Pick Below)" },
-                    ]}
-                  />
-                  <div className="md:col-span-2">
-                    <Field
-                      label={UILabels.FIELDS.TITLE}
-                      value={data?.[CmsDataKey.HERO_TITLE] || ""}
-                      onChange={(v: string) => set(CmsDataKey.HERO_TITLE, v)}
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Field
-                      label={UILabels.FIELDS.DESCRIPTION}
-                      value={data?.[CmsDataKey.HERO_DESC] || ""}
-                      onChange={(v: string) => set(CmsDataKey.HERO_DESC, v)}
-                      textarea
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <ImageUploadField
-                      label={UILabels.FIELDS.HERO_BANNER_IMAGE}
-                      value={data?.[CmsDataKey.HERO_IMAGE_URL] || ""}
-                      onChange={(v: string) =>
-                        set(CmsDataKey.HERO_IMAGE_URL, v)
-                      }
-                    />
-                  </div>
-                </div>
               </Section>
 
               <Section title={UILabels.SECTIONS.MIDDLE_PROMO_BANNER}>
@@ -1131,19 +1067,19 @@ export default function CmsManagementPage() {
                       onChange={(v: string) =>
                         set(CmsDataKey.MIDDLE_BANNER_IMAGE_URL, v)
                       }
+                      labels={labels}
                     />
                   </div>
                 </div>
               </Section>
               <Section title={UILabels.SECTIONS.NEW_ARRIVALS__4_GRID_LAYOUT}>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Loop or write out the 4 card fields */}
                   {[1, 2, 3, 4].map((num) => (
                     <div
                       key={num}
                       className="border border-gray-200 p-4 rounded-lg bg-gray-50 flex flex-col gap-4"
                     >
-                      <h4 className="font-bold text-sm text-gray-700">
+                      <h4 className="font-bold text-theme-body-sm text-gray-700">
                         Card {num}
                       </h4>
 
@@ -1153,6 +1089,7 @@ export default function CmsManagementPage() {
                         onChange={(v: string) =>
                           set(`new_arrivals_card_${num}_image_url`, v)
                         }
+                        labels={labels}
                       />
 
                       <div className="grid grid-cols-2 gap-4">
@@ -1295,6 +1232,7 @@ export default function CmsManagementPage() {
                       onChange={(v: string) =>
                         set(CmsDataKey.BRAND_HIGHLIGHT_IMAGE_URL, v)
                       }
+                      labels={labels}
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -1312,8 +1250,8 @@ export default function CmsManagementPage() {
                 </div>
 
                 <div className="mt-4 border-t border-gray-100 pt-4">
-                  <h4 className="text-xs font-bold text-gray-500 uppercase mb-3">
-                    Key Stats (Max 3 Recommended)
+                  <h4 className="text-theme-caption font-bold text-gray-500 uppercase mb-3">
+                    {labels.KEY_STATS}
                   </h4>
                   <div className="space-y-3">
                     {(data.brand_highlight_stats || []).map(
@@ -1327,7 +1265,7 @@ export default function CmsManagementPage() {
                             onClick={() =>
                               removeItem("brand_highlight_stats", stat.id)
                             }
-                            className="absolute right-3 top-3 text-red-400 hover:text-red-600"
+                            className="absolute right-3 top-3 text-red-400 hover:text-red-650"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -1361,9 +1299,8 @@ export default function CmsManagementPage() {
                       ),
                     )}
                     {!(data.brand_highlight_stats || []).length && (
-                      <p className="text-center text-xs text-gray-400 py-3">
-                        No stats added. Default promise stats will be shown on
-                        the storefront.
+                      <p className="text-center text-theme-caption text-gray-400 py-3">
+                        {labels.NO_STATS}
                       </p>
                     )}
                   </div>
@@ -1381,8 +1318,11 @@ export default function CmsManagementPage() {
                       set(CmsDataKey.HERO_BANNER_TYPE, v)
                     }
                     options={[
-                      { value: "carousel", label: "Image Carousel Slider" },
-                      { value: "video", label: "Video Background Banner" },
+                      {
+                        value: "carousel",
+                        label: labels.BANNER_TYPES.CAROUSEL,
+                      },
+                      { value: "video", label: labels.BANNER_TYPES.VIDEO },
                     ]}
                   />
                   <Field
@@ -1393,8 +1333,8 @@ export default function CmsManagementPage() {
                   />
 
                   <div className="md:col-span-2 border-t border-gray-100 pt-4 mt-2">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase mb-3">
-                      Video Background Overlay Content
+                    <h4 className="text-theme-caption font-bold text-gray-500 uppercase mb-3">
+                      {labels.VIDEO_OVERLAY_CONTENT}
                     </h4>
                   </div>
                   <Field
@@ -1460,6 +1400,7 @@ export default function CmsManagementPage() {
                       onChange={(v: string) =>
                         set(CmsDataKey.LOOKBOOK_IMAGE_URL, v)
                       }
+                      labels={labels}
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -1477,27 +1418,21 @@ export default function CmsManagementPage() {
                 </div>
 
                 <div className="mt-6 border-t border-gray-150 pt-6">
-                  {/* Visual Preview Map */}
                   {data?.[CmsDataKey.LOOKBOOK_IMAGE_URL] ? (
                     <div className="mb-6 border border-gray-200 rounded-2xl p-4 bg-white shadow-sm">
-                      <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">
-                        Visual Preview & Placement
+                      <h4 className="text-theme-caption font-bold text-gray-500 uppercase mb-2">
+                        {labels.VISUAL_PREVIEW_TITLE}
                       </h4>
-                      <p className="text-[10px] text-gray-400 mb-3">
-                        1. Select a hotspot card from the list below (it will
-                        highlight in purple).
-                        <br />
-                        2. Click anywhere on the image preview to position the
-                        selected hotspot. If no card is selected, clicking will
-                        add a new hotspot.
+                      <p className="text-theme-tiny text-gray-400 mb-3">
+                        {labels.VISUAL_PREVIEW_INSTRUCTIONS}
                       </p>
                       <div
                         onClick={handleImageClick}
-                        className="relative w-full max-h-64 aspect-[16/9] bg-slate-50 border border-slate-100 rounded-xl overflow-hidden cursor-crosshair select-none group"
+                        className="relative max-w-74 max-h-74 aspect-[16/9] bg-slate-50 border border-slate-100 rounded-xl overflow-hidden cursor-crosshair select-none group"
                       >
                         <img
                           src={data?.[CmsDataKey.LOOKBOOK_IMAGE_URL]}
-                          alt="Lookbook Interactive Map"
+                          alt={labels.LOOKBOOK_MAP_ALT}
                           className="w-full h-full object-cover pointer-events-none"
                         />
                         {(data?.[CmsDataKey.LOOKBOOK_HOTSPOTS] || []).map(
@@ -1514,7 +1449,7 @@ export default function CmsManagementPage() {
                                   left: `${spot.x}%`,
                                   top: `${spot.y}%`,
                                 }}
-                                className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full border border-white flex items-center justify-center text-[10px] font-black shadow-md cursor-pointer transition-all ${
+                                className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full border border-white flex items-center justify-center text-theme-tiny font-black shadow-md cursor-pointer transition-all ${
                                   isSelected
                                     ? "bg-purple-600 text-white scale-125 ring-2 ring-purple-400 ring-offset-1"
                                     : "bg-black/60 text-white hover:bg-black/85"
@@ -1528,14 +1463,13 @@ export default function CmsManagementPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="mb-6 bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-6 text-center text-xs text-gray-400">
-                      Upload a Main Lookbook Image to enable visual hotspot
-                      placement.
+                    <div className="mb-6 bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-6 text-center text-theme-caption text-gray-400">
+                      {labels.UPLOAD_LOOKBOOK_PROMPT}
                     </div>
                   )}
 
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase">
+                    <h4 className="text-theme-caption font-bold text-gray-500 uppercase">
                       Interactive Hotspots
                     </h4>
                     <AddBtn
@@ -1571,7 +1505,7 @@ export default function CmsManagementPage() {
                             }`}
                           >
                             <div className="absolute right-3 top-3 flex items-center gap-2">
-                              <span className="text-[10px] font-black bg-gray-200/80 text-gray-600 px-2 py-0.5 rounded-full">
+                              <span className="text-theme-tiny font-black bg-gray-200/80 text-gray-600 px-2 py-0.5 rounded-full">
                                 #{hIdx + 1}
                               </span>
                               <button
@@ -1596,7 +1530,7 @@ export default function CmsManagementPage() {
 
                             <div className="grid grid-cols-3 gap-3">
                               <div>
-                                <label className="block text-[10px] font-bold text-gray-400 mb-1">
+                                <label className="block text-theme-tiny font-bold text-gray-400 mb-1">
                                   X Coord (%)
                                 </label>
                                 <input
@@ -1622,11 +1556,11 @@ export default function CmsManagementPage() {
                                       ),
                                     )
                                   }
-                                  className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                                  className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-theme-caption focus:outline-none"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[10px] font-bold text-gray-400 mb-1">
+                                <label className="block text-theme-tiny font-bold text-gray-400 mb-1">
                                   Y Coord (%)
                                 </label>
                                 <input
@@ -1652,11 +1586,11 @@ export default function CmsManagementPage() {
                                       ),
                                     )
                                   }
-                                  className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+                                  className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-theme-caption focus:outline-none"
                                 />
                               </div>
                               <div>
-                                <label className="block text-[10px] font-bold text-gray-400 mb-1">
+                                <label className="block text-theme-tiny font-bold text-gray-400 mb-1">
                                   Product
                                 </label>
                                 <select
@@ -1678,9 +1612,11 @@ export default function CmsManagementPage() {
                                       ),
                                     );
                                   }}
-                                  className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none"
+                                  className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-theme-caption focus:outline-none"
                                 >
-                                  <option value="">-- Select Product --</option>
+                                  <option value="">
+                                    {labels.SELECT_PRODUCT}
+                                  </option>
                                   {products.map((p: any) => (
                                     <option key={p.id} value={p.id}>
                                       {p.name}
@@ -1692,6 +1628,7 @@ export default function CmsManagementPage() {
                             {(hs.productId || hs.product_id) && (
                               <ProductPreviewCard
                                 productId={hs.productId || hs.product_id}
+                                labels={labels}
                               />
                             )}
                           </div>
@@ -1699,9 +1636,8 @@ export default function CmsManagementPage() {
                       },
                     )}
                     {!(data?.[CmsDataKey.LOOKBOOK_HOTSPOTS] || []).length && (
-                      <p className="text-center text-xs text-gray-400 py-3">
-                        No hotspots added. Press Add Hotspot or click the image
-                        above to place interactive tags.
+                      <p className="text-center text-theme-caption text-gray-400 py-3">
+                        {labels.NO_HOTSPOTS}
                       </p>
                     )}
                   </div>
@@ -1790,8 +1726,8 @@ export default function CmsManagementPage() {
 
                 <div className="mt-5 border-t border-gray-100 pt-5">
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase">
-                      Customer Testimonials
+                    <h4 className="text-theme-caption font-bold text-gray-500 uppercase">
+                      {labels.CUSTOMER_TESTIMONIALS}
                     </h4>
 
                     <AddBtn
@@ -1802,7 +1738,7 @@ export default function CmsManagementPage() {
                           {
                             id: Date.now(),
                             name: "",
-                            role: "",
+                            location: "",
                             text: "",
                             rating: 5,
                             avatar: "",
@@ -1849,22 +1785,22 @@ export default function CmsManagementPage() {
                               }
                             />
                             <Field
-                              label={UILabels.FIELDS.ROLE__DESIGNATION}
-                              value={t.role}
+                              label={UILabels.FIELDS.LOCATION}
+                              value={t.location}
                               onChange={(v: string) =>
                                 set(
                                   "social_proof_testimonials",
                                   data?.[
                                     CmsDataKey.SOCIAL_PROOF_TESTIMONIALS
                                   ].map((x: any) =>
-                                    x.id === t.id ? { ...x, role: v } : x,
+                                    x.id === t.id ? { ...x, location: v } : x,
                                   ),
                                 )
                               }
                             />
                             <div>
-                              <label className="block text-xs font-bold text-gray-500 mb-1.5">
-                                Rating (1-5)
+                              <label className="block text-theme-caption font-bold text-gray-500 mb-1.5">
+                                {labels.RATING_1_5}
                               </label>
                               <input
                                 type="number"
@@ -1887,7 +1823,7 @@ export default function CmsManagementPage() {
                                     ),
                                   )
                                 }
-                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none"
+                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-theme-caption focus:outline-none"
                               />
                             </div>
                             <Field
@@ -1930,8 +1866,8 @@ export default function CmsManagementPage() {
 
                 <div className="mt-5 border-t border-gray-100 pt-5">
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase">
-                      Trust Badge Strip
+                    <h4 className="text-theme-caption font-bold text-gray-500 uppercase">
+                      {labels.TRUST_BADGE_STRIP}
                     </h4>
                     <AddBtn
                       onClick={() =>
@@ -1939,7 +1875,7 @@ export default function CmsManagementPage() {
                           ...(data?.[CmsDataKey.SOCIAL_PROOF_BADGES] || []),
                           {
                             id: Date.now(),
-                            icon: "Shield",
+                            icon: "security",
                             title: "",
                             desc: "",
                           },
@@ -1965,13 +1901,13 @@ export default function CmsManagementPage() {
                                 ),
                               )
                             }
-                            className="absolute right-3 top-3 text-red-400 hover:text-red-600"
+                            className="absolute right-3 top-3 text-red-400 hover:text-red-650"
                           >
                             <Trash2 size={14} />
                           </button>
                           <div className="flex-1 grid grid-cols-3 gap-3">
-                            <Field
-                              label={UILabels.FIELDS.LUCIDE_ICON_NAME}
+                            <SelectField
+                              label={labels.SELECT_ICON}
                               value={bg.icon}
                               onChange={(v: string) =>
                                 set(
@@ -1982,7 +1918,28 @@ export default function CmsManagementPage() {
                                   ),
                                 )
                               }
-                              mono
+                              options={[
+                                {
+                                  value: "shipping",
+                                  label: labels.ICONS.SHIPPING,
+                                },
+                                {
+                                  value: "security",
+                                  label: labels.ICONS.SECURITY,
+                                },
+                                {
+                                  value: "quality",
+                                  label: labels.ICONS.QUALITY,
+                                },
+                                {
+                                  value: "support",
+                                  label: labels.ICONS.SUPPORT,
+                                },
+                                {
+                                  value: "default",
+                                  label: labels.ICONS.DEFAULT,
+                                },
+                              ]}
                             />
                             <Field
                               label={UILabels.FIELDS.BADGE_TITLE}
@@ -2040,17 +1997,23 @@ export default function CmsManagementPage() {
                     value={data?.[CmsDataKey.CURATED_TYPE] || "trending"}
                     onChange={(v: string) => set(CmsDataKey.CURATED_TYPE, v)}
                     options={[
-                      { value: "trending", label: "Trending Masterpieces" },
-                      { value: "new_arrivals", label: "New Arrivals" },
+                      {
+                        value: "trending",
+                        label: labels.CURATION_TYPES.TRENDING,
+                      },
+                      {
+                        value: "new_arrivals",
+                        label: labels.CURATION_TYPES.NEW_ARRIVALS,
+                      },
                       {
                         value: "curated",
-                        label: "Curated Custom Products (IDs Below)",
+                        label: labels.CURATION_TYPES.CURATED,
                       },
                     ]}
                   />
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1.5 font-sans">
+                    <label className="block text-theme-caption font-bold text-gray-500 mb-1.5 font-sans">
                       Curated Custom Products
                     </label>
                     <div className="flex flex-wrap gap-2 mb-3">
@@ -2062,7 +2025,7 @@ export default function CmsManagementPage() {
                         return (
                           <div
                             key={productId}
-                            className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-xs font-bold px-3 py-1.5 rounded-full border border-purple-100 shadow-sm"
+                            className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-theme-caption font-bold px-3 py-1.5 rounded-full border border-purple-100 shadow-sm"
                           >
                             <span>{p ? p.name : productId}</span>
                             <button
@@ -2083,7 +2046,7 @@ export default function CmsManagementPage() {
                       {(!data?.[CmsDataKey.CURATED_PRODUCT_IDS] ||
                         data?.[CmsDataKey.CURATED_PRODUCT_IDS].length ===
                           0) && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-theme-caption text-gray-400">
                           No custom products selected.
                         </span>
                       )}
@@ -2106,11 +2069,11 @@ export default function CmsManagementPage() {
                           }
                           e.target.value = "";
                         }}
-                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-purple-400"
+                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-theme-body-sm focus:outline-none focus:border-purple-400"
                         defaultValue=""
                       >
                         <option value="" disabled>
-                          -- Add Product to Curated List --
+                          {labels.ADD_PRODUCT_TO_CURATED}
                         </option>
                         {products
                           .filter((p) => {
@@ -2179,15 +2142,15 @@ export default function CmsManagementPage() {
                   <button
                     type="button"
                     onClick={() => removeItem("links", link.id)}
-                    className="text-red-400 hover:text-red-600 p-2 mb-1"
+                    className="text-red-400 hover:text-red-650 p-2 mb-1"
                   >
                     <Trash2 size={15} />
                   </button>
                 </div>
               ))}
               {!(data.links || []).length && (
-                <p className="text-center text-gray-400 text-sm py-8">
-                  No links yet. Click Add Link.
+                <p className="text-center text-gray-400 text-theme-body-sm py-8">
+                  {labels.NO_LINKS}
                 </p>
               )}
             </Section>
@@ -2253,7 +2216,7 @@ export default function CmsManagementPage() {
                               ),
                             )
                           }
-                          className="text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1"
+                          className="text-theme-caption bg-white border border-gray-200 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1"
                         >
                           <Plus size={12} /> Link
                         </button>
@@ -2267,7 +2230,7 @@ export default function CmsManagementPage() {
                               ),
                             )
                           }
-                          className="text-red-400 hover:text-red-600 p-1.5 border border-red-200 rounded-lg"
+                          className="text-red-400 hover:text-red-655 p-1.5 border border-red-200 rounded-lg"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -2304,7 +2267,7 @@ export default function CmsManagementPage() {
                                   ),
                                 )
                               }
-                              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs"
+                              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-theme-caption"
                             />
                             <input
                               placeholder="/path"
@@ -2327,7 +2290,7 @@ export default function CmsManagementPage() {
                                   ),
                                 )
                               }
-                              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-mono"
+                              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-theme-caption font-mono"
                             />
                           </div>
                           <button
@@ -2347,7 +2310,7 @@ export default function CmsManagementPage() {
                                 ),
                               )
                             }
-                            className="text-red-400 hover:text-red-600"
+                            className="text-red-400 hover:text-red-650"
                           >
                             <Trash2 size={13} />
                           </button>
@@ -2380,6 +2343,7 @@ export default function CmsManagementPage() {
                       label={UILabels.FIELDS.HERO_BACKGROUND_IMAGE}
                       value={data.heroImg || ""}
                       onChange={(v: string) => set("heroImg", v)}
+                      labels={labels}
                     />
                   </div>
                 </div>
@@ -2395,6 +2359,7 @@ export default function CmsManagementPage() {
                     label={UILabels.FIELDS.SECTION_IMAGE}
                     value={data.ownThoughtsImg || ""}
                     onChange={(v: string) => set("ownThoughtsImg", v)}
+                    labels={labels}
                   />
                   <div className="md:col-span-2">
                     <Field
@@ -2419,6 +2384,7 @@ export default function CmsManagementPage() {
                       label={UILabels.FIELDS.FOUNDER_PHOTO}
                       value={data.founderImg || ""}
                       onChange={(v: string) => set("founderImg", v)}
+                      labels={labels}
                     />
                   </div>
                 </div>
@@ -2434,6 +2400,7 @@ export default function CmsManagementPage() {
                     label={UILabels.FIELDS.BACKGROUND_IMAGE}
                     value={data.coreValuesImg || ""}
                     onChange={(v: string) => set("coreValuesImg", v)}
+                    labels={labels}
                   />
                   <div className="md:col-span-2">
                     <Field
@@ -2501,6 +2468,7 @@ export default function CmsManagementPage() {
                     label={UILabels.FIELDS.MISSION_IMAGE}
                     value={data.missionImg || ""}
                     onChange={(v: string) => set("missionImg", v)}
+                    labels={labels}
                   />
                   <div className="md:col-span-2">
                     <Field
@@ -2592,6 +2560,7 @@ export default function CmsManagementPage() {
                       onChange={(v: string) =>
                         set("hero", { ...data.hero, heroImg: v })
                       }
+                      labels={labels}
                     />
                   </div>
                 </div>
@@ -2618,7 +2587,7 @@ export default function CmsManagementPage() {
                     onRemove={() => removeItem("list", c.id)}
                   >
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 mb-1.5">
+                      <label className="block text-theme-caption font-bold text-gray-500 mb-1.5">
                         Type
                       </label>
                       <select
@@ -2626,12 +2595,20 @@ export default function CmsManagementPage() {
                         onChange={(e) =>
                           updateItem("list", c.id, "type", e.target.value)
                         }
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-theme-body-sm"
                       >
-                        <option value="phone">Phone</option>
-                        <option value="email">Email</option>
-                        <option value="address">Address</option>
-                        <option value="other">Other</option>
+                        <option value="phone">
+                          {labels.CONTACT_TYPES.PHONE}
+                        </option>
+                        <option value="email">
+                          {labels.CONTACT_TYPES.EMAIL}
+                        </option>
+                        <option value="address">
+                          {labels.CONTACT_TYPES.ADDRESS}
+                        </option>
+                        <option value="other">
+                          {labels.CONTACT_TYPES.OTHER}
+                        </option>
                       </select>
                     </div>
                     <Field
@@ -2691,6 +2668,7 @@ export default function CmsManagementPage() {
                       label={UILabels.FIELDS.PROMO_CARD_BACKGROUND_IMAGE}
                       value={data.promo_banner_image_url || ""}
                       onChange={(v: string) => set("promo_banner_image_url", v)}
+                      labels={labels}
                     />
                   </div>
                 </div>
@@ -2756,21 +2734,21 @@ export default function CmsManagementPage() {
             <button
               type="button"
               onClick={load}
-              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold uppercase rounded-xl transition-all"
+              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-theme-caption font-bold uppercase rounded-xl transition-all"
             >
-              Reset
+              {labels.RESET}
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold uppercase rounded-xl shadow-md disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-theme-caption font-bold uppercase rounded-xl shadow-md disabled:opacity-50"
             >
               {saving ? (
                 <Loader2 size={14} className="animate-spin" />
               ) : (
                 <Save size={14} />
               )}
-              {saving ? "Saving..." : "Save Configuration"}
+              {saving ? labels.SAVING : labels.SAVE_CONFIGURATION}
             </button>
           </div>
         </form>
@@ -2791,7 +2769,7 @@ function Section({
   return (
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
       <div className="flex justify-between items-center border-b border-gray-100 pb-3 mb-5">
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+        <h3 className="text-theme-body-sm font-bold text-gray-900 uppercase tracking-wide">
           {title}
         </h3>
         {action}
@@ -2806,7 +2784,7 @@ function AddBtn({ onClick, label }: { onClick: () => void; label: string }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-1 bg-purple-50 text-purple-700 hover:bg-purple-100 px-3 py-1.5 text-xs font-bold rounded-lg border border-purple-200"
+      className="flex items-center gap-1 bg-purple-50 text-purple-700 hover:bg-purple-100 px-3 py-1.5 text-theme-caption font-bold rounded-lg border border-purple-200"
     >
       <Plus size={12} /> {label}
     </button>
@@ -2825,7 +2803,7 @@ function ListCard({
       <button
         type="button"
         onClick={onRemove}
-        className="absolute right-3 top-3 text-red-400 hover:text-red-600 p-1"
+        className="absolute right-3 top-3 text-red-400 hover:text-red-650 p-1"
       >
         <Trash2 size={14} />
       </button>

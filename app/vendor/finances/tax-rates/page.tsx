@@ -78,24 +78,24 @@ export default function TaxSlabsPage() {
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">
           <Percent size={22} className="text-blue-500" />
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-theme-h4 font-bold text-gray-800">
             Tax Types & Rates
           </h1>
           {taxSlabs && taxSlabs.length > 0 && (
-            <span className="ml-2 bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+            <span className="ml-2 bg-blue-100 text-blue-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
               {taxSlabs.length}
             </span>
           )}
         </div>
         <div className="flex items-center gap-3">
-          {/* <button className="flex items-center gap-2 font-semibold text-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+          {/* <button className="flex items-center gap-2 font-semibold text-theme-body-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                         <Download size={16} />
                         Export CSV
                     </button>
                      */}
           <button
             onClick={() => handleRoute(null)}
-            className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm"
+            className="flex items-center gap-2 font-semibold text-theme-body-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm"
           >
             <Plus size={16} />
             New Tax Rate
@@ -113,14 +113,14 @@ export default function TaxSlabsPage() {
           />
           <input
             type="text"
-            className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
+            className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
             placeholder="Search by Rate Name or State..."
           />
         </span>
 
         <span className="flex flex-wrap gap-3 items-center">
           <select
-            className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
+            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             name="sort_by"
@@ -132,7 +132,7 @@ export default function TaxSlabsPage() {
           {/* {isOpen ? (
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-2 text-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
+                            className="flex items-center gap-2 text-theme-body-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
                         >
                             {date ? date.toDateString() : "Select Date"}
                             <ChevronUp size={16} />
@@ -140,7 +140,7 @@ export default function TaxSlabsPage() {
                     ) : (
                         <button
                             onClick={() => setIsOpen(true)}
-                            className="flex items-center gap-2 text-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
+                            className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
                         >
                             {date ? date.toDateString() : "Select Date"}
                             <ChevronDown size={16} />
@@ -172,7 +172,7 @@ export default function TaxSlabsPage() {
               {taxSlabTableHeader.map((header) => (
                 <th
                   key={header}
-                  className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
                 >
                   {header}
                 </th>
@@ -186,7 +186,7 @@ export default function TaxSlabsPage() {
               <tr>
                 <td
                   colSpan={10}
-                  className="py-16 text-center text-gray-400 text-sm"
+                  className="py-16 text-center text-gray-400 text-theme-body-sm"
                 >
                   <Percent
                     size={36}
@@ -215,7 +215,7 @@ export default function TaxSlabsPage() {
                     </span>
                   </td>
 
-                  <td className="p-4 text-gray-600 text-sm font-medium">
+                  <td className="p-4 text-gray-600 text-theme-body-sm font-medium">
                     {item.tax_scope}
                   </td>
 
@@ -227,28 +227,28 @@ export default function TaxSlabsPage() {
 
                   <td className="p-4">
                     {item.is_exempt ? (
-                      <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-xs font-semibold">
+                      <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
                         ● Exempt
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-xs font-semibold">
+                      <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
                         ● Taxable
                       </span>
                     )}
                   </td>
 
-                  <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
+                  <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap">
                     {new Date(item.effective_from).toLocaleDateString("en-GB")}
                   </td>
 
-                  <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
+                  <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap">
                     {item.effective_to === "2099-12-31" || !item.effective_to
                       ? "Ongoing"
                       : new Date(item.effective_to).toLocaleDateString("en-GB")}
                   </td>
                   {/* 
                                     <td className="p-4">
-                                        <button className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                                        <button className="text-theme-caption font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
                                             View Rules →
                                         </button>
                                     </td> */}

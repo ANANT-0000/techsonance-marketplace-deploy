@@ -71,7 +71,7 @@ export function TabNavBar() {
                             >
                                 <Link
                                     href={link.url}
-                                    className="relative z-200 flex flex-col items-center justify-center gap-1   text-sm  "
+                                    className="relative z-200 flex flex-col items-center justify-center gap-1   text-theme-body-sm  "
                                 >
                                     <DynamicIcon
                                         name={link.iconNames as IconName}

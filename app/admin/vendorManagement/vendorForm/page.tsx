@@ -50,8 +50,8 @@ export function Section({ title, subtitle, children }: { title: string; subtitle
     return (
         <div className="bg-white border border-gray-100 rounded-2xl shadow-sm shadow-gray-100/60 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
-                <h2 className="font-bold text-gray-900 text-base">{title}</h2>
-                {subtitle && <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>}
+                <h2 className="font-bold text-gray-900 text-theme-body">{title}</h2>
+                {subtitle && <p className="text-theme-body-sm text-gray-500 mt-0.5">{subtitle}</p>}
             </div>
             <div className="p-6">{children}</div>
         </div>
@@ -61,8 +61,8 @@ export function Section({ title, subtitle, children }: { title: string; subtitle
 export function ReviewRow({ label, value }: { label: string; value: string }) {
     return (
         <div className="flex items-start justify-between gap-4 py-2.5 border-b border-gray-50 last:border-0">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide shrink-0 w-40">{label}</span>
-            <span className="text-sm text-gray-800 font-medium text-right break-all">{value || <span className="text-gray-300 italic">—</span>}</span>
+            <span className="text-theme-caption font-semibold text-gray-400 uppercase tracking-wide shrink-0 w-40">{label}</span>
+            <span className="text-theme-body-sm text-gray-800 font-medium text-right break-all">{value || <span className="text-gray-300 italic">—</span>}</span>
         </div>
     );
 }
@@ -83,12 +83,12 @@ export function ReviewGroup({
             <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                     <Icon size={15} className="text-slate-500" />
-                    <span className="text-sm font-bold text-gray-700">{title}</span>
+                    <span className="text-theme-body-sm font-bold text-gray-700">{title}</span>
                 </div>
                 <button
                     type="button"
                     onClick={onEdit}
-                    className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 border border-gray-200 hover:border-gray-300 bg-white px-2.5 py-1 rounded-lg transition-all"
+                    className="flex items-center gap-1.5 text-theme-caption text-slate-500 hover:text-slate-800 border border-gray-200 hover:border-gray-300 bg-white px-2.5 py-1 rounded-lg transition-all"
                 >
                     <Pencil size={11} />
                     Edit
@@ -279,15 +279,15 @@ export default function VendorFormPage() {
                 {/* Page header */}
                 <header className="flex justify-between items-center my-6">
                     <div>
-                        <h1 className="font-bold text-2xl text-gray-900">Register New Vendor</h1>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <h1 className="font-bold text-theme-h4 text-gray-900">Register New Vendor</h1>
+                        <p className="text-theme-body-sm text-gray-500 mt-1">
                             Complete all steps to create a vendor account from the admin panel.
                         </p>
                     </div>
                     <Link
                         href="/admin/vendorManagement"
                         onClick={resetAll}
-                        className="text-sm border border-gray-200 bg-white hover:bg-gray-50 px-4 py-2 rounded-xl text-gray-600 transition-all"
+                        className="text-theme-body-sm border border-gray-200 bg-white hover:bg-gray-50 px-4 py-2 rounded-xl text-gray-600 transition-all"
                     >
                         ← Back to Vendors
                     </Link>
@@ -396,10 +396,10 @@ export default function VendorFormPage() {
                             <div className="flex mt-2">
                                 <input
                                     {...register("company_domain")}
-                                    className="border-2 flex-[2] border-gray-200 px-4 py-2 rounded-l-xl focus:outline-none focus:border-slate-400 font-mono text-sm"
+                                    className="border-2 flex-[2] border-gray-200 px-4 py-2 rounded-l-xl focus:outline-none focus:border-slate-400 font-mono text-theme-body-sm"
                                     placeholder="vendor-store"
                                 />
-                                <span className="border-2 flex-1 bg-gray-100 border-gray-200 px-4 py-2 rounded-r-xl text-gray-500 text-sm flex items-center">
+                                <span className="border-2 flex-1 bg-gray-100 border-gray-200 px-4 py-2 rounded-r-xl text-gray-500 text-theme-body-sm flex items-center">
                                     .platform.com
                                 </span>
                             </div>
@@ -412,7 +412,7 @@ export default function VendorFormPage() {
                                     "Cannot start or end with a hyphen",
                                     "3 – 63 characters",
                                 ].map((hint) => (
-                                    <li key={hint} className="flex items-center gap-2 text-xs text-gray-400">
+                                    <li key={hint} className="flex items-center gap-2 text-theme-caption text-gray-400">
                                         <span className="w-1 h-1 rounded-full bg-gray-300 shrink-0" />
                                         {hint}
                                     </li>
@@ -456,7 +456,7 @@ export default function VendorFormPage() {
                                     ))}
                                 </select>
                                 {globalError && (
-                                    <p className="mt-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2">
+                                    <p className="mt-2 text-theme-body-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2">
                                         {globalError}
                                     </p>
                                 )}
@@ -535,7 +535,7 @@ export default function VendorFormPage() {
                                             <ReviewRow key={f.value} label={f.label} value={complianceValues[f.value] ?? ""} />
                                         ))
                                     ) : (
-                                        <div className="py-2.5 text-xs text-gray-400 italic">No compliance fields selected.</div>
+                                        <div className="py-2.5 text-theme-caption text-gray-400 italic">No compliance fields selected.</div>
                                     )}
                                 </ReviewGroup>
  
@@ -544,12 +544,12 @@ export default function VendorFormPage() {
                                     {/* Financial docs */}
                                     {financialFileMap.filter((e) => e.file).length > 0 && (
                                         <div className="py-2.5">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Financial</p>
+                                            <p className="text-theme-tiny font-bold text-gray-400 uppercase tracking-wider mb-1.5">Financial</p>
                                             {financialFileMap.filter((e) => e.file).map((e) => (
                                                 <div key={e.index} className="flex items-center gap-2 mb-1">
                                                     <FileText size={12} className="text-slate-400 shrink-0" />
-                                                    <span className="text-xs text-gray-700 truncate">{e.file!.name}</span>
-                                                    <span className="text-[10px] text-gray-400 shrink-0 ml-auto">{e.type}</span>
+                                                    <span className="text-theme-caption text-gray-700 truncate">{e.file!.name}</span>
+                                                    <span className="text-theme-tiny text-gray-400 shrink-0 ml-auto">{e.type}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -557,25 +557,25 @@ export default function VendorFormPage() {
                                     {/* Legal docs */}
                                     {legalFileMap.filter((e) => e.file).length > 0 && (
                                         <div className="py-2.5 border-t border-gray-50">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Legal</p>
+                                            <p className="text-theme-tiny font-bold text-gray-400 uppercase tracking-wider mb-1.5">Legal</p>
                                             {legalFileMap.filter((e) => e.file).map((e) => (
                                                 <div key={e.index} className="flex items-center gap-2 mb-1">
                                                     <FileText size={12} className="text-slate-400 shrink-0" />
-                                                    <span className="text-xs text-gray-700 truncate">{e.file!.name}</span>
-                                                    <span className="text-[10px] text-gray-400 shrink-0 ml-auto">{e.type}</span>
+                                                    <span className="text-theme-caption text-gray-700 truncate">{e.file!.name}</span>
+                                                    <span className="text-theme-tiny text-gray-400 shrink-0 ml-auto">{e.type}</span>
                                                 </div>
                                             ))}
                                         </div>
                                     )}
                                     {financialFileMap.filter((e) => e.file).length === 0 && legalFileMap.filter((e) => e.file).length === 0 && (
-                                        <div className="py-2.5 text-xs text-gray-400 italic">No documents uploaded.</div>
+                                        <div className="py-2.5 text-theme-caption text-gray-400 italic">No documents uploaded.</div>
                                     )}
                                 </ReviewGroup>
                             </div>
  
                             {/* Global error */}
                             {globalError && (
-                                <div className="mt-4 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">
+                                <div className="mt-4 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-theme-body-sm">
                                     {globalError}
                                 </div>
                             )}
@@ -583,11 +583,11 @@ export default function VendorFormPage() {
                             {/* Submit row */}
                             <div className="flex items-center justify-between pt-6 mt-4 border-t border-gray-100">
                                 <button type="button" onClick={prevStep}
-                                    className="flex items-center gap-2 text-sm text-gray-600 border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 px-5 py-2.5 rounded-xl transition-all">
+                                    className="flex items-center gap-2 text-theme-body-sm text-gray-600 border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 px-5 py-2.5 rounded-xl transition-all">
                                     <ChevronLeft size={15} /> Previous
                                 </button>
                                 <button type="submit" disabled={isSubmitting}
-                                    className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-60 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all">
+                                    className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-60 text-white text-theme-body-sm font-semibold px-6 py-2.5 rounded-xl transition-all">
                                     {isSubmitting ? (
                                         <><Loader2 size={15} className="animate-spin" /> Submitting…</>
                                     ) : (
@@ -602,7 +602,7 @@ export default function VendorFormPage() {
                         <Link
                             href="/admin/vendorManagement"
                             onClick={resetAll}
-                            className="border border-gray-200 bg-white hover:bg-gray-50 text-gray-500 px-5 py-2 rounded-xl text-sm transition-all"
+                            className="border border-gray-200 bg-white hover:bg-gray-50 text-gray-500 px-5 py-2 rounded-xl text-theme-body-sm transition-all"
                         >
                             Cancel & Discard
                         </Link>

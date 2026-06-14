@@ -1,5 +1,5 @@
 "use client";
-import { useReducer, useEffect, useRef } from "react";
+import { useReducer, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 import { motion, AnimatePresence, LayoutGroup } from "motion/react";
@@ -15,6 +15,7 @@ import { Product, Category } from "@/utils/Types";
 
 import { fetchProductVendorProducts, SortBy } from "@/utils/commonAPiClient";
 import { SHOPPING_LIST_TEXT } from "@/constants/customerText";
+import { PageLoader } from "./PageLoader";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -42,12 +43,14 @@ interface State {
   totalPages: number;
   total: number;
   isSortOpen: boolean;
+  pageIsLoading: boolean;
 }
 
 enum ActionType {
   SET_PRODUCTS_DATA = "SET_PRODUCTS_DATA",
   SET_LOADING = "SET_LOADING",
   SET_SORT_OPEN = "SET_SORT_OPEN",
+  SET_PAGE_LOADING = "SET_PAGE_LOADING",
 }
 
 type Action =
@@ -61,10 +64,13 @@ type Action =
       };
     }
   | { type: ActionType.SET_LOADING; payload: boolean }
-  | { type: ActionType.SET_SORT_OPEN; payload: boolean };
+  | { type: ActionType.SET_SORT_OPEN; payload: boolean }
+  | { type: ActionType.SET_PAGE_LOADING; payload: boolean };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
+    case ActionType.SET_PAGE_LOADING:
+      return { ...state, pageIsLoading: action.payload };
     case ActionType.SET_PRODUCTS_DATA:
       return {
         ...state,
@@ -130,6 +136,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
 
   // ── Local UI-only state ───────────────────────────────────────────────────
   const [state, dispatch] = useReducer(reducer, {
+    pageIsLoading: true,
     products: [],
     categories: [],
     isLoading: true,
@@ -203,8 +210,10 @@ export function ShoppingList({ styles }: ShoppingListProps) {
           });
         }
       } finally {
-        if (!cancelled)
+        if (!cancelled) {
           dispatch({ type: ActionType.SET_LOADING, payload: false });
+          dispatch({ type: ActionType.SET_PAGE_LOADING, payload: false });
+        }
       }
     };
 
@@ -254,8 +263,11 @@ export function ShoppingList({ styles }: ShoppingListProps) {
   };
 
   const currentSortLabel =
-    SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? SHOPPING_LIST_TEXT.SORT_NEWEST;
-
+    SORT_OPTIONS.find((o) => o.value === sortBy)?.label ??
+    SHOPPING_LIST_TEXT.SORT_NEWEST;
+  if (state.pageIsLoading) {
+    return <PageLoader />;
+  }
   return (
     <motion.section
       className={`w-full ${styles ?? ""}`}
@@ -280,15 +292,17 @@ export function ShoppingList({ styles }: ShoppingListProps) {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
               {/* Mobile count */}
               <div className="lg:hidden w-full flex justify-between items-center">
-                <p className="text-sm text-gray-500 mt-1">
-                  {SHOPPING_LIST_TEXT.SHOWING} {state.total} {SHOPPING_LIST_TEXT.ITEMS}
+                <p className="text-xxs sm:text-theme-caption md:text-theme-body-sm text-gray-500 mt-1">
+                  {SHOPPING_LIST_TEXT.SHOWING} {state.total}{" "}
+                  {SHOPPING_LIST_TEXT.ITEMS}
                 </p>
               </div>
 
               {/* Desktop search + sort */}
               <div className="hidden lg:flex w-full items-center justify-between">
-                <div className="text-sm text-gray-500 font-medium">
-                  {SHOPPING_LIST_TEXT.SHOWING} {state.total} {SHOPPING_LIST_TEXT.PRODUCTS}
+                <div className="text-xxs sm:text-theme-caption md:text-theme-body-sm text-gray-500 font-medium">
+                  {SHOPPING_LIST_TEXT.SHOWING} {state.total}{" "}
+                  {SHOPPING_LIST_TEXT.PRODUCTS}
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-72">
@@ -309,7 +323,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
                           payload: !state.isSortOpen,
                         })
                       }
-                      className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-full text-sm font-medium text-gray-700 bg-white hover:border-gray-300 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-full text-theme-caption sm:text-theme-body-sm font-medium text-gray-700 bg-white hover:border-gray-300 transition-colors"
                     >
                       {SHOPPING_LIST_TEXT.SORT_BY} {currentSortLabel}
                       <ChevronDown
@@ -329,7 +343,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
                             <button
                               key={opt.value}
                               onClick={() => handleSortChange(opt.value)}
-                              className={`w-full text-left px-4 py-2.5 text-sm ${
+                              className={`w-full text-left px-4 py-2.5 text-theme-caption sm:text-theme-body-sm ${
                                 sortBy === opt.value
                                   ? "bg-gray-50 font-semibold text-black"
                                   : "text-gray-600 hover:bg-gray-50"
@@ -374,11 +388,11 @@ export function ShoppingList({ styles }: ShoppingListProps) {
                     className="opacity-40"
                   />
                   <div className="text-center">
-                    <p className="text-base font-medium text-gray-600">
+                    <p className="text-theme-body font-medium text-gray-600">
                       {SHOPPING_LIST_TEXT.NO_PRODUCTS_FOUND}
                     </p>
                     {search && (
-                      <p className="text-sm text-gray-400 mt-1">
+                      <p className="text-theme-body-sm text-gray-400 mt-1">
                         {SHOPPING_LIST_TEXT.TRY_DIFFERENT_KEYWORD}
                       </p>
                     )}

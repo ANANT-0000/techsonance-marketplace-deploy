@@ -35,8 +35,8 @@ export const ManagementCard = ({ icon, color, title, description, children, link
                             {icon}
                         </div>
                         <div>
-                            <h2 className="font-bold lg:text-xl text-lg mb-2 text-gray-900">{title}</h2>
-                            <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
+                            <h2 className="font-bold lg:text-theme-h5 text-theme-h6 mb-2 text-gray-900">{title}</h2>
+                            <p className="text-gray-500 text-theme-body-sm leading-relaxed">{description}</p>
                         </div>
                     </div>
                     {children}
@@ -48,8 +48,8 @@ export const ManagementCard = ({ icon, color, title, description, children, link
                             {icon}
                         </div>
                         <div>
-                            <h2 className="font-bold lg:text-xl text-lg mb-2 text-gray-900">{title}</h2>
-                            <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
+                            <h2 className="font-bold lg:text-theme-h5 text-theme-h6 mb-2 text-gray-900">{title}</h2>
+                            <p className="text-gray-500 text-theme-body-sm leading-relaxed">{description}</p>
                         </div>
                     </div>
                     {children}

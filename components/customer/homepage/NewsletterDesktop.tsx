@@ -28,14 +28,14 @@ export function NewsletterDesktop({ getField }: { getField: (k: string) => any }
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             {eyebrow && (
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-4">
+              <p className="text-theme-tiny font-bold uppercase tracking-[0.3em] text-white/40 mb-4">
                 {eyebrow}
               </p>
             )}
-            <h2 className="text-4xl font-serif tracking-tight leading-tight mb-4">
+            <h2 className="text-theme-h2 font-serif tracking-tight leading-tight mb-4">
               {getField("newsletter_title") || NEWSLETTER_TEXT.SUBSCRIBE}
             </h2>
-            <p className="text-sm text-gray-400 font-light leading-relaxed max-w-md">
+            <p className="text-theme-body-sm text-gray-400 font-light leading-relaxed max-w-md">
               {getField("newsletter_desc")}
             </p>
           </div>
@@ -58,17 +58,17 @@ export function NewsletterDesktop({ getField }: { getField: (k: string) => any }
                     placeholder={NEWSLETTER_TEXT.PLACEHOLDER}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-theme-body-sm text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
                   />
                   <button
                     type="submit"
-                    className="bg-white text-black hover:bg-gray-100 transition-colors px-6 py-3.5 text-[11px] font-bold uppercase tracking-widest rounded-xl whitespace-nowrap"
+                    className="bg-white text-black hover:bg-gray-100 transition-colors px-6 py-3.5 text-theme-xxs font-bold uppercase tracking-widest rounded-xl whitespace-nowrap"
                   >
                     {getField("newsletter_btn_text") || NEWSLETTER_TEXT.SUBSCRIBE}
                   </button>
                 </div>
                 {disclaimer && (
-                  <p className="text-[11px] text-white/25">
+                  <p className="text-theme-xxs text-white/25">
                     {disclaimer}
                   </p>
                 )}

@@ -53,7 +53,7 @@ export default function Navbar({ title }: { title?: string }) {
             {/* Left Side */}
          {title && (
                 <div>
-                    <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
+                    <h1 className="text-theme-h5 font-semibold text-gray-800">{title}</h1>
                 </div>
             )}
 
@@ -76,10 +76,10 @@ export default function Navbar({ title }: { title?: string }) {
                             className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
                         >
                             <span className="text-right hidden sm:block">
-                                <span className="block text-sm font-semibold text-gray-800 leading-tight">
+                                <span className="block text-theme-body-sm font-semibold text-gray-800 leading-tight">
                                     {vendorDetails.first_name} {vendorDetails.last_name}
                                 </span>
-                                <span className="block text-xs text-gray-500 leading-tight">
+                                <span className="block text-theme-caption text-gray-500 leading-tight">
                                     {vendorDetails.companyEmail}
                                 </span>
                             </span>
@@ -103,20 +103,20 @@ export default function Navbar({ title }: { title?: string }) {
                             <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
                                 <div className="px-4 py-4 bg-gray-50 border-b border-gray-100">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                        <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-white font-bold text-theme-body-sm flex-shrink-0">
                                             {vendorDetails.first_name.charAt(0)}{vendorDetails.last_name.charAt(0)}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-semibold text-gray-900">{vendorDetails.first_name} {vendorDetails.last_name}</p>
-                                            <p className="text-xs text-gray-500">{VENDOR_NAVBAR_TEXT.ACTIVE_WORKSPACE}</p>
+                                            <p className="text-theme-body-sm font-semibold text-gray-900">{vendorDetails.first_name} {vendorDetails.last_name}</p>
+                                            <p className="text-theme-caption text-gray-500">{VENDOR_NAVBAR_TEXT.ACTIVE_WORKSPACE}</p>
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                                        <div className="flex items-center gap-2 text-theme-caption text-gray-600">
                                             <Mail size={12} className="text-gray-400 flex-shrink-0" />
                                             <span>{vendorDetails.companyEmail}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                                        <div className="flex items-center gap-2 text-theme-caption text-gray-600">
                                             <Building2 size={12} className="text-gray-400 flex-shrink-0" />
                                             <span className="font-mono text-gray-400">{vendorDetails.companyId}</span>
                                         </div>
@@ -124,7 +124,7 @@ export default function Navbar({ title }: { title?: string }) {
                                 </div>
                                 <button
                                     onClick={handleLogout}
-                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                                    className="w-full flex items-center gap-3 px-4 py-3 text-theme-body-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                                 >
                                     <LogOut size={15} />
                                     <span>{VENDOR_NAVBAR_TEXT.LOGOUT}</span>

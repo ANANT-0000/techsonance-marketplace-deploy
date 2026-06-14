@@ -44,7 +44,7 @@ export function Pagination({ setCount, count,  totalPages, style, onPageChange }
                 {PAGINATION_TEXT.PREVIOUS}
             </motion.button>
 
-            <div className="flex items-center gap-2 text-sm font-semibold">
+            <div className="flex items-center gap-2 text-theme-body-sm font-semibold">
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-primary text-white">
                     {count}
                 </span>

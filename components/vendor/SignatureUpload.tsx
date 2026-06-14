@@ -75,11 +75,11 @@ export function SignatureUpload({ existingUrl, onChange, onRemoveExisting }: Sig
       </div>
 
       {/* <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+        <p className="text-theme-caption font-semibold text-gray-700 flex items-center gap-1">
           <ImageIcon size={11} className="text-gray-400" />
           {label}
         </p>
-        <p className="text-[10px] text-gray-400 truncate mt-0.5">{src}</p>
+        <p className="text-theme-tiny text-gray-400 truncate mt-0.5">{src}</p>
       </div> */}
 
       <button
@@ -132,10 +132,10 @@ export function SignatureUpload({ existingUrl, onChange, onRemoveExisting }: Sig
           `}
         >
           <Upload size={18} className="text-gray-400" />
-          <p className="text-xs text-gray-400">
+          <p className="text-theme-caption text-gray-400">
             <span className="font-semibold text-gray-600">{SIGNATURE_UPLOAD_TEXT.CLICK_UPLOAD}</span> {SIGNATURE_UPLOAD_TEXT.OR_DRAG}
           </p>
-          <p className="text-[10px] text-gray-300">{SIGNATURE_UPLOAD_TEXT.HINT}</p>
+          <p className="text-theme-tiny text-gray-300">{SIGNATURE_UPLOAD_TEXT.HINT}</p>
 
           <input
             ref={inputRef}

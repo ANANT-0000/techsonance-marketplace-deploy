@@ -22,8 +22,8 @@ const isBooleanLike = (val: string | boolean) => typeof val === 'boolean';
 const EmptySpecs = () => (
     <div className="flex flex-col items-center justify-center py-14 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
         <Info size={28} className="text-gray-300 mb-3" strokeWidth={1.5} />
-        <p className="text-gray-500 font-semibold text-sm">{PRODUCT_SPEC_TEXT.EMPTY_TITLE}</p>
-        <p className="text-gray-400 text-xs mt-1">{PRODUCT_SPEC_TEXT.EMPTY_DESC}</p>
+        <p className="text-gray-500 font-semibold text-theme-body-sm">{PRODUCT_SPEC_TEXT.EMPTY_TITLE}</p>
+        <p className="text-gray-400 text-theme-caption mt-1">{PRODUCT_SPEC_TEXT.EMPTY_DESC}</p>
     </div>
 );
 
@@ -43,17 +43,17 @@ export const ProductSpecifications = ({ product }: { product: ProductFeature[] }
         <div className="space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">
+                <h3 className="text-theme-body-sm font-bold text-gray-900 uppercase tracking-widest">
                     {PRODUCT_SPEC_TEXT.HEADER}
                 </h3>
-                <span className="text-xs text-gray-400 font-medium">
+                <span className="text-theme-caption text-gray-400 font-medium">
                     {product.length} {product.length === 1 ? PRODUCT_SPEC_TEXT.ATTRIBUTE : PRODUCT_SPEC_TEXT.ATTRIBUTES}
                 </span>
             </div>
 
             {/* Table */}
             <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <table className="w-full text-sm border-collapse" role="table" aria-label="Product Specifications">
+                <table className="w-full text-theme-body-sm border-collapse" role="table" aria-label="Product Specifications">
                     <tbody>
                         <AnimatePresence initial={false}>
                             {visibleItems.map((spec, idx) => {
@@ -76,7 +76,7 @@ export const ProductSpecifications = ({ product }: { product: ProductFeature[] }
                                     >
                                         {/* Key column */}
                                         <td className="py-3.5 px-5 w-[42%] align-top">
-                                            <span className="font-semibold text-gray-700 capitalize leading-snug text-[13px]">
+                                            <span className="font-semibold text-gray-700 capitalize leading-snug text-theme-caption-lg">
                                                 {spec.title}
                                             </span>
                                         </td>
@@ -89,7 +89,7 @@ export const ProductSpecifications = ({ product }: { product: ProductFeature[] }
                                         {/* Value column */}
                                         <td className="py-3.5 px-5 align-top">
                                             {isBool ? (
-                                                <span className={`inline-flex items-center gap-1.5 text-[13px] font-semibold ${isPositive ? 'text-emerald-600' : 'text-gray-400'}`}>
+                                                <span className={`inline-flex items-center gap-1.5 text-theme-caption-lg font-semibold ${isPositive ? 'text-emerald-600' : 'text-gray-400'}`}>
                                                     <CheckCircle2
                                                         size={13}
                                                         className={isPositive ? 'text-emerald-500' : 'text-gray-300'}
@@ -97,7 +97,7 @@ export const ProductSpecifications = ({ product }: { product: ProductFeature[] }
                                                     {value}
                                                 </span>
                                             ) : (
-                                                <span className="text-gray-600 leading-snug text-[13px]">
+                                                <span className="text-gray-600 leading-snug text-theme-caption-lg">
                                                     {value}
                                                 </span>
                                             )}
@@ -115,7 +115,7 @@ export const ProductSpecifications = ({ product }: { product: ProductFeature[] }
                 <motion.button
                     onClick={() => setExpanded(e => !e)}
                     whileTap={{ scale: 0.97 }}
-                    className="flex items-center gap-2 w-full justify-center py-3 rounded-2xl border border-gray-200 hover:border-gray-400 text-sm font-semibold text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 group"
+                    className="flex items-center gap-2 w-full justify-center py-3 rounded-2xl border border-gray-200 hover:border-gray-400 text-theme-body-sm font-semibold text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 group"
                     aria-expanded={expanded}
                 >
                     <span>{expanded ? PRODUCT_SPEC_TEXT.SHOW_LESS : `${PRODUCT_SPEC_TEXT.SHOW_ALL} ${product.length} ${PRODUCT_SPEC_TEXT.SPECIFICATIONS_LOWER}`}</span>

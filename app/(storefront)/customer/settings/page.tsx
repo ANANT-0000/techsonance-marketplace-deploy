@@ -163,16 +163,16 @@ export default function SecuritySettingsPage() {
           <ChevronLeft size={20} />
         </button>
         <div className="flex flex-col gap-0 shrink">
-          <h1 className="font-bold text-xl text-gray-900">Login & Security</h1>
-          <p className="text-sm text-gray-500 text-wrap">
+          <h1 className="font-bold text-theme-h5 text-gray-900">Login & Security</h1>
+          <p className="text-theme-body-sm text-gray-500 text-wrap">
             Manage your password, active sessions, and secure your account.
           </p>
         </div>
       </div>
       {/* Header */}
       <div className="mb-8 hidden lg:block">
-        <h1 className="text-2xl font-bold text-gray-900">Login & Security</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-theme-h4 font-bold text-gray-900">Login & Security</h1>
+        <p className="text-theme-body-sm text-gray-500 mt-1">
           Manage your password, active sessions, and secure your account.
         </p>
       </div>
@@ -183,15 +183,15 @@ export default function SecuritySettingsPage() {
             <Key size={20} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-bold text-gray-800">Change Password</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="text-theme-h6 font-bold text-gray-800">Change Password</h2>
+            <p className="text-theme-body-sm text-gray-500">
               Ensure your account is using a long, random password to stay
               secure.
             </p>
           </div>
           <Link
             href={`/customer/${user?.id}/changePassword`}
-            className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors flex items-center gap-1"
+            className="text-blue-600 hover:text-blue-700 font-medium text-theme-body-sm transition-colors flex items-center gap-1"
           >
             Change <ChevronRight size={16} />
           </Link>
@@ -207,10 +207,10 @@ export default function SecuritySettingsPage() {
               <ShieldCheck size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-800">
+              <h2 className="text-theme-h6 font-bold text-gray-800">
                 Two-Step Verification (2FA)
               </h2>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-theme-body-sm text-gray-500 mt-0.5">
                 Add an extra layer of security to your account.
               </p>
             </div>
@@ -219,14 +219,14 @@ export default function SecuritySettingsPage() {
             {is2FAEnabled ? (
               <button
                 onClick={() => setIs2FAEnabled(false)}
-                className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+                className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold text-theme-body-sm px-5 py-2.5 rounded-xl transition-colors"
               >
                 Manage 2FA
               </button>
             ) : (
               <button
                 onClick={() => setIs2FAEnabled(true)}
-                className="bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+                className="bg-gray-900 hover:bg-gray-800 text-white font-semibold text-theme-body-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm"
               >
                 Enable 2FA
               </button>
@@ -234,7 +234,7 @@ export default function SecuritySettingsPage() {
           </div>
         </div>
         {is2FAEnabled && (
-          <div className="bg-emerald-50/50 border-t border-emerald-100 p-4 px-6 flex items-center gap-2 text-sm text-emerald-800">
+          <div className="bg-emerald-50/50 border-t border-emerald-100 p-4 px-6 flex items-center gap-2 text-theme-body-sm text-emerald-800">
             <ShieldCheck size={16} className="text-emerald-600" />
             Two-step verification is currently active using your Authenticator
             App.
@@ -249,16 +249,16 @@ export default function SecuritySettingsPage() {
               <History size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-800">
+              <h2 className="text-theme-h6 font-bold text-gray-800">
                 Where You're Logged In
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-theme-body-sm text-gray-500">
                 We'll alert you if anyone logs into your account from a new
                 device.
               </p>
             </div>
           </div>
-          <button className="hidden sm:flex text-sm font-semibold text-blue-600 hover:text-blue-700 items-center gap-1.5">
+          <button className="hidden sm:flex text-theme-body-sm font-semibold text-blue-600 hover:text-blue-700 items-center gap-1.5">
             <LogOut size={16} /> Log out all devices
           </button>
         </div>
@@ -273,15 +273,15 @@ export default function SecuritySettingsPage() {
                   <session.icon size={24} />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800 text-sm flex items-center gap-2">
+                  <p className="font-semibold text-gray-800 text-theme-body-sm flex items-center gap-2">
                     {session.device}
                     {session.isCurrent && (
-                      <span className="bg-emerald-100 text-emerald-700 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
+                      <span className="bg-emerald-100 text-emerald-700 text-theme-tiny uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
                         This Device
                       </span>
                     )}
                   </p>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                  <div className="flex items-center gap-3 mt-1 text-theme-caption text-gray-500">
                     <span className="flex items-center gap-1">
                       <MapPin size={12} /> {session.location}
                     </span>
@@ -291,7 +291,7 @@ export default function SecuritySettingsPage() {
                 </div>
               </div>
               {!session.isCurrent && (
-                <button className="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors">
+                <button className="text-theme-body-sm font-medium text-gray-500 hover:text-red-600 transition-colors">
                   Log out
                 </button>
               )}
@@ -299,7 +299,7 @@ export default function SecuritySettingsPage() {
           ))}
         </div>
         <div className="p-4 bg-gray-50 border-t border-gray-100 sm:hidden">
-          <button className="w-full justify-center flex text-sm font-semibold text-blue-600 hover:text-blue-700 items-center gap-1.5">
+          <button className="w-full justify-center flex text-theme-body-sm font-semibold text-blue-600 hover:text-blue-700 items-center gap-1.5">
             <LogOut size={16} /> Log out all devices
           </button>
         </div>
@@ -312,8 +312,8 @@ export default function SecuritySettingsPage() {
               <AlertTriangle size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-red-800">Danger Zone</h2>
-              <p className="text-sm text-red-600/80">
+              <h2 className="text-theme-h6 font-bold text-red-800">Danger Zone</h2>
+              <p className="text-theme-body-sm text-red-600/80">
                 Account deactivation and deletion settings.
               </p>
             </div>
@@ -323,14 +323,14 @@ export default function SecuritySettingsPage() {
         <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100">
           <div>
             <h3 className="font-semibold text-gray-800">Deactivate Account</h3>
-            <p className="text-sm text-gray-500 mt-0.5 max-w-md">
+            <p className="text-theme-body-sm text-gray-500 mt-0.5 max-w-md">
               Temporarily hide your profile and data. You can recover your
               account by logging in again.
             </p>
           </div>
           <button
             onClick={handleDeactivateClick}
-            className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap cursor-pointer"
+            className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold text-theme-body-sm px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap cursor-pointer"
           >
             Deactivate Account
           </button>
@@ -339,14 +339,14 @@ export default function SecuritySettingsPage() {
         <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h3 className="font-semibold text-gray-800">Delete Account</h3>
-            <p className="text-sm text-gray-500 mt-0.5 max-w-md">
+            <p className="text-theme-body-sm text-gray-500 mt-0.5 max-w-md">
               Permanently delete your account and all associated data. This
               cannot be undone.
             </p>
           </div>
           <button
             onClick={handleDeleteClick}
-            className="bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer"
+            className="bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-theme-body-sm px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer"
           >
             <Trash2 size={16} /> Delete Account
           </button>

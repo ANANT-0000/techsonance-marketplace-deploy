@@ -16,10 +16,10 @@ export const PermissionList = ({ permissions, adminId }: { permissions: Permissi
         <>
             {permissions.map((p) => (
                 <div key={p.id} className="flex items-center justify-between px-3 py-2.5">
-                    <span className="text-sm font-mono text-gray-800">{p.permission_name}</span>
+                    <span className="text-theme-body-sm font-mono text-gray-800">{p.permission_name}</span>
                     <button
                         onClick={() => onDeletePermission(p.id)}
-                        className="text-xs text-red-400 hover:text-red-600"
+                        className="text-theme-caption text-red-400 hover:text-red-600"
                     >
                         {PERMISSIONS_TEXT.DELETE}
                     </button>

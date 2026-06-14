@@ -1,6 +1,14 @@
 import * as LucideIcons from "lucide-react";
 import { TRUST_BADGE_DEFAULT } from "@/constants/storefront";
 
+// Normalize icon names: "truck" → "Truck", "shield-check" → "ShieldCheck", "ShieldCheck" → "ShieldCheck"
+function toIconKey(name: string): string {
+  return name
+    .split(/[-_\s]+/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join("");
+}
+
 export function TrustStrip({ getField }: { getField: (k: string) => any }) {
   const cmsBadges = getField ? getField("social_proof_badges") : null;
   const badgesData = Array.isArray(cmsBadges) && cmsBadges.length > 0 ? cmsBadges : TRUST_BADGE_DEFAULT;
@@ -10,7 +18,8 @@ export function TrustStrip({ getField }: { getField: (k: string) => any }) {
       <div className="max-w-screen-xl mx-auto px-6 lg:px-16 xl:px-24">
         <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-gray-100">
           {badgesData.map((badge: any, index: number) => {
-            const IconComponent = (LucideIcons as any)[badge.icon] || LucideIcons.HelpCircle;
+            const iconKey = toIconKey(badge.icon || "");
+            const IconComponent = (LucideIcons as any)[iconKey] || LucideIcons.HelpCircle;
             return (
               <div
                 key={badge.title || badge.label || index}
@@ -20,10 +29,10 @@ export function TrustStrip({ getField }: { getField: (k: string) => any }) {
                   <IconComponent size={18} className="text-gray-700" strokeWidth={1.5} />
                 </div>
                 <div>
-                  <p className="text-[13px] font-bold text-gray-900 leading-tight">
+                  <p className="text-theme-caption-lg font-bold text-gray-900 leading-tight">
                     {badge.title || badge.label}
                   </p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
+                  <p className="text-theme-xxs text-gray-400 mt-0.5">
                     {badge.subtitle || badge.sub}
                   </p>
                 </div>

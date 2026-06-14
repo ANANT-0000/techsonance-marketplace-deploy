@@ -12,8 +12,8 @@ export function VendorCreatedToast({ vendorName, onClose }: { vendorName: string
                             <PartyPopper size={20} className="text-emerald-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="font-bold text-gray-900 text-sm">{VENDOR_CREATED_TOAST_TEXT.TITLE}</p>
-                            <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                            <p className="font-bold text-gray-900 text-theme-body-sm">{VENDOR_CREATED_TOAST_TEXT.TITLE}</p>
+                            <p className="text-theme-caption text-gray-500 mt-0.5 leading-relaxed">
                                 <span className="font-semibold text-gray-700">{vendorName}</span>{VENDOR_CREATED_TOAST_TEXT.DESCRIPTION_SUFFIX}
                             </p>
                         </div>
@@ -27,7 +27,7 @@ export function VendorCreatedToast({ vendorName, onClose }: { vendorName: string
                     </div>
                     <div className="mt-4 flex items-center gap-1.5">
                         <CheckCircle2 size={13} className="text-emerald-500" />
-                        <span className="text-[11px] text-emerald-600 font-semibold">
+                        <span className="text-theme-xxs text-emerald-600 font-semibold">
                             {VENDOR_CREATED_TOAST_TEXT.SUCCESS_MSG}
                         </span>
                     </div>

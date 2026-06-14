@@ -74,8 +74,8 @@ export default function AudiencesPage() {
     <div className="p-6 w-full mx-auto">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Audiences</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-theme-h4 font-bold text-gray-800">Audiences</h1>
+          <p className="text-theme-body-sm text-gray-500 mt-1">
             Group customers by behaviour. Use segments to target campaigns
             precisely.
           </p>
@@ -91,18 +91,18 @@ export default function AudiencesPage() {
       {/* Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+          <p className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-2">
             Segments
           </p>
-          <p className="text-2xl font-bold text-gray-800">
+          <p className="text-theme-h4 font-bold text-gray-800">
             {loading ? "—" : segments.length}
           </p>
         </div>
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+          <p className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-2">
             Total Members
           </p>
-          <p className="text-2xl font-bold text-gray-800">
+          <p className="text-theme-h4 font-bold text-gray-800">
             {loading ? "—" : totalMembers.toLocaleString()}
           </p>
         </div>
@@ -133,7 +133,7 @@ export default function AudiencesPage() {
                     <p className="font-semibold text-gray-900 truncate">
                       {seg.name}
                     </p>
-                    <p className="text-sm text-gray-500 truncate">
+                    <p className="text-theme-body-sm text-gray-500 truncate">
                       {seg.description ??
                         `${seg.criteria.length} criteria · ${seg.criteria_operator}`}
                     </p>
@@ -142,14 +142,14 @@ export default function AudiencesPage() {
 
                 <div className="flex items-center gap-6 flex-shrink-0">
                   <div className="text-right hidden sm:block">
-                    <p className="text-lg font-bold text-gray-800">
+                    <p className="text-theme-h6 font-bold text-gray-800">
                       {(seg.member_count ?? 0).toLocaleString()}
                     </p>
-                    <p className="text-xs text-gray-400">members</p>
+                    <p className="text-theme-caption text-gray-400">members</p>
                   </div>
                   <div className="text-right hidden md:block">
-                    <p className="text-xs text-gray-400">Last synced</p>
-                    <p className="text-xs font-medium text-gray-600">
+                    <p className="text-theme-caption text-gray-400">Last synced</p>
+                    <p className="text-theme-caption font-medium text-gray-600">
                       {seg.last_recalculated_at
                         ? new Date(seg.last_recalculated_at).toLocaleDateString(
                             "en-IN",
@@ -178,7 +178,7 @@ export default function AudiencesPage() {
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
               <Users size={32} className="text-gray-300 mb-4" />
               <h3 className="font-bold text-gray-800 mb-1">No segments yet</h3>
-              <p className="text-sm text-gray-500 mb-6 text-center max-w-xs">
+              <p className="text-theme-body-sm text-gray-500 mb-6 text-center max-w-xs">
                 Create a segment to group customers by spend, order history, or
                 registration date.
               </p>

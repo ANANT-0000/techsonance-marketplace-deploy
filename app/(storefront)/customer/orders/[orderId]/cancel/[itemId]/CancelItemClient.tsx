@@ -154,10 +154,10 @@ export default function CancelItemClient() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="md:text-xl sm:text-lg font-extrabold text-gray-900 tracking-tight">
+            <h1 className="md:text-theme-h5 sm:text-theme-h6 font-extrabold text-gray-900 tracking-tight">
               Cancel Item
             </h1>
-            <p className="text-sm font-medium text-gray-500 mt-1">
+            <p className="text-theme-body-sm font-medium text-gray-500 mt-1">
               Order #{orderId}
             </p>
           </div>
@@ -176,15 +176,15 @@ export default function CancelItemClient() {
             />
           </div>
           <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <p className="font-bold text-gray-900 text-sm sm:text-lg line-clamp-2 leading-snug">
+            <p className="font-bold text-gray-900 text-theme-body-sm sm:text-theme-h6 line-clamp-2 leading-snug">
               {state.itemToCancel.variant.variant_name}
             </p>
             <div className="flex flex-col sm:flex-row sm:items-center gap-y-1 gap-x-4 mt-2">
-              <p className="text-gray-500 text-xs sm:text-sm font-medium">
+              <p className="text-gray-500 text-theme-caption sm:text-theme-body-sm font-medium">
                 Qty: {state.itemToCancel.quantity}
               </p>
               <span className="w-1.5 h-1.5 rounded-full bg-gray-300 hidden sm:block"></span>
-              <p className="font-bold text-gray-900 text-sm sm:text-lg">
+              <p className="font-bold text-gray-900 text-theme-body-sm sm:text-theme-h6">
                 ₹{formatCurrency(Number(state.itemToCancel.price))}
               </p>
             </div>
@@ -197,7 +197,7 @@ export default function CancelItemClient() {
           className="bg-white p-5 sm:p-8 rounded-2xl shadow-sm border border-gray-200 space-y-8 sm:space-y-10"
         >
           {state.error && (
-            <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl flex items-start gap-3 text-sm font-medium">
+            <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl flex items-start gap-3 text-theme-body-sm font-medium">
               <AlertCircle size={18} className="shrink-0 mt-0.5" />
               <p>{state.error}</p>
             </div>
@@ -206,10 +206,10 @@ export default function CancelItemClient() {
           {/* Reason Selection */}
           <div className="space-y-4">
             <div>
-              <h2 className="text-base sm:text-xl font-bold text-gray-900">
+              <h2 className="text-theme-body sm:text-theme-h5 font-bold text-gray-900">
                 Why are you cancelling?
               </h2>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              <p className="text-theme-caption sm:text-theme-body-sm text-gray-500 mt-1">
                 Please select the main reason for this cancellation.
               </p>
             </div>
@@ -252,7 +252,7 @@ export default function CancelItemClient() {
                       />
                     </div>
                     <span
-                      className={`font-medium text-sm sm:text-base transition-colors ${isSelected ? "text-indigo-900" : "text-gray-900"}`}
+                      className={`font-medium text-theme-body-sm sm:text-theme-body transition-colors ${isSelected ? "text-indigo-900" : "text-gray-900"}`}
                     >
                       {reason}
                     </span>
@@ -267,10 +267,10 @@ export default function CancelItemClient() {
           {/* Comments */}
           <div className="space-y-4">
             <div>
-              <h2 className="text-base sm:text-xl font-bold text-gray-900">
+              <h2 className="text-theme-body sm:text-theme-h5 font-bold text-gray-900">
                 Additional Comments
               </h2>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              <p className="text-theme-caption sm:text-theme-body-sm text-gray-500 mt-1">
                 Provide any other details that might help us (Optional).
               </p>
             </div>
@@ -281,7 +281,7 @@ export default function CancelItemClient() {
                 dispatch({ type: CancelItemActionType.SET_COMMENTS, payload: e.target.value })
               }
               placeholder="Tell us more about why you are cancelling..."
-              className="w-full p-4 text-sm sm:text-base bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none resize-none transition-all placeholder:text-gray-400 font-medium"
+              className="w-full p-4 text-theme-body-sm sm:text-theme-body bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none resize-none transition-all placeholder:text-gray-400 font-medium"
             ></textarea>
           </div>
 

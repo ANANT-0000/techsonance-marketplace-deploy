@@ -111,13 +111,13 @@ export default function UnifiedTaxProfileFormPage() {
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">
           <Layers size={22} className="text-blue-500" />
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-theme-h4 font-bold text-gray-800">
             {isEditMode ? "Edit Tax Profile" : "New Tax Profile"}
           </h1>
         </div>
         <Link
           href={`/vendor/finances/tax-profiles`}
-          className="flex items-center gap-2 text-sm bg-white border border-gray-200 text-gray-700 rounded-xl px-5 py-2.5 shadow-sm hover:bg-gray-50"
+          className="flex items-center gap-2 text-theme-body-sm bg-white border border-gray-200 text-gray-700 rounded-xl px-5 py-2.5 shadow-sm hover:bg-gray-50"
         >
           <ArrowLeft size={16} /> Back to Profiles
         </Link>
@@ -144,7 +144,7 @@ export default function UnifiedTaxProfileFormPage() {
 
                   <label
                     htmlFor={field.name}
-                    className="text-sm font-medium text-gray-800 cursor-pointer"
+                    className="text-theme-body-sm font-medium text-gray-800 cursor-pointer"
                   >
                     {field.label}
                   </label>
@@ -158,7 +158,7 @@ export default function UnifiedTaxProfileFormPage() {
                   key={field.name}
                   className={`col-span-1 md:col-span-${field.gridSpan}`}
                 >
-                  <label className="text-sm font-semibold text-gray-700 block mb-1.5">
+                  <label className="text-theme-body-sm font-semibold text-gray-700 block mb-1.5">
                     {field.label}{" "}
                     {field.required && <span className="text-red-500">*</span>}
                   </label>
@@ -170,7 +170,7 @@ export default function UnifiedTaxProfileFormPage() {
                   />
 
                   {errors[field.name] && (
-                    <span className="text-xs text-red-500 mt-1 block">
+                    <span className="text-theme-caption text-red-500 mt-1 block">
                       This field is required
                     </span>
                   )}
@@ -183,7 +183,7 @@ export default function UnifiedTaxProfileFormPage() {
                 key={field.name}
                 className={`col-span-1 md:col-span-${field.gridSpan}`}
               >
-                <label className="text-sm font-semibold text-gray-700 block mb-1.5">
+                <label className="text-theme-body-sm font-semibold text-gray-700 block mb-1.5">
                   {field.label}{" "}
                   {field.required && <span className="text-red-500">*</span>}
                 </label>
@@ -195,7 +195,7 @@ export default function UnifiedTaxProfileFormPage() {
                 />
 
                 {errors[field.name] && (
-                  <span className="text-xs text-red-500 mt-1 block">
+                  <span className="text-theme-caption text-red-500 mt-1 block">
                     This field is required
                   </span>
                 )}

@@ -12,7 +12,7 @@ import {
   CustomerRegisterSchemaType,
 } from "@/utils/validation";
 import { getCompanyDomain } from "@/lib/get-domain";
-import { BASE_API_URL, AUTH_TEXT } from "@/constants";
+import { BASE_API_URL, AUTH_TEXT, ENV_DEVELOPMENT } from "@/constants";
 
 export default function CustomerRegisterPage() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function CustomerRegisterPage() {
   // Debug errors in development
   useEffect(() => {
     if (
-      process.env.NODE_ENV === "development" &&
+      process.env.NODE_ENV === ENV_DEVELOPMENT &&
       Object.keys(errors).length > 0
     ) {
     }
@@ -58,9 +58,7 @@ export default function CustomerRegisterPage() {
       if (response?.status === 201) {
         router.push("/auth/customerLogin?registered=true");
       } else {
-        setServerError(
-          response?.message || AUTH_TEXT.REGISTER.FAIL_GENERIC,
-        );
+        setServerError(response?.message || AUTH_TEXT.REGISTER.FAIL_GENERIC);
       }
     } catch (err: any) {
       setServerError(err.message || AUTH_TEXT.REGISTER.FAIL_SERVER);
@@ -91,10 +89,10 @@ export default function CustomerRegisterPage() {
         {/* Form Section */}
         <div className="flex flex-col px-6 py-8 lg:px-12 lg:py-10 justify-center flex-1">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            <h1 className="text-theme-h3 font-bold text-gray-800 mb-2">
               {AUTH_TEXT.REGISTER.TITLE}
             </h1>
-            <p className="text-sm text-slate-600">
+            <p className="text-theme-body-sm text-slate-600">
               {AUTH_TEXT.REGISTER.SUBTITLE}
             </p>
           </div>
@@ -113,7 +111,7 @@ export default function CustomerRegisterPage() {
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="text-red-700 text-sm font-medium">{serverError}</p>
+              <p className="text-red-700 text-theme-body-sm font-medium">{serverError}</p>
             </div>
           )}
 
@@ -152,7 +150,7 @@ export default function CustomerRegisterPage() {
           {/* Divider */}
           <div className="relative flex items-center my-6">
             <div className="flex-grow border-t border-slate-300"></div>
-            <span className="flex-shrink-0 mx-4 text-slate-500 text-sm font-medium">
+            <span className="flex-shrink-0 mx-4 text-slate-500 text-theme-body-sm font-medium">
               {AUTH_TEXT.REGISTER.OR_EMAIL}
             </span>
             <div className="flex-grow border-t border-slate-300"></div>
@@ -172,7 +170,7 @@ export default function CustomerRegisterPage() {
                 >
                   <label
                     htmlFor={field.id}
-                    className="text-xs font-semibold text-gray-700 uppercase tracking-wide"
+                    className="text-theme-caption font-semibold text-gray-700 uppercase tracking-wide"
                   >
                     {field.label}
                     {field.required && (
@@ -183,7 +181,7 @@ export default function CustomerRegisterPage() {
                     {...register(field.id as keyof CustomerRegisterSchemaType)}
                     type={field.type}
                     placeholder={field.placeholder}
-                    className={`border-2 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${
+                    className={`border-2 rounded-lg px-4 py-2.5 text-theme-body-sm focus:outline-none focus:ring-2 transition-all ${
                       errors[field.id as keyof CustomerRegisterSchemaType]
                         ? "border-red-400 focus:ring-red-200 bg-red-50"
                         : "border-slate-300 focus:ring-blue-200 focus:border-blue-400"
@@ -191,7 +189,7 @@ export default function CustomerRegisterPage() {
                     disabled={isSubmitting || isGoogleLoading}
                   />
                   {errors[field.id as keyof CustomerRegisterSchemaType] && (
-                    <p className="text-red-600 text-xs font-medium flex items-center gap-1">
+                    <p className="text-red-600 text-theme-caption font-medium flex items-center gap-1">
                       <svg
                         className="w-4 h-4"
                         fill="currentColor"
@@ -247,7 +245,7 @@ export default function CustomerRegisterPage() {
               )}
             </button>
 
-            <p className="text-center text-sm text-slate-600 pt-4">
+            <p className="text-center text-theme-body-sm text-slate-600 pt-4">
               {AUTH_TEXT.REGISTER.ALREADY_HAVE}
               <Link
                 href="/auth/customerLogin"
@@ -263,10 +261,10 @@ export default function CustomerRegisterPage() {
         <div className="hidden relative flex-1 lg:flex flex-col justify-center items-start bg-gradient-to-br from-blue-600 to-blue-800 ">
           {" "}
           <div className=" flex flex-col justify-center items-center text-white p-12  ">
-            <h2 className="text-4xl font-bold mb-4 text-center">
+            <h2 className="text-theme-h2 font-bold mb-4 text-center">
               {AUTH_TEXT.REGISTER.COMMUNITY_TITLE}
             </h2>
-            <p className="text-lg text-center text-blue-100">
+            <p className="text-theme-h6 text-center text-blue-100">
               {AUTH_TEXT.REGISTER.COMMUNITY_SUB}
             </p>
           </div>

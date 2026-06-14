@@ -123,13 +123,13 @@ export default function VendorManagementPage() {
           <div className="flex items-center gap-2 text-gray-700">
             <Store size={22} className="text-blue-500" />
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Vendors</h1>
-              <p className="text-xs text-gray-500 mt-1">
+              <h1 className="text-theme-h4 font-bold text-gray-800">Vendors</h1>
+              <p className="text-theme-caption text-gray-500 mt-1">
                 Manage vendor domains and platform access.
               </p>
             </div>
             {companies && companies.length > 0 && (
-              <span className="ml-2 self-start mt-1 bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+              <span className="ml-2 self-start mt-1 bg-blue-100 text-blue-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
                 {companies.length}
               </span>
             )}
@@ -139,18 +139,18 @@ export default function VendorManagementPage() {
             {vendorRequests > 0 && (
               <Link
                 href="vendorManagement/vendorsApplications"
-                className="flex items-center gap-2 font-semibold text-sm bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-xl px-4 py-2.5 transition-colors shadow-sm"
+                className="flex items-center gap-2 font-semibold text-theme-body-sm bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-xl px-4 py-2.5 transition-colors shadow-sm"
               >
                 <ClipboardCheck size={16} />
                 Approve Requests
-                <span className="bg-yellow-200 text-yellow-800 text-xs font-bold px-2 py-0.5 rounded-full ml-1">
+                <span className="bg-yellow-200 text-yellow-800 text-theme-caption font-bold px-2 py-0.5 rounded-full ml-1">
                   {vendorRequests}
                 </span>
               </Link>
             )}
             <Link
               href="vendorManagement/vendorForm"
-              className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm"
+              className="flex items-center gap-2 font-semibold text-theme-body-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm"
             >
               <Plus size={16} />
               Create Vendor
@@ -170,13 +170,13 @@ export default function VendorManagementPage() {
             />
             <input
               type="text"
-              className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
+              className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
               placeholder="Search by name, email or domain"
             />
           </span>
           <span className="flex gap-3">
             <select
-              className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
+              className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
               onChange={(e) => setStatus(e.target.value)}
             >
               {FILTER_STATUS_OPTIONS.map((option, idx) => (
@@ -186,7 +186,7 @@ export default function VendorManagementPage() {
               ))}
             </select>
             <select
-              className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
+              className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
               onChange={(e) => setSort(e.target.value)}
             >
               <option value="desc">Newest</option>
@@ -202,22 +202,22 @@ export default function VendorManagementPage() {
           <table className="w-full table-auto min-w-[900px] border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-left">
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Owner Name
                 </th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Company/Store
                 </th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Domain
                 </th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Status
                 </th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Storefront Value
                 </th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Actions
                 </th>
               </tr>
@@ -227,7 +227,7 @@ export default function VendorManagementPage() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="py-16 text-center text-gray-400 text-sm"
+                    className="py-16 text-center text-gray-400 text-theme-body-sm"
                   >
                     <Store size={36} className="mx-auto mb-3 opacity-30" />
                     No vendors found.
@@ -242,7 +242,7 @@ export default function VendorManagementPage() {
                     {/* VENDOR INFO WITH AVATAR */}
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0 uppercase">
+                        <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-theme-caption shrink-0 uppercase">
                           {vendor.user.first_name?.substring(0, 1) +
                             vendor.user.last_name?.substring(0, 1)}
                         </div>
@@ -252,7 +252,7 @@ export default function VendorManagementPage() {
                               " " +
                               vendor.user.last_name}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-theme-caption text-gray-500">
                             {vendor.user.email}
                           </span>
                         </div>
@@ -264,7 +264,7 @@ export default function VendorManagementPage() {
                           <span className="font-medium text-gray-800 whitespace-nowrap">
                             {vendor.company.company_name}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-theme-caption text-gray-500">
                             {vendor.category}
                           </span>
                         </div>
@@ -272,21 +272,21 @@ export default function VendorManagementPage() {
                     </td>
 
                     {/* DOMAIN */}
-                    <td className="p-4 text-sm text-gray-600">
+                    <td className="p-4 text-theme-body-sm text-gray-600">
                       {vendor.company.company_domain}
                     </td>
 
                     {/* STATUS BADGE */}
                     <td className="p-4 whitespace-nowrap">
                       <span
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize ${getStatusBadgeClass(vendor.company.company_status)}`}
+                        className={`px-2.5 py-1 text-theme-caption font-semibold rounded-full capitalize ${getStatusBadgeClass(vendor.company.company_status)}`}
                       >
                         {vendor.vendor_status}
                       </span>
                     </td>
 
                     {/* VALUE */}
-                    <td className="p-4 text-sm text-gray-600 font-medium">
+                    <td className="p-4 text-theme-body-sm text-gray-600 font-medium">
                       ₹ {formatCurrency(23232)}
                     </td>
 
@@ -295,7 +295,7 @@ export default function VendorManagementPage() {
                       <div className="flex items-center gap-3">
                         <Link
                           href={`vendorManagement/${vendor.id}`}
-                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                          className="text-theme-caption font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
                         >
                           Manage →
                         </Link>

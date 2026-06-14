@@ -38,10 +38,10 @@ export function QuickBuyItemRow({
 
       {/* Name & price */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-snug">
+        <p className="text-theme-caption font-semibold text-gray-800 line-clamp-2 leading-snug">
           {variant.variant_name}
         </p>
-        <p className="text-xs text-blue-600 font-bold mt-0.5">
+        <p className="text-theme-caption text-blue-600 font-bold mt-0.5">
           ₹{formatCurrency(Number(variant.price))} {QUICK_BUY_ITEM_ROW_TEXT.EACH}
         </p>
       </div>
@@ -61,7 +61,7 @@ export function QuickBuyItemRow({
             initial={{ y: -5, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.1 }}
-            className="px-2 text-[11px] font-bold text-white min-w-[20px] text-center tabular-nums"
+            className="px-2 text-theme-xxs font-bold text-white min-w-[20px] text-center tabular-nums"
           >
             {qty}
           </motion.span>
@@ -74,7 +74,7 @@ export function QuickBuyItemRow({
           </button>
         </div>
 
-        <p className="text-[10px] text-gray-500 font-medium tabular-nums">
+        <p className="text-theme-tiny text-gray-500 font-medium tabular-nums">
           ₹{formatCurrency(subtotal)}
         </p>
 

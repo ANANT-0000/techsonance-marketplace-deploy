@@ -29,20 +29,20 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2 text-primary">
                             <Icon size={20} strokeWidth={2.5} />
-                            <h3 className="font-bold text-lg text-foreground tracking-tight">
+                            <h3 className="font-bold text-theme-h6 text-foreground tracking-tight">
                                 {title.trim()}
                             </h3>
                         </div>
                         {address.is_default && (
-                            <Badge variant="default" className="bg-black hover:bg-black text-white rounded-full px-3 text-[10px] font-bold tracking-wide uppercase">
+                            <Badge variant="default" className="bg-black hover:bg-black text-white rounded-full px-3 text-theme-tiny font-bold tracking-wide uppercase">
                                 {ADDRESS_CARD_TEXT.BADGE_DEFAULT}
                             </Badge>
                         )}
                     </div>
 
                     {/* Address Body */}
-                    <div className="flex-1 flex flex-col gap-1 text-sm text-muted-foreground leading-relaxed">
-                        <p className="font-bold text-foreground mb-0.5 text-base">{address.name}</p>
+                    <div className="flex-1 flex flex-col gap-1 text-theme-body-sm text-muted-foreground leading-relaxed">
+                        <p className="font-bold text-foreground mb-0.5 text-theme-body">{address.name}</p>
                         <p>{address.address_line1}</p>
                         {address.address_line2 && <p>{address.address_line2}</p>}
                         {address.street && <p>{address.street}</p>}
@@ -50,7 +50,7 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                         <p>{address.country}</p>
                         
                         {address.landmark && (
-                            <p className="mt-1 italic text-xs">
+                            <p className="mt-1 italic text-theme-caption">
                                 <span className="font-medium not-italic">{ADDRESS_CARD_TEXT.LANDMARK}</span> {address.landmark}
                             </p>
                         )}
@@ -65,13 +65,13 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => onEdit(address.id)}
-                                className="flex items-center gap-1.5 text-sm font-medium text-theme-secondary hover:text-theme-secondary/80 transition-colors"
+                                className="flex items-center gap-1.5 text-theme-body-sm font-medium text-theme-secondary hover:text-theme-secondary/80 transition-colors"
                             >
                                 <Pen size={14} /> {ADDRESS_CARD_TEXT.BTN_EDIT}
                             </button>
                             <button
                                 onClick={() => onDelete(address.user_id, address.id)}
-                                className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-red-600 transition-colors"
+                                className="flex items-center gap-1.5 text-theme-body-sm font-medium text-gray-500 hover:text-red-600 transition-colors"
                             >
                                 <Trash2 size={14} /> {ADDRESS_CARD_TEXT.BTN_DELETE}
                             </button>
@@ -81,7 +81,7 @@ export const AddressCard = ({ address, onEdit, onDelete, onSetDefault }: any) =>
                             <Button 
                                 variant="outline" 
                                 size="sm" 
-                                className="rounded-full h-8 px-4 text-xs font-semibold text-theme-secondary border-theme-primary-foreground/90 hover:bg-theme-primary-foreground/10"
+                                className="rounded-full h-8 px-4 text-theme-caption font-semibold text-theme-secondary border-theme-primary-foreground/90 hover:bg-theme-primary-foreground/10"
                                 onClick={() => onSetDefault(address.user_id, address.id)}
                             >
                                 {ADDRESS_CARD_TEXT.BTN_SET_DEFAULT}

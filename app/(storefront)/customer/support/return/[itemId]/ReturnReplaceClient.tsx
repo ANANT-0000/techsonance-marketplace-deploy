@@ -205,8 +205,8 @@ export default function ReturnReplaceClient() {
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-6 sm:mb-8">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Initiate a Request</h1>
-                        {orderId && <p className="text-sm font-medium text-gray-500 mt-1">Order #{orderId}</p>}
+                        <h1 className="text-theme-h4 sm:text-theme-h3 font-extrabold text-gray-900 tracking-tight">Initiate a Request</h1>
+                        {orderId && <p className="text-theme-body-sm font-medium text-gray-500 mt-1">Order #{orderId}</p>}
                     </div>
                 </div>
 
@@ -220,13 +220,13 @@ export default function ReturnReplaceClient() {
                         />
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <p className="font-bold text-gray-900 text-sm sm:text-lg line-clamp-2 leading-snug">
+                        <p className="font-bold text-gray-900 text-theme-body-sm sm:text-theme-h6 line-clamp-2 leading-snug">
                             {state.targetItem.variant.variant_name}
                         </p>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-y-1 gap-x-4 mt-2">
-                            <p className="text-gray-500 text-xs sm:text-sm font-medium">Qty: {state.targetItem.quantity}</p>
+                            <p className="text-gray-500 text-theme-caption sm:text-theme-body-sm font-medium">Qty: {state.targetItem.quantity}</p>
                             <span className="w-1.5 h-1.5 rounded-full bg-gray-300 hidden sm:block"></span>
-                            <p className="font-bold text-gray-900 text-sm sm:text-lg">₹{formatCurrency(Number(state.targetItem.price))}</p>
+                            <p className="font-bold text-gray-900 text-theme-body-sm sm:text-theme-h6">₹{formatCurrency(Number(state.targetItem.price))}</p>
                         </div>
                     </div>
                 </div>
@@ -235,7 +235,7 @@ export default function ReturnReplaceClient() {
                 <form onSubmit={handleSubmit} className="bg-white p-5 sm:p-8 rounded-2xl shadow-sm border border-gray-200 space-y-8 sm:space-y-10">
 
                     {state.error && (
-                        <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl flex items-start gap-3 text-sm font-medium">
+                        <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl flex items-start gap-3 text-theme-body-sm font-medium">
                             <AlertCircle size={18} className="shrink-0 mt-0.5" />
                             <p>{state.error}</p>
                         </div>
@@ -244,8 +244,8 @@ export default function ReturnReplaceClient() {
                     {/* Step 1: Type */}
                     <div className="space-y-4">
                         <div>
-                            <h2 className="text-base sm:text-xl font-bold text-gray-900">1. Select Request Type</h2>
-                            <p className="text-xs sm:text-sm text-gray-500 mt-1">Choose how you would like us to resolve this.</p>
+                            <h2 className="text-theme-body sm:text-theme-h5 font-bold text-gray-900">1. Select Request Type</h2>
+                            <p className="text-theme-caption sm:text-theme-body-sm text-gray-500 mt-1">Choose how you would like us to resolve this.</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {[ReturnReplaceTypeEnum.REPLACEMENT, ReturnReplaceTypeEnum.RETURN].map((type) => {
@@ -266,10 +266,10 @@ export default function ReturnReplaceClient() {
                                             </div>
                                         </div>
 
-                                        <p className={`font-bold text-base sm:text-lg mb-1 pr-8 ${isSelected ? 'text-theme-primary-foreground' : 'text-theme-primary-foreground/80'}`}>
+                                        <p className={`font-bold text-theme-body sm:text-theme-h6 mb-1 pr-8 ${isSelected ? 'text-theme-primary-foreground' : 'text-theme-primary-foreground/80'}`}>
                                             {type === ReturnReplaceTypeEnum.REPLACEMENT ? 'Replace Item' : 'Return Item'}
                                         </p>
-                                        <p className="text-xs sm:text-sm font-medium text-gray-500">
+                                        <p className="text-theme-caption sm:text-theme-body-sm font-medium text-gray-500">
                                             {type === ReturnReplaceTypeEnum.REPLACEMENT
                                                 ? 'Get an exact replacement for this item'
                                                 : 'Get a refund to your original payment method'}
@@ -285,14 +285,14 @@ export default function ReturnReplaceClient() {
                     {/* Step 2: Reason */}
                     <div className="space-y-4">
                         <div>
-                            <h2 className="text-base sm:text-xl font-bold text-gray-900">2. Reason for Request</h2>
-                            <p className="text-xs sm:text-sm text-gray-500 mt-1">Help us understand what went wrong.</p>
+                            <h2 className="text-theme-body sm:text-theme-h5 font-bold text-gray-900">2. Reason for Request</h2>
+                            <p className="text-theme-caption sm:text-theme-body-sm text-gray-500 mt-1">Help us understand what went wrong.</p>
                         </div>
                         <div className="relative">
                             <select
                                 value={state.selectedReason}
                                 onChange={(e) => dispatch({ type: ReturnReplaceActionType.SET_REASON, payload: e.target.value })}
-                                className="w-full text-sm sm:text-base px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-theme-primary/90 focus:border-theme-primary-foreground/90 outline-none transition-all appearance-none font-medium text-gray-700 cursor-pointer"
+                                className="w-full text-theme-body-sm sm:text-theme-body px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-theme-primary/90 focus:border-theme-primary-foreground/90 outline-none transition-all appearance-none font-medium text-gray-700 cursor-pointer"
                             >
                                 <option value="" disabled>Select a reason...</option>
                                 {RETURN_REASONS.map(reason => (
@@ -310,11 +310,11 @@ export default function ReturnReplaceClient() {
                     {/* Step 3: Proof */}
                     <div className="space-y-4">
                         <div>
-                            <h2 className="text-base sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <h2 className="text-theme-body sm:text-theme-h5 font-bold text-gray-900 flex items-center gap-2">
                                 3. Upload Evidence
-                                {isProofRequired && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded uppercase tracking-wide">Required</span>}
+                                {isProofRequired && <span className="text-theme-tiny font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded uppercase tracking-wide">Required</span>}
                             </h2>
-                            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                            <p className="text-theme-caption sm:text-theme-body-sm text-gray-500 mt-1">
                                 {isProofRequired
                                     ? "Clear photos are required for damaged or defective items."
                                     : "Optionally provide photos to support your request."}
@@ -340,7 +340,7 @@ export default function ReturnReplaceClient() {
                             {state.proofFiles.length < 3 && (
                                 <label className="w-20 h-20 sm:w-28 sm:h-28 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-theme-primary-foreground cursor-pointer hover:border-theme-primary hover:bg-theme-primary/10 hover:text-theme-primary-foreground/90 transition-all">
                                     <UploadCloud size={24} className="mb-1 sm:mb-2" />
-                                    <span className="text-[10px] sm:text-xs font-semibold">Upload Photo</span>
+                                    <span className="text-theme-tiny sm:text-theme-caption font-semibold">Upload Photo</span>
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -358,15 +358,15 @@ export default function ReturnReplaceClient() {
                     {/* Step 4: Comments */}
                     <div className="space-y-4">
                         <div>
-                            <h2 className="text-base sm:text-xl font-bold text-gray-900">4. Additional Comments</h2>
-                            <p className="text-xs sm:text-sm text-gray-500 mt-1">Provide any other details that might help us.</p>
+                            <h2 className="text-theme-body sm:text-theme-h5 font-bold text-gray-900">4. Additional Comments</h2>
+                            <p className="text-theme-caption sm:text-theme-body-sm text-gray-500 mt-1">Provide any other details that might help us.</p>
                         </div>
                         <textarea
                             rows={4}
                             value={state.comments}
                             onChange={(e) => dispatch({ type: ReturnReplaceActionType.SET_COMMENTS, payload: e.target.value })}
                             placeholder="Please describe the issue in detail..."
-                            className="w-full p-4 text-sm sm:text-base bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-theme-primary/90 focus:border-theme-primary/90 outline-none resize-none transition-all"
+                            className="w-full p-4 text-theme-body-sm sm:text-theme-body bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-theme-primary/90 focus:border-theme-primary/90 outline-none resize-none transition-all"
                         />
                     </div>
 

@@ -30,10 +30,10 @@ export function CartItemRow({ item }: { item: CartItemDisplay }) {
 
       {/* Name & price */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-snug">
+        <p className="text-theme-caption font-semibold text-gray-800 line-clamp-2 leading-snug">
           {item.productVariant.variant_name}
         </p>
-        <p className="text-xs text-blue-600 font-bold mt-0.5">
+        <p className="text-theme-caption text-blue-600 font-bold mt-0.5">
           ₹{formatCurrency(Number(item.productVariant.price))} {CART_ITEM_ROW_TEXT.EACH}
         </p>
       </div>
@@ -45,7 +45,7 @@ export function CartItemRow({ item }: { item: CartItemDisplay }) {
           productVariantId={item.product_variant_id}
           styles="small w-20"
         />
-        <p className="text-[10px] text-gray-500 font-medium tabular-nums">
+        <p className="text-theme-tiny text-gray-500 font-medium tabular-nums">
           ₹{formatCurrency(subtotal)}
         </p>
       </div>

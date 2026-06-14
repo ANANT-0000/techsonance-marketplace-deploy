@@ -1,5 +1,14 @@
-import { IMAGE_PLACEHOLDER } from "./common";
-
+export const DEFAULT_STORE_NAME = "Marketplace Store";
+export const DEFAULT_FAVICON_PATH = "/favicon.ico";
+export const STORE_SUFFIX = " Store";
+export const REVALIDATE_INTERVAL = 60;
+export const BRANDING_ENDPOINT = "/v1/company-identity/branding";
+export const HEADER_COMPANY_DOMAIN = "company-domain";
+export const TWITTER_CARD = "summary_large_image";
+export const OG_TYPE = "website";
+export const NAVBAR_STYLE = "bg-navbar";
+export const getWelcomeDescription = (storeName: string) =>
+  `Welcome to ${storeName}. Discover a curated selection of premium products, handcrafted items, and exclusive deals.`;
 export const BRAND_HIGHLIGHT_DEFAULT = {
   eyebrow: "Our Promise",
   title: "Precision Engineered for Pure Sound",
@@ -15,7 +24,8 @@ export const BRAND_HIGHLIGHT_DEFAULT = {
 export const NEWSLETTER_DEFAULT = {
   eyebrow: "Stay Connected",
   success_text: "You're in. Welcome to the inner circle.",
-  disclaimer: "By subscribing you agree to our Terms of Use and Privacy Policy.",
+  disclaimer:
+    "By subscribing you agree to our Terms of Use and Privacy Policy.",
 };
 
 export const VIDEO_HERO_DEFAULT = {
@@ -28,9 +38,17 @@ export const VIDEO_HERO_DEFAULT = {
 
 export const TRUST_BADGE_DEFAULT = [
   { icon: "Truck", title: "Free Delivery", subtitle: "On orders above ₹499" },
-  { icon: "RotateCcw", title: "Easy Returns", subtitle: "10-day return policy" },
+  {
+    icon: "RotateCcw",
+    title: "Easy Returns",
+    subtitle: "10-day return policy",
+  },
   { icon: "Shield", title: "Secure Payment", subtitle: "100% safe checkout" },
-  { icon: "Headphones", title: "24/7 Support", subtitle: "Dedicated help desk" },
+  {
+    icon: "Headphones",
+    title: "24/7 Support",
+    subtitle: "Dedicated help desk",
+  },
 ];
 
 export const TESTIMONIALS_DEFAULT = [
@@ -64,7 +82,8 @@ export const SCARCITY_BLOCK_DEFAULTS = {
 
 export const LOOKBOOK_DEFAULTS = {
   title: "Shop The Look",
-  subtitle: "Click on the hot-spots to view details and add items to your cart.",
+  subtitle:
+    "Click on the hot-spots to view details and add items to your cart.",
 };
 
 export const LOOKBOOK_DEFAULT_HOTSPOTS = [
@@ -77,8 +96,7 @@ export const LOOKBOOK_DEFAULT_HOTSPOTS = [
     variant_id: "sample-variant-id-1",
     image_url:
       "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=300&auto=format&fit=crop",
-    description:
-      "Luxe blend of breathable linen. Premium fit and structure.",
+    description: "Luxe blend of breathable linen. Premium fit and structure.",
   },
   {
     id: 2,
@@ -96,7 +114,8 @@ export const LOOKBOOK_DEFAULT_HOTSPOTS = [
 
 export const CURATED_DISCOVERY_DEFAULTS = {
   title: "Trending Masterpieces",
-  subtitle: "Discover our hand-picked selection of high-demand aesthetic creations.",
+  subtitle:
+    "Discover our hand-picked selection of high-demand aesthetic creations.",
 };
 
 export const SECTION_HEADER_DEFAULTS = {
@@ -106,39 +125,66 @@ export const SECTION_HEADER_DEFAULTS = {
 export const TESTIMONIALS_SLIDER_DEFAULT = [
   {
     id: 1,
-    name: 'Aishwarya R.',
-    location: 'Delhi',
+    name: "Aishwarya R.",
+    location: "Delhi",
     rating: 5,
-    comment: 'The quality of the linen blazer is absolutely premium. Fits perfectly, packaged with utmost care, and arrived ahead of schedule!',
-    avatar_url: ''
+    comment: "",
+    text: "The quality of the linen blazer is absolutely premium. Fits perfectly, packaged with utmost care, and arrived ahead of schedule!",
+    avatar: "",
+    avatar_url: "",
   },
   {
     id: 2,
-    name: 'Rohan M.',
-    location: 'Mumbai',
+    name: "Rohan M.",
+    location: "Mumbai",
     rating: 5,
-    comment: 'Excellent customer service. I had to resize my trousers and the process was handled within 2 days. Highly recommended!',
-    avatar_url: ''
+    text: "Excellent customer service. I had to resize my trousers and the process was handled within 2 days. Highly recommended!",
+    avatar: "",
   },
   {
     id: 3,
-    name: 'Karan J.',
-    location: 'Bangalore',
+    name: "Karan J.",
+    location: "Bangalore",
     rating: 5,
-    comment: 'Top-tier fabric and stitch details. It is difficult to find such custom quality at this price point. A true marketplace gem!',
-    avatar_url: ''
-  }
+    text: "Top-tier fabric and stitch details. It is difficult to find such custom quality at this price point. A true marketplace gem!",
+    avatar: "",
+  },
 ];
 
 export const TRUST_BADGES_SLIDER_DEFAULT = [
-  { id: 1, icon: 'shipping', title: 'Free Shipping', subtitle: 'On all orders above ₹999' },
-  { id: 2, icon: 'quality', title: 'Quality Guarantee', subtitle: 'Handcrafted premium fabrics' },
-  { id: 3, icon: 'security', title: 'Secure Checkout', subtitle: 'Fully encrypted billing logs' },
-  { id: 4, icon: 'support', title: '24/7 Support', subtitle: 'Dedicated stylist support helpline' }
+  {
+    id: 1,
+    icon: "shipping",
+    title: "Free Shipping",
+    subtitle: "On all orders above ₹999",
+  },
+  {
+    id: 2,
+    icon: "quality",
+    title: "Quality Guarantee",
+    subtitle: "Handcrafted premium fabrics",
+  },
+  {
+    id: 3,
+    icon: "security",
+    title: "Secure Checkout",
+    subtitle: "Fully encrypted billing logs",
+  },
+  {
+    id: 4,
+    icon: "support",
+    title: "24/7 Support",
+    subtitle: "Dedicated stylist support helpline",
+  },
 ];
 
 export const IMAGE_COLOR_DEFAULTS = {
-  bgLight: 'rgb(248, 250, 252)',
-  bgDark: 'rgb(15, 23, 42)',
-  fallbackColor: 'rgb(15, 23, 42)',
+  bgLight: "rgb(248, 250, 252)",
+  bgDark: "rgb(15, 23, 42)",
+  fallbackColor: "rgb(15, 23, 42)",
 };
+
+export const COLOR_WHITE = "#ffffff";
+export const COLOR_WHITE_MUTED = "rgba(255,255,255,0.7)";
+export const COLOR_SLATE_MUTED = "rgba(15,23,42,0.7)";
+export const COLOR_SLATE_DARK = "#0f172a";

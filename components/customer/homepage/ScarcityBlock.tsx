@@ -94,13 +94,13 @@ export function ScarcityBlock({
               <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center animate-pulse shrink-0">
                 <Flame size={16} />
               </span>
-              <p className="text-sm font-bold tracking-wide leading-normal">
+              <p className="text-theme-body-sm font-bold tracking-wide leading-normal">
                 {alert_text}
               </p>
             </div>
 
             <Link href={buttonLink}>
-              <span className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold transition-all hover:scale-[1.03] active:scale-[0.97] cursor-pointer whitespace-nowrap">
+              <span className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/10 rounded-xl px-4 py-2 text-theme-caption font-bold transition-all hover:scale-[1.03] active:scale-[0.97] cursor-pointer whitespace-nowrap">
                 {buttonText} <ArrowRight size={13} />
               </span>
             </Link>
@@ -121,11 +121,11 @@ export function ScarcityBlock({
               </div>
               <div className="max-w-xs md:max-w-sm">
                 {title && (
-                  <h3 className="text-[10px] sm:text-xs font-black text-slate-400 tracking-[0.25em] uppercase mb-1 sm:mb-2">
+                  <h3 className="text-theme-tiny sm:text-theme-caption font-black text-slate-400 tracking-[0.25em] uppercase mb-1 sm:mb-2">
                     {title}
                   </h3>
                 )}
-                <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
+                <p className="text-theme-body-sm sm:text-theme-body text-slate-500 leading-relaxed">
                   {SCARCITY_BLOCK_TEXT.LIMITED_STOCK}
                 </p>
               </div>
@@ -146,11 +146,11 @@ export function ScarcityBlock({
                   {/* Timer Circle & Label */}
                   <div className="flex flex-col items-center gap-2">
                     {/* Sizing scales dynamically: w-12 on mobile up to w-16 on desktop */}
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-slate-900 border border-slate-800 text-white rounded-full flex items-center justify-center font-mono text-lg sm:text-xl md:text-2xl font-bold shadow-lg shadow-slate-950/10 relative overflow-hidden">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-slate-900 border border-slate-800 text-white rounded-full flex items-center justify-center font-mono text-theme-h6 sm:text-theme-h5 md:text-theme-h4 font-bold shadow-lg shadow-slate-950/10 relative overflow-hidden">
                       <span className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent h-1/2 border-b border-white/5" />
                       {padZero(item.val)}
                     </div>
-                    <span className="text-[9px] sm:text-[10px] font-black text-slate-400 tracking-wider">
+                    <span className="text-[9px] sm:text-theme-tiny font-black text-slate-400 tracking-wider">
                       {item.label}
                     </span>
                   </div>
@@ -158,7 +158,7 @@ export function ScarcityBlock({
                   {/* Safely aligned Colons (no negative margins) */}
                   {idx < 3 && (
                     <div className="flex flex-col justify-start pt-2.5 sm:pt-3 md:pt-4">
-                      <span className="text-lg sm:text-xl md:text-2xl font-black text-slate-300 animate-pulse">
+                      <span className="text-theme-h6 sm:text-theme-h5 md:text-theme-h4 font-black text-slate-300 animate-pulse">
                         :
                       </span>
                     </div>

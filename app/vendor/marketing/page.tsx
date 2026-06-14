@@ -180,10 +180,10 @@ export default function MarketingPage() {
       <section className="mx-auto px-4 pb-10">
         <header className="flex justify-between items-center py-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-theme-h4 font-bold text-gray-800">
               Marketing & Analytics
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-theme-body-sm text-gray-500 mt-1">
               Track conversions and manage promotions.
             </p>
           </div>
@@ -218,68 +218,68 @@ export default function MarketingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
                   Store Conversion
                 </span>
                 <span className="bg-emerald-50 text-emerald-600 p-2 rounded-lg">
                   <Target size={18} />
                 </span>
               </div>
-              <h3 className="text-2xl font-bold text-gray-800">
+              <h3 className="text-theme-h4 font-bold text-gray-800">
                 {`${overallMetrics?.conversionRate || 0}%`}
               </h3>
-              <p className="text-xs text-gray-500 mt-1 font-medium">
+              <p className="text-theme-caption text-gray-500 mt-1 font-medium">
                 Orders / Total Carts
               </p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
                   Abandonment Rate
                 </span>
                 <span className="bg-red-50 text-red-600 p-2 rounded-lg">
                   <AlertTriangle size={18} />
                 </span>
               </div>
-              <h3 className="text-2xl font-bold text-gray-800">
+              <h3 className="text-theme-h4 font-bold text-gray-800">
                 {`${overallMetrics?.abandonmentRate || 0}%`}
               </h3>
-              <p className="text-xs text-red-500 mt-1 font-medium">
+              <p className="text-theme-caption text-red-500 mt-1 font-medium">
                 Missed checkout opportunities
               </p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
                   Active Carts
                 </span>
                 <span className="bg-blue-50 text-blue-600 p-2 rounded-lg">
                   <ShoppingCart size={18} />
                 </span>
               </div>
-              <h3 className="text-2xl font-bold text-gray-800">
+              <h3 className="text-theme-h4 font-bold text-gray-800">
                 {overallMetrics?.totalCarts || 0}
               </h3>
-              <p className="text-xs text-gray-500 mt-1 font-medium">
+              <p className="text-theme-caption text-gray-500 mt-1 font-medium">
                 Total intent to buy
               </p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
                   Completed Orders
                 </span>
                 <span className="bg-purple-50 text-purple-600 p-2 rounded-lg">
                   <TrendingUp size={18} />
                 </span>
               </div>
-              <h3 className="text-2xl font-bold text-gray-800">
+              <h3 className="text-theme-h4 font-bold text-gray-800">
                 {overallMetrics?.totalOrders || 0}
               </h3>
-              <p className="text-xs text-gray-500 mt-1 font-medium">
+              <p className="text-theme-caption text-gray-500 mt-1 font-medium">
                 Successfully processed
               </p>
             </div>
@@ -296,10 +296,10 @@ export default function MarketingPage() {
         {/* Funnel Table */}
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-8">
           <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="font-bold text-lg text-gray-800">
+            <h2 className="font-bold text-theme-h6 text-gray-800">
               Product Funnel Analytics
             </h2>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-theme-caption text-gray-500 mt-1">
               Identify which products are being abandoned at checkout to
               optimize pricing.
             </p>
@@ -308,7 +308,7 @@ export default function MarketingPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                <tr className="bg-gray-50 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200">
                   <th className="p-4">Product Variant</th>
                   <th className="p-4">SKU</th>
                   <th className="p-4 text-center">Cart Additions</th>
@@ -324,7 +324,7 @@ export default function MarketingPage() {
                   <tr>
                     <td
                       colSpan={5}
-                      className="p-8 text-center text-gray-400 text-sm"
+                      className="p-8 text-center text-gray-400 text-theme-body-sm"
                     >
                       No conversion data available yet.
                     </td>
@@ -335,10 +335,10 @@ export default function MarketingPage() {
                       key={product.variantId}
                       className="hover:bg-gray-50 transition-colors"
                     >
-                      <td className="p-4 font-semibold text-sm text-gray-800">
+                      <td className="p-4 font-semibold text-theme-body-sm text-gray-800">
                         {product.variantName}
                       </td>
-                      <td className="p-4 text-sm text-gray-500 font-mono">
+                      <td className="p-4 text-theme-body-sm text-gray-500 font-mono">
                         {product.sku}
                       </td>
                       <td className="p-4 text-center font-medium text-gray-600">
@@ -350,7 +350,7 @@ export default function MarketingPage() {
                       <td className="p-4">
                         <span className="flex items-center gap-3">
                           <span
-                            className={`text-sm font-bold ${
+                            className={`text-theme-body-sm font-bold ${
                               product.conversionRate >= 50
                                 ? "text-emerald-600"
                                 : product.conversionRate >= 20
@@ -387,9 +387,9 @@ export default function MarketingPage() {
         {/* Reviews Section */}
         {/* <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
                       <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
-                         <h2 className="font-bold text-lg text-gray-800">Customer Reviews</h2>
+                         <h2 className="font-bold text-theme-h6 text-gray-800">Customer Reviews</h2>
                      </div>
-                     <div className="p-8 text-center text-gray-400 text-sm">
+                     <div className="p-8 text-center text-gray-400 text-theme-body-sm">
                           Review mapping logic here...
                      </div>
                      <span className="flex justify-end p-4 border-t border-gray-100">

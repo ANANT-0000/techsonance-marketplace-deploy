@@ -108,25 +108,25 @@ export default function RefundsPage() {
     const s = status?.toUpperCase(); // Handle backend lowercase status safely
     if (s === "PENDING")
       return (
-        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
           ● Pending
         </span>
       );
     if (s === "PROCESSED")
       return (
-        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
           ● Processed
         </span>
       );
     if (s === "REJECTED")
       return (
-        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
           ● Rejected
         </span>
       );
 
     return (
-      <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-xs font-semibold capitalize">
+      <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize">
         ● {status}
       </span>
     );
@@ -146,22 +146,22 @@ export default function RefundsPage() {
         <div className="flex flex-wrap items-center gap-4 text-gray-700">
           <div className="flex items-center gap-2">
             <CornerDownLeft size={24} className="text-orange-500" />
-            <h1 className="text-2xl font-bold text-gray-800">Refunds Hub</h1>
+            <h1 className="text-theme-h4 font-bold text-gray-800">Refunds Hub</h1>
           </div>
           {/* Displaying Summary Stats from Backend */}
           {dashboardData && (
             <div className="flex gap-2">
-              <span className="bg-orange-100 text-orange-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+              <span className="bg-orange-100 text-orange-700 text-theme-caption font-semibold px-3 py-1.5 rounded-full">
                 {dashboardData.total} Total Requests
               </span>
-              <span className="bg-red-50 border border-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full">
+              <span className="bg-red-50 border border-red-100 text-red-600 text-theme-caption font-bold px-3 py-1.5 rounded-full">
                 ₹{formatCurrency(dashboardData.totalPendingAmount)} Pending
                 Clearance
               </span>
             </div>
           )}
         </div>
-        {/* <button className="flex items-center gap-2 font-semibold text-sm bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+        {/* <button className="flex items-center gap-2 font-semibold text-theme-body-sm bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
              <Download size={16} />
              Export CSV
           </button> */}
@@ -178,7 +178,7 @@ export default function RefundsPage() {
           />
           <input
             type="text"
-            className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
+            className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
             placeholder="Search by Refund ID or Order Ref"
           />
         </span>
@@ -186,7 +186,7 @@ export default function RefundsPage() {
         {/* Filters */}
         <span className="flex flex-wrap gap-3 items-center">
           <select
-            className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-orange-400 cursor-pointer transition-colors"
+            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-orange-400 cursor-pointer transition-colors"
             name="status"
           >
             <option value="all">All Status</option>
@@ -196,7 +196,7 @@ export default function RefundsPage() {
           </select>
 
           <select
-            className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-orange-400 cursor-pointer transition-colors"
+            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-orange-400 cursor-pointer transition-colors"
             name="sort_by"
           >
             <option value="date_newest">Newest First</option>
@@ -207,7 +207,7 @@ export default function RefundsPage() {
           {isOpen ? (
             <button
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 text-sm border border-orange-300 bg-orange-50 text-orange-600 rounded-xl px-3 py-2 font-medium transition-colors"
+              className="flex items-center gap-2 text-theme-body-sm border border-orange-300 bg-orange-50 text-orange-600 rounded-xl px-3 py-2 font-medium transition-colors"
             >
               {date ? date.toDateString() : "Select Date"}
               <ChevronUp size={16} />
@@ -215,7 +215,7 @@ export default function RefundsPage() {
           ) : (
             <button
               onClick={() => setIsOpen(true)}
-              className="flex items-center gap-2 text-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
+              className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
             >
               {date ? date.toDateString() : "Select Date"}
               <ChevronDown size={16} />
@@ -250,7 +250,7 @@ export default function RefundsPage() {
               {RefundsTableHeader.map((header) => (
                 <th
                   key={header}
-                  className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
                 >
                   {header}
                 </th>
@@ -264,7 +264,7 @@ export default function RefundsPage() {
               <tr>
                 <td
                   colSpan={10}
-                  className="py-16 text-center text-gray-400 text-sm"
+                  className="py-16 text-center text-gray-400 text-theme-body-sm"
                 >
                   <CornerDownLeft
                     size={36}
@@ -293,7 +293,7 @@ export default function RefundsPage() {
 
                     {/* REFUND ID */}
                     <td className="p-4">
-                      <span className="font-mono text-sm font-semibold text-gray-800">
+                      <span className="font-mono text-theme-body-sm font-semibold text-gray-800">
                         REF-{item.id.split("-")[0].toUpperCase()}
                       </span>
                     </td>
@@ -302,7 +302,7 @@ export default function RefundsPage() {
                     <td className="p-4">
                       <Link
                         href={`/vendor/orders/${item.order_id}`}
-                        className="font-mono text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                        className="font-mono text-theme-body-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline"
                       >
                         ORD-{item.order_id.split("-")[0].toUpperCase()}
                       </Link>
@@ -311,7 +311,7 @@ export default function RefundsPage() {
                     {/* CUSTOMER */}
                     <td className="p-4">
                       <span
-                        className={`px-2 py-1 text-xs font-semibold rounded-md uppercase ${item.scope === "order" ? "bg-purple-50 text-purple-700" : "bg-gray-100 text-gray-600"}`}
+                        className={`px-2 py-1 text-theme-caption font-semibold rounded-md uppercase ${item.scope === "order" ? "bg-purple-50 text-purple-700" : "bg-gray-100 text-gray-600"}`}
                       >
                         {item.order.customer &&
                           item.order.customer.first_name +
@@ -325,14 +325,14 @@ export default function RefundsPage() {
                     <td className="p-4">
                       <span className="font-bold text-gray-900">
                         ₹{formatCurrency(item.refund_amount)}{" "}
-                        <span className="text-xs text-gray-500 ml-1">
+                        <span className="text-theme-caption text-gray-500 ml-1">
                           ({item.payment.payment_status})
                         </span>
                       </span>
                     </td>
 
                     <td
-                      className="p-4 text-sm text-gray-600 max-w-[200px] truncate"
+                      className="p-4 text-theme-body-sm text-gray-600 max-w-[200px] truncate"
                       title={item.refund_reason}
                     >
                       {isCancelled
@@ -341,11 +341,11 @@ export default function RefundsPage() {
                           ? `Order ${item.orderItem.return_request.type}`
                           : "N/A"}
                     </td>
-                    <td className="p-4 text-sm text-gray-500 max-w-[200px] truncate">
+                    <td className="p-4 text-theme-body-sm text-gray-500 max-w-[200px] truncate">
                       {item.refund_reason}
                     </td>
                     {/* DATE */}
-                    <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
+                    <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap">
                       {new Date(item.created_at).toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",

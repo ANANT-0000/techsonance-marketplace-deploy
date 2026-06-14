@@ -94,10 +94,10 @@ export default function TemplatesPage() {
           <div className="flex items-center gap-2 text-gray-700">
             <FileText size={22} className="text-blue-500" />
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">
+              <h1 className="text-theme-h4 font-bold text-gray-800">
                 PDF Templates
               </h1>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-theme-caption text-gray-500 mt-1">
                 Manage agreement and policy PDFs for vendors.
               </p>
             </div>
@@ -106,7 +106,7 @@ export default function TemplatesPage() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="templates/templateForm"
-              className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm"
+              className="flex items-center gap-2 font-semibold text-theme-body-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm"
             >
               <Plus size={16} />
               Create Template
@@ -125,7 +125,7 @@ export default function TemplatesPage() {
             />
             <input
               type="text"
-              className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
+              className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
               placeholder="Search templates by ID or label"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -139,19 +139,19 @@ export default function TemplatesPage() {
           <table className="w-full table-auto min-w-[900px] border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-left">
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Template ID
                 </th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Label
                 </th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Description
                 </th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Document
                 </th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Actions
                 </th>
               </tr>
@@ -161,7 +161,7 @@ export default function TemplatesPage() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="py-16 text-center text-gray-400 text-sm"
+                    className="py-16 text-center text-gray-400 text-theme-body-sm"
                   >
                     <FileText size={36} className="mx-auto mb-3 opacity-30" />
                     No templates found.
@@ -177,16 +177,16 @@ export default function TemplatesPage() {
                     <td className="p-4 font-medium text-gray-800">
                       {template.template_name}
                     </td>
-                    <td className="p-4 text-sm text-gray-800">
+                    <td className="p-4 text-theme-body-sm text-gray-800">
                       {template.template_label}
                     </td>
                     <td
-                      className="p-4 text-sm text-gray-500 max-w-[250px] truncate"
+                      className="p-4 text-theme-body-sm text-gray-500 max-w-[250px] truncate"
                       title={template.description}
                     >
                       {template.description}
                     </td>
-                    <td className="p-4 text-sm text-blue-500 underline cursor-pointer">
+                    <td className="p-4 text-theme-body-sm text-blue-500 underline cursor-pointer">
                       <button
                         onClick={() => setPreviewUrl(template.template_url)}
                         className="text-blue-500 hover:text-blue-700 underline font-medium transition-colors"
@@ -236,7 +236,7 @@ export default function TemplatesPage() {
             <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50">
               <div className="flex items-center gap-2">
                 <FileText className="text-red-500" size={20} />
-                <h2 className="text-lg font-bold text-gray-800">
+                <h2 className="text-theme-h6 font-bold text-gray-800">
                   Document Preview
                 </h2>
               </div>

@@ -128,7 +128,7 @@ function ItemStatusBadge({ status }: { status: string }) {
     return (
       <Badge
         variant="outline"
-        className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 text-[10px] uppercase font-bold tracking-wider"
+        className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 text-theme-tiny uppercase font-bold tracking-wider"
       >
         <CheckCircle2 size={10} />
         {ORDER_LIST_TEXT.DELIVERED}
@@ -138,7 +138,7 @@ function ItemStatusBadge({ status }: { status: string }) {
     return (
       <Badge
         variant="outline"
-        className="bg-blue-50 text-blue-700 border-blue-200 gap-1 text-[10px] uppercase font-bold tracking-wider"
+        className="bg-blue-50 text-blue-700 border-blue-200 gap-1 text-theme-tiny uppercase font-bold tracking-wider"
       >
         <Truck size={10} />
         {status}
@@ -148,7 +148,7 @@ function ItemStatusBadge({ status }: { status: string }) {
     return (
       <Badge
         variant="outline"
-        className="bg-orange-50 text-orange-700 border-orange-200 gap-1 text-[10px] uppercase font-bold tracking-wider"
+        className="bg-orange-50 text-orange-700 border-orange-200 gap-1 text-theme-tiny uppercase font-bold tracking-wider"
       >
         <Package size={10} />
         {status}
@@ -158,7 +158,7 @@ function ItemStatusBadge({ status }: { status: string }) {
     return (
       <Badge
         variant="outline"
-        className="bg-destructive/10 text-destructive border-destructive/20 gap-1 text-[10px] uppercase font-bold tracking-wider"
+        className="bg-destructive/10 text-destructive border-destructive/20 gap-1 text-theme-tiny uppercase font-bold tracking-wider"
       >
         <XCircle size={10} />
         Cancelled
@@ -167,7 +167,7 @@ function ItemStatusBadge({ status }: { status: string }) {
   return (
     <Badge
       variant="secondary"
-      className="gap-1 text-[10px] uppercase font-bold tracking-wider"
+      className="gap-1 text-theme-tiny uppercase font-bold tracking-wider"
     >
       {status}
     </Badge>
@@ -204,7 +204,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-10">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <p className="text-theme-xxs font-semibold uppercase tracking-wider text-muted-foreground">
                   {ORDER_LIST_TEXT.ORDER_ID}
                 </p>
                 <p className="mt-1 font-bold">
@@ -213,14 +213,14 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
               </div>
 
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <p className="text-theme-xxs font-semibold uppercase tracking-wider text-muted-foreground">
                   {ORDER_LIST_TEXT.PLACED_ON}
                 </p>
                 <p className="mt-1">{formattedDate}</p>
               </div>
 
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <p className="text-theme-xxs font-semibold uppercase tracking-wider text-muted-foreground">
                   {ORDER_LIST_TEXT.TOTAL_AMOUNT}
                 </p>
                 <p className="mt-1 font-bold text-primary">
@@ -259,12 +259,12 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
               <Link
                 href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
               >
-                <h3 className="md:text-lg text-base font-bold line-clamp-2">
+                <h3 className="md:text-theme-h6 text-theme-body font-bold line-clamp-2">
                   {item.variant.variant_name}
                 </h3>
               </Link>
 
-              <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="mt-3 flex items-center gap-2 text-theme-body-sm text-muted-foreground">
                 <span>
                   {ORDER_LIST_TEXT.QTY} {item.quantity}
                 </span>
@@ -274,7 +274,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                 </span>
               </div>
 
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 text-theme-body-sm text-muted-foreground">
                 {ORDER_LIST_TEXT.ORDERED_ON} {formattedDate}{" "}
                 {ORDER_LIST_TEXT.AT} {formattedTime}
               </p>
@@ -313,7 +313,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-theme-body-sm text-muted-foreground">
               {ORDER_LIST_TEXT.ORDER} #
               {item.order.id.split("-")[0].toUpperCase()}
             </p>
@@ -347,16 +347,16 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
             <Link
               href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
             >
-              <h3 className="font-bold text-base leading-tight line-clamp-2">
+              <h3 className="font-bold text-theme-body leading-tight line-clamp-2">
                 {item.variant.variant_name}
               </h3>
             </Link>
 
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-theme-caption text-muted-foreground">
               {formattedDate}, {formattedTime}
             </p>
 
-            <p className="mt-2 text-xl font-bold">
+            <p className="mt-2 text-theme-h5 font-bold">
               ₹{formatCurrency(totalPrice)}
             </p>
           </div>
@@ -466,7 +466,7 @@ export function OrdersList({
               ? "default"
               : "secondary"
           }
-          className={`rounded-full h-8 text-xs font-semibold px-4 shrink-0 ${status === null && state.dateFilter === "all" ? "bg-black text-white hover:bg-gray-800" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+          className={`rounded-full h-8 text-theme-caption font-semibold px-4 shrink-0 ${status === null && state.dateFilter === "all" ? "bg-black text-white hover:bg-gray-800" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
           onClick={() => {
             setStatus(null);
             dispatch({ type: OrderActionType.SET_DATE_FILTER, payload: "all" });
@@ -476,7 +476,7 @@ export function OrdersList({
         </Button>
         <Button
           variant={state.dateFilter === "last30" ? "default" : "secondary"}
-          className={`rounded-full h-8 text-xs font-semibold px-4 shrink-0 ${state.dateFilter === "last30" ? "bg-black text-white hover:bg-gray-800" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+          className={`rounded-full h-8 text-theme-caption font-semibold px-4 shrink-0 ${state.dateFilter === "last30" ? "bg-black text-white hover:bg-gray-800" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
           onClick={() => {
             setStatus(null);
             dispatch({ type: OrderActionType.SET_DATE_FILTER, payload: "last30" });
@@ -488,7 +488,7 @@ export function OrdersList({
           variant={
             status === OrderStatusEnum.DELIVERED ? "default" : "secondary"
           }
-          className={`rounded-full h-8 text-xs font-semibold px-4 shrink-0 ${status === OrderStatusEnum.DELIVERED ? "bg-black text-white hover:bg-gray-800" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+          className={`rounded-full h-8 text-theme-caption font-semibold px-4 shrink-0 ${status === OrderStatusEnum.DELIVERED ? "bg-black text-white hover:bg-gray-800" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
           onClick={() => setStatus(OrderStatusEnum.DELIVERED)}
         >
           {ORDER_LIST_TEXT.DELIVERED}
@@ -518,7 +518,7 @@ export function OrdersList({
           {state.items.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3 border border-dashed border-border rounded-2xl bg-gray-50/50">
               <Package size={40} className="text-gray-300" />
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-theme-body-sm font-medium text-gray-500">
                 {ORDER_LIST_TEXT.NO_ORDER_ITEMS}
               </p>
             </div>

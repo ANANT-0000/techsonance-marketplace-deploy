@@ -96,9 +96,9 @@ export default function AdminLoginPage() {
     if (status === 'active') return (
       <span className="block w-3.5 h-3.5 rounded-full border-2 border-sky-200 border-t-sky-500 animate-spin" />
     );
-    if (status === 'done') return <span className="text-green-600 text-sm">✓</span>;
-    if (status === 'failed') return <span className="text-red-500 text-sm">✕</span>;
-    return <span className="text-gray-300 text-sm">○</span>;
+    if (status === 'done') return <span className="text-green-600 text-theme-body-sm">✓</span>;
+    if (status === 'failed') return <span className="text-red-500 text-theme-body-sm">✕</span>;
+    return <span className="text-gray-300 text-theme-body-sm">○</span>;
   };
 
   const stepStyles: Record<Step['status'], string> = {
@@ -125,8 +125,8 @@ export default function AdminLoginPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
             </svg>
           </div>
-          <h1 className="text-lg font-semibold text-gray-900 mb-0.5">System Administration</h1>
-          <p className="text-sm text-gray-500">Restricted access — authorised personnel only</p>
+          <h1 className="text-theme-h6 font-semibold text-gray-900 mb-0.5">System Administration</h1>
+          <p className="text-theme-body-sm text-gray-500">Restricted access — authorised personnel only</p>
         </div>
 
         {/* IDLE — login form */}
@@ -135,10 +135,10 @@ export default function AdminLoginPage() {
             <div className="flex flex-col gap-1.5">
               <label className="text-md font-medium text-gray-600 tracking-wide">Admin ID / Email</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm">@</span>
                 <input
                   type="text" required
-                  className="w-full pl-8 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition"
+                  className="w-full pl-8 pr-3 py-2.5 border border-gray-200 rounded-lg text-theme-body-sm text-gray-900 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition"
                   placeholder="admin@company.com"
                   onChange={e => setAdminLoginID(e.target.value)}
                 />
@@ -166,17 +166,17 @@ export default function AdminLoginPage() {
 </div>
             </div>
             {error && (
-              <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5 text-sm text-red-600">
+              <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5 text-theme-body-sm text-red-600">
                 <span>⚠</span> {error}
               </div>
             )}
             <button
               type="submit"
-              className="w-full bg-sky-500 hover:bg-sky-600 active:scale-[.98] text-white font-semibold text-sm rounded-lg py-2.5 transition flex items-center justify-center gap-2"
+              className="w-full bg-sky-500 hover:bg-sky-600 active:scale-[.98] text-white font-semibold text-theme-body-sm rounded-lg py-2.5 transition flex items-center justify-center gap-2"
             >
               → Authenticate
             </button>
-            <p className="text-center text-xs text-gray-400 flex items-center justify-center gap-1 mt-1">
+            <p className="text-center text-theme-caption text-gray-400 flex items-center justify-center gap-1 mt-1">
               All access attempts are logged and monitored
             </p>
           </form>
@@ -185,11 +185,11 @@ export default function AdminLoginPage() {
         {/* LOADING — step progress */}
         {uiState === 'loading' && (
           <div className="px-8 py-8 flex flex-col items-center">
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1">Verifying identity</p>
-            <p className="text-xs text-gray-400 mb-5">Please wait…</p>
+            <p className="text-theme-caption font-medium text-gray-400 uppercase tracking-widest mb-1">Verifying identity</p>
+            <p className="text-theme-caption text-gray-400 mb-5">Please wait…</p>
             <div className="w-full flex flex-col gap-2">
               {steps.map((step, i) => (
-                <div key={i} className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all ${stepStyles[step.status]} ${stepTextStyles[step.status]}`}>
+                <div key={i} className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border text-theme-body-sm font-medium transition-all ${stepStyles[step.status]} ${stepTextStyles[step.status]}`}>
                   <div className="w-6 h-6 rounded-full flex items-center justify-center bg-white border border-gray-100 flex-shrink-0">
                     <StepIcon status={step.status} />
                   </div>
@@ -203,25 +203,25 @@ export default function AdminLoginPage() {
         {/* SUCCESS — redirect countdown */}
         {uiState === 'success' && (
           <div className="px-8 py-8 flex flex-col items-center text-center">
-            <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4 text-2xl">✓</div>
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Access granted</h2>
-            <p className="text-sm text-gray-500 mb-5">Identity verified. Taking you to the admin panel…</p>
+            <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4 text-theme-h4">✓</div>
+            <h2 className="text-theme-body font-semibold text-gray-900 mb-1">Access granted</h2>
+            <p className="text-theme-body-sm text-gray-500 mb-5">Identity verified. Taking you to the admin panel…</p>
             <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden mb-2">
               <div className="h-1.5 bg-sky-500 rounded-full transition-all" style={{ width: `${redirectProgress}%` }} />
             </div>
-            <p className="text-xs text-gray-400">Redirecting in {countdown}s</p>
+            <p className="text-theme-caption text-gray-400">Redirecting in {countdown}s</p>
           </div>
         )}
 
         {/* ERROR — access denied */}
         {uiState === 'error' && (
           <div className="px-8 py-8 flex flex-col items-center text-center">
-            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-4 text-2xl">✕</div>
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Access denied</h2>
-            <p className="text-sm text-gray-500 mb-5">{error || 'Invalid credentials or insufficient permissions.'}</p>
+            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-4 text-theme-h4">✕</div>
+            <h2 className="text-theme-body font-semibold text-gray-900 mb-1">Access denied</h2>
+            <p className="text-theme-body-sm text-gray-500 mb-5">{error || 'Invalid credentials or insufficient permissions.'}</p>
             <button
               onClick={() => { setUiState('idle'); setError(null); }}
-              className="bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm rounded-lg px-6 py-2.5 transition"
+              className="bg-sky-500 hover:bg-sky-600 text-white font-semibold text-theme-body-sm rounded-lg px-6 py-2.5 transition"
             >
               Try again
             </button>

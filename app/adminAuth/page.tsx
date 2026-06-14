@@ -9,14 +9,14 @@ export default function AdminAuthPage ()  {
 
                 {/* Header */}
                 <div className="mb-8">
-                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted border border-border rounded-full px-3 py-1 mb-4">
+                    <span className="inline-flex items-center gap-1.5 text-theme-xxs font-semibold uppercase tracking-widest text-muted-foreground bg-muted border border-border rounded-full px-3 py-1 mb-4">
                         <ShieldHalf size={12} />
                         Auth center
                     </span>
-                    <h1 className="text-2xl font-semibold text-foreground mb-1.5">
+                    <h1 className="text-theme-h4 font-semibold text-foreground mb-1.5">
                         Welcome to Techsonance
                     </h1>
-                    {/* <p className="text-sm text-muted-foreground">
+                    {/* <p className="text-theme-body-sm text-muted-foreground">
                         Select your portal to sign in or get started.
                     </p> */}
                  </div>
@@ -24,19 +24,19 @@ export default function AdminAuthPage ()  {
                         <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center mb-5 text-blue-700">
                             <ShieldCheck size={20} />
                         </div>
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+                        <p className="text-theme-xxs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
                             Operations
                         </p>
-                        <h2 className="text-base font-semibold text-foreground mb-2">
+                        <h2 className="text-theme-body font-semibold text-foreground mb-2">
                             Admin panel
                         </h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">
+                        <p className="text-theme-body-sm text-muted-foreground leading-relaxed mb-5 flex-1">
                             Platform-wide controls, vendor management, analytics, and marketplace health.
                         </p>
                         <div className="flex flex-col gap-2">
                             <Link
                                 href="/auth/adminLogin"
-                                className="w-full py-2 px-4 bg-blue-700 hover:bg-blue-800 text-blue-50 text-sm font-medium text-center rounded-lg transition-colors"
+                                className="w-full py-2 px-4 bg-blue-700 hover:bg-blue-800 text-blue-50 text-theme-body-sm font-medium text-center rounded-lg transition-colors"
                             >
                                 Sign in as admin
                             </Link>

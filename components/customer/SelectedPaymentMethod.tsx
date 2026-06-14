@@ -68,7 +68,7 @@ export const SelectedPaymentMethod = ({
           <div className={`w-6 h-6 rounded-md border flex items-center justify-center shrink-0 ${iconBg}`}>
             {icon}
           </div>
-          <span className={`text-[13px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+          <span className={`text-theme-caption-lg font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
             {method}
           </span>
         </div>
@@ -81,7 +81,7 @@ export const SelectedPaymentMethod = ({
               animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
               exit={{ opacity: 0, height: 0, marginTop: 0 }}
               transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
-              className="text-[11px] text-gray-500 leading-relaxed pl-8"
+              className="text-theme-xxs text-gray-500 leading-relaxed pl-8"
             >
               {description}
             </motion.p>

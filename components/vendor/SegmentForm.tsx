@@ -19,9 +19,9 @@ import { SEGMENT_FORM_TEXT } from "@/constants/vendorText";
 
 // ── Reusable Styles ──
 const fieldBase =
-  "w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all bg-white";
+  "w-full px-3 py-2 text-theme-body-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all bg-white";
 const labelBase =
-  "block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5";
+  "block text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-1.5";
 const buttonBase =
   "flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-100 px-5 py-2.5 transition-all";
 
@@ -157,10 +157,10 @@ export default function SegmentForm({
           <Target size={22} />
         </div>
         <div>
-          <h2 className="text-base font-bold text-gray-800">
+          <h2 className="text-theme-body font-bold text-gray-800">
             {isEdit ? SEGMENT_FORM_TEXT.HEADER.EDIT : SEGMENT_FORM_TEXT.HEADER.CREATE}
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-theme-caption text-gray-500 mt-0.5">
             {SEGMENT_FORM_TEXT.HEADER.DESC}
           </p>
         </div>
@@ -216,7 +216,7 @@ export default function SegmentForm({
             <button
               type="button"
               onClick={addCriterion}
-              className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 rounded-lg px-3 py-1.5 transition-colors"
+              className="flex items-center gap-1.5 text-theme-caption font-semibold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 rounded-lg px-3 py-1.5 transition-colors"
             >
               <Plus size={13} /> {SEGMENT_FORM_TEXT.FIELDS.ADD_CRITERIA}
             </button>
@@ -287,7 +287,7 @@ export default function SegmentForm({
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:text-gray-800 transition-colors"
+            className="px-5 py-2.5 text-theme-body-sm font-bold text-gray-600 hover:text-gray-800 transition-colors"
           >
             {SEGMENT_FORM_TEXT.FOOTER.CANCEL}
           </button>

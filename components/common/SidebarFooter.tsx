@@ -62,14 +62,14 @@ const onLogout = () => {
         <div className="px-3.5 pt-3.5 pb-3 border-b border-white/[0.08]">
  {  user.first_name &&       <div className="flex items-center gap-2.5 mb-2.5">
             {/* Avatar */}
-            <div className="h-9 w-9 shrink-0 rounded-[10px] bg-gradient-to-br from-[#2ecc8a] to-[#1aab6d] flex items-center justify-center text-[12px] font-bold text-white">
+            <div className="h-9 w-9 shrink-0 rounded-[10px] bg-gradient-to-br from-[#2ecc8a] to-[#1aab6d] flex items-center justify-center text-theme-caption font-bold text-white">
               {user.first_name?.[0]}{user.last_name?.[0]}
             </div>
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold text-white truncate leading-snug">
+              <p className="text-theme-caption-lg font-semibold text-white truncate leading-snug">
                 {user.first_name} {user.last_name}
               </p>
-              <p className="text-[11px] text-white/35 flex items-center gap-1 mt-0.5">
+              <p className="text-theme-xxs text-white/35 flex items-center gap-1 mt-0.5">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                 {SIDEBAR_FOOTER_TEXT.ACTIVE_WORKSPACE}
               </p>
@@ -86,7 +86,7 @@ const onLogout = () => {
           {user.company_id && (
             <div className="flex items-center gap-2 py-[3px] text-[11.5px] text-white/85">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/75 shrink-0"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21V12h6v9"/></svg>
-              <span className="font-mono text-[11px] text-white/80">{user.company_id}</span>
+              <span className="font-mono text-theme-xxs text-white/80">{user.company_id}</span>
             </div>
           )}
         </div>
@@ -100,7 +100,7 @@ const onLogout = () => {
           ].map(({ icon, label }) => (
             <button
               key={label}
-              className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-[13px] text-white/95 transition-colors hover:bg-white/[0.06]"
+              className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-theme-caption-lg text-white/95 transition-colors hover:bg-white/[0.06]"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/80 shrink-0">
                 <path d={icon} />
@@ -113,7 +113,7 @@ const onLogout = () => {
 
           <button
             onClick={onLogout}
-            className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-[13px] text-red-400 transition-colors hover:bg-red-400/[0.10]"
+            className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-theme-caption-lg text-red-400 transition-colors hover:bg-red-400/[0.10]"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400/70 shrink-0">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9"/>
@@ -134,7 +134,7 @@ const onLogout = () => {
         `}
       >
         {/* Avatar */}
-        <div className="ml-1 relative h-[30px] w-[30px] shrink-0 rounded-[9px] bg-gradient-to-br from-[#2ecc8a] to-[#1aab6d] flex items-center justify-center text-[11px] font-bold text-white">
+        <div className="ml-1 relative h-[30px] w-[30px] shrink-0 rounded-[9px] bg-gradient-to-br from-[#2ecc8a] to-[#1aab6d] flex items-center justify-center text-theme-xxs font-bold text-white">
           {user.first_name?.[0]}{user.last_name?.[0]}
           <span className="absolute -bottom-px -right-px h-[9px] w-[9px] rounded-full bg-emerald-400 border-2 border-[#0f1117]" />
         </div>

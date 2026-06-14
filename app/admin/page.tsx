@@ -53,25 +53,25 @@ const getInstanceStatusBadge = (status: string) => {
   switch (status?.toLowerCase()) {
     case "active":
       return (
-        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
           ● Active
         </span>
       );
     case "inactive":
       return (
-        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
           ● Inactive
         </span>
       );
     case "pending":
       return (
-        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
           ● {status}
         </span>
       );
     default:
       return (
-        <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-xs font-semibold capitalize">
+        <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize">
           ● {status}
         </span>
       );
@@ -105,17 +105,17 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col hover:border-gray-300 transition-colors group">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <p className="text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">
                 Total Vendors
               </p>
               <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition-colors">
                 <Store size={18} />
               </div>
             </div>
-            <p className="text-3xl font-bold text-gray-800">
+            <p className="text-theme-h3 font-bold text-gray-800">
               {companies.length || 0}
             </p>
-            {/* <p className="text-xs font-medium text-emerald-600 mt-2 flex items-center gap-1">
+            {/* <p className="text-theme-caption font-medium text-emerald-600 mt-2 flex items-center gap-1">
                             <TrendingUp size={14} />
                             {ADMIN_DASHBOARD_STATS.vendorGrowth}% this month
                         </p> */}
@@ -124,17 +124,17 @@ export default function AdminDashboardPage() {
           {/* Customers Stat */}
           <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col hover:border-gray-300 transition-colors group">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <p className="text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">
                 Total Customers
               </p>
               <div className="p-2 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-100 transition-colors">
                 <Users size={18} />
               </div>
             </div>
-            <p className="text-3xl font-bold text-gray-800">
+            <p className="text-theme-h3 font-bold text-gray-800">
               {customers.length}
             </p>
-            {/* <p className="text-xs font-medium text-gray-500 mt-2">
+            {/* <p className="text-theme-caption font-medium text-gray-500 mt-2">
                             Across all instances
                         </p> */}
           </div>
@@ -142,15 +142,15 @@ export default function AdminDashboardPage() {
           {/* Orders Stat */}
           <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col hover:border-gray-300 transition-colors group">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <p className="text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">
                 Total Orders
               </p>
               <div className="p-2 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-100 transition-colors">
                 <ShoppingBag size={18} />
               </div>
             </div>
-            <p className="text-3xl font-bold text-gray-800">{orders.length}</p>
-            {/* <p className="text-xs font-medium text-gray-500 mt-2">
+            <p className="text-theme-h3 font-bold text-gray-800">{orders.length}</p>
+            {/* <p className="text-theme-caption font-medium text-gray-500 mt-2">
                             This month
                         </p> */}
           </div>
@@ -158,17 +158,17 @@ export default function AdminDashboardPage() {
           {/* Operations Stat */}
           <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col hover:border-gray-300 transition-colors group">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <p className="text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">
                 Systems Ops
               </p>
               <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg group-hover:bg-emerald-100 transition-colors">
                 <Activity size={18} />
               </div>
             </div>
-            <p className="text-3xl font-bold text-emerald-600">
+            <p className="text-theme-h3 font-bold text-emerald-600">
               {ADMIN_DASHBOARD_STATS.systemsOperations}%
             </p>
-            <p className="text-xs font-medium text-gray-500 mt-2">
+            <p className="text-theme-caption font-medium text-gray-500 mt-2">
               All systems operational
             </p>
           </div>
@@ -178,7 +178,7 @@ export default function AdminDashboardPage() {
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Chart Container */}
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col min-h-[400px]">
-            <h2 className="font-bold text-lg text-gray-800 mb-4">
+            <h2 className="font-bold text-theme-h6 text-gray-800 mb-4">
               Revenue Overview
             </h2>
             <div className="w-full relative">
@@ -189,11 +189,11 @@ export default function AdminDashboardPage() {
           {/* Active Instances Container */}
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col h-[450px]">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+              <h2 className="font-bold text-theme-h6 text-gray-800 flex items-center gap-2">
                 <Server size={20} className="text-blue-500" />
                 Active Instances
               </h2>
-              <span className="bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-1 rounded-full">
+              <span className="bg-gray-100 text-gray-600 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
                 {
                   companies.filter(
                     (company) => company.vendor_status === "active",
@@ -211,14 +211,14 @@ export default function AdminDashboardPage() {
                   className="flex justify-between items-center bg-white border border-gray-100 hover:border-gray-200 hover:bg-gray-50 p-4 rounded-xl transition-all shadow-sm group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-theme-body-sm shrink-0">
                       {instance.store_owner_first_name.charAt(0)}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-800 text-sm group-hover:text-blue-600 transition-colors">
+                      <h3 className="font-semibold text-gray-800 text-theme-body-sm group-hover:text-blue-600 transition-colors">
                         {instance.store_name}
                       </h3>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-theme-caption text-gray-500 mt-0.5">
                         {instance.user.email}
                       </p>
                     </div>

@@ -299,10 +299,10 @@ export function ProductForm({
         {/* ── HEADER ── */}
         <header className="flex flex-wrap justify-between items-center mb-8 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-theme-h4 font-bold text-slate-900">
               {formPageLabels.headerTitle}
             </h1>
-            <p className="text-sm text-slate-500 mt-0.5">
+            <p className="text-theme-body-sm text-slate-500 mt-0.5">
               {formPageLabels.headerDesc}
             </p>
           </div>
@@ -317,7 +317,7 @@ export function ProductForm({
               size={18}
               className="text-indigo-500"
             />
-            <h2 className="text-base font-semibold text-slate-800">
+            <h2 className="text-theme-body font-semibold text-slate-800">
               {PRODUCT_FORM_TEXT.SECTIONS.GENERAL}
             </h2>
           </div>
@@ -346,7 +346,7 @@ export function ProductForm({
                   />
                 )}
                 {errors[field.name as keyof ProductFormValuesType] && (
-                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
                     <DynamicIcon
                       fallback={() => <p></p>}
                       name="alert-circle"
@@ -364,13 +364,13 @@ export function ProductForm({
             {/* Features */}
             <div className="pt-2 border-t border-slate-100">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-semibold text-slate-700">
+                <h3 className="text-theme-body-sm font-semibold text-slate-700">
                   {PRODUCT_FORM_TEXT.SECTIONS.FEATURES}
                 </h3>
                 <button
                   type="button"
                   onClick={() => appendFeature({ title: "", description: "" })}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
+                  className="flex items-center gap-1.5 text-theme-caption font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
                 >
                   <DynamicIcon fallback={() => <p></p>} name="plus" size={14} />{" "}
                   {PRODUCT_FORM_TEXT.ACTIONS.ADD_FEATURE}
@@ -394,7 +394,7 @@ export function ProductForm({
                       />
                     </button>
                     <div className="mb-3">
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                      <label className="block text-theme-caption font-semibold text-slate-600 mb-1">
                         {PRODUCT_FORM_TEXT.LABELS.FEAT_TITLE}
                       </label>
                       <input
@@ -407,7 +407,7 @@ export function ProductForm({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                      <label className="block text-theme-caption font-semibold text-slate-600 mb-1">
                         {PRODUCT_FORM_TEXT.LABELS.DETAILS}
                       </label>
                       <textarea
@@ -427,13 +427,13 @@ export function ProductForm({
             {/* Attributes */}
             <div className="pt-2 border-t border-slate-100">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-semibold text-slate-700">
+                <h3 className="text-theme-body-sm font-semibold text-slate-700">
                   {PRODUCT_FORM_TEXT.SECTIONS.ATTRIBUTES}
                 </h3>
                 <button
                   type="button"
                   onClick={() => appendAttribute({ name: "", value: "" })}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
+                  className="flex items-center gap-1.5 text-theme-caption font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
                 >
                   <DynamicIcon fallback={() => <p></p>} name="plus" size={14} />{" "}
                   {PRODUCT_FORM_TEXT.ACTIONS.ADD_ATTRIBUTE}
@@ -457,7 +457,7 @@ export function ProductForm({
                       />
                     </button>
                     <div className="mb-3">
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                      <label className="block text-theme-caption font-semibold text-slate-600 mb-1">
                         {PRODUCT_FORM_TEXT.LABELS.ATTR_TITLE}
                       </label>
                       <input
@@ -470,7 +470,7 @@ export function ProductForm({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                      <label className="block text-theme-caption font-semibold text-slate-600 mb-1">
                         {PRODUCT_FORM_TEXT.LABELS.DETAILS}
                       </label>
                       <textarea
@@ -498,7 +498,7 @@ export function ProductForm({
               size={18}
               className="text-blue-500"
             />
-            <h2 className="text-base font-semibold text-slate-800">
+            <h2 className="text-theme-body font-semibold text-slate-800">
               {PRODUCT_FORM_TEXT.SECTIONS.PRICING}
             </h2>
           </div>
@@ -507,7 +507,7 @@ export function ProductForm({
               {Array.isArray(PRODUCT_FORM_PRICING_FIELDS) &&
                 PRODUCT_FORM_PRICING_FIELDS.map((field) => (
                   <div key={field.name} className="mb-4 flex-1">
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-theme-body-sm font-semibold text-slate-700 mb-1">
                       {field.label}
                     </label>
                     <input
@@ -517,7 +517,7 @@ export function ProductForm({
                       {...register(field.name as keyof ProductFormValuesType)}
                     />
                     {errors[field.name as keyof ProductFormValuesType] && (
-                      <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                      <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
                         <DynamicIcon
                           fallback={() => <p></p>}
                           name="alert-circle"
@@ -544,7 +544,7 @@ export function ProductForm({
               size={18}
               className="text-indigo-500"
             />
-            <h2 className="text-base font-semibold text-slate-800">
+            <h2 className="text-theme-body font-semibold text-slate-800">
               {PRODUCT_FORM_TEXT.SECTIONS.MEDIA}
             </h2>
           </div>
@@ -558,7 +558,7 @@ export function ProductForm({
                 size={16}
                 className="text-indigo-500 mt-0.5 shrink-0"
               />
-              <p className="text-xs text-indigo-700 leading-relaxed">
+              <p className="text-theme-caption text-indigo-700 leading-relaxed">
                 <strong>{PRODUCT_FORM_TEXT.MEDIA_GUIDE.TITLE}</strong> {PRODUCT_FORM_TEXT.MEDIA_GUIDE.DESC}
               </p>
             </div>
@@ -578,14 +578,14 @@ export function ProductForm({
                     {/* Header & Dynamic Hint */}
                     <div className="mb-4">
                       <div className="flex items-center justify-between mb-1.5">
-                        <h3 className="text-sm font-semibold text-slate-700">
+                        <h3 className="text-theme-body-sm font-semibold text-slate-700">
                           {label}
                         </h3>
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                        <span className="text-theme-tiny font-bold text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded-md uppercase tracking-wider">
                           Max {limit} file{limit !== 1 ? "s" : ""}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 leading-relaxed">
+                      <p className="text-theme-caption text-slate-500 leading-relaxed">
                         {hint}
                       </p>
                     </div>
@@ -614,10 +614,10 @@ export function ProductForm({
                         size={28}
                         className="text-blue-400 group-hover:text-blue-600 transition mb-2"
                       />
-                      <p className="text-sm font-semibold text-blue-600 group-hover:text-blue-700">
+                      <p className="text-theme-body-sm font-semibold text-blue-600 group-hover:text-blue-700">
                         {PRODUCT_FORM_TEXT.MEDIA_GUIDE.BROWSE}
                       </p>
-                      <p className="text-[11px] text-slate-400 mt-1">
+                      <p className="text-theme-xxs text-slate-400 mt-1">
                         {PRODUCT_FORM_TEXT.MEDIA_GUIDE.LIMITS}
                       </p>
                     </label>
@@ -681,7 +681,7 @@ export function ProductForm({
               size={18}
               className="text-blue-500"
             />
-            <h2 className="text-base font-semibold text-slate-800">
+            <h2 className="text-theme-body font-semibold text-slate-800">
               {PRODUCT_FORM_TEXT.SECTIONS.CATEGORY_TAX}
             </h2>
           </div>
@@ -713,7 +713,7 @@ export function ProductForm({
                 />
               </div>
               {errors.category && (
-                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
                   <DynamicIcon
                     fallback={() => <p></p>}
                     name="alert-circle"
@@ -749,7 +749,7 @@ export function ProductForm({
                 />
               </div>
               {errors.taxSlabId && (
-                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
                   <DynamicIcon
                     fallback={() => <p></p>}
                     name="alert-circle"
@@ -787,7 +787,7 @@ export function ProductForm({
                 />
               </div>
               {errors.warehouseId && (
-                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
                   <DynamicIcon
                     fallback={() => <p></p>}
                     name="alert-circle"
@@ -822,7 +822,7 @@ export function ProductForm({
                 />
               </div>
               {errors.status && (
-                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
                   <DynamicIcon
                     fallback={() => <p></p>}
                     name="alert-circle"
@@ -840,7 +840,7 @@ export function ProductForm({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold py-2.5 px-8 rounded-xl hover:bg-blue-700 transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-blue-600 text-white text-theme-body-sm font-semibold py-2.5 px-8 rounded-xl hover:bg-blue-700 transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>

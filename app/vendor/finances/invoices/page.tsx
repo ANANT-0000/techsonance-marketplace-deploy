@@ -98,14 +98,14 @@ export default function InvoicesPage() {
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">
           <FileText size={22} className="text-purple-500" />
-          <h1 className="text-2xl font-bold text-gray-800">GST Invoices</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">GST Invoices</h1>
           {invoices && invoices.length > 0 && (
-            <span className="ml-2 bg-purple-100 text-purple-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+            <span className="ml-2 bg-purple-100 text-purple-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
               {invoices.length}
             </span>
           )}
         </div>
-        {/* <button className="flex items-center gap-2 font-semibold text-sm bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+        {/* <button className="flex items-center gap-2 font-semibold text-theme-body-sm bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
                     <Download size={16} />
                     Export Invoices
                 </button> */}
@@ -121,7 +121,7 @@ export default function InvoicesPage() {
           />
           <input
             type="text"
-            className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
+            className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
             placeholder="Search by Invoice No. or Order Ref"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -130,7 +130,7 @@ export default function InvoicesPage() {
 
         <span className="flex flex-wrap gap-3 items-center">
           <select
-            className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-purple-400 cursor-pointer transition-colors"
+            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-purple-400 cursor-pointer transition-colors"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             name="sort_by"
@@ -142,7 +142,7 @@ export default function InvoicesPage() {
           {/* {isOpen ? (
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-2 text-sm border border-purple-300 bg-purple-50 text-purple-600 rounded-xl px-3 py-2 font-medium transition-colors"
+                            className="flex items-center gap-2 text-theme-body-sm border border-purple-300 bg-purple-50 text-purple-600 rounded-xl px-3 py-2 font-medium transition-colors"
                         >
                             {date ? date.toDateString() : "Select Date"}
                             <ChevronUp size={16} />
@@ -150,7 +150,7 @@ export default function InvoicesPage() {
                     ) : (
                         <button
                             onClick={() => setIsOpen(true)}
-                            className="flex items-center gap-2 text-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
+                            className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
                         >
                             {date ? date.toDateString() : "Select Date"}
                             <ChevronDown size={16} />
@@ -182,7 +182,7 @@ export default function InvoicesPage() {
               {invoiceTableHeader.map((header) => (
                 <th
                   key={header}
-                  className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
                 >
                   {header}
                 </th>
@@ -196,7 +196,7 @@ export default function InvoicesPage() {
               <tr>
                 <td
                   colSpan={10}
-                  className="py-16 text-center text-gray-400 text-sm"
+                  className="py-16 text-center text-gray-400 text-theme-body-sm"
                 >
                   <FileText size={36} className="mx-auto mb-3 opacity-30" />
                   No invoices generated yet.
@@ -217,7 +217,7 @@ export default function InvoicesPage() {
                   </td>
 
                   <td className="p-4">
-                    <span className="font-mono text-sm font-semibold text-gray-800">
+                    <span className="font-mono text-theme-body-sm font-semibold text-gray-800">
                       {item.invoice_number}
                     </span>
                   </td>
@@ -225,19 +225,19 @@ export default function InvoicesPage() {
                   <td className="p-4">
                     <Link
                       href={`/vendor/orders/${item.order_id}`}
-                      className="font-mono text-sm font-semibold text-purple-600 hover:underline"
+                      className="font-mono text-theme-body-sm font-semibold text-purple-600 hover:underline"
                     >
                       ORD-{item.order_id.split("-")[0].toUpperCase()}
                     </Link>
                   </td>
 
-                  <td className="p-4 text-gray-600 text-sm">
+                  <td className="p-4 text-gray-600 text-theme-body-sm">
                     ₹{Number(item.cgst_amount).toFixed(2)}
                   </td>
-                  <td className="p-4 text-gray-600 text-sm">
+                  <td className="p-4 text-gray-600 text-theme-body-sm">
                     ₹{Number(item.sgst_amount).toFixed(2)}
                   </td>
-                  <td className="p-4 text-gray-600 text-sm">
+                  <td className="p-4 text-gray-600 text-theme-body-sm">
                     ₹{Number(item.igst_amount).toFixed(2)}
                   </td>
 
@@ -247,12 +247,12 @@ export default function InvoicesPage() {
                     </span>
                   </td>
 
-                  <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
+                  <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap">
                     {new Date(item.invoice_date).toLocaleDateString("en-GB")}
                   </td>
 
                   {/* <td className="p-4">
-                                        <button className="text-xs font-semibold text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                                        <button className="text-theme-caption font-semibold text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
                                             Download ↓
                                         </button>
                                     </td> */}
@@ -264,7 +264,7 @@ export default function InvoicesPage() {
       </div>
       <span className="flex justify-end mt-4">
         {/* Pagination here */}
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="flex items-center gap-2 text-theme-body-sm text-gray-600">
           <span className=" flex ">
             showing {limit} of {totalInvoices}
           </span>

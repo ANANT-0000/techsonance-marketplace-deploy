@@ -70,7 +70,7 @@ function Tooltip({ label, show }: { label: string; show: boolean }) {
         pointer-events-none absolute left-[calc(100%+10px)] top-1/2 z-50
         -translate-y-1/2 whitespace-nowrap rounded-lg
         border border-white/10 bg-[#1e2433]
-        px-2.5 py-[6px] text-[12px] font-medium text-white
+        px-2.5 py-[6px] text-theme-caption font-medium text-white
         opacity-0 transition-opacity duration-150
         group-hover/navitem:opacity-100
       "
@@ -98,7 +98,7 @@ function SectionLabel({
     <li
       aria-hidden="true"
       className={`
-        overflow-hidden whitespace-nowrap px-2.5 text-[10px] font-semibold
+        overflow-hidden whitespace-nowrap px-2.5 text-theme-tiny font-semibold
         uppercase tracking-[0.08em] text-white/85
         transition-all duration-200
         ${expanded ? "max-h-8 pt-4 pb-1 opacity-100" : "max-h-0 py-0 opacity-0"}
@@ -267,7 +267,7 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
               h-7 w-7 shrink-0 rounded-lg
               bg-gradient-to-br from-[#4f8ef7] to-[#7c5cfc]
               flex items-center justify-center
-              text-[11px] font-bold text-white
+              text-theme-xxs font-bold text-white
             "
             >
               TS

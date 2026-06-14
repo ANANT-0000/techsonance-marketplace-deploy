@@ -50,7 +50,7 @@ export function BackButton({
         >
             <ArrowLeft size={20} className="shrink-0" />
             {/* Hides the text on mobile to save space, shows on sm: screens and up */}
-            <span className="hidden sm:inline-block font-medium text-sm h-full text-center align-middle ">
+            <span className="hidden sm:inline-block font-medium text-theme-body-sm h-full text-center align-middle ">
                 {label}
             </span>
         </Button>

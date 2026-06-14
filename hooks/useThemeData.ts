@@ -3,6 +3,52 @@ import AxiosAPI from "@/lib/axios";
 import { getCachedData, cacheData } from "@/utils/cache";
 import { IMAGE_PLACEHOLDER, THEME_CACHE_KEY } from "@/constants";
 
+export enum NavbarPosition {
+  STICKY = "sticky",
+  STATIC = "static",
+  FIXED = "fixed",
+}
+
+export enum LogoAlignment {
+  LEFT = "left",
+  CENTER = "center",
+  RIGHT = "right",
+}
+
+export enum FooterStyle {
+  SIMPLE = "simple",
+  DETAILED = "detailed",
+}
+
+export enum BorderRadius {
+  FULL = "full",
+  SM = "sm",
+  MD = "md",
+  LG = "lg",
+  XL = "xl",
+}
+
+export enum CardStyle {
+  GLASSMORPHIC = "glassmorphic",
+  STANDARD = "standard",
+  OUTLINED = "outlined",
+  MINIMAL = "minimal",
+  NEUMORPHIC = "neumorphic",
+}
+
+export enum HomepageSection {
+  HERO = "hero",
+  CATEGORIES = "categories",
+  NEW_ARRIVALS = "new_arrivals",
+  PRODUCTS = "products",
+  PROMO = "promo",
+  NEWSLETTER = "newsletter",
+  SCARCITY = "scarcity",
+  CURATED = "curated",
+  LOOKBOOK = "lookbook",
+  SOCIAL_PROOF = "social_proof",
+}
+
 export interface StorefrontTheme {
   primary_color: string;
   secondary_color: string;
@@ -12,28 +58,12 @@ export interface StorefrontTheme {
   navbar_fg: string;
   footer_bg: string;
   footer_fg: string;
-  navbar_position: "sticky" | "static" | "fixed";
-  logo_alignment: "left" | "center" | "right";
-  footer_style: "simple" | "detailed";
-  border_radius: "full" | "sm" | "md" | "lg" | "xl";
-  card_style:
-    | "glassmorphic"
-    | "standard"
-    | "outlined"
-    | "minimal"
-    | "neumorphic";
-  homepage_layout: (
-    | "hero"
-    | "categories"
-    | "new_arrivals"
-    | "products"
-    | "promo"
-    | "newsletter"
-    | "scarcity"
-    | "curated"
-    | "lookbook"
-    | "social_proof"
-  )[];
+  navbar_position: NavbarPosition;
+  logo_alignment: LogoAlignment;
+  footer_style: FooterStyle;
+  border_radius: BorderRadius;
+  card_style: CardStyle;
+  homepage_layout: HomepageSection[];
   font_family: "Inter";
   logo_url: string; // URL
   logo_dark_url: string; // URL
@@ -59,24 +89,27 @@ const DEFAULT_THEME: StorefrontTheme = {
   navbar_fg: "#0f172a",
   footer_bg: "#0f172a",
   footer_fg: "#ffffff",
-  navbar_position: "sticky",
-  logo_alignment: "left",
-  footer_style: "detailed",
-  border_radius: "md",
-  card_style: "standard",
+  navbar_position: NavbarPosition.STICKY,
+  logo_alignment: LogoAlignment.LEFT,
+  footer_style: FooterStyle.DETAILED,
+  border_radius: BorderRadius.MD,
+  card_style: CardStyle.STANDARD,
   homepage_layout: [
-    "hero",
-    "categories",
-    "products",
-    "promo",
-    "new_arrivals",
-    "newsletter",
+    HomepageSection.HERO,
+    HomepageSection.CATEGORIES,
+    HomepageSection.PRODUCTS,
+    HomepageSection.PROMO,
+    HomepageSection.NEW_ARRIVALS,
+    HomepageSection.NEWSLETTER,
   ],
   font_family: "Inter",
 };
 
 export function useThemeData() {
-  const [themeData, setThemeData] = useState<StorefrontTheme>(DEFAULT_THEME);
+  const [themeData, setThemeData] = useState<StorefrontTheme>(() => {
+    const cached = getCachedData(THEME_CACHE_KEY);
+    return cached || DEFAULT_THEME;
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const fetchTheme = useCallback(async () => {

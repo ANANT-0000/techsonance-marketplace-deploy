@@ -7,8 +7,17 @@ import { Plus, X, ShoppingCart } from "lucide-react";
 import { AddToCart } from "@/components/customer/AddToCart";
 import { Skeleton } from "../../ui/skeleton";
 import { useImageColors } from "@/hooks/useImageColors";
-import { LOOKBOOK_DEFAULTS, LOOKBOOK_DEFAULT_HOTSPOTS } from "@/constants/storefront";
+import {
+  LOOKBOOK_DEFAULTS,
+  LOOKBOOK_DEFAULT_HOTSPOTS,
+} from "@/constants/storefront";
 import { SHOPPABLE_LOOKBOOK_TEXT } from "@/constants/customerText";
+
+const LOOKBOOK_BLUR_DATA_URL =
+  "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect width='16' height='9' fill='%23f1f5f9'/%3E%3C/svg%3E";
+
+const THUMBNAIL_BLUR_DATA_URL =
+  "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1' fill='%23f8fafc'/%3E%3C/svg%3E";
 
 export interface LookbookHotspot {
   id: string | number;
@@ -31,7 +40,6 @@ export interface ShoppableLookbookProps {
   bg_color?: string;
 }
 
-
 export function ShoppableLookbook({
   title,
   subtitle,
@@ -41,17 +49,25 @@ export function ShoppableLookbook({
 }: ShoppableLookbookProps) {
   const displayTitle = title ?? LOOKBOOK_DEFAULTS.title;
   const displaySubtitle = subtitle ?? LOOKBOOK_DEFAULTS.subtitle;
-  const currentHotspots = (hotspots !== undefined && hotspots !== null ? hotspots : LOOKBOOK_DEFAULT_HOTSPOTS) as LookbookHotspot[];
+  const currentHotspots = (
+    hotspots !== undefined && hotspots !== null
+      ? hotspots
+      : LOOKBOOK_DEFAULT_HOTSPOTS
+  ) as LookbookHotspot[];
 
   // Derive bg from image if no CMS color provided
-  const { solidBg: imageDerivedBg } = useImageColors(image_url, { fallbackColor: bg_color || undefined });
+  const { solidBg: imageDerivedBg } = useImageColors(image_url, {
+    fallbackColor: bg_color || undefined,
+  });
   const sectionBg = bg_color || imageDerivedBg || undefined;
 
   const [activeHotspot, setActiveHotspot] = useState<LookbookHotspot | null>(
     null,
   );
   const containerRef = useRef<HTMLDivElement>(null);
-  const [resolvedProducts, setResolvedProducts] = useState<Record<string, any>>({});
+  const [resolvedProducts, setResolvedProducts] = useState<Record<string, any>>(
+    {},
+  );
 
   // Close popover when clicking outside
   useEffect(() => {
@@ -92,7 +108,7 @@ export function ShoppableLookbook({
           } catch (err) {
             // Ignore failure
           }
-        })
+        }),
       );
 
       if (active) {
@@ -116,24 +132,29 @@ export function ShoppableLookbook({
       <div className="max-w-screen-xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-10">
-          <span className="text-[10px] font-bold tracking-[0.25em] text-purple-600 uppercase">
+          <span className="text-theme-tiny font-bold tracking-[0.25em] text-purple-600 uppercase">
             {SHOPPABLE_LOOKBOOK_TEXT.CURATED_INSPIRATION}
           </span>
-          <h2 className="text-3xl font-serif tracking-tight text-gray-900 mt-2 mb-3">
+          <h2 className="text-theme-h3 font-serif tracking-tight text-gray-900 mt-2 mb-3">
             {displayTitle}
           </h2>
-          <p className="text-xs text-gray-400 max-w-md mx-auto">{displaySubtitle}</p>
+          <p className="text-theme-caption text-gray-400 max-w-md mx-auto">
+            {displaySubtitle}
+          </p>
         </div>
 
         {/* Interactive Image Container */}
-        <div className="relative w-full aspect-[4/3] md:aspect-[16/9] rounded-3xl overflow-hidden shadow-xl border border-slate-100 bg-slate-50">
+        <div className="relative w-full aspect-[4/3] md:aspect-[16/9] rounded-3xl shadow-xl border border-slate-100 bg-slate-50 overflow-visible">
           {image_url ? (
             <Image
               src={image_url}
               alt={displayTitle}
               fill
-              className="object-cover"
-              sizes="100vw"
+              className="object-cover rounded-3xl"
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              quality={80}
+              placeholder="blur"
+              blurDataURL={LOOKBOOK_BLUR_DATA_URL}
             />
           ) : (
             <Skeleton className="w-full h-full p-4 lg:p-8 rounded-4xl" />
@@ -146,13 +167,23 @@ export function ShoppableLookbook({
             const product = pId ? resolvedProducts[pId] : null;
 
             // Extract values with dynamic fallback support
-            const name = product ? product.name : (spot.name || SHOPPABLE_LOOKBOOK_TEXT.PREMIUM_ITEM);
-            const description = product ? product.description : spot.description;
-            const price = product ? (product.base_price ?? product.basePrice) : spot.price;
+            const name = product
+              ? product.name
+              : spot.name || SHOPPABLE_LOOKBOOK_TEXT.PREMIUM_ITEM;
+            const description = product
+              ? product.description
+              : spot.description;
+            const price = product
+              ? (product.base_price ?? product.basePrice)
+              : spot.price;
             const imageUrl = product
-              ? (product.variants?.[0]?.images?.[0]?.image_url ?? product.images?.[0]?.image_url ?? "")
+              ? (product.variants?.[0]?.images?.[0]?.image_url ??
+                product.images?.[0]?.image_url ??
+                "")
               : (spot.image_url ?? "");
-            const variantId = product ? (product.variants?.[0]?.id ?? "") : (spot.variant_id ?? "");
+            const variantId = product
+              ? (product.variants?.[0]?.id ?? "")
+              : (spot.variant_id ?? "");
 
             return (
               <div
@@ -168,8 +199,8 @@ export function ShoppableLookbook({
                   onClick={() => setActiveHotspot(isActive ? null : spot)}
                   className={`relative w-8 h-8 rounded-full border border-white/20 shadow-lg flex items-center justify-center transition-all duration-300 ${
                     isActive
-                      ? "bg-purple-600 text-white scale-110 rotate-45"
-                      : "bg-black/60 text-white hover:bg-black/85"
+                      ? "bg-theme-accent text-theme-primary-foreground scale-110 rotate-45"
+                      : "bg-theme-primary text-theme-primary-foreground hover:bg-theme-accent"
                   }`}
                   aria-label={`View product details for ${name}`}
                 >
@@ -187,13 +218,33 @@ export function ShoppableLookbook({
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
                       transition={{ duration: 0.2 }}
-                      className={`absolute bottom-11 -left-[110px] sm:-left-32 w-56 sm:w-64 bg-white/90 backdrop-blur-xl border border-white/25 rounded-2xl shadow-2xl p-3.5 z-20 flex flex-col gap-3.5`}
+                      className={`absolute z-30 w-56 sm:w-64 bg-white/90 backdrop-blur-xl border border-white/25 rounded-2xl shadow-2xl p-3.5 flex flex-col gap-3.5 ${
+                        spot.y > 60 ? "bottom-11" : "top-11"
+                      } ${
+                        spot.x > 60
+                          ? "right-0"
+                          : spot.x < 40
+                            ? "left-0"
+                            : "-translate-x-1/2 left-1/2"
+                      }`}
                       style={{ originY: 1 }}
                     >
-                      {/* Popover Arrow pointing down */}
-                      <div className="absolute -bottom-1.5 left-[118px] sm:left-34 w-3.5 h-3.5 bg-white border-r border-b border-white/25 rotate-45" />
+                      {/* Popover Arrow - points toward hotspot */}
+                      <div
+                        className={`absolute w-3.5 h-3.5 bg-white border-white/25 rotate-45 z-40 ${
+                          spot.y > 60
+                            ? "-bottom-1.5 border-r border-b"
+                            : "-top-1.5 border-l border-t"
+                        } ${
+                          spot.x > 60
+                            ? "right-[20px]"
+                            : spot.x < 40
+                              ? "left-[20px]"
+                              : "left-1/2 -translate-x-1/2"
+                        }`}
+                      />
 
-                      {(!pId || product) ? (
+                      {!pId || product ? (
                         <>
                           <div className="flex gap-3">
                             {/* Thumbnail */}
@@ -205,20 +256,23 @@ export function ShoppableLookbook({
                                   fill
                                   className="object-contain p-1"
                                   sizes="56px"
+                                  quality={60}
+                                  placeholder="blur"
+                                  blurDataURL={THUMBNAIL_BLUR_DATA_URL}
                                 />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-xs font-bold text-slate-800 truncate mb-0.5">
+                              <h4 className="text-theme-caption font-bold text-slate-800 truncate mb-0.5">
                                 {name}
                               </h4>
                               {price && (
-                                <p className="text-[13px] font-black text-purple-700">
+                                <p className="text-theme-caption-lg font-black text-purple-700">
                                   ₹{Number(price).toLocaleString("en-IN")}
                                 </p>
                               )}
                               {description && (
-                                <p className="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-normal">
+                                <p className="text-theme-tiny text-slate-400 line-clamp-2 mt-1 leading-normal">
                                   {description}
                                 </p>
                               )}
@@ -230,13 +284,16 @@ export function ShoppableLookbook({
                             <div className="w-full">
                               <AddToCart
                                 productVariantId={variantId}
-                                styles="w-full h-9 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
+                                productVariant={product?.variants?.[0]}
+                                styles="w-full h-9 bg-theme-primary hover:bg-theme-accent text-white text-theme-caption font-bold rounded-lg transition-colors shadow-sm"
                               />
                             </div>
                           ) : (
-                            <button className="w-full h-9 bg-slate-900 text-white hover:bg-black text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                            <button className="w-full h-9 bg-slate-900 text-white hover:bg-black text-theme-caption font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors">
                               <ShoppingCart size={13} />
-                              <span>{SHOPPABLE_LOOKBOOK_TEXT.OUT_OF_STOCK}</span>
+                              <span>
+                                {SHOPPABLE_LOOKBOOK_TEXT.OUT_OF_STOCK}
+                              </span>
                             </button>
                           )}
                         </>

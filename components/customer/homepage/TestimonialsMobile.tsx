@@ -10,7 +10,7 @@ export function TestimonialsMobile({ getField }: { getField: (k: string) => any 
 
   return (
     <section className=" testimonials_mobile py-8 px-4">
-      <h2 className="text-sm font-bold uppercase tracking-widest text-gray-900 mb-5">
+      <h2 className="text-theme-body-sm font-bold uppercase tracking-widest text-gray-900 mb-5">
         {title}
       </h2>
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none snap-x">
@@ -29,10 +29,10 @@ export function TestimonialsMobile({ getField }: { getField: (k: string) => any 
                 />
               ))}
             </div>
-            <p className="text-[12px] text-gray-600 leading-relaxed italic mb-4">
+            <p className="text-theme-caption text-gray-600 leading-relaxed italic mb-4">
               "{t.text}"
             </p>
-            <p className="text-[12px] font-bold text-gray-900">
+            <p className="text-theme-caption font-bold text-gray-900">
               {t.name} ·{" "}
               <span className="font-normal text-gray-400">{t.location || t.role}</span>
             </p>

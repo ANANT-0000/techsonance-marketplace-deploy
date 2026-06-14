@@ -67,7 +67,7 @@ export const InnerSideBar = ({
             >
                 <div className="sticky top-0 z-10 flex items-center justify-end bg-white border-b border-gray-100 px-3 py-3 w-full">
                     {isClosed && (
-                        <span className="mr-auto text-xs font-semibold uppercase tracking-widest text-gray-400 truncate">
+                        <span className="mr-auto text-theme-caption font-semibold uppercase tracking-widest text-gray-400 truncate">
                             {selectedMenu}
                         </span>
                     )}
@@ -90,7 +90,7 @@ export const InnerSideBar = ({
                             {section.sections.map((group) => (
                                 <div key={group.section} className="mb-1">
                                     {expanded && group.section && (
-                                        <p className="px-4 pt-2 pb-1 text-[16px] font-medium text-gray-400 truncate mb-2">
+                                        <p className="px-4 pt-2 pb-1 text-theme-body font-medium text-gray-400 truncate mb-2">
                                             {group.section}
                                         </p>
                                     )}
@@ -106,7 +106,7 @@ export const InnerSideBar = ({
                                                         title={expanded ? item.title : undefined}
                                                         className={`
                             group relative flex items-center gap-3 mx-2 px-2.5 py-2 rounded-lg
-                            text-sm font-medium transition-all duration-150
+                            text-theme-body-sm font-medium transition-all duration-150
                             ${isActive
                                                                 ? "bg-blue-50 text-blue-600"
                                                                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -134,7 +134,7 @@ export const InnerSideBar = ({
                                                             <span className="
                               pointer-events-none absolute left-full ml-2 z-50
                               whitespace-nowrap rounded-md bg-gray-900 text-white
-                              text-xs px-2 py-1 opacity-0 group-hover:opacity-100
+                              text-theme-caption px-2 py-1 opacity-0 group-hover:opacity-100
                               transition-opacity duration-150 shadow-md
                             ">
                                                                 {item.title}

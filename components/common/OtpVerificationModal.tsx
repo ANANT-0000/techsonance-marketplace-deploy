@@ -116,10 +116,10 @@ export function OtpVerificationModal({
                             {isDanger ? <ShieldAlert size={32} /> : <Mail size={32} />}
                         </div>
                         
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">
+                        <h3 className="text-theme-h5 font-bold text-gray-900 mb-2">
                             {OTP_VERIFICATION_TEXT.SECURITY_VERIFICATION}
                         </h3>
-                        <p className="text-sm text-gray-500 mb-6 px-2">
+                        <p className="text-theme-body-sm text-gray-500 mb-6 px-2">
                             {OTP_VERIFICATION_TEXT.MESSAGE_PREFIX} <span className="font-semibold text-gray-800">{emailMasked}</span>
                         </p>
 
@@ -136,7 +136,7 @@ export function OtpVerificationModal({
                                         onKeyDown={(e) => handleKeyDown(e, index)}
                                         onPaste={handlePaste}
                                         disabled={isLoading}
-                                        className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-bold text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50"
+                                        className="w-10 h-12 sm:w-12 sm:h-14 text-center text-theme-h5 font-bold text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50"
                                     />
                                 ))}
                             </div>
@@ -144,7 +144,7 @@ export function OtpVerificationModal({
                             <button
                                 type="submit"
                                 disabled={isLoading || otp.join("").length !== 6}
-                                className={`w-full py-3 rounded-xl text-white font-semibold text-sm shadow-sm transition-colors disabled:opacity-50 flex justify-center items-center gap-2 ${
+                                className={`w-full py-3 rounded-xl text-white font-semibold text-theme-body-sm shadow-sm transition-colors disabled:opacity-50 flex justify-center items-center gap-2 ${
                                     isDanger ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
                                 }`}
                             >
@@ -159,7 +159,7 @@ export function OtpVerificationModal({
                             </button>
                         </form>
 
-                        <div className="mt-6 text-sm text-gray-500">
+                        <div className="mt-6 text-theme-body-sm text-gray-500">
                             {OTP_VERIFICATION_TEXT.DIDNT_RECEIVE}{" "}
                             {timeLeft > 0 ? (
                                 <span className="font-medium text-gray-400">{OTP_VERIFICATION_TEXT.RESEND_IN}{timeLeft}{OTP_VERIFICATION_TEXT.SECONDS_SUFFIX}</span>

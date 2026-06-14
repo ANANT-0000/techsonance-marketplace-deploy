@@ -102,10 +102,10 @@ export default function NotificationSettingsPage() {
     return (
       <div className="max-w-2xl mx-auto py-16 text-center">
         <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-bold text-gray-900 mb-1">
+        <h3 className="text-theme-h6 font-bold text-gray-900 mb-1">
           Authentication Required
         </h3>
-        <p className="text-sm text-gray-500 mb-6">
+        <p className="text-theme-body-sm text-gray-500 mb-6">
           Please log in to manage your notification settings.
         </p>
       </div>
@@ -116,7 +116,7 @@ export default function NotificationSettingsPage() {
     return (
       <div className="max-w-2xl mx-auto py-24 text-center">
         <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-3" />
-        <p className="text-sm text-gray-500">Loading your preferences...</p>
+        <p className="text-theme-body-sm text-gray-500">Loading your preferences...</p>
       </div>
     );
   }
@@ -130,10 +130,10 @@ export default function NotificationSettingsPage() {
               <Bell className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold text-gray-900">
+              <CardTitle className="text-theme-h5 font-bold text-gray-900">
                 Notification Settings
               </CardTitle>
-              <CardDescription className="text-xs text-gray-505 mt-0.5">
+              <CardDescription className="text-theme-caption text-gray-505 mt-0.5">
                 Customize when and how you receive alerts and messages.
               </CardDescription>
             </div>
@@ -142,17 +142,17 @@ export default function NotificationSettingsPage() {
         <CardContent className="p-6 sm:p-8 space-y-8">
           {/* Email Settings Section */}
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-2">
+            <h3 className="text-theme-body-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-2">
               <Mail className="w-4 h-4 text-blue-600" />
               Email Notifications
             </h3>
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-theme-body-sm font-semibold text-gray-800">
                   Support Ticket Updates
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-theme-caption text-gray-500">
                   Receive replies and status updates for your support cases.
                 </p>
               </div>
@@ -166,10 +166,10 @@ export default function NotificationSettingsPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-theme-body-sm font-semibold text-gray-800">
                   Order Updates
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-theme-caption text-gray-500">
                   Receipts, confirmations, and shipping tracking updates.
                 </p>
               </div>
@@ -183,10 +183,10 @@ export default function NotificationSettingsPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-theme-body-sm font-semibold text-gray-800">
                   Returns & Replacements
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-theme-caption text-gray-500">
                   Status changes and processing updates on return requests.
                 </p>
               </div>
@@ -200,10 +200,10 @@ export default function NotificationSettingsPage() {
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-theme-body-sm font-semibold text-gray-800">
                   Newsletter & Offers
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-theme-caption text-gray-500">
                   Receive news, personalized recommendations and discount
                   offers.
                 </p>
@@ -219,21 +219,21 @@ export default function NotificationSettingsPage() {
 
           {/* Quiet Hours Section */}
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-2">
+            <h3 className="text-theme-body-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-2">
               <Moon className="w-4 h-4 text-blue-600" />
               Quiet Hours (Do Not Disturb)
             </h3>
-            <p className="text-xs text-gray-500 leading-relaxed">
+            <p className="text-theme-caption text-gray-500 leading-relaxed">
               Mute push and in-app notifications during specified times. Email
               alerts will still arrive but won't trigger browser alerts.
             </p>
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-theme-body-sm font-semibold text-gray-800">
                   In-App Notifications
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-theme-caption text-gray-500">
                   Show floating alerts and notification badges on website.
                 </p>
               </div>
@@ -247,7 +247,7 @@ export default function NotificationSettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                <label className="block text-theme-caption font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   Quiet Hours Start
                 </label>
                 <input
@@ -256,11 +256,11 @@ export default function NotificationSettingsPage() {
                   onChange={(e) =>
                     handleTimeChange("quiet_hours_start", e.target.value)
                   }
-                  className="w-full text-xs px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all text-gray-700 font-medium"
+                  className="w-full text-theme-caption px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all text-gray-700 font-medium"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                <label className="block text-theme-caption font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   Quiet Hours End
                 </label>
                 <input
@@ -269,7 +269,7 @@ export default function NotificationSettingsPage() {
                   onChange={(e) =>
                     handleTimeChange("quiet_hours_end", e.target.value)
                   }
-                  className="w-full text-xs px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all text-gray-700 font-medium"
+                  className="w-full text-theme-caption px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all text-gray-700 font-medium"
                 />
               </div>
             </div>
@@ -291,7 +291,7 @@ export default function NotificationSettingsPage() {
                 });
                 toast.success("Preferences reset to defaults");
               }}
-              className="text-gray-500 hover:text-gray-900 font-bold text-xs"
+              className="text-gray-500 hover:text-gray-900 font-bold text-theme-caption"
             >
               <Undo className="w-3.5 h-3.5 mr-1" />
               Reset Defaults
@@ -299,7 +299,7 @@ export default function NotificationSettingsPage() {
             <Button
               onClick={onSave}
               disabled={saving}
-              className="bg-blue-600 hover:bg-blue-750 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-colors flex items-center gap-1.5"
+              className="bg-blue-600 hover:bg-blue-750 text-white font-bold text-theme-caption px-5 py-2.5 rounded-xl shadow-md transition-colors flex items-center gap-1.5"
             >
               {saving ? (
                 <>

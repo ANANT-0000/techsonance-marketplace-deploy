@@ -121,10 +121,10 @@ function hydrateRule(raw: {
 // ─── Shared field styles ──────────────────────────────────────────────────────
 
 const fieldBase =
-  'w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all placeholder:text-gray-400';
+  'w-full border border-gray-200 rounded-xl p-2.5 text-theme-body-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all placeholder:text-gray-400';
 const fieldError = 'border-red-400 focus:ring-red-100 focus:border-red-400';
-const labelBase = 'block text-xs font-semibold text-gray-600 mb-1.5';
-const sectionTitle = 'text-sm font-bold text-gray-800';
+const labelBase = 'block text-theme-caption font-semibold text-gray-600 mb-1.5';
+const sectionTitle = 'text-theme-body-sm font-bold text-gray-800';
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 
@@ -410,10 +410,10 @@ reset();
               <Tag size={18} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-800">
+              <h2 className="text-theme-body font-bold text-gray-800">
                 {isEditMode ? COUPON_MODEL_TEXT.HEADER.EDIT : COUPON_MODEL_TEXT.HEADER.NEW}
               </h2>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-theme-caption text-gray-400 mt-0.5">
                 {isEditMode
                   ? COUPON_MODEL_TEXT.HEADER.EDIT_DESC
                   : COUPON_MODEL_TEXT.HEADER.NEW_DESC}
@@ -456,7 +456,7 @@ reset();
                 placeholder={COUPON_MODEL_TEXT.BASIC_INFO.CODE_PH}
               />
               {errors.code && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-theme-caption text-red-500">
                   {errors.code.message?.toString()}
                 </p>
               )}
@@ -473,7 +473,7 @@ reset();
                 placeholder={COUPON_MODEL_TEXT.BASIC_INFO.DESC_PH}
               />
               {errors.description && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-theme-caption text-red-500">
                   {errors.description.message?.toString()}
                 </p>
               )}
@@ -510,7 +510,7 @@ reset();
                 placeholder="0.00"
               />
               {errors.value && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-theme-caption text-red-500">
                   {errors.value.message?.toString()}
                 </p>
               )}
@@ -529,7 +529,7 @@ reset();
                 className={`${fieldBase} ${errors.valid_from ? fieldError : ''}`}
               />
               {errors.valid_from && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-theme-caption text-red-500">
                   {errors.valid_from.message?.toString()}
                 </p>
               )}
@@ -544,7 +544,7 @@ reset();
                 className={`${fieldBase} ${errors.valid_to ? fieldError : ''}`}
               />
               {errors.valid_to && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-theme-caption text-red-500">
                   {errors.valid_to.message?.toString()}
                 </p>
               )}
@@ -598,7 +598,7 @@ reset();
                   <div className="w-9 h-5 rounded-full bg-gray-200 peer-checked:bg-blue-500 transition-colors" />
                   <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
                 </div>
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-theme-body-sm font-medium text-gray-700">
                   {COUPON_MODEL_TEXT.ADVANCED.AUTO_APPLY}
                 </span>
               </label>
@@ -613,7 +613,7 @@ reset();
                   <div className="w-9 h-5 rounded-full bg-gray-200 peer-checked:bg-emerald-500 transition-colors" />
                   <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
                 </div>
-                <span className="text-sm font-medium text-gray-700">{COUPON_MODEL_TEXT.ADVANCED.ACTIVE}</span>
+                <span className="text-theme-body-sm font-medium text-gray-700">{COUPON_MODEL_TEXT.ADVANCED.ACTIVE}</span>
               </label>
             </div>
 
@@ -661,7 +661,7 @@ reset();
                   return (
                     <span
                       key={pid}
-                      className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-semibold border border-indigo-100"
+                      className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg text-theme-caption font-semibold border border-indigo-100"
                     >
                       <span
                         className="truncate max-w-[140px]"
@@ -688,7 +688,7 @@ reset();
                   );
                 })}
                 {applicableProductIds.length === 0 && (
-                  <p className="text-xs text-gray-400 italic">
+                  <p className="text-theme-caption text-gray-400 italic">
                     {COUPON_MODEL_TEXT.ADVANCED.NO_PRODUCTS}
                   </p>
                 )}
@@ -699,13 +699,13 @@ reset();
           {/* ── Promotion rules ── */}
           <Section title={COUPON_MODEL_TEXT.RULES.TITLE} accent="indigo">
             <div className="flex items-center justify-between -mt-1">
-              <p className="text-xs text-gray-500">
+              <p className="text-theme-caption text-gray-500">
                 {COUPON_MODEL_TEXT.RULES.DESC}
               </p>
               <button
                 type="button"
                 onClick={addRule}
-                className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 rounded-lg px-3 py-1.5 transition-colors hover:bg-indigo-50"
+                className="flex items-center gap-1.5 text-theme-caption font-semibold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 rounded-lg px-3 py-1.5 transition-colors hover:bg-indigo-50"
               >
                 <Plus size={13} />
                 {COUPON_MODEL_TEXT.RULES.ADD}
@@ -713,7 +713,7 @@ reset();
             </div>
 
             {rules.length === 0 && (
-              <p className="text-xs text-gray-400 italic text-center py-3">
+              <p className="text-theme-caption text-gray-400 italic text-center py-3">
                 {COUPON_MODEL_TEXT.RULES.EMPTY}
               </p>
             )}
@@ -754,7 +754,7 @@ reset();
 
                     {/* Negate toggle */}
                     <div className="flex flex-col items-center gap-1 pt-4">
-                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+                      <span className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wide">
                         {COUPON_MODEL_TEXT.RULES.NEGATE}
                       </span>
                       <label className="relative cursor-pointer">
@@ -828,7 +828,7 @@ reset();
                   )}
 
                   {rule.rule_type === PromotionRuleType.FIRST_ORDER_ONLY && (
-                    <p className="text-xs text-indigo-600 font-medium bg-indigo-50 rounded-xl px-3 py-2.5 border border-indigo-100">
+                    <p className="text-theme-caption text-indigo-600 font-medium bg-indigo-50 rounded-xl px-3 py-2.5 border border-indigo-100">
                       {COUPON_MODEL_TEXT.RULES.FIRST_ORDER_HINT}
                     </p>
                   )}
@@ -883,7 +883,7 @@ reset();
                               key={day}
                               type="button"
                               onClick={() => toggleDay(idx, dayIdx)}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                              className={`px-3 py-1.5 rounded-lg text-theme-caption font-semibold border transition-colors ${
                                 active
                                   ? 'bg-indigo-600 text-white border-indigo-600'
                                   : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
@@ -922,7 +922,7 @@ reset();
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-100 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-sm"
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-100 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-theme-body-sm"
           >
             {isSubmitting ? (
               <>
@@ -943,7 +943,7 @@ reset();
         toastOptions={{
           style: {
             borderRadius: '12px',
-            fontSize: '13px',
+            fontSize: "var(--font-size-theme-caption-lg)",
             fontWeight: 600,
           },
         }}

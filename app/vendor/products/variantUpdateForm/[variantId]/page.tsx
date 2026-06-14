@@ -5,6 +5,7 @@ import { fetchVariant, fetchVendorWarehouse } from "@/utils/vendorApiClient";
 import { id, is } from "date-fns/locale";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ProductImageType } from "@/utils/Types";
 interface Attribute {
   name: string;
   value: string; // could be string[] if multiple values
@@ -36,7 +37,7 @@ interface ProductImage {
   id: string;
   image_url: string;
   alt_text: string;
-  imgType: "main" | "gallery";
+  imgType: ProductImageType;
   is_primary: boolean;
   created_at: string;
   updated_at: string;
@@ -121,7 +122,7 @@ export default function ProductVariantFormPage() {
         sku: existVariant.sku,
         // Map images from API into FileOrProductImage shape
         variantMediaMain: existVariant.images
-          .filter((img) => img.imgType === "main")
+          .filter((img) => img.imgType === ProductImageType.MAIN)
           .map((img) => ({
             id: img.id,
             image_url: img.image_url,
@@ -134,7 +135,7 @@ export default function ProductVariantFormPage() {
             variant_id: img.variant_id,
           })),
         variantMediaGallery: existVariant.images
-          .filter((img) => img.imgType === "gallery")
+          .filter((img) => img.imgType === ProductImageType.GALLERY)
           .map((img) => ({
             id: img.id,
             image_url: img.image_url,

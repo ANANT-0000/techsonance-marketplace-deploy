@@ -11,12 +11,13 @@ import {
   Loader2,
   AlertCircle,
   Search,
-  Filter,
-  ArrowLeft,
   Layers,
+  ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
 import { fetchPolicyCoverageOverview } from "@/utils/vendorApiClient";
+import { UiText } from "@/constants/ui-text";
+import { PolicyType } from "../page";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -44,38 +45,44 @@ interface PolicyCoverageItem {
   }[];
 }
 
+export enum PolicyFilterScope {
+  ALL = "all",
+  CATEGORIES = "categories",
+  PRODUCTS = "products",
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const TYPE_PALETTE: Record<
   string,
   { border: string; badge: string; icon: string }
 > = {
-  warranty: {
+  [PolicyType.WARRANTY]: {
     border: "border-l-blue-500",
     badge: "bg-blue-50 text-blue-700",
     icon: "🛡️",
   },
-  guarantee: {
+  [PolicyType.GUARANTEE]: {
     border: "border-l-emerald-500",
     badge: "bg-emerald-50 text-emerald-700",
     icon: "✅",
   },
-  exchange_only: {
+  [PolicyType.EXCHANGE_ONLY]: {
     border: "border-l-amber-500",
     badge: "bg-amber-50 text-amber-700",
     icon: "🔄",
   },
-  no_return: {
+  [PolicyType.NO_RETURN]: {
     border: "border-l-red-500",
     badge: "bg-red-50 text-red-700",
     icon: "🚫",
   },
-  extended_support: {
+  [PolicyType.EXTENDED_SUPPORT]: {
     border: "border-l-purple-500",
     badge: "bg-purple-50 text-purple-700",
     icon: "🔧",
   },
-  none: {
+  [PolicyType.NONE]: {
     border: "border-l-gray-300",
     badge: "bg-gray-50 text-gray-600",
     icon: "➖",
@@ -83,10 +90,10 @@ const TYPE_PALETTE: Record<
 };
 
 function TypeBadge({ type }: { type: string }) {
-  const p = TYPE_PALETTE[type] ?? TYPE_PALETTE.none;
+  const p = TYPE_PALETTE[type] ?? TYPE_PALETTE[PolicyType.NONE];
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${p.badge}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-theme-caption font-medium ${p.badge}`}
     >
       {p.icon} {type.replace(/_/g, " ")}
     </span>
@@ -95,19 +102,24 @@ function TypeBadge({ type }: { type: string }) {
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
-export default function PolicyCoveragePage() {
+interface PolicyCoveragePageProps {
+  labels?: typeof UiText;
+}
+
+export default function PolicyCoveragePage({
+  labels = UiText,
+}: PolicyCoveragePageProps) {
   const { user } = useAppSelector((state: RootState) => state.auth);
-  const vendorId = user && "vendor_id" in user ? user.vendor_id : "";
   const token = authToken();
 
   const [data, setData] = useState<PolicyCoverageItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
-  const [filterScope, setFilterScope] = useState<
-    "all" | "categories" | "products"
-  >("all");
+  const [filterScope, setFilterScope] = useState<PolicyFilterScope>(
+    PolicyFilterScope.ALL,
+  );
 
   useEffect(() => {
     if (!token) return;
@@ -139,9 +151,10 @@ export default function PolicyCoveragePage() {
       filterType === "all" || item.policy.policy_type === filterType;
 
     const matchesScope =
-      filterScope === "all" ||
-      (filterScope === "categories" && item.categories.length > 0) ||
-      (filterScope === "products" && item.products.length > 0);
+      filterScope === PolicyFilterScope.ALL ||
+      (filterScope === PolicyFilterScope.CATEGORIES &&
+        item.categories.length > 0) ||
+      (filterScope === PolicyFilterScope.PRODUCTS && item.products.length > 0);
 
     return matchesSearch && matchesType && matchesScope;
   });
@@ -164,7 +177,7 @@ export default function PolicyCoveragePage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-red-500">
         <AlertCircle className="w-8 h-8" />
-        <p className="text-sm">{error}</p>
+        <p className="text-theme-body-sm">{error}</p>
       </div>
     );
   }
@@ -175,24 +188,24 @@ export default function PolicyCoveragePage() {
       <div className="mb-6">
         <Link
           href={`/vendor/configDocuments`}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4 group"
+          className="inline-flex items-center gap-1.5 text-theme-body-sm text-gray-500 hover:text-gray-800 mb-4 group"
         >
           <ArrowLeft
             size={14}
             className="group-hover:-translate-x-0.5 transition-transform"
           />
-          Back to Policies
+          {labels.COVERAGE_MAP_PAGE.BACK_TO_POLICIES}
         </Link>
         <div className="flex items-center gap-3 mb-1">
           <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600">
             <Layers size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Policy Coverage Map
+            <h1 className="text-theme-h4 font-bold text-gray-800">
+              {labels.COVERAGE_MAP_PAGE.TITLE}
             </h1>
-            <p className="text-sm text-gray-500">
-              See which categories and products each policy covers
+            <p className="text-theme-body-sm text-gray-500">
+              {labels.COVERAGE_MAP_PAGE.SUBTITLE}
             </p>
           </div>
         </div>
@@ -202,25 +215,25 @@ export default function PolicyCoveragePage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
           {
-            label: "Total Policies",
+            label: labels.TOTAL_POLICIES,
             value: data.length,
             icon: <ShieldCheck size={16} />,
             color: "blue",
           },
           {
-            label: "Category Links",
+            label: labels.COVERAGE_MAP_PAGE.CATEGORY_LINKS,
             value: totalCategories,
             icon: <Tag size={16} />,
             color: "indigo",
           },
           {
-            label: "Product Overrides",
+            label: labels.COVERAGE_MAP_PAGE.PRODUCT_OVERRIDES,
             value: totalProducts,
             icon: <Box size={16} />,
             color: "orange",
           },
           {
-            label: "Unassigned",
+            label: labels.COVERAGE_MAP_PAGE.UNASSIGNED,
             value: unassigned,
             icon: <AlertCircle size={16} />,
             color: "gray",
@@ -231,8 +244,8 @@ export default function PolicyCoveragePage() {
             className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm"
           >
             <div className={`text-${s.color}-500 mb-1`}>{s.icon}</div>
-            <p className="text-xs text-gray-500">{s.label}</p>
-            <p className={`text-2xl font-bold text-${s.color}-600`}>
+            <p className="text-theme-caption text-gray-500">{s.label}</p>
+            <p className={`text-theme-h4 font-bold text-${s.color}-600`}>
               {s.value}
             </p>
           </div>
@@ -245,8 +258,8 @@ export default function PolicyCoveragePage() {
           <Search size={15} className="text-gray-400 shrink-0" />
           <input
             type="text"
-            placeholder="Search policies, categories or products..."
-            className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
+            placeholder={labels.COVERAGE_MAP_PAGE.SEARCH_PLACEHOLDER}
+            className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -255,20 +268,28 @@ export default function PolicyCoveragePage() {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="text-sm border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 outline-none focus:border-blue-400 text-gray-700"
+            className="text-theme-body-sm border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 outline-none focus:border-blue-400 text-gray-700"
           >
             {policyTypes.map((t) => (
               <option key={t} value={t}>
-                {t === "all" ? "All Types" : t.replace(/_/g, " ")}
+                {t === "all"
+                  ? labels.COVERAGE_MAP_PAGE.ALL_TYPES
+                  : t.replace(/_/g, " ")}
               </option>
             ))}
           </select>
           <div className="flex border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
-            {(["all", "categories", "products"] as const).map((s) => (
+            {(
+              [
+                PolicyFilterScope.ALL,
+                PolicyFilterScope.CATEGORIES,
+                PolicyFilterScope.PRODUCTS,
+              ] as const
+            ).map((s) => (
               <button
                 key={s}
                 onClick={() => setFilterScope(s)}
-                className={`px-3 py-2 text-xs font-medium capitalize transition-colors ${
+                className={`px-3 py-2 text-theme-caption font-medium capitalize transition-colors ${
                   filterScope === s
                     ? "bg-blue-600 text-white"
                     : "text-gray-600 hover:bg-gray-100"
@@ -285,19 +306,23 @@ export default function PolicyCoveragePage() {
       {filtered.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-2xl py-16 text-center text-gray-400 shadow-sm">
           <ShieldCheck className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No policies match your filters.</p>
+          <p className="text-theme-body-sm">
+            {labels.COVERAGE_MAP_PAGE.NO_MATCHES}
+          </p>
           <Link
             href={`/vendor/configDocuments/assign`}
-            className="inline-flex items-center gap-1 mt-3 text-sm text-blue-600 hover:underline"
+            className="inline-flex items-center gap-1 mt-3 text-theme-body-sm text-blue-600 hover:underline"
           >
-            Assign policies <ChevronRight size={14} />
+            {labels.COVERAGE_MAP_PAGE.ASSIGN_POLICIES}{" "}
+            <ChevronRight size={14} />
           </Link>
         </div>
       ) : (
         <div className="space-y-4">
           {filtered.map((item) => {
             const palette =
-              TYPE_PALETTE[item.policy.policy_type] ?? TYPE_PALETTE.none;
+              TYPE_PALETTE[item.policy.policy_type] ??
+              TYPE_PALETTE[PolicyType.NONE];
             return (
               <div
                 key={item.policy.id}
@@ -307,40 +332,45 @@ export default function PolicyCoveragePage() {
                 <div className="p-5 flex flex-col sm:flex-row sm:items-center gap-3 border-b border-gray-100">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900 text-base">
+                      <h3 className="font-semibold text-gray-900 text-theme-body">
                         {item.policy.policy_name}
                       </h3>
                       <TypeBadge type={item.policy.policy_type} />
                       {!item.policy.is_active && (
-                        <span className="px-2 py-0.5 text-xs font-bold bg-red-50 text-red-600 rounded-full">
-                          Inactive
+                        <span className="px-2 py-0.5 text-theme-caption font-bold bg-red-50 text-red-600 rounded-full">
+                          {labels.COVERAGE_MAP_PAGE.INACTIVE}
                         </span>
                       )}
                       {item.policy.generates_document && (
-                        <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
-                          📄 Generates PDF
+                        <span className="px-2 py-0.5 text-theme-caption font-medium bg-gray-100 text-gray-600 rounded-full">
+                          {labels.COVERAGE_MAP_PAGE.GENERATES_PDF}
                         </span>
                       )}
                     </div>
                     {item.policy.duration_value && (
-                      <p className="text-xs text-gray-500">
-                        Duration: {item.policy.duration_value}{" "}
-                        {item.policy.duration_unit}
+                      <p className="text-theme-caption text-gray-500">
+                        {labels.COVERAGE_MAP_PAGE.DURATION_PREFIX}
+                        {item.policy.duration_value} {item.policy.duration_unit}
                       </p>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-gray-500">
+                    <span className="text-theme-caption text-gray-500">
                       {item.categories.length}{" "}
-                      {item.categories.length === 1 ? "category" : "categories"}{" "}
+                      {item.categories.length === 1
+                        ? labels.COVERAGE_MAP_PAGE.CATEGORY_SINGULAR
+                        : labels.COVERAGE_MAP_PAGE.CATEGORY_PLURAL}{" "}
                       · {item.products.length}{" "}
-                      {item.products.length === 1 ? "product" : "products"}
+                      {item.products.length === 1
+                        ? labels.COVERAGE_MAP_PAGE.PRODUCT_SINGULAR
+                        : labels.COVERAGE_MAP_PAGE.PRODUCT_PLURAL}
                     </span>
                     <Link
                       href={`/vendor/configDocuments/coverage/${item.policy.id}`}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1 text-theme-caption font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors"
                     >
-                      Full Detail <ChevronRight size={12} />
+                      {labels.COVERAGE_MAP_PAGE.FULL_DETAIL}{" "}
+                      <ChevronRight size={12} />
                     </Link>
                   </div>
                 </div>
@@ -352,25 +382,26 @@ export default function PolicyCoveragePage() {
                     <div>
                       <div className="flex items-center gap-2 mb-3">
                         <Tag size={14} className="text-indigo-500" />
-                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                          Categories ({item.categories.length})
+                        <span className="text-theme-caption font-semibold text-gray-600 uppercase tracking-wider">
+                          {labels.COVERAGE_MAP_PAGE.CATEGORIES_HEADER} (
+                          {item.categories.length})
                         </span>
                       </div>
                       {item.categories.length === 0 ? (
-                        <p className="text-xs text-gray-400 italic">
-                          No categories assigned
+                        <p className="text-theme-caption text-gray-400 italic">
+                          {labels.COVERAGE_MAP_PAGE.NO_CATEGORIES}
                         </p>
                       ) : (
                         <div className="flex flex-wrap gap-2">
                           {item.categories.map((cat) => (
                             <span
                               key={cat.assignment_id}
-                              className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full border border-indigo-100"
+                              className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 text-indigo-700 text-theme-caption font-medium rounded-full border border-indigo-100"
                             >
                               <Tag size={10} />
                               {cat.name}
                               {cat.priority > 1 && (
-                                <span className="ml-1 bg-indigo-200 text-indigo-800 px-1 rounded text-[10px]">
+                                <span className="ml-1 bg-indigo-200 text-indigo-800 px-1 rounded text-theme-tiny">
                                   p{cat.priority}
                                 </span>
                               )}
@@ -384,28 +415,30 @@ export default function PolicyCoveragePage() {
                     <div>
                       <div className="flex items-center gap-2 mb-3">
                         <Box size={14} className="text-orange-500" />
-                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                          Product Overrides ({item.products.length})
+                        <span className="text-theme-caption font-semibold text-gray-600 uppercase tracking-wider">
+                          {labels.COVERAGE_MAP_PAGE.PRODUCT_OVERRIDES_HEADER} (
+                          {item.products.length})
                         </span>
                       </div>
                       {item.products.length === 0 ? (
-                        <p className="text-xs text-gray-400 italic">
-                          No product overrides
+                        <p className="text-theme-caption text-gray-400 italic">
+                          {labels.COVERAGE_MAP_PAGE.NO_OVERRIDES}
                         </p>
                       ) : (
                         <div className="flex flex-wrap gap-2">
                           {item.products.slice(0, 8).map((prod) => (
                             <span
                               key={prod.override_id}
-                              className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-full border border-orange-100"
+                              className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-700 text-theme-caption font-medium rounded-full border border-orange-100"
                             >
                               <Box size={10} />
                               {prod.name}
                             </span>
                           ))}
                           {item.products.length > 8 && (
-                            <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                              +{item.products.length - 8} more
+                            <span className="px-3 py-1 bg-gray-100 text-gray-600 text-theme-caption font-medium rounded-full">
+                              +{item.products.length - 8}{" "}
+                              {labels.COVERAGE_MAP_PAGE.MORE}
                             </span>
                           )}
                         </div>
@@ -413,14 +446,14 @@ export default function PolicyCoveragePage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 flex items-center gap-2 text-xs text-amber-600 bg-amber-50">
+                  <div className="p-4 flex items-center gap-2 text-theme-caption text-amber-600 bg-amber-50">
                     <AlertCircle size={13} />
-                    This policy is not assigned to any category or product yet.
+                    {labels.COVERAGE_MAP_PAGE.NOT_ASSIGNED_WARNING}
                     <Link
                       href={`/vendor/configDocuments/assign`}
                       className="underline font-medium hover:text-amber-800"
                     >
-                      Assign now
+                      {labels.COVERAGE_MAP_PAGE.ASSIGN_NOW}
                     </Link>
                   </div>
                 )}

@@ -47,8 +47,8 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
       {/* LEFT: Stats & Add Form */}
       <div className="md:col-span-1 space-y-6 ">
         <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-          <p className="text-blue-600 text-sm font-medium">{CATEGORY_MANAGER_TEXT.STATS.TOTAL}</p>
-          <p className="text-3xl font-bold text-blue-900">
+          <p className="text-blue-600 text-theme-body-sm font-medium">{CATEGORY_MANAGER_TEXT.STATS.TOTAL}</p>
+          <p className="text-theme-h3 font-bold text-blue-900">
             {categories.length}
           </p>
         </div>
@@ -61,31 +61,31 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
             className="space-y-4"
           >
             <div>
-              <label className="text-xs font-medium text-gray-500">
+              <label className="text-theme-caption font-medium text-gray-500">
                 {CATEGORY_MANAGER_TEXT.FORM.NAME_LABEL}
               </label>
               <input
                 name="name"
                 required
-                className="w-full mt-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full mt-1 border border-gray-300 rounded-xl px-3 py-2 text-theme-body-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder={CATEGORY_MANAGER_TEXT.FORM.NAME_PLACEHOLDER}
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500">
+              <label className="text-theme-caption font-medium text-gray-500">
                 {CATEGORY_MANAGER_TEXT.FORM.DESC_LABEL}
               </label>
               <textarea
                 name="description"
                 rows={3}
-                className="w-full mt-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full mt-1 border border-gray-300 rounded-xl px-3 py-2 text-theme-body-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder={CATEGORY_MANAGER_TEXT.FORM.DESC_PLACEHOLDER}
               />
             </div>
             <button
               type="submit"
               disabled={false}
-              className="w-full bg-gray-900 text-white py-2 rounded-xl text-sm font-medium hover:bg-black disabled:opacity-50 cursor-pointer"
+              className="w-full bg-gray-900 text-white py-2 rounded-xl text-theme-body-sm font-medium hover:bg-black disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? CATEGORY_MANAGER_TEXT.FORM.BTN_LOADING : CATEGORY_MANAGER_TEXT.FORM.BTN_DEFAULT}
             </button>
@@ -96,7 +96,7 @@ export default function CategoryManager({ categories, setCheckChange }: any) {
       {/* RIGHT: Category List */}
       <div className="md:col-span-2">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left text-theme-body-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 font-semibold text-gray-700">

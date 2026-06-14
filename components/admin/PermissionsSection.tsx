@@ -31,7 +31,7 @@ export default async function PermissionsSection({
   };
   return (
     <div>
-      <h2 className="text-sm font-semibold text-gray-700 mb-3">
+      <h2 className="text-theme-body-sm font-semibold text-gray-700 mb-3">
         {PERMISSIONS_TEXT.PERMISSIONS_TITLE}
       </h2>
 
@@ -39,10 +39,10 @@ export default async function PermissionsSection({
         <input
           name="permission"
           placeholder="e.g. view_reports"
-          className="flex-1 border  border-gray-300 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:border-gray-500"
+          className="flex-1 border  border-gray-300 rounded-xl px-3 py-1.5 text-theme-body-sm focus:outline-none focus:border-gray-500"
         />
 
-        <button className="border border-gray-300 rounded-xl px-4 py-1.5  text-sm hover:bg-gray-50">
+        <button className="border border-gray-300 rounded-xl px-4 py-1.5  text-theme-body-sm hover:bg-gray-50">
           {PERMISSIONS_TEXT.ADD}
         </button>
       </form>
@@ -50,13 +50,13 @@ export default async function PermissionsSection({
       <div className="divide-y border-2 border-gray-300 rounded-2xl">
         <Suspense
           fallback={
-            <p className="text-xs text-gray-400 p-3">
+            <p className="text-theme-caption text-gray-400 p-3">
               {PERMISSIONS_TEXT.LOADING}
             </p>
           }
         >
           {permissions.length === 0 ? (
-            <p className="text-xs text-gray-400 p-3">
+            <p className="text-theme-caption text-gray-400 p-3">
               {PERMISSIONS_TEXT.NO_PERMISSIONS_YET}
             </p>
           ) : (

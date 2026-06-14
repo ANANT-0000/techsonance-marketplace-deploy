@@ -124,10 +124,10 @@ function TemplateFormContent() {
       <main className="admin_vendorManagement px-1 py-4 w-full">
         <header className="flex justify-between items-center my-6">
           <div>
-            <h1 className="font-bold text-2xl text-gray-800">
+            <h1 className="font-bold text-theme-h4 text-gray-800">
               {editId ? "Update Document Template" : "Create Document Template"}
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-theme-body-sm text-gray-500 mt-1">
               These templates will be shown to vendors for selection.
             </p>
           </div>
@@ -139,7 +139,7 @@ function TemplateFormContent() {
         >
           <section className="border border-gray-100 bg-white p-6 rounded-2xl w-full shadow-md shadow-gray-100/80">
             {globalError && (
-              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-200">
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-theme-body-sm border border-red-200">
                 {globalError}
               </div>
             )}
@@ -148,7 +148,7 @@ function TemplateFormContent() {
               {/* Template ID & Label */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-2 w-full">
-                  <label className="text-sm font-semibold text-gray-600">
+                  <label className="text-theme-body-sm font-semibold text-gray-600">
                     Template ID <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -160,14 +160,14 @@ function TemplateFormContent() {
                     })}
                   />
                   {errors.template_name && (
-                    <p className="text-xs text-red-500">
+                    <p className="text-theme-caption text-red-500">
                       {errors.template_name.message}
                     </p>
                   )}
                 </div>
 
                 <div className="flex flex-col gap-2 w-full">
-                  <label className="text-sm font-semibold text-gray-600">
+                  <label className="text-theme-body-sm font-semibold text-gray-600">
                     Template Label <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -179,7 +179,7 @@ function TemplateFormContent() {
                     })}
                   />
                   {errors.template_label && (
-                    <p className="text-xs text-red-500">
+                    <p className="text-theme-caption text-red-500">
                       {errors.template_label.message}
                     </p>
                   )}
@@ -188,7 +188,7 @@ function TemplateFormContent() {
 
               {/* Description */}
               <div className="flex flex-col gap-2 w-full">
-                <label className="text-sm font-semibold text-gray-600">
+                <label className="text-theme-body-sm font-semibold text-gray-600">
                   Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -200,7 +200,7 @@ function TemplateFormContent() {
                   })}
                 />
                 {errors.description && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-theme-caption text-red-500">
                     {errors.description.message}
                   </p>
                 )}
@@ -208,7 +208,7 @@ function TemplateFormContent() {
 
               {/* Dynamic PDF Upload Area */}
               <div className="flex flex-col gap-2 w-full mt-2">
-                <label className="text-sm font-semibold text-gray-600">
+                <label className="text-theme-body-sm font-semibold text-gray-600">
                   Upload PDF Template <span className="text-red-500">*</span>
                 </label>
 
@@ -221,12 +221,12 @@ function TemplateFormContent() {
                           <FileText size={24} />
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-gray-800">
+                          <span className="text-theme-body-sm font-semibold text-gray-800">
                             Current Template Document
                           </span>
                           <button
                             onClick={() => setShowPreview(true)}
-                            className="text-xs text-blue-500 hover:text-blue-700 underline mt-0.5 w-fit"
+                            className="text-theme-caption text-blue-500 hover:text-blue-700 underline mt-0.5 w-fit"
                             type="button"
                           >
                             View Existing PDF
@@ -254,10 +254,10 @@ function TemplateFormContent() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
                     <UploadCloud className="text-gray-400 mb-3" size={32} />
-                    <p className="text-sm font-semibold text-blue-600">
+                    <p className="text-theme-body-sm font-semibold text-blue-600">
                       Click to upload or drag and drop
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-theme-caption text-gray-500 mt-1">
                       PDF files only (Max 10MB)
                     </p>
                   </div>
@@ -269,10 +269,10 @@ function TemplateFormContent() {
                         <FileText size={24} />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-gray-800">
+                        <span className="text-theme-body-sm font-semibold text-gray-800">
                           {pdfFile.name}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-theme-caption text-gray-500">
                           {(pdfFile.size / 1024 / 1024).toFixed(2)} MB
                         </span>
                       </div>
@@ -293,14 +293,14 @@ function TemplateFormContent() {
             <div className="w-full flex justify-end items-center gap-4 mt-8 pt-4 border-t border-gray-100">
               <Link
                 href="../templates"
-                className="py-2.5 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
+                className="py-2.5 px-6 rounded-xl border border-gray-300 text-theme-body-sm font-medium text-gray-700 hover:bg-gray-50 transition-all"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="py-2.5 px-6 rounded-xl bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all shadow-sm"
+                className="py-2.5 px-6 rounded-xl bg-blue-500 text-white text-theme-body-sm font-bold hover:bg-blue-600 disabled:opacity-50 transition-all shadow-sm"
               >
                 {isSubmitting
                   ? "Saving..."
@@ -319,7 +319,7 @@ function TemplateFormContent() {
             <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50">
               <div className="flex items-center gap-2">
                 <FileText className="text-red-500" size={20} />
-                <h2 className="text-lg font-bold text-gray-800">
+                <h2 className="text-theme-h6 font-bold text-gray-800">
                   Document Preview
                 </h2>
               </div>

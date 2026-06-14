@@ -38,8 +38,8 @@ const EmptyCart = () => (
             </div>
         </div>
         <div>
-            <p className="text-base font-bold text-gray-800">{CART_SIDEBAR_TEXT.EMPTY_TITLE}</p>
-            <p className="text-sm text-gray-400 mt-1 leading-relaxed">
+            <p className="text-theme-body font-bold text-gray-800">{CART_SIDEBAR_TEXT.EMPTY_TITLE}</p>
+            <p className="text-theme-body-sm text-gray-400 mt-1 leading-relaxed">
                 {CART_SIDEBAR_TEXT.EMPTY_DESC}
             </p>
         </div>
@@ -70,8 +70,8 @@ const MobileToast = ({ item }: { item: CartItemListResponse | undefined }) => (
 
         {/* Text */}
         <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-white/70 uppercase tracking-wider">{CART_SIDEBAR_TEXT.TOAST_ADDED}</p>
-            <p className="text-sm font-bold text-white truncate mt-0.5">
+            <p className="text-xxs sm:text-theme-caption font-semibold text-white/70 uppercase tracking-wider">{CART_SIDEBAR_TEXT.TOAST_ADDED}</p>
+            <p className="text-theme-caption sm:text-theme-body-sm font-bold text-white truncate mt-0.5">
                 {item?.productVariant?.variant_name ?? CART_SIDEBAR_TEXT.TOAST_DEFAULT_ITEM}
             </p>
         </div>
@@ -162,9 +162,9 @@ export function CartSidebar() {
                                     <ShoppingBag size={16} className="text-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-base font-bold text-gray-900 leading-tight">{CART_SIDEBAR_TEXT.HEADER_TITLE}</h2>
+                                    <h2 className="text-theme-body font-bold text-gray-900 leading-tight">{CART_SIDEBAR_TEXT.HEADER_TITLE}</h2>
                                     {itemCount > 0 && (
-                                        <p className="text-xs text-gray-400 font-medium">
+                                        <p className="text-theme-caption text-gray-400 font-medium">
                                             {itemCount} {itemCount === 1 ? CART_SIDEBAR_TEXT.HEADER_ITEM : CART_SIDEBAR_TEXT.HEADER_ITEMS}
                                         </p>
                                     )}
@@ -214,15 +214,15 @@ export function CartSidebar() {
 
                                                     {/* Info */}
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2">
+                                                        <p className="text-theme-caption sm:text-theme-body-sm font-semibold text-gray-900 leading-snug line-clamp-2">
                                                             {item.productVariant?.variant_name}
                                                         </p>
                                                         <div className="flex items-center gap-2 mt-1.5">
-                                                            <span className="text-sm font-bold text-gray-900">
+                                                            <span className="text-theme-caption sm:text-theme-body-sm font-bold text-gray-900">
                                                                 ₹{Number(item.productVariant?.price ?? 0).toLocaleString('en-IN')}
                                                             </span>
                                                             {item.quantity > 1 && (
-                                                                <span className="text-xs text-gray-400">
+                                                                <span className="text-xxs sm:text-theme-caption text-gray-400">
                                                                     × {item.quantity} = ₹{lineTotal.toLocaleString('en-IN')}
                                                                 </span>
                                                             )}
@@ -231,7 +231,7 @@ export function CartSidebar() {
                                                         <div className="mt-2.5">
                                                             <AddToCart
                                                                 productVariantId={item.product_variant_id}
-                                                                styles="h-8 w-28 rounded-xl border border-gray-200 bg-white text-gray-800 text-xs font-semibold"
+                                                                styles="h-8 w-28 rounded-xl border border-gray-200 bg-white text-gray-800 text-theme-caption font-semibold"
                                                             />
                                                         </div>
                                                     </div>
@@ -250,25 +250,25 @@ export function CartSidebar() {
                                 {/* Order summary */}
                                 <div className="bg-gray-50 rounded-2xl px-4 py-3.5 space-y-2.5">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        <span className="text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">
                                             {CART_SIDEBAR_TEXT.SUMMARY_SUBTOTAL}
                                         </span>
-                                        <span className="text-sm font-bold text-gray-900">
+                                        <span className="text-theme-body-sm font-bold text-gray-900">
                                             ₹{subtotal.toLocaleString('en-IN')}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        <span className="text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">
                                             {CART_SIDEBAR_TEXT.SUMMARY_SHIPPING}
                                         </span>
-                                        <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                        <span className="text-theme-caption font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                                             {CART_SIDEBAR_TEXT.SUMMARY_FREE}
                                         </span>
                                     </div>
                                     <div className="h-px bg-gray-200" />
                                     <div className="flex justify-between items-center">
-                                        <span className="text-sm font-bold text-gray-900">{CART_SIDEBAR_TEXT.SUMMARY_TOTAL}</span>
-                                        <span className="text-lg font-black text-gray-900 tracking-tight">
+                                        <span className="text-theme-body-sm font-bold text-gray-900">{CART_SIDEBAR_TEXT.SUMMARY_TOTAL}</span>
+                                        <span className="text-theme-h6 font-black text-gray-900 tracking-tight">
                                             ₹{subtotal.toLocaleString('en-IN')}
                                         </span>
                                     </div>
@@ -280,7 +280,7 @@ export function CartSidebar() {
                                     onClick={() => dispatch(toggleCartSidebar('close'))}
                                     className="flex items-center justify-between w-full px-4 py-3 rounded-2xl border border-gray-200 hover:border-gray-400 hover:bg-gray-50 transition-all group"
                                 >
-                                    <span className="text-sm font-semibold text-gray-700 group-hover:text-gray-900">
+                                    <span className="text-theme-body-sm font-semibold text-gray-700 group-hover:text-gray-900">
                                         {CART_SIDEBAR_TEXT.VIEW_FULL_CART}
                                     </span>
                                     <ChevronRight
@@ -293,11 +293,11 @@ export function CartSidebar() {
                                 <BuyBtn
                                     mode={BuyBtnMode.CART}
                                     id={cartId}
-                                    styles="w-full h-12 rounded-2xl bg-gray-900 text-white hover:bg-black font-bold text-sm transition-all duration-200 shadow-lg shadow-gray-900/20"
+                                    styles="w-full h-12 rounded-2xl bg-gray-900 text-white hover:bg-black font-bold text-theme-body-sm transition-all duration-200 shadow-lg shadow-gray-900/20"
                                 />
 
                                 {/* Trust micro-copy */}
-                                <p className="text-center text-[11px] text-gray-400 font-medium">
+                                <p className="text-center text-xxs sm:text-theme-caption text-gray-400 font-medium">
                                     {CART_SIDEBAR_TEXT.SECURE_CHECKOUT}
                                 </p>
                             </div>
@@ -309,7 +309,7 @@ export function CartSidebar() {
                                 <Link
                                     href="/"
                                     onClick={() => dispatch(toggleCartSidebar('close'))}
-                                    className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gray-900 text-white font-bold text-sm hover:bg-black transition-all"
+                                    className="flex items-center justify-center gap-2 w-full h-12 rounded-2xl bg-gray-900 text-white font-bold text-theme-body-sm hover:bg-black transition-all"
                                 >
                                     {CART_SIDEBAR_TEXT.CONTINUE_SHOPPING}
                                     <ArrowRight size={15} />

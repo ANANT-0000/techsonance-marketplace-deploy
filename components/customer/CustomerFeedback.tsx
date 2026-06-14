@@ -46,7 +46,7 @@ export function CustomerFeedback({
                 initial={{ opacity: 0, y: -20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="text-3xl text-center font-bold mt-12 mb-10"
+                className="text-theme-h3 text-center font-bold mt-12 mb-10"
             >
                 {CUSTOMER_FEEDBACK_TEXT.TITLE}
             </motion.h2>
@@ -75,13 +75,13 @@ export function CustomerFeedback({
                             size={32}
                         />
 
-                        <p className="text-lg lg:w-full italic text-gray-700 leading-relaxed mb-6">
+                        <p className="text-theme-h6 lg:w-full italic text-gray-700 leading-relaxed mb-6">
                             "{feedback.feedback}"
                         </p>
 
                         <div className="flex  lg:w-full items-center gap-2">
                             <span className="h-[2px] w-4 bg-theme-primary"></span>
-                            <p className="font-bold text-gray-900 uppercase tracking-wider text-sm">
+                            <p className="font-bold text-gray-900 uppercase tracking-wider text-theme-body-sm">
                                 {feedback.customerName}
                             </p>
                         </div>

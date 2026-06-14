@@ -9,7 +9,7 @@ import {
 import { authToken } from "@/utils/authToken";
 import { fetchGetCartList, fetchAddToCart } from "@/utils/customerApiClient";
 import { fetchProductVariantDetails } from "@/utils/commonAPiClient";
-import { Variant } from "@/utils/Types";
+import { Variant, ProductImageType } from "@/utils/Types";
 import { createAsyncThunk, createSlice, current } from "@reduxjs/toolkit";
 
 export interface CartState {
@@ -21,7 +21,48 @@ export interface CartState {
 }
 
 const isClient = typeof window !== "undefined";
-
+const normalizeProductVariant = (variant: any): any => {
+  if (!variant) return undefined;
+  let imagesArray: any[] = [];
+  if (Array.isArray(variant.images)) {
+    imagesArray = variant.images.map((img: any, idx: number) => ({
+      id: img.id || String(idx),
+      image_url: img.image_url || img.imageUrl || "",
+      is_primary: img.is_primary ?? idx === 0,
+      imgType: img.imgType || ProductImageType.MAIN,
+      product_id: img.product_id || variant.product_id || "",
+      variant_id: img.variant_id || variant.id || "",
+    }));
+  } else if (typeof variant.images === "string") {
+    imagesArray = [
+      {
+        id: "primary",
+        image_url: variant.images,
+        is_primary: true,
+        imgType: ProductImageType.MAIN,
+        product_id: variant.product_id || "",
+        variant_id: variant.id || "",
+      },
+    ];
+  }
+  const stockQuantity =
+    variant.inventory?.stock_quantity ??
+    variant.stock_quantity ??
+    variant.inventory?.stockQuantity ??
+    0;
+  return {
+    id: variant.id,
+    variant_name: variant.variant_name,
+    sku: variant.sku,
+    price: variant.price,
+    status: variant.status || "active",
+    product_id: variant.product_id || "",
+    images: imagesArray,
+    inventory: {
+      stock_quantity: stockQuantity,
+    },
+  };
+};
 const saveCartToLocalStorage = (
   cartId: string,
   items: CartItem[],
@@ -31,8 +72,7 @@ const saveCartToLocalStorage = (
   try {
     localStorage.setItem(CART_KEY, JSON.stringify({ cartId, items, itemList }));
     const savedCart = localStorage.getItem(CART_KEY);
-  } catch (e) {
-  }
+  } catch (e) {}
 };
 
 const loadCartFromLocalOrServer = async (): Promise<
@@ -129,8 +169,7 @@ const loadCartFromLocalOrServer = async (): Promise<
           saveCartToLocalStorage("", [], []);
           return { cartId: "", items: [], itemList: [] };
         }
-      } catch (serverError) {
-      }
+      } catch (serverError) {}
     }
 
     // 2. Fallback: load from local storage    if (serializedCart) {
@@ -161,7 +200,7 @@ const loadCartFromLocalOrServer = async (): Promise<
                     image_url: img.image_url || img.imageUrl,
                     alt_text: img.alt_text || variantData.variant_name,
                     is_primary: img.is_primary || idx === 0,
-                    imgType: img.imgType || "main",
+                    imgType: img.imgType || ProductImageType.MAIN,
                   }),
                 );
               } else if (typeof variantData.images === "string") {
@@ -171,7 +210,7 @@ const loadCartFromLocalOrServer = async (): Promise<
                     image_url: variantData.images,
                     alt_text: variantData.variant_name,
                     is_primary: true,
-                    imgType: "main",
+                    imgType: ProductImageType.MAIN,
                   },
                 ];
               }
@@ -287,8 +326,7 @@ export const syncCartAfterLogin = createAsyncThunk(
 
       // 4. Reload the cart state from database
       dispatch(loadCart());
-    } catch (error) {
-    }
+    } catch (error) {}
   },
 );
 
@@ -325,7 +363,9 @@ const CartSlice = createSlice({
           quantity: action.payload.quantity ?? 1,
         });
       }
-
+      const normalizedVariant = action.payload.productVariant
+        ? normalizeProductVariant(action.payload.productVariant)
+        : undefined;
       // Keep itemList in sync
       const existingItemList = state.itemList.find(
         (item) => item.product_variant_id === action.payload.productVariantId,
@@ -333,17 +373,36 @@ const CartSlice = createSlice({
       if (existingItemList) {
         existingItemList.quantity =
           action.payload.quantity ?? existingItemList.quantity + 1;
-      } else if (action.payload.productVariant) {
+        if (action.payload.cartItemId) {
+          existingItemList.id = action.payload.cartItemId;
+        }
+        if (action.payload.cartId) {
+          existingItemList.cart_id = action.payload.cartId;
+        }
+        if (normalizedVariant) {
+          existingItemList.productVariant = normalizedVariant;
+        }
+      } else {
         state.itemList.push({
-          id: action.payload.productVariantId,
+          id: action.payload.cartItemId || action.payload.productVariantId,
           cart_id: action.payload.cartId || state.cartId || "",
           product_variant_id: action.payload.productVariantId,
           quantity: action.payload.quantity ?? 1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          productVariant: action.payload.productVariant,
+          productVariant:
+            normalizedVariant ||
+            ({
+              id: action.payload.productVariantId,
+              variant_name: "Premium Product",
+              price: 0,
+              sku: "",
+              images: [],
+              inventory: { stock_quantity: 999 },
+            } as any),
         });
       }
+
       saveCartToLocalStorage(
         state.cartId,
         current(state.items),

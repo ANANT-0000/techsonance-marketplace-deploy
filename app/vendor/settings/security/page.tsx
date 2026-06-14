@@ -50,7 +50,7 @@ export default function SecurityPage() {
           className="vendor_settings_content   mt-0  px-6 py-6 bg-white border-2 border-gray-300 rounded-lg"
           onSubmit={handleSubmit((data) => {})}
         >
-          <h2 className="text-2xl font-bold mb-4">Security Settings</h2>
+          <h2 className="text-theme-h4 font-bold mb-4">Security Settings</h2>
           <section className="space-y-5">
             <div>
               <label className="block text-gray-700 mb-2 font-bold">
@@ -99,7 +99,7 @@ export default function SecurityPage() {
         <section className=" my-6 px-6 py-6 border-2 border-gray-300 rounded-lg bg-white">
           <div className="flex  justify-between items-center gap-12">
             <span>
-              <h2 className="text-2xl font-bold mb-4">
+              <h2 className="text-theme-h4 font-bold mb-4">
                 Two-Factor Authentication
               </h2>
               <p className="text-gray-600 mb-4">
@@ -142,7 +142,7 @@ export default function SecurityPage() {
           </div>
           <h1></h1>
           <div className="mt-10">
-            <h2 className="text-2xl font-bold mb-4">Active Sessions</h2>
+            <h2 className="text-theme-h4 font-bold mb-4">Active Sessions</h2>
             <p className="text-gray-600 mb-4">
               Review and manage your active sessions. If you notice any
               unfamiliar devices or locations, you can log out of those sessions

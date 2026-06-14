@@ -153,11 +153,11 @@ export default function OrderDetailPage() {
             )}
           </div>
           
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 mb-3">
+          <h1 className="text-theme-h3 md:text-theme-h2 font-extrabold tracking-tight text-gray-900 mb-3">
             {isSuccess ? "Your Order Has Been Placed" : "Payment Failed"}
           </h1>
           
-          <p className="text-sm md:text-base text-gray-500 max-w-xl mx-auto leading-relaxed">
+          <p className="text-theme-body-sm md:text-theme-body text-gray-500 max-w-xl mx-auto leading-relaxed">
             {isSuccess ? (
               user?.email ? (
                 <>We've sent a confirmation email to <span className="font-semibold text-gray-700">{user.email}</span></>
@@ -176,7 +176,7 @@ export default function OrderDetailPage() {
             {/* Top Details grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left mb-6 pb-6 border-b border-gray-100">
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-widest font-semibold text-gray-400">Order Number</p>
+                <p className="text-theme-caption uppercase tracking-widest font-semibold text-gray-400">Order Number</p>
                 <div className="flex items-center justify-center md:justify-start gap-2">
                   <span className="font-mono font-bold text-gray-900">#{orderid.slice(0, 10).toUpperCase()}</span>
                   <button 
@@ -190,13 +190,13 @@ export default function OrderDetailPage() {
               </div>
               
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-widest font-semibold text-gray-400">Date</p>
+                <p className="text-theme-caption uppercase tracking-widest font-semibold text-gray-400">Date</p>
                 <p className="font-semibold text-gray-900">{orderDate}</p>
               </div>
 
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-widest font-semibold text-gray-400">Total Amount</p>
-                <p className="font-extrabold text-xl text-blue-600">₹{formatCurrency(totalAmount)}</p>
+                <p className="text-theme-caption uppercase tracking-widest font-semibold text-gray-400">Total Amount</p>
+                <p className="font-extrabold text-theme-h5 text-blue-600">₹{formatCurrency(totalAmount)}</p>
               </div>
             </div>
 
@@ -205,7 +205,7 @@ export default function OrderDetailPage() {
               <div className="space-y-6">
                 {/* Desktop Stepper */}
                 <div className="hidden md:block">
-                  <h3 className="text-sm font-bold text-gray-800 mb-6">Delivery Progress</h3>
+                  <h3 className="text-theme-body-sm font-bold text-gray-800 mb-6">Delivery Progress</h3>
                   <div className="relative flex justify-between items-center px-4">
                     {/* Progress Bar background */}
                     <div className="absolute top-[7px] left-0 right-0 h-1 bg-gray-100 z-0">
@@ -226,7 +226,7 @@ export default function OrderDetailPage() {
                             ? 'bg-white border-blue-500 animate-pulse' 
                             : 'bg-white border-gray-300'
                         }`} />
-                        <span className={`text-[11px] font-bold mt-2 uppercase tracking-wider ${
+                        <span className={`text-theme-xxs font-bold mt-2 uppercase tracking-wider ${
                           s.active || s.done ? 'text-gray-900' : 'text-gray-400'
                         }`}>
                           {s.label}
@@ -238,7 +238,7 @@ export default function OrderDetailPage() {
 
                 {/* Mobile Stepper badge */}
                 <div className="flex md:hidden items-center justify-between bg-blue-50/50 border border-blue-100/50 rounded-xl p-3.5">
-                  <span className="text-xs font-semibold text-blue-700">Order Status</span>
+                  <span className="text-theme-caption font-semibold text-blue-700">Order Status</span>
                   <Badge className="bg-blue-600 text-white border-none font-bold uppercase tracking-wide px-3 py-1">
                     {getOrderStatusLabel(currentOrderStatus)}
                   </Badge>
@@ -250,8 +250,8 @@ export default function OrderDetailPage() {
                     <Truck className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Estimated Delivery</p>
-                    <p className="text-sm font-bold text-gray-800">
+                    <p className="text-theme-caption text-gray-400 uppercase tracking-wider font-semibold">Estimated Delivery</p>
+                    <p className="text-theme-body-sm font-bold text-gray-800">
                       Within 3-5 Business Days — Standard Delivery
                     </p>
                   </div>
@@ -262,8 +262,8 @@ export default function OrderDetailPage() {
                 <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-xl p-4">
                   <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                   <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-red-900">What happened?</h4>
-                    <p className="text-xs text-red-700 leading-relaxed">
+                    <h4 className="text-theme-body-sm font-bold text-red-900">What happened?</h4>
+                    <p className="text-theme-caption text-red-700 leading-relaxed">
                       Your payment authorization was declined or cancelled. We have reserved your checkout configuration, but no funds were captured and the items remain in your cart or have been released.
                     </p>
                   </div>
@@ -277,12 +277,12 @@ export default function OrderDetailPage() {
         <div className="flex flex-col sm:flex-row gap-4 mb-10">
           {isSuccess ? (
             <>
-              <Button asChild className="flex-1 bg-black text-white hover:bg-gray-800 h-12 rounded-xl text-sm font-bold transition-all shadow-sm">
+              <Button asChild className="flex-1 bg-black text-white hover:bg-gray-800 h-12 rounded-xl text-theme-body-sm font-bold transition-all shadow-sm">
                 <Link href={`/customer/orders/${orderid}`}>
                   Track Order Details
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="flex-1 bg-white hover:bg-gray-50 h-12 rounded-xl text-sm font-bold border-gray-300 transition-all text-gray-700">
+              <Button asChild variant="outline" className="flex-1 bg-white hover:bg-gray-50 h-12 rounded-xl text-theme-body-sm font-bold border-gray-300 transition-all text-gray-700">
                 <Link href="/store">
                   Continue Shopping
                 </Link>
@@ -290,12 +290,12 @@ export default function OrderDetailPage() {
             </>
           ) : (
             <>
-              <Button asChild className="flex-1 bg-blue-600 text-white hover:bg-blue-700 h-12 rounded-xl text-sm font-bold transition-all shadow-sm">
+              <Button asChild className="flex-1 bg-blue-600 text-white hover:bg-blue-700 h-12 rounded-xl text-theme-body-sm font-bold transition-all shadow-sm">
                 <Link href="/customer/checkout">
                   Try Again
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="flex-1 bg-white hover:bg-gray-50 h-12 rounded-xl text-sm font-bold border-gray-300 transition-all text-gray-700">
+              <Button asChild variant="outline" className="flex-1 bg-white hover:bg-gray-50 h-12 rounded-xl text-theme-body-sm font-bold border-gray-300 transition-all text-gray-700">
                 <Link href="/customer/cart">
                   Go to Cart
                 </Link>
@@ -310,7 +310,7 @@ export default function OrderDetailPage() {
             {/* Left Card: Items summary */}
             <Card className="shadow-none border-gray-200/80 rounded-2xl overflow-hidden">
               <CardHeader className="bg-gray-50/50 py-4 border-b border-gray-100">
-                <CardTitle className="text-sm font-bold text-gray-800">Items in this order</CardTitle>
+                <CardTitle className="text-theme-body-sm font-bold text-gray-800">Items in this order</CardTitle>
               </CardHeader>
               <CardContent className="p-4 divide-y divide-gray-100 max-h-[350px] overflow-y-auto">
                 {orderItems.map((item: any) => (
@@ -323,10 +323,10 @@ export default function OrderDetailPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-bold text-gray-800 truncate">{item.variant?.variant_name}</h4>
-                      <p className="text-[11px] text-gray-400 mt-0.5">Quantity: {item.quantity}</p>
+                      <h4 className="text-theme-caption font-bold text-gray-800 truncate">{item.variant?.variant_name}</h4>
+                      <p className="text-theme-xxs text-gray-400 mt-0.5">Quantity: {item.quantity}</p>
                     </div>
-                    <span className="text-xs font-bold text-gray-800">
+                    <span className="text-theme-caption font-bold text-gray-800">
                       ₹{formatCurrency(parseFloat(item.price) * item.quantity)}
                     </span>
                   </div>
@@ -337,14 +337,14 @@ export default function OrderDetailPage() {
             {/* Right Card: Shipping Address */}
             <Card className="shadow-none border-gray-200/80 rounded-2xl overflow-hidden">
               <CardHeader className="bg-gray-50/50 py-4 border-b border-gray-100">
-                <CardTitle className="text-sm font-bold text-gray-800">Shipping To</CardTitle>
+                <CardTitle className="text-theme-body-sm font-bold text-gray-800">Shipping To</CardTitle>
               </CardHeader>
               <CardContent className="p-5 space-y-4">
                 {shippingAddress ? (
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-                    <div className="text-xs text-gray-600 leading-relaxed">
-                      <p className="font-bold text-gray-900 text-sm mb-1">{shippingAddress.name}</p>
+                    <div className="text-theme-caption text-gray-600 leading-relaxed">
+                      <p className="font-bold text-gray-900 text-theme-body-sm mb-1">{shippingAddress.name}</p>
                       <p>{shippingAddress.address_line_1}</p>
                       {shippingAddress.address_line_2 && <p>{shippingAddress.address_line_2}</p>}
                       <p>{shippingAddress.city}, {shippingAddress.state} {shippingAddress.postal_code}</p>
@@ -352,15 +352,15 @@ export default function OrderDetailPage() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-400">No delivery address loaded.</p>
+                  <p className="text-theme-caption text-gray-400">No delivery address loaded.</p>
                 )}
 
                 {paymentDetails && (
                   <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
                     <CreditCard className="w-5 h-5 text-gray-400 shrink-0" />
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Payment Method</p>
-                      <p className="text-xs font-bold text-gray-800 uppercase">{paymentDetails.payment_method}</p>
+                      <p className="text-theme-tiny text-gray-400 uppercase tracking-wider font-semibold">Payment Method</p>
+                      <p className="text-theme-caption font-bold text-gray-800 uppercase">{paymentDetails.payment_method}</p>
                     </div>
                   </div>
                 )}
@@ -372,7 +372,7 @@ export default function OrderDetailPage() {
         {/* ================= SUGGESTIONS CAROUSEL SECTION ================= */}
         {state.suggestions.length > 0 && (
           <section className="mt-10">
-            <h3 className="text-base font-extrabold text-gray-900 uppercase tracking-wide mb-6">Complete your set</h3>
+            <h3 className="text-theme-body font-extrabold text-gray-900 uppercase tracking-wide mb-6">Complete your set</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {state.suggestions.map((product) => {
                 const variant = product.variants?.[0];
@@ -392,10 +392,10 @@ export default function OrderDetailPage() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
-                    <h4 className="text-xs font-bold text-gray-800 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                    <h4 className="text-theme-caption font-bold text-gray-800 line-clamp-1 group-hover:text-blue-600 transition-colors">
                       {product.name}
                     </h4>
-                    <span className="text-xs font-extrabold text-gray-900 mt-1">
+                    <span className="text-theme-caption font-extrabold text-gray-900 mt-1">
                       ₹{formatCurrency(price)}
                     </span>
                   </Link>

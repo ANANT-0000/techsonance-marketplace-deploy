@@ -118,10 +118,10 @@ export default function WishlistPage() {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+            <h1 className="text-theme-h4 sm:text-theme-h3 font-extrabold text-gray-900 tracking-tight">
               Your Wishlist
             </h1>
-            <p className="text-sm font-medium text-gray-500 mt-1">
+            <p className="text-theme-body-sm font-medium text-gray-500 mt-1">
               Review your saved items.
             </p>
           </div>
@@ -134,15 +134,15 @@ export default function WishlistPage() {
               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                 <HeartCrack className="w-8 h-8 text-gray-400" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">
+              <h2 className="text-theme-h6 font-bold text-gray-900">
                 Your wishlist is empty
               </h2>
-              <p className="text-sm text-gray-500 mt-1 mb-6">
+              <p className="text-theme-body-sm text-gray-500 mt-1 mb-6">
                 Looks like you haven't saved any items yet.
               </p>
               <Link
                 href="/"
-                className="px-6 py-3 bg-[#0f172a] text-white text-sm font-bold rounded-xl hover:bg-black transition-colors"
+                className="px-6 py-3 bg-[#0f172a] text-white text-theme-body-sm font-bold rounded-xl hover:bg-black transition-colors"
               >
                 Start Shopping
               </Link>
@@ -184,11 +184,11 @@ export default function WishlistPage() {
                     <div className="flex justify-between items-start gap-4 pr-6 sm:pr-0">
                       <div>
                         <Link href={`/store/${item.productVariant.product_id}`}>
-                          <h3 className="font-bold text-gray-900 text-base sm:text-lg line-clamp-2 leading-snug hover:text-indigo-600 transition-colors">
+                          <h3 className="font-bold text-gray-900 text-theme-body sm:text-theme-h6 line-clamp-2 leading-snug hover:text-indigo-600 transition-colors">
                             {item.productVariant.variant_name}
                           </h3>
                         </Link>
-                        <p className="font-extrabold text-gray-900 text-lg sm:text-xl mt-1.5">
+                        <p className="font-extrabold text-gray-900 text-theme-h6 sm:text-theme-h5 mt-1.5">
                           ₹{formatCurrency(Number(item.productVariant.price))}
                         </p>
                       </div>
@@ -198,7 +198,7 @@ export default function WishlistPage() {
                         onClick={() =>
                           deleteItemFromWishlist(item.productVariant.id)
                         }
-                        className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-red-500 hover:text-red-600 transition-colors shrink-0"
+                        className="hidden sm:flex items-center gap-1.5 text-theme-body-sm font-bold text-red-500 hover:text-red-600 transition-colors shrink-0"
                       >
                         <Trash2 size={16} />
                         Remove
@@ -212,7 +212,7 @@ export default function WishlistPage() {
                         <AddToCart
                           productVariantId={item.productVariant.id}
                           productVariant={item.productVariant as any}
-                          styles="w-full h-11 text-sm font-bold rounded-xl"
+                          styles="w-full h-11 text-theme-body-sm font-bold rounded-xl"
                         />
                       </div>
                     </div>

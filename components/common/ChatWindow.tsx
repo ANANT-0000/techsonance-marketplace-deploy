@@ -1,7 +1,7 @@
 import { SendHorizontal } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
 import { useEffect, useState } from "react";
-import { SupportTicketType, TicketMessageType } from "@/utils/Types";
+import { SupportTicketType, TicketMessageType, TicketMessageTypeEnum } from "@/utils/Types";
 import { CHAT_WINDOW_TEXT } from "@/constants/commonText";
 
 export const ChatWindow = ({ ticket }: { ticket: SupportTicketType }) => {
@@ -20,7 +20,7 @@ export const ChatWindow = ({ ticket }: { ticket: SupportTicketType }) => {
             role: CHAT_WINDOW_TEXT.SUPER_ADMIN,
             text: inputText,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            type: "super_admin",
+            type: TicketMessageTypeEnum.SUPER_ADMIN,
         };
         setMessages([...messages, newMessage]);
         setInputText("");
@@ -30,8 +30,8 @@ export const ChatWindow = ({ ticket }: { ticket: SupportTicketType }) => {
         <section className="w-full">
             <div className="chat_window_header bg-gray-100 flex justify-between items-center px-6 py-4 pb-6 border-b-4 border-gray-100">
                 <span>
-                    <h1 className="text-lg font-bold">{ticket.title}</h1>
-                    <p className="text-sm text-gray-500">{ticket.company} - {ticket.email}</p>
+                    <h1 className="text-theme-h6 font-bold">{ticket.title}</h1>
+                    <p className="text-theme-body-sm text-gray-500">{ticket.company} - {ticket.email}</p>
                 </span>
                 <div className="chat_window_header_right flex items-center gap-4 md:flex-wrap sm:flex-wrap">
                     <button className="sm:py-2 px-4 bg-green-100 border-2 border-green-500 rounded-xl text-green-600 font-bold">{CHAT_WINDOW_TEXT.MARK_RESOLVED}</button>

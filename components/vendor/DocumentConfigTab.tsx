@@ -108,7 +108,7 @@ export function DocumentConfigTab({ token }: { token: string }) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Invoice Numbering */}
       <section>
-        <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <h3 className="text-theme-body-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
           {DOCUMENT_CONFIG_TAB_TEXT.SECTIONS.INVOICE_NUMBERING}
         </h3>
@@ -157,10 +157,10 @@ export function DocumentConfigTab({ token }: { token: string }) {
           <div className="mt-3 flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
             <Hash size={13} className="text-gray-400 shrink-0" />
             <div>
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+              <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
                 {DOCUMENT_CONFIG_TAB_TEXT.INVOICE_NUMBERING.PREVIEW}
               </p>
-              <code className="text-sm font-mono font-bold text-gray-800">
+              <code className="text-theme-body-sm font-mono font-bold text-gray-800">
                 {previewNumber}
               </code>
             </div>
@@ -170,7 +170,7 @@ export function DocumentConfigTab({ token }: { token: string }) {
 
       {/* Signatory Block */}
       <section>
-        <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <h3 className="text-theme-body-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
           {DOCUMENT_CONFIG_TAB_TEXT.SECTIONS.SIGNATORY}
         </h3>
@@ -205,7 +205,7 @@ export function DocumentConfigTab({ token }: { token: string }) {
 
       {/* Footer & Terms */}
       <section>
-        <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <h3 className="text-theme-body-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
           {DOCUMENT_CONFIG_TAB_TEXT.SECTIONS.FOOTER_TERMS}
         </h3>
@@ -234,7 +234,7 @@ export function DocumentConfigTab({ token }: { token: string }) {
 
       {/* Locale Defaults */}
       <section>
-        <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <h3 className="text-theme-body-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="w-1 h-4 bg-gray-900 rounded-full" />
           {DOCUMENT_CONFIG_TAB_TEXT.SECTIONS.LOCALE}
         </h3>

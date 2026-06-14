@@ -146,10 +146,10 @@ function CustomerLoginForm() {
         {/* Form Section */}
         <div className="flex flex-col px-6 py-8 lg:px-12 lg:py-10 justify-center md:w-7/12 lg:w-1/2">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            <h1 className="text-theme-h3 font-bold text-gray-800 mb-2">
               Welcome Back
             </h1>
-            <p className="text-sm text-slate-600">
+            <p className="text-theme-body-sm text-slate-600">
               Sign in to access your account
             </p>
           </div>
@@ -168,7 +168,7 @@ function CustomerLoginForm() {
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="text-green-700 text-sm font-medium">
+              <p className="text-green-700 text-theme-body-sm font-medium">
                 {successMessage}
               </p>
             </div>
@@ -188,7 +188,7 @@ function CustomerLoginForm() {
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="text-red-700 text-sm font-medium">{serverError}</p>
+              <p className="text-red-700 text-theme-body-sm font-medium">{serverError}</p>
             </div>
           )}
 
@@ -227,7 +227,7 @@ function CustomerLoginForm() {
           {/* Divider */}
           <div className="relative flex items-center my-6">
             <div className="flex-grow border-t border-slate-300"></div>
-            <span className="flex-shrink-0 mx-4 text-slate-500 text-sm font-medium">
+            <span className="flex-shrink-0 mx-4 text-slate-500 text-theme-body-sm font-medium">
               or sign in with email
             </span>
             <div className="flex-grow border-t border-slate-300"></div>
@@ -239,7 +239,7 @@ function CustomerLoginForm() {
             <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="email"
-                className="text-xs font-semibold text-gray-700 uppercase tracking-wide"
+                className="text-theme-caption font-semibold text-gray-700 uppercase tracking-wide"
               >
                 Email <span className="text-red-500">*</span>
               </label>
@@ -247,7 +247,7 @@ function CustomerLoginForm() {
                 {...register("email")}
                 type="email"
                 placeholder="Enter your email"
-                className={`border-2 rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:ring-2 transition-all ${
+                className={`border-2 rounded-lg py-2.5 px-4 text-theme-body-sm focus:outline-none focus:ring-2 transition-all ${
                   errors.email
                     ? "border-red-400 focus:ring-red-200 bg-red-50"
                     : "border-slate-300 focus:ring-blue-200 focus:border-blue-400"
@@ -255,7 +255,7 @@ function CustomerLoginForm() {
                 disabled={isSubmitting || isGoogleLoading}
               />
               {errors.email && (
-                <p className="text-red-600 text-xs font-medium flex items-center gap-1">
+                <p className="text-red-600 text-theme-caption font-medium flex items-center gap-1">
                   <svg
                     className="w-4 h-4"
                     fill="currentColor"
@@ -277,13 +277,13 @@ function CustomerLoginForm() {
               <div className="flex justify-between items-center">
                 <label
                   htmlFor="password"
-                  className="text-xs font-semibold text-gray-700 uppercase tracking-wide"
+                  className="text-theme-caption font-semibold text-gray-700 uppercase tracking-wide"
                 >
                   Password <span className="text-red-500">*</span>
                 </label>
                 <Link
                   href="/auth/forgotPassword"
-                  className="text-blue-600 hover:text-blue-700 hover:underline text-xs font-medium transition-colors"
+                  className="text-blue-600 hover:text-blue-700 hover:underline text-theme-caption font-medium transition-colors"
                 >
                   Forgot Password?
                 </Link>
@@ -293,7 +293,7 @@ function CustomerLoginForm() {
                   {...register("password")}
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
-                  className={`w-full border-2 rounded-lg px-4 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${
+                  className={`w-full border-2 rounded-lg px-4 pr-10 py-2.5 text-theme-body-sm focus:outline-none focus:ring-2 transition-all ${
                     errors.password
                       ? "border-red-400 focus:ring-red-200 bg-red-50"
                       : "border-slate-300 focus:ring-blue-200 focus:border-blue-400"
@@ -310,7 +310,7 @@ function CustomerLoginForm() {
                 </button>
               </div>
               {errors.password && (
-                <p className="text-red-600 text-xs font-medium flex items-center gap-1">
+                <p className="text-red-600 text-theme-caption font-medium flex items-center gap-1">
                   <svg
                     className="w-4 h-4"
                     fill="currentColor"
@@ -361,7 +361,7 @@ function CustomerLoginForm() {
               )}
             </button>
 
-            <p className="text-center text-sm text-slate-600 pt-4">
+            <p className="text-center text-theme-body-sm text-slate-600 pt-4">
               Don&apos;t have an account?{" "}
               <Link
                 href="/auth/customerRegister"

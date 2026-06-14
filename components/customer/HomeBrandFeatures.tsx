@@ -21,7 +21,7 @@ export function HomeBrandFeatures({ features }: { features?: BrandFeature[] }) {
                              fallback={() => <p></p>}
                         />
                     </span>
-                    <p className="lg:px-2 lg:py-1 py-0 px-1 font-bold text-center lg:text-lg text-sm text-theme-primary-foreground">
+                    <p className="lg:px-2 lg:py-1 py-0 px-1 font-bold text-center lg:text-theme-h6 text-theme-body-sm text-theme-primary-foreground">
                         {feature.title}
                     </p>
                 </div>

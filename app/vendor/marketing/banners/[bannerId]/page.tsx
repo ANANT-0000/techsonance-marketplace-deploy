@@ -88,7 +88,7 @@ export default function BannerDetailsPage() {
   if (!banner) {
     return (
       <div className="p-6 max-w-5xl mx-auto text-center">
-        <h2 className="text-xl font-bold text-gray-800 light:text-white">
+        <h2 className="text-theme-h5 font-bold text-gray-800 light:text-white">
           Banner Not Found
         </h2>
         <Button
@@ -114,11 +114,11 @@ export default function BannerDetailsPage() {
         </button>
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900 light:text-white">
+            <h1 className="text-theme-h4 font-bold text-gray-900 light:text-white">
               {banner.title}
             </h1>
             <span
-              className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${
+              className={`px-2.5 py-1 text-theme-caption font-semibold rounded-full border ${
                 banner.status === "ACTIVE"
                   ? "bg-green-50 text-green-700 border-green-200"
                   : banner.status === "SCHEDULED"
@@ -129,7 +129,7 @@ export default function BannerDetailsPage() {
               {banner.status}
             </span>
           </div>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-theme-body-sm text-gray-500 mt-1">
             Banner Performance & Configuration Details
           </p>
         </div>
@@ -152,7 +152,7 @@ export default function BannerDetailsPage() {
                 <ImageIcon size={40} className="text-gray-300" />
               )}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span className="text-white font-medium text-sm">
+                <span className="text-white font-medium text-theme-body-sm">
                   Preview Asset
                 </span>
               </div>
@@ -162,7 +162,7 @@ export default function BannerDetailsPage() {
                 {banner.title}
               </h3>
               {banner.subtitle && (
-                <p className="text-sm text-gray-500 mt-1 truncate">
+                <p className="text-theme-body-sm text-gray-500 mt-1 truncate">
                   {banner.subtitle}
                 </p>
               )}
@@ -175,7 +175,7 @@ export default function BannerDetailsPage() {
               Configuration
             </h3>
 
-            <div className="space-y-3 text-sm">
+            <div className="space-y-3 text-theme-body-sm">
               <div className="flex items-start gap-3">
                 <ImageIcon size={16} className="text-gray-400 mt-0.5" />
                 <div>
@@ -227,7 +227,7 @@ export default function BannerDetailsPage() {
                 <div>
                   <p className="text-gray-500 font-medium">Target Audience</p>
                   <span
-                    className={`px-2 py-0.5 rounded text-xs font-semibold ${banner.target_segment_id ? "bg-orange-50 text-orange-700" : "bg-gray-100 text-gray-600"}`}
+                    className={`px-2 py-0.5 rounded text-theme-caption font-semibold ${banner.target_segment_id ? "bg-orange-50 text-orange-700" : "bg-gray-100 text-gray-600"}`}
                   >
                     {banner.segment_name ||
                       (banner.target_segment_id
@@ -242,7 +242,7 @@ export default function BannerDetailsPage() {
 
         {/* Right Column: Analytics & Performance Engine */}
         <div className="lg:col-span-2 space-y-6">
-          <h2 className="text-lg font-bold text-gray-900 light:text-white">
+          <h2 className="text-theme-h6 font-bold text-gray-900 light:text-white">
             Performance Overview
           </h2>
 
@@ -252,10 +252,10 @@ export default function BannerDetailsPage() {
               <div className="p-2 bg-blue-50 text-blue-600 rounded-lg mb-2">
                 <Eye size={20} />
               </div>
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+              <p className="text-theme-caption text-gray-500 font-medium uppercase tracking-wider">
                 Impressions
               </p>
-              <p className="text-2xl font-bold text-gray-900 light:text-white mt-1">
+              <p className="text-theme-h4 font-bold text-gray-900 light:text-white mt-1">
                 {analytics?.views?.toLocaleString() || 0}
               </p>
             </div>
@@ -264,10 +264,10 @@ export default function BannerDetailsPage() {
               <div className="p-2 bg-purple-50 text-purple-600 rounded-lg mb-2">
                 <MousePointerClick size={20} />
               </div>
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+              <p className="text-theme-caption text-gray-500 font-medium uppercase tracking-wider">
                 Clicks
               </p>
-              <p className="text-2xl font-bold text-gray-900 light:text-white mt-1">
+              <p className="text-theme-h4 font-bold text-gray-900 light:text-white mt-1">
                 {analytics?.clicks?.toLocaleString() || 0}
               </p>
             </div>
@@ -276,10 +276,10 @@ export default function BannerDetailsPage() {
               <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg mb-2">
                 <ShoppingCart size={20} />
               </div>
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+              <p className="text-theme-caption text-gray-500 font-medium uppercase tracking-wider">
                 Conversions
               </p>
-              <p className="text-2xl font-bold text-gray-900 light:text-white mt-1">
+              <p className="text-theme-h4 font-bold text-gray-900 light:text-white mt-1">
                 {analytics?.conversions?.toLocaleString() || 0}
               </p>
             </div>
@@ -288,10 +288,10 @@ export default function BannerDetailsPage() {
               <div className="p-2 bg-green-50 text-green-600 rounded-lg mb-2">
                 <TrendingUp size={20} />
               </div>
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+              <p className="text-theme-caption text-gray-500 font-medium uppercase tracking-wider">
                 Revenue (₹)
               </p>
-              <p className="text-2xl font-bold text-green-600 mt-1">
+              <p className="text-theme-h4 font-bold text-green-600 mt-1">
                 ₹{analytics?.revenue_generated?.toLocaleString() || 0}
               </p>
             </div>
@@ -306,7 +306,7 @@ export default function BannerDetailsPage() {
             <div className="space-y-6">
               {/* CTR Bar */}
               <div>
-                <div className="flex justify-between text-sm mb-2">
+                <div className="flex justify-between text-theme-body-sm mb-2">
                   <span className="font-medium text-gray-600 light:text-gray-300">
                     Click-Through Rate (CTR)
                   </span>
@@ -320,7 +320,7 @@ export default function BannerDetailsPage() {
                     style={{ width: `${Math.min(analytics?.ctr || 0, 100)}%` }}
                   ></div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-theme-caption text-gray-500 mt-2">
                   Percentage of users who saw the banner and clicked it.
                 </p>
               </div>
@@ -328,7 +328,7 @@ export default function BannerDetailsPage() {
               {/* CVR Bar */}
               {banner.promotion_id && (
                 <div>
-                  <div className="flex justify-between text-sm mb-2">
+                  <div className="flex justify-between text-theme-body-sm mb-2">
                     <span className="font-medium text-gray-600 light:text-gray-300">
                       Conversion Rate (CVR)
                     </span>
@@ -344,7 +344,7 @@ export default function BannerDetailsPage() {
                       }}
                     ></div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-theme-caption text-gray-500 mt-2">
                     Percentage of users who clicked the banner and completed a
                     purchase with the linked promotion.
                   </p>

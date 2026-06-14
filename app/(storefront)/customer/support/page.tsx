@@ -152,7 +152,7 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
     <div className="mt-4 pt-4 border-t border-gray-150 space-y-6">
       {/* Comments/Replies list */}
       <div>
-        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+        <h4 className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-3">
           Conversation History
         </h4>
 
@@ -161,7 +161,7 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
             <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
           </div>
         ) : comments.length === 0 ? (
-          <p className="text-xs text-gray-450 italic py-2">
+          <p className="text-theme-caption text-gray-450 italic py-2">
             No updates or comments yet.
           </p>
         ) : (
@@ -172,7 +172,7 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
               return (
                 <div
                   key={comment.id}
-                  className={`flex flex-col max-w-[85%] rounded-2xl px-4 py-2.5 text-xs ${
+                  className={`flex flex-col max-w-[85%] rounded-2xl px-4 py-2.5 text-theme-caption ${
                     isSupport
                       ? "bg-blue-50 text-blue-905 self-start border border-blue-100 mr-auto"
                       : "bg-gray-100 text-gray-800 self-end ml-auto"
@@ -182,7 +182,7 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
                     <span className="font-bold">
                       {isSupport ? "Support Agent" : "You"}
                     </span>
-                    <span className="text-[10px] text-gray-405 font-medium">
+                    <span className="text-theme-tiny text-gray-405 font-medium">
                       {new Date(comment.created_at).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -207,13 +207,13 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 text-xs px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none resize-none transition-all font-medium text-gray-700"
+            className="flex-1 text-theme-caption px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none resize-none transition-all font-medium text-gray-700"
           />
 
           <button
             type="submit"
             disabled={submittingComment || !commentText.trim()}
-            className="bg-blue-600 hover:bg-blue-750 text-white font-bold text-xs px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center shrink-0 disabled:bg-gray-205 disabled:text-gray-400"
+            className="bg-blue-600 hover:bg-blue-750 text-white font-bold text-theme-caption px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center shrink-0 disabled:bg-gray-205 disabled:text-gray-400"
           >
             {submittingComment ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -231,10 +231,10 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
             <div className="bg-emerald-50 border border-emerald-150 p-4 rounded-xl flex items-center gap-3">
               <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
               <div>
-                <p className="text-xs font-bold text-emerald-800">
+                <p className="text-theme-caption font-bold text-emerald-800">
                   Feedback Submitted
                 </p>
-                <p className="text-[11px] text-emerald-700">
+                <p className="text-theme-xxs text-emerald-700">
                   Thank you for rating your experience! Your feedback helps us
                   improve our service.
                 </p>
@@ -246,10 +246,10 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
               className="bg-gray-50 border border-gray-150 p-4 sm:p-5 rounded-2xl space-y-4"
             >
               <div>
-                <h4 className="text-xs font-bold text-gray-900 mb-1">
+                <h4 className="text-theme-caption font-bold text-gray-900 mb-1">
                   Rate Ticket Resolution
                 </h4>
-                <p className="text-[11px] text-gray-500">
+                <p className="text-theme-xxs text-gray-500">
                   How satisfied are you with the support you received?
                 </p>
               </div>
@@ -282,7 +282,7 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
 
               {/* NPS Score 0-10 */}
               <div>
-                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                <label className="block text-theme-tiny font-bold text-gray-500 uppercase tracking-wider mb-2">
                   How likely are you to recommend us to a friend? (NPS Survey)
                 </label>
                 <div className="flex flex-wrap gap-1">
@@ -291,7 +291,7 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
                       key={num}
                       type="button"
                       onClick={() => setNpsScore(num)}
-                      className={`w-7 h-7 rounded-lg text-xs font-bold transition-all border ${
+                      className={`w-7 h-7 rounded-lg text-theme-caption font-bold transition-all border ${
                         npsScore === num
                           ? "bg-blue-600 text-white border-blue-650 shadow-sm"
                           : "bg-white text-gray-750 border-gray-200 hover:bg-gray-100"
@@ -309,7 +309,7 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
 
               {/* Text Comments */}
               <div>
-                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-theme-tiny font-bold text-gray-500 uppercase tracking-wider mb-1.5">
                   Resolution Comments / Suggestions
                 </label>
                 <textarea
@@ -317,14 +317,14 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
                   value={feedbackComment}
                   onChange={(e) => setFeedbackComment(e.target.value)}
                   placeholder="Tell us what went well or what we can do better..."
-                  className="w-full text-xs px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none resize-none transition-all text-gray-700"
+                  className="w-full text-theme-caption px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none resize-none transition-all text-gray-700"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={submittingRating || rating === 0}
-                className="w-full bg-blue-600 hover:bg-blue-750 text-white font-bold text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:bg-gray-205 disabled:text-gray-400"
+                className="w-full bg-blue-600 hover:bg-blue-750 text-white font-bold text-theme-caption py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:bg-gray-205 disabled:text-gray-400"
               >
                 {submittingRating && (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -428,7 +428,7 @@ const renderReturnTimeline = (returnReq: any) => {
 
   return (
     <div className="mt-6 border-t border-gray-100 pt-6">
-      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+      <h4 className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-4">
         Request Progress Tracker
       </h4>
       <div className="relative flex flex-col md:flex-row justify-between gap-6 md:gap-2">
@@ -473,7 +473,7 @@ const renderReturnTimeline = (returnReq: any) => {
               </div>
               <div className="flex flex-col md:items-center">
                 <span
-                  className={`text-sm font-bold ${isCompleted || isCurrent ? "text-gray-900" : "text-gray-450"}`}
+                  className={`text-theme-body-sm font-bold ${isCompleted || isCurrent ? "text-gray-900" : "text-gray-450"}`}
                 >
                   {isRejectedStep
                     ? "Rejected"
@@ -481,7 +481,7 @@ const renderReturnTimeline = (returnReq: any) => {
                       ? "QC Failed"
                       : step.label}
                 </span>
-                <span className="text-xs text-gray-500 font-medium mt-0.5">
+                <span className="text-theme-caption text-gray-500 font-medium mt-0.5">
                   {step.desc}
                 </span>
               </div>
@@ -494,13 +494,13 @@ const renderReturnTimeline = (returnReq: any) => {
       {(returnReq.store_owner_note || returnReq.customer_note) && (
         <div className="mt-6 p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-150">
           {returnReq.customer_note && (
-            <p className="text-xs text-gray-600">
+            <p className="text-theme-caption text-gray-600">
               <strong className="text-gray-800">Your Note:</strong>{" "}
               {returnReq.customer_note}
             </p>
           )}
           {returnReq.store_owner_note && (
-            <p className="text-xs text-gray-700">
+            <p className="text-theme-caption text-gray-700">
               <strong className="text-gray-900">Store Reply:</strong>{" "}
               {returnReq.store_owner_note}
             </p>
@@ -901,10 +901,10 @@ export default function HelpCenterPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Help Center Header */}
         <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+          <h1 className="text-theme-h3 sm:text-theme-h2 font-extrabold text-gray-900 tracking-tight mb-4">
             Support & Help Center
           </h1>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-theme-body-sm font-medium text-gray-500">
             Submit inquiry tickets, track returns, and browse common answers.
           </p>
         </div>
@@ -919,7 +919,7 @@ export default function HelpCenterPage() {
                 value: "faq",
               })
             }
-            className={`px-5 py-3 font-bold text-sm border-b-2 transition-all shrink-0 ${
+            className={`px-5 py-3 font-bold text-theme-body-sm border-b-2 transition-all shrink-0 ${
               uiState.activeTab === "faq"
                 ? "border-blue-600 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-900"
@@ -936,7 +936,7 @@ export default function HelpCenterPage() {
               });
               fetchTickets();
             }}
-            className={`px-5 py-3 font-bold text-sm border-b-2 transition-all shrink-0 flex items-center gap-2 ${
+            className={`px-5 py-3 font-bold text-theme-body-sm border-b-2 transition-all shrink-0 flex items-center gap-2 ${
               uiState.activeTab === "tickets"
                 ? "border-blue-600 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-900"
@@ -944,7 +944,7 @@ export default function HelpCenterPage() {
           >
             My Support Tickets
             {dataState.tickets.length > 0 && (
-              <span className="px-2 py-0.5 text-[10px] font-extrabold bg-blue-50 text-blue-600 rounded-full">
+              <span className="px-2 py-0.5 text-theme-tiny font-extrabold bg-blue-50 text-blue-600 rounded-full">
                 {dataState.tickets.length}
               </span>
             )}
@@ -958,7 +958,7 @@ export default function HelpCenterPage() {
               });
               fetchReturns();
             }}
-            className={`px-5 py-3 font-bold text-sm border-b-2 transition-all shrink-0 flex items-center gap-2 ${
+            className={`px-5 py-3 font-bold text-theme-body-sm border-b-2 transition-all shrink-0 flex items-center gap-2 ${
               uiState.activeTab === "returns"
                 ? "border-blue-650 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-900"
@@ -966,7 +966,7 @@ export default function HelpCenterPage() {
           >
             Track Returns & Replacements
             {dataState.returnsList.length > 0 && (
-              <span className="px-2 py-0.5 text-[10px] font-extrabold bg-blue-50 text-blue-600 rounded-full">
+              <span className="px-2 py-0.5 text-theme-tiny font-extrabold bg-blue-50 text-blue-600 rounded-full">
                 {dataState.returnsList.length}
               </span>
             )}
@@ -981,16 +981,16 @@ export default function HelpCenterPage() {
               {/* Returns Entry Point Call-To-Action */}
               <div className="bg-blue-600 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md shadow-blue-600/10">
                 <div className="text-white text-center sm:text-left">
-                  <h3 className="text-lg font-extrabold mb-1">
+                  <h3 className="text-theme-h6 font-extrabold mb-1">
                     Need to return or replace an item?
                   </h3>
-                  <p className="text-blue-100 text-xs font-semibold">
+                  <p className="text-blue-100 text-theme-caption font-semibold">
                     Initiate a return request for any delivered orders directly.
                   </p>
                 </div>
                 <Link
                   href="/customer/orders"
-                  className="w-full sm:w-auto bg-white text-blue-600 px-6 py-3 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm"
+                  className="w-full sm:w-auto bg-white text-blue-600 px-6 py-3 rounded-xl font-bold text-theme-body-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm"
                 >
                   <PackageSearch className="w-4.5 h-4.5" /> Start Return
                 </Link>
@@ -999,7 +999,7 @@ export default function HelpCenterPage() {
               {/* FAQs */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-extrabold text-gray-900">
+                  <h2 className="text-theme-h6 font-extrabold text-gray-900">
                     Frequently Asked Questions
                   </h2>
                   <div className="w-64">
@@ -1014,7 +1014,7 @@ export default function HelpCenterPage() {
                           })
                         }
                         placeholder="Search FAQs"
-                        className="w-full text-sm px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                        className="w-full text-theme-body-sm px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none"
                       />
 
                       <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
@@ -1025,14 +1025,14 @@ export default function HelpCenterPage() {
                   {dataState.loadingHelpArticles ? (
                     <div className="flex flex-col items-center justify-center py-12">
                       <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-2" />
-                      <p className="text-xs text-gray-500">Loading FAQs...</p>
+                      <p className="text-theme-caption text-gray-500">Loading FAQs...</p>
                     </div>
                   ) : FAQS_FILTERED.length === 0 ? (
                     <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl bg-gray-50/30">
-                      <p className="text-xs text-gray-500 font-semibold">
+                      <p className="text-theme-caption text-gray-500 font-semibold">
                         No matches found
                       </p>
-                      <p className="text-[11px] text-gray-450 mt-1">
+                      <p className="text-theme-xxs text-gray-450 mt-1">
                         Try a different search query or submit a ticket below.
                       </p>
                     </div>
@@ -1052,7 +1052,7 @@ export default function HelpCenterPage() {
                           }
                           className="w-full flex items-center justify-between p-4 sm:p-5 text-left focus:outline-none"
                         >
-                          <span className="font-bold text-gray-905 text-sm sm:text-base">
+                          <span className="font-bold text-gray-905 text-theme-body-sm sm:text-theme-body">
                             {faq.title}
                           </span>
                           <ChevronDown
@@ -1060,12 +1060,12 @@ export default function HelpCenterPage() {
                           />
                         </button>
                         {uiState.openFaqIndex === idx && (
-                          <div className="px-5 pb-5 text-gray-500 text-sm border-t border-gray-50 pt-3 leading-relaxed">
+                          <div className="px-5 pb-5 text-gray-500 text-theme-body-sm border-t border-gray-50 pt-3 leading-relaxed">
                             <div className="mb-3 whitespace-pre-wrap">
                               {faq.content}
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="text-xs text-gray-500">
+                              <span className="text-theme-caption text-gray-500">
                                 Was this helpful?
                               </span>
                               <button
@@ -1091,7 +1091,7 @@ export default function HelpCenterPage() {
                                   } catch {}
                                   toast.success("Thanks for the feedback");
                                 }}
-                                className={`px-2 py-1 rounded-md text-xs font-semibold ${uiState.faqVotes[faq.id] === "up" ? "bg-emerald-50 text-emerald-700" : "bg-gray-50 text-gray-700"}`}
+                                className={`px-2 py-1 rounded-md text-theme-caption font-semibold ${uiState.faqVotes[faq.id] === "up" ? "bg-emerald-50 text-emerald-700" : "bg-gray-50 text-gray-700"}`}
                               >
                                 👍 Helpful
                               </button>
@@ -1120,7 +1120,7 @@ export default function HelpCenterPage() {
                                     icon: "ℹ️",
                                   });
                                 }}
-                                className={`px-2 py-1 rounded-md text-xs font-semibold ${uiState.faqVotes[faq.id] === "down" ? "bg-rose-50 text-rose-700" : "bg-gray-50 text-gray-700"}`}
+                                className={`px-2 py-1 rounded-md text-theme-caption font-semibold ${uiState.faqVotes[faq.id] === "down" ? "bg-rose-50 text-rose-700" : "bg-gray-50 text-gray-700"}`}
                               >
                                 👎 Not helpful
                               </button>
@@ -1137,21 +1137,21 @@ export default function HelpCenterPage() {
             {/* Right Col: Create Ticket Form */}
             <div className="lg:col-span-5 xl:col-span-4">
               <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8">
-                <h2 className="text-lg font-bold text-gray-900 mb-1">
+                <h2 className="text-theme-h6 font-bold text-gray-900 mb-1">
                   Create Support Ticket
                 </h2>
-                <p className="text-xs text-gray-500 mb-6">
+                <p className="text-theme-caption text-gray-500 mb-6">
                   Describe your issue and we'll reply as soon as possible.
                 </p>
 
                 {!isAuthenticated ? (
                   <div className="border border-dashed border-gray-250 rounded-xl p-6 text-center">
-                    <p className="text-sm text-gray-500 mb-4">
+                    <p className="text-theme-body-sm text-gray-500 mb-4">
                       Please log in to submit support tickets.
                     </p>
                     <Link
                       href="/auth/customerLogin"
-                      className="w-full inline-block text-center bg-[#0f172a] text-white font-bold py-3 rounded-xl hover:bg-black transition-colors shadow-sm text-sm"
+                      className="w-full inline-block text-center bg-[#0f172a] text-white font-bold py-3 rounded-xl hover:bg-black transition-colors shadow-sm text-theme-body-sm"
                     >
                       Login to Support
                     </Link>
@@ -1159,21 +1159,21 @@ export default function HelpCenterPage() {
                 ) : (
                   <form onSubmit={handleSubmitTicket} className="space-y-4">
                     {formState.errorMsg && (
-                      <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 text-red-655 text-xs">
+                      <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 text-red-655 text-theme-caption">
                         <AlertCircle className="w-4.5 h-4.5 shrink-0 mt-0.5" />
                         <span>{formState.errorMsg}</span>
                       </div>
                     )}
 
                     {formState.successMsg && (
-                      <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-2 text-emerald-755 text-xs">
+                      <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-2 text-emerald-755 text-theme-caption">
                         <CheckCircle className="w-4.5 h-4.5 shrink-0 mt-0.5" />
                         <span>{formState.successMsg}</span>
                       </div>
                     )}
 
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      <label className="block text-theme-caption font-semibold text-gray-500 uppercase tracking-wider mb-2">
                         Issue Category
                       </label>
                       <select
@@ -1185,7 +1185,7 @@ export default function HelpCenterPage() {
                             value: e.target.value,
                           })
                         }
-                        className="w-full text-sm px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all font-medium text-gray-700"
+                        className="w-full text-theme-body-sm px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all font-medium text-gray-700"
                       >
                         <option value="Order Issues">Order Issues</option>
                         <option value="Payment & Refunds">
@@ -1201,18 +1201,18 @@ export default function HelpCenterPage() {
                     {(formState.category === "Order Issues" ||
                       formState.category === "Payment & Refunds") && (
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        <label className="block text-theme-caption font-semibold text-gray-500 uppercase tracking-wider mb-2">
                           Link Order Item (Optional)
                         </label>
                         {dataState.loadingOrders ? (
                           <div className="flex items-center gap-2 px-3 py-2 border rounded-xl bg-gray-50">
                             <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                            <span className="text-xs text-gray-400">
+                            <span className="text-theme-caption text-gray-400">
                               Loading order history...
                             </span>
                           </div>
                         ) : dataState.orderItems.length === 0 ? (
-                          <div className="text-xs text-gray-400 p-3 border rounded-xl bg-gray-50">
+                          <div className="text-theme-caption text-gray-400 p-3 border rounded-xl bg-gray-50">
                             No recent purchases found to link.
                           </div>
                         ) : (
@@ -1234,7 +1234,7 @@ export default function HelpCenterPage() {
                                 value: selectedItem?.order?.id || "",
                               });
                             }}
-                            className="w-full text-xs px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all font-medium text-gray-700"
+                            className="w-full text-theme-caption px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all font-medium text-gray-700"
                           >
                             <option value="">-- Do Not Link --</option>
                             {dataState.orderItems.map((item) => (
@@ -1250,7 +1250,7 @@ export default function HelpCenterPage() {
                     )}
 
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      <label className="block text-theme-caption font-semibold text-gray-500 uppercase tracking-wider mb-2">
                         Subject
                       </label>
                       <input
@@ -1264,12 +1264,12 @@ export default function HelpCenterPage() {
                           })
                         }
                         placeholder="Brief summary of the issue"
-                        className="w-full text-sm px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder:text-gray-400 font-medium"
+                        className="w-full text-theme-body-sm px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder:text-gray-400 font-medium"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      <label className="block text-theme-caption font-semibold text-gray-500 uppercase tracking-wider mb-2">
                         Message
                       </label>
                       <textarea
@@ -1283,14 +1283,14 @@ export default function HelpCenterPage() {
                           })
                         }
                         placeholder="Detailed description..."
-                        className="w-full text-sm p-4 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder:text-gray-400 font-medium resize-none"
+                        className="w-full text-theme-body-sm p-4 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all placeholder:text-gray-400 font-medium resize-none"
                         required
                       />
                     </div>
 
                     {/* Screenshot / File Attachment */}
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      <label className="block text-theme-caption font-semibold text-gray-500 uppercase tracking-wider mb-2">
                         Attach Screenshot (Optional)
                       </label>
                       <div className="mt-1 flex items-center gap-3">
@@ -1306,7 +1306,7 @@ export default function HelpCenterPage() {
                         {!formState.attachmentUrl ? (
                           <label
                             htmlFor="ticket-file-input"
-                            className={`cursor-pointer px-4 py-2.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 transition-colors flex items-center gap-2 ${
+                            className={`cursor-pointer px-4 py-2.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-xl text-theme-caption font-bold text-gray-700 transition-colors flex items-center gap-2 ${
                               formState.uploadingFile
                                 ? "opacity-50 pointer-events-none"
                                 : ""
@@ -1318,7 +1318,7 @@ export default function HelpCenterPage() {
                               : "Upload Screenshot"}
                           </label>
                         ) : (
-                          <div className="flex items-center gap-2 bg-blue-50 border border-blue-150 px-3 py-1.5 rounded-xl text-xs font-semibold text-blue-700">
+                          <div className="flex items-center gap-2 bg-blue-50 border border-blue-150 px-3 py-1.5 rounded-xl text-theme-caption font-semibold text-blue-700">
                             <span className="truncate max-w-[150px]">
                               {formState.selectedFile?.name || "attachment.png"}
                             </span>
@@ -1343,7 +1343,7 @@ export default function HelpCenterPage() {
                       disabled={
                         formState.submitLoading || formState.uploadingFile
                       }
-                      className="w-full bg-[#0f172a] text-white font-bold py-3 rounded-xl hover:bg-black transition-colors shadow-sm disabled:bg-gray-450 flex items-center justify-center gap-2 text-sm mt-2"
+                      className="w-full bg-[#0f172a] text-white font-bold py-3 rounded-xl hover:bg-black transition-colors shadow-sm disabled:bg-gray-450 flex items-center justify-center gap-2 text-theme-body-sm mt-2"
                     >
                       {formState.submitLoading && (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1358,10 +1358,10 @@ export default function HelpCenterPage() {
                     <Headphones className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-900">
+                    <p className="text-theme-body-sm font-bold text-gray-900">
                       Need faster help?
                     </p>
-                    <p className="text-xs font-medium text-gray-500">
+                    <p className="text-theme-caption font-medium text-gray-500">
                       Live chat available 24/7
                     </p>
                   </div>
@@ -1374,7 +1374,7 @@ export default function HelpCenterPage() {
         {/* Tab content 2: Support Tickets list */}
         {uiState.activeTab === "tickets" && (
           <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">
+            <h2 className="text-theme-h5 font-bold text-gray-900 mb-6">
               Your Support Tickets
             </h2>
 
@@ -1384,13 +1384,13 @@ export default function HelpCenterPage() {
                 <p className="text-gray-800 font-bold mb-1">
                   Sign in to view support tickets
                 </p>
-                <p className="text-xs text-gray-500 mb-6">
+                <p className="text-theme-caption text-gray-500 mb-6">
                   Access tickets submitted to resolve account or purchase
                   issues.
                 </p>
                 <Link
                   href="/auth/customerLogin"
-                  className="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-blue-750 transition-colors shadow-sm"
+                  className="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl text-theme-body-sm hover:bg-blue-750 transition-colors shadow-sm"
                 >
                   Sign In
                 </Link>
@@ -1398,7 +1398,7 @@ export default function HelpCenterPage() {
             ) : dataState.loadingTickets ? (
               <div className="text-center py-16 flex flex-col items-center justify-center">
                 <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
-                <p className="text-sm text-gray-500">Loading tickets...</p>
+                <p className="text-theme-body-sm text-gray-500">Loading tickets...</p>
               </div>
             ) : dataState.tickets.length === 0 ? (
               <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl">
@@ -1406,7 +1406,7 @@ export default function HelpCenterPage() {
                 <p className="text-gray-805 font-bold mb-1">
                   No support tickets created yet
                 </p>
-                <p className="text-xs text-gray-500 mb-4">
+                <p className="text-theme-caption text-gray-500 mb-4">
                   Have an issue? Create a support ticket in the FAQs & New
                   Ticket tab.
                 </p>
@@ -1418,7 +1418,7 @@ export default function HelpCenterPage() {
                       value: "faq",
                     })
                   }
-                  className="bg-blue-50 text-blue-650 hover:bg-blue-100 font-bold px-5 py-2.5 rounded-xl text-xs transition-colors"
+                  className="bg-blue-50 text-blue-650 hover:bg-blue-100 font-bold px-5 py-2.5 rounded-xl text-theme-caption transition-colors"
                 >
                   Create Ticket
                 </button>
@@ -1445,14 +1445,14 @@ export default function HelpCenterPage() {
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-3">
-                            <span className="text-sm font-bold text-gray-900 capitalize">
+                            <span className="text-theme-body-sm font-bold text-gray-900 capitalize">
                               {ticket.category || "General"}
                             </span>
-                            <span className="text-xs text-gray-400 font-medium">
+                            <span className="text-theme-caption text-gray-400 font-medium">
                               #{ticket.id.slice(0, 8)}
                             </span>
                           </div>
-                          <p className="text-sm font-semibold text-gray-700 line-clamp-1">
+                          <p className="text-theme-body-sm font-semibold text-gray-700 line-clamp-1">
                             {ticket.subject}
                           </p>
                         </div>
@@ -1462,7 +1462,7 @@ export default function HelpCenterPage() {
                           >
                             {ticket.status}
                           </span>
-                          <span className="text-xs text-gray-450 shrink-0 font-medium">
+                          <span className="text-theme-caption text-gray-450 shrink-0 font-medium">
                             {formatDate(ticket.created_at)}
                           </span>
                         </div>
@@ -1470,9 +1470,9 @@ export default function HelpCenterPage() {
 
                       {/* Ticket Details Expanded */}
                       {isExpanded && (
-                        <div className="bg-gray-50/50 border-t border-gray-150 p-5 space-y-4 text-sm">
+                        <div className="bg-gray-50/50 border-t border-gray-150 p-5 space-y-4 text-theme-body-sm">
                           <div>
-                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+                            <h4 className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-1">
                               Description
                             </h4>
                             <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
@@ -1484,7 +1484,7 @@ export default function HelpCenterPage() {
                           {(ticket.order_id || ticket.attachment_url) && (
                             <div className="flex flex-wrap gap-4 pt-3 border-t border-gray-100">
                               {ticket.order_id && (
-                                <div className="flex items-center gap-2 bg-white px-3 py-2 border rounded-xl text-xs font-semibold text-gray-750">
+                                <div className="flex items-center gap-2 bg-white px-3 py-2 border rounded-xl text-theme-caption font-semibold text-gray-750">
                                   <LinkIcon
                                     size={14}
                                     className="text-gray-400"
@@ -1504,7 +1504,7 @@ export default function HelpCenterPage() {
                               )}
 
                               {ticket.attachment_url && (
-                                <div className="flex items-center gap-2 bg-white px-3 py-2 border rounded-xl text-xs font-semibold text-gray-750">
+                                <div className="flex items-center gap-2 bg-white px-3 py-2 border rounded-xl text-theme-caption font-semibold text-gray-750">
                                   <FileText
                                     size={14}
                                     className="text-gray-400"
@@ -1554,7 +1554,7 @@ export default function HelpCenterPage() {
         {/* Tab content 3: Returns list tracker */}
         {uiState.activeTab === "returns" && (
           <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">
+            <h2 className="text-theme-h5 font-bold text-gray-900 mb-6">
               Returns & Replacements Status Tracker
             </h2>
 
@@ -1564,13 +1564,13 @@ export default function HelpCenterPage() {
                 <p className="text-gray-808 font-bold mb-1">
                   Sign in to track return requests
                 </p>
-                <p className="text-xs text-gray-500 mb-6">
+                <p className="text-theme-caption text-gray-500 mb-6">
                   Access tracking and review timelines for your raised returns
                   or replacements.
                 </p>
                 <Link
                   href="/auth/customerLogin"
-                  className="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-blue-750 transition-colors shadow-sm"
+                  className="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl text-theme-body-sm hover:bg-blue-750 transition-colors shadow-sm"
                 >
                   Sign In
                 </Link>
@@ -1578,7 +1578,7 @@ export default function HelpCenterPage() {
             ) : dataState.loadingReturns ? (
               <div className="text-center py-16 flex flex-col items-center justify-center">
                 <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
-                <p className="text-sm text-gray-500">
+                <p className="text-theme-body-sm text-gray-500">
                   Loading returns history...
                 </p>
               </div>
@@ -1588,13 +1588,13 @@ export default function HelpCenterPage() {
                 <p className="text-gray-805 font-bold mb-1">
                   No return requests found
                 </p>
-                <p className="text-xs text-gray-500 mb-6">
+                <p className="text-theme-caption text-gray-500 mb-6">
                   You can request returns or replacements directly from your
                   Order History.
                 </p>
                 <Link
                   href="/customer/orders"
-                  className="bg-blue-50 text-blue-650 hover:bg-blue-100 font-bold px-5 py-2.5 rounded-xl text-xs transition-colors"
+                  className="bg-blue-50 text-blue-650 hover:bg-blue-100 font-bold px-5 py-2.5 rounded-xl text-theme-caption transition-colors"
                 >
                   Go to Orders
                 </Link>
@@ -1620,18 +1620,18 @@ export default function HelpCenterPage() {
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-4 mb-4 gap-3">
                         <div>
                           <div className="flex items-center gap-3">
-                            <span className="text-sm font-extrabold text-blue-650 uppercase tracking-wide">
+                            <span className="text-theme-body-sm font-extrabold text-blue-650 uppercase tracking-wide">
                               {typeLabel}
                             </span>
-                            <span className="text-xs text-gray-450 font-medium">
+                            <span className="text-theme-caption text-gray-450 font-medium">
                               #{returnReq.id.slice(0, 8)}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500 font-semibold mt-0.5">
+                          <p className="text-theme-caption text-gray-500 font-semibold mt-0.5">
                             Submitted on {formatDate(returnReq.created_at)}
                           </p>
                         </div>
-                        <span className="text-xs font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-md capitalize">
+                        <span className="text-theme-caption font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-md capitalize">
                           Reason: {returnReq.reason}
                         </span>
                       </div>
@@ -1650,10 +1650,10 @@ export default function HelpCenterPage() {
                             />
                           </div>
                           <div className="min-w-0">
-                            <h4 className="font-bold text-gray-900 text-sm sm:text-base truncate">
+                            <h4 className="font-bold text-gray-900 text-theme-body-sm sm:text-theme-body truncate">
                               {variant.variant_name}
                             </h4>
-                            <p className="font-extrabold text-gray-705 text-xs sm:text-sm mt-0.5">
+                            <p className="font-extrabold text-gray-705 text-theme-caption sm:text-theme-body-sm mt-0.5">
                               ₹{formatCurrency(Number(variant.price))}
                             </p>
                           </div>
@@ -1669,14 +1669,14 @@ export default function HelpCenterPage() {
                         returnReq.return_tracking_number ||
                         returnReq.tracking_id) && (
                         <div className="mt-6 p-4 bg-blue-50/50 border border-blue-100 rounded-2xl space-y-3">
-                          <h5 className="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                          <h5 className="text-theme-caption font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
                             <LinkIcon className="w-3.5 h-3.5" />
                             Shipping & Tracking Details
                           </h5>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-theme-caption">
                             {returnReq.outbound_tracking_number && (
                               <div>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">
+                                <span className="text-theme-tiny text-gray-500 font-bold uppercase tracking-wider block">
                                   Outbound Tracking #
                                 </span>
                                 <span className="font-semibold text-gray-800">
@@ -1686,7 +1686,7 @@ export default function HelpCenterPage() {
                             )}
                             {returnReq.return_tracking_number && (
                               <div>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">
+                                <span className="text-theme-tiny text-gray-500 font-bold uppercase tracking-wider block">
                                   Return Tracking #
                                 </span>
                                 <span className="font-semibold text-gray-805">
@@ -1696,7 +1696,7 @@ export default function HelpCenterPage() {
                             )}
                             {returnReq.tracking_id && (
                               <div>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">
+                                <span className="text-theme-tiny text-gray-500 font-bold uppercase tracking-wider block">
                                   Carrier Tracking Ref
                                 </span>
                                 <span className="font-semibold text-gray-805">
@@ -1706,7 +1706,7 @@ export default function HelpCenterPage() {
                             )}
                             {returnReq.return_label_url && (
                               <div>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">
+                                <span className="text-theme-tiny text-gray-500 font-bold uppercase tracking-wider block">
                                   Return Shipping Label
                                 </span>
                                 <a

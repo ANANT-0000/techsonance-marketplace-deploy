@@ -62,7 +62,7 @@ export function Footer({ styles = "" }: { styles?: string }) {
                 variants={columnVariants}
                 className="flex flex-col lg:gap-4 gap-1  "
               >
-                <li className="font-bold lg:text-lg text-md text-current lg:mb-2">
+                <li className="font-bold lg:text-theme-h6 text-md text-current lg:mb-2">
                   {section.header}
                 </li>
                 <div className="lg:block grid grid-cols-2 gap-0">
@@ -70,7 +70,7 @@ export function Footer({ styles = "" }: { styles?: string }) {
                     <motion.li
                       key={linkIndex}
                       whileHover={{ x: 5 }}
-                      className="lg:text-sm text-xs text-current hover:opacity-80 transition-opacity"
+                      className="lg:text-theme-body-sm text-theme-caption text-current hover:opacity-80 transition-opacity"
                     >
                       <Link
                         href={link.url}
@@ -110,7 +110,7 @@ export function Footer({ styles = "" }: { styles?: string }) {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="font-light text-center opacity-70 text-sm leading-relaxed lg:mb-0 mb-12 "
+          className="font-light text-center opacity-70 text-theme-body-sm leading-relaxed lg:mb-0 mb-12 "
         >
           {footerBottomText}
         </motion.p>

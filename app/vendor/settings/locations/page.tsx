@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Plus, Save, Building, Trash2, Edit } from "lucide-react";
 import { authToken } from "@/utils/authToken";
@@ -9,7 +9,7 @@ import {
   fetchCreateCompanyLocation,
   fetchGetCompanyLocations,
 } from "@/utils/vendorApiClient";
-import { address } from "framer-motion/client";
+import { LOCATIONS_TEXT } from "@/constants/vendorText";
 
 interface AddressType {
   id: string;
@@ -63,7 +63,7 @@ type FormData = typeof INITIAL_FORM;
 const FORM_FIELDS: FormField[] = [
   {
     name: "address_for",
-    label: "Address Type",
+    label: LOCATIONS_TEXT.FORM.ADDRESS_TYPE,
     type: "select",
     required: true,
     colSpan: "full",
@@ -78,7 +78,7 @@ const FORM_FIELDS: FormField[] = [
   },
   {
     name: "address_line_1",
-    label: "Address Line 1",
+    label: LOCATIONS_TEXT.FORM.ADDRESS_LINE_1,
     type: "text",
     required: true,
     colSpan: "full",
@@ -86,41 +86,41 @@ const FORM_FIELDS: FormField[] = [
   },
   {
     name: "address_line_2",
-    label: "Address Line 2",
+    label: LOCATIONS_TEXT.FORM.ADDRESS_LINE_2,
     type: "text",
     colSpan: "full",
     placeholder: "Area, Street, Sector, Village",
   },
   {
     name: "city",
-    label: "City",
+    label: LOCATIONS_TEXT.FORM.CITY,
     type: "text",
     required: true,
     colSpan: "half",
   },
   {
     name: "street",
-    label: "Street",
+    label: LOCATIONS_TEXT.FORM.STREET,
     type: "text",
     required: true,
     colSpan: "half",
   },
   {
     name: "state",
-    label: "State",
+    label: LOCATIONS_TEXT.FORM.STATE,
     type: "text",
     required: true,
     colSpan: "half",
   },
   {
     name: "landmark",
-    label: "Landmark",
+    label: LOCATIONS_TEXT.FORM.LANDMARK,
     type: "text",
     colSpan: "half",
   },
   {
     name: "postal_code",
-    label: "Postal Code (PIN)",
+    label: LOCATIONS_TEXT.FORM.POSTAL_CODE,
     type: "text",
     required: true,
     colSpan: "half",
@@ -129,14 +129,14 @@ const FORM_FIELDS: FormField[] = [
   },
   {
     name: "country",
-    label: "Country",
+    label: LOCATIONS_TEXT.FORM.COUNTRY,
     type: "text",
     required: true,
     colSpan: "half",
   },
   {
     name: "is_default",
-    label: "Default Address",
+    label: LOCATIONS_TEXT.FORM.DEFAULT_ADDRESS,
     type: "checkbox",
     colSpan: "full",
     checkboxLabel: "Set as primary default address",
@@ -146,7 +146,7 @@ const FORM_FIELDS: FormField[] = [
 // ─── Render Helpers ──────────────────────────────────────────────────────────
 
 const inputBase =
-  "w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 mt-1.5 focus:border-blue-400 focus:bg-white focus:outline-none transition-colors text-sm";
+  "w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 mt-1.5 focus:border-blue-400 focus:bg-white focus:outline-none transition-colors text-theme-body-sm";
 
 function renderField(
   field: FormField,
@@ -189,7 +189,7 @@ function renderField(
 
           <label
             htmlFor={field.name}
-            className="text-sm font-medium text-gray-800 cursor-pointer"
+            className="text-theme-body-sm font-medium text-gray-800 cursor-pointer"
           >
             {field.checkboxLabel}
           </label>
@@ -212,16 +212,65 @@ function renderField(
   }
 }
 
+// ─── useReducer Action Types & State ─────────────────────────────────────────
+enum LocationsActionType {
+  SET_ADDRESSES = "SET_ADDRESSES",
+  SET_LOADING = "SET_LOADING",
+  SET_SHOW_MODAL = "SET_SHOW_MODAL",
+  SET_SAVING = "SET_SAVING",
+  SET_FORM_DATA = "SET_FORM_DATA",
+  RESET_FORM = "RESET_FORM",
+}
+
+interface LocationsState {
+  addresses: AddressType[];
+  loading: boolean;
+  showModal: boolean;
+  saving: boolean;
+  formData: FormData;
+}
+
+const initialState: LocationsState = {
+  addresses: [],
+  loading: true,
+  showModal: false,
+  saving: false,
+  formData: INITIAL_FORM,
+};
+
+type LocationsAction =
+  | { type: LocationsActionType.SET_ADDRESSES; payload: AddressType[] }
+  | { type: LocationsActionType.SET_LOADING; payload: boolean }
+  | { type: LocationsActionType.SET_SHOW_MODAL; payload: boolean }
+  | { type: LocationsActionType.SET_SAVING; payload: boolean }
+  | { type: LocationsActionType.SET_FORM_DATA; payload: FormData }
+  | { type: LocationsActionType.RESET_FORM };
+
+function locationsReducer(state: LocationsState, action: LocationsAction): LocationsState {
+  switch (action.type) {
+    case LocationsActionType.SET_ADDRESSES:
+      return { ...state, addresses: action.payload };
+    case LocationsActionType.SET_LOADING:
+      return { ...state, loading: action.payload };
+    case LocationsActionType.SET_SHOW_MODAL:
+      return { ...state, showModal: action.payload };
+    case LocationsActionType.SET_SAVING:
+      return { ...state, saving: action.payload };
+    case LocationsActionType.SET_FORM_DATA:
+      return { ...state, formData: action.payload };
+    case LocationsActionType.RESET_FORM:
+      return { ...state, formData: INITIAL_FORM };
+    default:
+      return state;
+  }
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function VendorAddressesPage() {
   const router = useRouter();
-
-  const [addresses, setAddresses] = useState<AddressType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState<FormData>(INITIAL_FORM);
+  const [state, dispatch] = useReducer(locationsReducer, initialState);
+  const { addresses, loading, showModal, saving, formData } = state;
 
   const token = authToken();
 
@@ -234,13 +283,13 @@ export default function VendorAddressesPage() {
   }, [token]);
 
   const fetchAddresses = async () => {
-    setLoading(true);
+    dispatch({ type: LocationsActionType.SET_LOADING, payload: true });
     try {
       const res = await fetchGetCompanyLocations(token || "");
-      setAddresses(res.data || []);
+      dispatch({ type: LocationsActionType.SET_ADDRESSES, payload: res.data || [] });
     } catch (err) {
     } finally {
-      setLoading(false);
+      dispatch({ type: LocationsActionType.SET_LOADING, payload: false });
     }
   };
 
@@ -249,27 +298,30 @@ export default function VendorAddressesPage() {
   ) => {
     const target = e.target as HTMLInputElement;
     const value = target.type === "checkbox" ? target.checked : target.value;
-    setFormData((prev) => ({ ...prev, [target.name]: value }));
+    dispatch({
+      type: LocationsActionType.SET_FORM_DATA,
+      payload: { ...formData, [target.name]: value },
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
+    dispatch({ type: LocationsActionType.SET_SAVING, payload: true });
     try {
       await fetchCreateCompanyLocation(formData, token || "");
-      setShowModal(false);
-      setFormData(INITIAL_FORM);
+      dispatch({ type: LocationsActionType.SET_SHOW_MODAL, payload: false });
+      dispatch({ type: LocationsActionType.RESET_FORM });
       fetchAddresses();
     } catch (error) {
-      alert("Failed to save address. Please check your inputs.");
+      alert(LOCATIONS_TEXT.FAILED_SAVE);
     } finally {
-      setSaving(false);
+      dispatch({ type: LocationsActionType.SET_SAVING, payload: false });
     }
   };
 
   const closeModal = () => {
-    setShowModal(false);
-    setFormData(INITIAL_FORM);
+    dispatch({ type: LocationsActionType.SET_SHOW_MODAL, payload: false });
+    dispatch({ type: LocationsActionType.RESET_FORM });
   };
 
   return (
@@ -281,19 +333,19 @@ export default function VendorAddressesPage() {
             <MapPin size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Business Addresses
+            <h1 className="text-theme-h4 font-bold text-gray-800">
+              {LOCATIONS_TEXT.TITLE}
             </h1>
-            <p className="text-gray-500 text-sm mt-0.5">
-              Manage your registered, billing, and operational addresses.
+            <p className="text-gray-500 text-theme-body-sm mt-0.5">
+              {LOCATIONS_TEXT.SUBTITLE}
             </p>
           </div>
         </div>
         <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 font-semibold text-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm"
+          onClick={() => dispatch({ type: LocationsActionType.SET_SHOW_MODAL, payload: true })}
+          className="flex items-center gap-2 font-semibold text-theme-body-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm"
         >
-          <Plus size={16} /> Add New Address
+          <Plus size={16} /> {LOCATIONS_TEXT.ADD_NEW_ADDRESS}
         </button>
       </header>
 
@@ -308,7 +360,7 @@ export default function VendorAddressesPage() {
             className="py-16 text-center text-gray-400"
           >
             <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-sm">Loading addresses...</p>
+            <p className="text-theme-body-sm">{LOCATIONS_TEXT.LOADING}</p>
           </motion.div>
         ) : addresses.length === 0 ? (
           <motion.div
@@ -320,16 +372,16 @@ export default function VendorAddressesPage() {
           >
             <Building size={40} className="mx-auto mb-3 text-gray-300" />
             <h3 className="text-gray-800 font-semibold mb-1">
-              No addresses found
+              {LOCATIONS_TEXT.NO_ADDRESSES}
             </h3>
-            <p className="text-sm text-gray-500 mb-4">
-              You haven't added any business addresses yet.
+            <p className="text-theme-body-sm text-gray-500 mb-4">
+              {LOCATIONS_TEXT.NO_ADDRESSES_DESC}
             </p>
             <button
-              onClick={() => setShowModal(true)}
-              className="text-sm font-semibold text-blue-600 hover:underline"
+              onClick={() => dispatch({ type: LocationsActionType.SET_SHOW_MODAL, payload: true })}
+              className="text-theme-body-sm font-semibold text-blue-600 hover:underline"
             >
-              + Add your first address
+              {LOCATIONS_TEXT.ADD_FIRST_ADDRESS}
             </button>
           </motion.div>
         ) : (
@@ -353,12 +405,12 @@ export default function VendorAddressesPage() {
                   >
                     <div>
                       <div className="flex justify-between items-start mb-3">
-                        <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">
+                        <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-theme-caption font-semibold">
                           {address.address_type}
                         </span>
                         {address.is_default && (
-                          <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wide border border-blue-100">
-                            Default
+                          <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md text-theme-tiny uppercase font-bold tracking-wide border border-blue-100">
+                            {LOCATIONS_TEXT.DEFAULT_BADGE}
                           </span>
                         )}
                       </div>
@@ -366,14 +418,14 @@ export default function VendorAddressesPage() {
                         {address.address_line_1}
                       </h3>
                       {address.address_line_2 && (
-                        <p className="text-sm text-gray-600 mb-1">
+                        <p className="text-theme-body-sm text-gray-600 mb-1">
                           {address.address_line_2}
                         </p>
                       )}
-                      <p className="text-sm text-gray-600">
+                      <p className="text-theme-body-sm text-gray-600">
                         {address.city}, {address.state} {address.postal_code}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-theme-body-sm text-gray-500 mt-1">
                         {address.country}
                       </p>
                     </div>
@@ -412,21 +464,18 @@ export default function VendorAddressesPage() {
               className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center z-10">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                  <Building className="text-blue-500" size={20} /> Add Business
-                  Address
+                <h2 className="text-theme-h5 font-bold text-gray-800 flex items-center gap-2">
+                  <Building className="text-blue-500" size={20} /> {LOCATIONS_TEXT.ADD_TITLE}
                 </h2>
                 <button
                   onClick={closeModal}
-                  className="text-gray-400 hover:text-gray-600 text-2xl font-light leading-none"
+                  className="text-gray-400 hover:text-gray-600 text-theme-h4 font-light leading-none"
                   aria-label="Close modal"
                 >
                   &times;
                 </button>
               </div>
 
-              {/* FIX: all inputs are now controlled (value bound to formData). 
-                 Dynamic field rendering via FORM_FIELDS schema. */}
               <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {FORM_FIELDS.map((field) => {
@@ -440,7 +489,7 @@ export default function VendorAddressesPage() {
                       <div key={field.name} className={colClass}>
                         {/* Don't render a standalone label for checkboxes — it's inline */}
                         {!isCheckbox && (
-                          <label className="text-sm font-semibold text-gray-700">
+                          <label className="text-theme-body-sm font-semibold text-gray-700">
                             {field.label}
                             {field.required && (
                               <span className="text-red-500 ml-0.5">*</span>
@@ -459,7 +508,7 @@ export default function VendorAddressesPage() {
                     onClick={closeModal}
                     className="px-6 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors"
                   >
-                    Cancel
+                    {LOCATIONS_TEXT.CANCEL}
                   </button>
                   <button
                     disabled={saving}
@@ -471,7 +520,7 @@ export default function VendorAddressesPage() {
                     ) : (
                       <Save size={18} />
                     )}
-                    {saving ? "Saving..." : "Save Address"}
+                    {saving ? LOCATIONS_TEXT.SAVING : LOCATIONS_TEXT.SAVE_ADDRESS}
                   </button>
                 </div>
               </form>

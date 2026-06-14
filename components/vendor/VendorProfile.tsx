@@ -45,7 +45,7 @@ function Badge({
 
   return (
     <span
-      className={`px-4 py-2 rounded-full border text-sm font-medium capitalize ${styles[color]}`}
+      className={`px-4 py-2 rounded-full border text-theme-body-sm font-medium capitalize ${styles[color]}`}
     >
       {children}
     </span>
@@ -61,11 +61,11 @@ function InfoCard({
 }) {
   return (
     <div className="rounded-[28px] bg-white p-7 shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
-      <p className="text-sm uppercase tracking-widest text-slate-400">
+      <p className="text-theme-body-sm uppercase tracking-widest text-slate-400">
         {label}
       </p>
 
-      <p className="mt-4 text-lg font-semibold text-slate-900 capitalize break-all">
+      <p className="mt-4 text-theme-h6 font-semibold text-slate-900 capitalize break-all">
         {value || '-'}
       </p>
     </div>
@@ -102,18 +102,18 @@ export function VendorProfile({
                   className="w-full h-full object-cover rounded-2xl"
                 />
               ) : (
-                <div className="text-2xl font-semibold text-slate-400">
+                <div className="text-theme-h4 font-semibold text-slate-400">
                   {profile?.company_name?.charAt(0)}
                 </div>
               )}
             </div>
 
             <div>
-              <p className="text-sm tracking-[0.2em] uppercase text-slate-400">
+              <p className="text-theme-body-sm tracking-[0.2em] uppercase text-slate-400">
                 {VENDOR_PROFILE_TEXT.SECTIONS.VENDOR_PROFILE}
               </p>
 
-              <h1 className="text-3xl font-semibold text-slate-900 mt-2 capitalize">
+              <h1 className="text-theme-h3 font-semibold text-slate-900 mt-2 capitalize">
                 {profile?.vendor?.store_name}
               </h1>
 
@@ -156,7 +156,7 @@ export function VendorProfile({
                     }}
                   />
 
-                  <p className="text-[11px] mt-2 text-slate-500">
+                  <p className="text-theme-xxs mt-2 text-slate-500">
                     {color}
                   </p>
                 </div>
@@ -168,11 +168,11 @@ export function VendorProfile({
       {/* content */}
       <section className="grid lg:grid-cols-3 gap-6 mt-8">
         <div className="lg:col-span-2 rounded-[28px] bg-white p-8 shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
-          <p className="text-sm uppercase tracking-widest text-slate-400">
+          <p className="text-theme-body-sm uppercase tracking-widest text-slate-400">
             {VENDOR_PROFILE_TEXT.SECTIONS.ABOUT_STORE}
           </p>
 
-          <h2 className="text-xl font-semibold mt-3 text-slate-900">
+          <h2 className="text-theme-h5 font-semibold mt-3 text-slate-900">
             {profile?.company_name}
           </h2>
 
@@ -183,11 +183,11 @@ export function VendorProfile({
         </div>
 
         <div className="rounded-[28px] bg-white p-8 shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
-          <p className="text-sm uppercase tracking-widest text-slate-400">
+          <p className="text-theme-body-sm uppercase tracking-widest text-slate-400">
             {VENDOR_PROFILE_TEXT.SECTIONS.OWNER}
           </p>
 
-          <h3 className="text-xl font-semibold mt-4 text-slate-900 capitalize">
+          <h3 className="text-theme-h5 font-semibold mt-4 text-slate-900 capitalize">
             {profile?.vendor?.store_owner_first_name}{' '}
             {profile?.vendor?.store_owner_last_name}
           </h3>
@@ -213,7 +213,7 @@ export function VendorProfile({
         />
       </section>
 
-      <section className="mt-8 rounded-[28px] bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.04)] flex flex-col lg:flex-row justify-between text-sm text-slate-500">
+      <section className="mt-8 rounded-[28px] bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.04)] flex flex-col lg:flex-row justify-between text-theme-body-sm text-slate-500">
         <p>
           {VENDOR_PROFILE_TEXT.INFO.CREATED}
           {profile?.created_at

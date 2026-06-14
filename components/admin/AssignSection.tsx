@@ -59,14 +59,14 @@ export default function AssignSection({
   return (
     <div className="space-y-6">
       <section>
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">
+        <h2 className="text-theme-body-sm font-semibold text-gray-700 mb-3">
           {ASSIGN_SECTION_TEXT.ASSIGN_PERMISSION_TITLE}
         </h2>
         <form onSubmit={handleAssign} className="flex gap-2">
           <select
             value={roleId}
             onChange={(e) => setRoleId(e.target.value)}
-            className="flex-1 border border-gray-300 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:border-gray-500 bg-white"
+            className="flex-1 border border-gray-300 rounded-xl px-3 py-1.5 text-theme-body-sm focus:outline-none focus:border-gray-500 bg-white"
           >
             <option value="">{ASSIGN_SECTION_TEXT.SELECT_ROLE}</option>
             {roles.map((r) => (
@@ -79,7 +79,7 @@ export default function AssignSection({
           <select
             value={permId}
             onChange={(e) => setPermId(e.target.value)}
-            className="flex-1 border border-gray-300 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:border-gray-500 bg-white"
+            className="flex-1 border border-gray-300 rounded-xl px-3 py-1.5 text-theme-body-sm focus:outline-none focus:border-gray-500 bg-white"
           >
             <option value="">{ASSIGN_SECTION_TEXT.SELECT_PERMISSION}</option>
             {permissions.map((p) => (
@@ -92,7 +92,7 @@ export default function AssignSection({
           <button
             type="submit"
             disabled={!roleId || !permId || isPending}
-            className="bg-gray-900 text-white rounded-xl px-4 py-1.5 text-sm hover:bg-black disabled:opacity-40 transition-opacity"
+            className="bg-gray-900 text-white rounded-xl px-4 py-1.5 text-theme-body-sm hover:bg-black disabled:opacity-40 transition-opacity"
           >
             {isPending
               ? ASSIGN_SECTION_TEXT.ASSIGNING
@@ -102,14 +102,14 @@ export default function AssignSection({
       </section>
 
       <section>
-        <h3 className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">
+        <h3 className="text-theme-caption font-semibold text-gray-600 mb-2 uppercase tracking-wider">
           {ASSIGN_SECTION_TEXT.CURRENT_ASSIGNMENTS}
         </h3>
         <div className="divide-y border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
           {rolePermissions?.length > 0 ? (
             rolePermissions.map((rp, idx) => (
               <div key={idx} className="px-4 py-3 bg-white">
-                <p className="text-xs font-bold text-gray-500 mb-2">
+                <p className="text-theme-caption font-bold text-gray-500 mb-2">
                   {rp.role}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -118,13 +118,13 @@ export default function AssignSection({
                     .map((permission, pIdx) => (
                       <span
                         key={pIdx}
-                        className="inline-flex items-center text-[11px] bg-blue-50 text-blue-700 border border-blue-100 rounded-md px-2 py-0.5"
+                        className="inline-flex items-center text-theme-xxs bg-blue-50 text-blue-700 border border-blue-100 rounded-md px-2 py-0.5"
                       >
                         {permission}
                       </span>
                     ))}
                   {(!rp.permissions || rp.permissions.length === 0) && (
-                    <span className="text-xs text-gray-400 italic">
+                    <span className="text-theme-caption text-gray-400 italic">
                       {ASSIGN_SECTION_TEXT.NO_PERMISSIONS_ASSIGNED}
                     </span>
                   )}
@@ -132,7 +132,7 @@ export default function AssignSection({
               </div>
             ))
           ) : (
-            <div className="p-4 text-center text-sm text-gray-400">
+            <div className="p-4 text-center text-theme-body-sm text-gray-400">
               {ASSIGN_SECTION_TEXT.NO_ASSIGNMENTS_FOUND}
             </div>
           )}

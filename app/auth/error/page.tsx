@@ -30,14 +30,14 @@ function AuthErrorHandler() {
                         </div>
                     </div>
 
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Authentication Failed</h2>
+                    <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">Authentication Failed</h2>
                     
                     {/* Display the error message from the URL */}
-                    <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-sm text-left border border-red-100">
+                    <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-theme-body-sm text-left border border-red-100">
                         <p className="font-semibold mb-1">Error Details:</p>
                         <p>{errorMessage}</p>
-                        {status && <p className="mt-1 text-xs text-red-500">Status Code: {status}</p>}
-                        {email && <p className="mt-1 text-xs text-red-500">Account: {email}</p>}
+                        {status && <p className="mt-1 text-theme-caption text-red-500">Status Code: {status}</p>}
+                        {email && <p className="mt-1 text-theme-caption text-red-500">Account: {email}</p>}
                     </div>
 
                     <p className="text-slate-600 mb-8">

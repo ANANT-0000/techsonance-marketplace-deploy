@@ -131,7 +131,7 @@ function VerticalTimeline({
         <XCircle className="text-red-500 mt-0.5 shrink-0" size={20} />
         <div>
           <p className="font-bold text-red-900">Order Cancelled</p>
-          <p className="text-sm text-red-700 mt-1">
+          <p className="text-theme-body-sm text-red-700 mt-1">
             This order was cancelled and will not be delivered.
           </p>
         </div>
@@ -166,7 +166,7 @@ function VerticalTimeline({
                 {step.label}
               </span>
               {isCompleted && (
-                <span className="text-xs text-gray-500 mt-0.5">
+                <span className="text-theme-caption text-gray-500 mt-0.5">
                   {/* Mocking times for the UI feel; would map to actual timestamps if available */}
                   {new Date(date).toLocaleDateString("en-US", {
                     month: "short",
@@ -178,7 +178,7 @@ function VerticalTimeline({
               {step.key === "shipped" && isCurrent && (
                 <Badge
                   variant="secondary"
-                  className="w-fit mt-2 bg-blue-50 text-blue-700 border-blue-200 font-bold uppercase tracking-wider text-[10px]"
+                  className="w-fit mt-2 bg-blue-50 text-blue-700 border-blue-200 font-bold uppercase tracking-wider text-theme-tiny"
                 >
                   In Transit
                 </Badge>
@@ -239,7 +239,7 @@ export default function OrderDetailsPage() {
         {/* ── Desktop Breadcrumb / Header ── */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 px-4 md:px-0">
           <div>
-            <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground mb-2">
+            <div className="hidden md:flex items-center gap-2 text-theme-body-sm text-muted-foreground mb-2">
               <Link
                 href="/customer/orders"
                 className="hover:text-black transition-colors"
@@ -250,7 +250,7 @@ export default function OrderDetailsPage() {
                 / {order.id.split("-")[0].toUpperCase()}
               </span>
             </div>
-            <p className="text-sm text-muted-foreground mt-1 hidden md:block">
+            <p className="text-theme-body-sm text-muted-foreground mt-1 hidden md:block">
               Placed on{" "}
               {new Date(order.created_at).toLocaleDateString("en-US", {
                 month: "long",
@@ -294,7 +294,7 @@ export default function OrderDetailsPage() {
             {unifiedStatus && (
               <Card className="shadow-sm rounded-2xl overflow-hidden">
                 <CardHeader className="bg-gray-50/50 pb-4 border-b border-border">
-                  <CardTitle className="text-lg">Order Status</CardTitle>
+                  <CardTitle className="text-theme-h6">Order Status</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-2 md:pt-6">
                   <VerticalTimeline
@@ -335,14 +335,14 @@ export default function OrderDetailsPage() {
             {/* Shipping Address */}
             <Card className="shadow-sm rounded-2xl">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="text-theme-h6 flex items-center gap-2">
                   Shipping Address
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-start gap-3">
                   <MapPin className="text-blue-600 mt-1 shrink-0" size={20} />
-                  <div className="text-sm text-gray-600 leading-relaxed">
+                  <div className="text-theme-body-sm text-gray-600 leading-relaxed">
                     <p className="font-bold text-gray-900 mb-1">
                       {order.address.name}
                     </p>
@@ -366,7 +366,7 @@ export default function OrderDetailsPage() {
             {/* Items Card */}
             <Card className="shadow-sm rounded-2xl overflow-hidden px-2 py-2 ">
               <CardHeader className="bg-gray-50/50 flex flex-row justify-between items-center ">
-                <CardTitle className="text-lg">Items In This Order</CardTitle>
+                <CardTitle className="text-theme-h6">Items In This Order</CardTitle>
                 <Badge
                   variant="secondary"
                   className="rounded-full bg-blue-50 text-blue-700 font-semibold border-blue-100 border-b"
@@ -404,7 +404,7 @@ export default function OrderDetailsPage() {
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
                           <div className="flex justify-between items-start gap-4">
-                            <h3 className="font-bold text-gray-900 text-base md:text-lg line-clamp-2">
+                            <h3 className="font-bold text-gray-900 text-theme-body md:text-theme-h6 line-clamp-2">
                               {item.variant.variant_name}
                             </h3>
                             <span className="font-bold text-gray-900 whitespace-nowrap">
@@ -417,7 +417,7 @@ export default function OrderDetailsPage() {
                             <div className="mt-2">
                               <Badge
                                 variant="outline"
-                                className="capitalize text-xs"
+                                className="capitalize text-theme-caption"
                               >
                                 {status}
                               </Badge>
@@ -428,7 +428,7 @@ export default function OrderDetailsPage() {
                         <div className="flex flex-wrap items-center gap-3 mt-4">
                           <Badge
                             variant="secondary"
-                            className="rounded-md font-medium text-xs bg-gray-100 px-2 py-1"
+                            className="rounded-md font-medium text-theme-caption bg-gray-100 px-2 py-1"
                           >
                             Qty: {item.quantity}
                           </Badge>
@@ -439,7 +439,7 @@ export default function OrderDetailsPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleCancelItem(item.id)}
-                              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 h-7 text-xs rounded-md"
+                              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 h-7 text-theme-caption rounded-md"
                             >
                               Cancel Item
                             </Button>
@@ -453,7 +453,7 @@ export default function OrderDetailsPage() {
                                   `/customer/support/return/${item.id}`,
                                 )
                               }
-                              className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 h-7 text-xs rounded-md"
+                              className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 h-7 text-theme-caption rounded-md"
                             >
                               Return/Replace Item
                             </Button>
@@ -469,7 +469,7 @@ export default function OrderDetailsPage() {
             {/* Payment Summary Card */}
             <Card className="shadow-sm rounded-2xl overflow-hidden py-2.5">
               <CardHeader className="bg-gray-50/50   border-b border-border">
-                <CardTitle className="text-lg">Payment Summary</CardTitle>
+                <CardTitle className="text-theme-h6">Payment Summary</CardTitle>
               </CardHeader>
               <CardContent className="">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -481,7 +481,7 @@ export default function OrderDetailsPage() {
                         {order.payment.payment_method}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-4">
+                    <p className="text-theme-body-sm text-gray-600 mb-4">
                       Status:{" "}
                       <span className="font-semibold capitalize text-gray-900">
                         {order.payment.payment_status}
@@ -489,14 +489,14 @@ export default function OrderDetailsPage() {
                     </p>
                     <Badge
                       variant="outline"
-                      className="w-fit bg-white text-[10px] text-gray-500 border-gray-200 font-mono"
+                      className="w-fit bg-white text-theme-tiny text-gray-500 border-gray-200 font-mono"
                     >
                       Ref: {order.payment.transaction_ref.slice(0, 10)}
                     </Badge>
                   </div>
 
                   {/* Right: Line Items */}
-                  <div className="space-y-3 text-sm text-gray-600 flex flex-col justify-center">
+                  <div className="space-y-3 text-theme-body-sm text-gray-600 flex flex-col justify-center">
                     <div className="flex justify-between">
                       <span>Subtotal ({order.items.length} items)</span>
                       <span className="font-medium text-gray-900">
@@ -505,7 +505,7 @@ export default function OrderDetailsPage() {
                     </div>
                     <div className="flex justify-between">
                       <span>Shipping & Handling</span>
-                      <span className="font-bold text-blue-600 uppercase tracking-wider text-xs mt-0.5">
+                      <span className="font-bold text-blue-600 uppercase tracking-wider text-theme-caption mt-0.5">
                         Free
                       </span>
                     </div>
@@ -521,10 +521,10 @@ export default function OrderDetailsPage() {
                     <Separator className="my-2" />
 
                     <div className="flex justify-between items-center pt-1">
-                      <span className="font-bold text-gray-900 text-base">
+                      <span className="font-bold text-gray-900 text-theme-body">
                         Order Total
                       </span>
-                      <span className="font-black text-xl text-gray-900">
+                      <span className="font-black text-theme-h5 text-gray-900">
                         ₹{formatCurrency(totalAmount)}
                       </span>
                     </div>

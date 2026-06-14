@@ -29,14 +29,14 @@ export function PromoBannerMobile({
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/20" />
       <div className="absolute inset-0 flex flex-col justify-center px-5">
-        <h3 className="text-[18px] font-bold text-white leading-tight mb-1">
+        <h3 className="text-theme-h6 font-bold text-white leading-tight mb-1">
           {title}
         </h3>
         {desc && (
-          <p className="text-[11px] text-white/70 mb-4 line-clamp-2">{desc}</p>
+          <p className="text-theme-xxs text-white/70 mb-4 line-clamp-2">{desc}</p>
         )}
         <Link href="/store">
-          <button className="self-start bg-white text-black text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full">
+          <button className="self-start bg-white text-black text-theme-tiny font-bold uppercase tracking-wider px-4 py-2 rounded-full">
             {btnText || PROMO_BANNER_TEXT.SHOP_NOW}
           </button>
         </Link>

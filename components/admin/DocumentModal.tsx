@@ -34,7 +34,7 @@ export function DocumentModal({
                             <p className="font-semibold text-gray-800 capitalize">
                                 {formatStructure(doc.document_type)}
                             </p>
-                            <p className="text-xs text-gray-400">{formatDate(doc.created_at)}</p>
+                            <p className="text-theme-caption text-gray-400">{formatDate(doc.created_at)}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -42,13 +42,13 @@ export function DocumentModal({
                             href={doc.document_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-xs text-blue-600 hover:underline px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                            className="flex items-center gap-1 text-theme-caption text-blue-600 hover:underline px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
                         >
                             <ExternalLink size={13} /> {DOCUMENT_MODAL_TEXT.OPEN_ORIGINAL}
                         </a>
                         <button
                             onClick={onClose}
-                            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-500 transition-colors text-lg font-bold"
+                            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-500 transition-colors text-theme-h6 font-bold"
                         >
                             ×
                         </button>
@@ -74,12 +74,12 @@ export function DocumentModal({
                     {!isImage && !isPdf && (
                         <div className="flex flex-col items-center gap-3 py-12 text-gray-500">
                             <FileText size={40} className="text-gray-300" />
-                            <p className="text-sm">{DOCUMENT_MODAL_TEXT.PREVIEW_NOT_AVAILABLE}</p>
+                            <p className="text-theme-body-sm">{DOCUMENT_MODAL_TEXT.PREVIEW_NOT_AVAILABLE}</p>
                             <a
                                 href={doc.document_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-600 text-sm hover:underline"
+                                className="text-blue-600 text-theme-body-sm hover:underline"
                             >
                                 {DOCUMENT_MODAL_TEXT.OPEN_FILE}
                             </a>

@@ -46,7 +46,6 @@ const navReducer = (state: NavState, action: NavAction): NavState => {
 
 export function Navbar({
   styles,
-  //   logoUrl = BRAND_LOGO,
   menuLinks: propMenuLinks,
 }: {
   styles?: string;
@@ -138,7 +137,7 @@ export function Navbar({
       </div>
 
       <ul
-        className={`flex space-x-8 md:text-sm lg:text-sm font-medium items-center ${linksAlignCls}`}
+        className={`flex space-x-8 md:text-theme-body-sm lg:text-theme-body-sm font-medium items-center ${linksAlignCls}`}
       >
         {menuLinks.map((item, idx) => {
           let label: string;
@@ -210,7 +209,7 @@ export function Navbar({
                 className="relative p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors"
               >
                 {wishlistCount > 0 && (
-                  <span className="absolute top-0 right-0 text-[10px] font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4 h-4 flex items-center justify-center border-2 border-navbar">
+                  <span className="absolute top-0 right-0 text-theme-tiny font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4 h-4 flex items-center justify-center border-2 border-navbar">
                     {wishlistCount}
                   </span>
                 )}
@@ -228,7 +227,7 @@ export function Navbar({
               className="relative p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors"
             >
               {state.isMounted && items.length > 0 && (
-                <span className="absolute top-0 right-0 text-[10px] font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4 h-4 flex items-center justify-center border-2 border-navbar">
+                <span className="absolute top-0 right-0 text-theme-tiny font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4 h-4 flex items-center justify-center border-2 border-navbar">
                   {items.length}
                 </span>
               )}

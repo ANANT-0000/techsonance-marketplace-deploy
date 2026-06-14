@@ -95,7 +95,7 @@ export default function VendorsApplicationsPage() {
                 onClick={() => setIsOpen(isOpen === index ? null : index)}
                 className={`${isOpen === index ? "border-b" : ""} px-4 py-2 flex justify-between items-center cursor-pointer`}
               >
-                <p className="text-xl font-bold">
+                <p className="text-theme-h5 font-bold">
                   Application Request from {vendor.store_name}
                 </p>
                 <button>
@@ -113,7 +113,7 @@ export default function VendorsApplicationsPage() {
                   <span className="flex justify-between p-4 border-2 border-gray-300 rounded-2xl mb-0">
                     {/* Left — Business Profile */}
                     <div className="leftSection px-4">
-                      <h1 className="text-xl font-bold">Business Profile</h1>
+                      <h1 className="text-theme-h5 font-bold">Business Profile</h1>
 
                       <p className="my-4 flex flex-col">
                         <span className="font-semibold text-gray-500">
@@ -185,7 +185,7 @@ export default function VendorsApplicationsPage() {
                             className="w-6 h-6"
                             alt="Internet Icon"
                           />
-                          <p className="text-lg font-bold">
+                          <p className="text-theme-h6 font-bold">
                             Instance Domain Assignment
                           </p>
                         </span>
@@ -195,10 +195,10 @@ export default function VendorsApplicationsPage() {
                         </label>
 
                         <span className="flex">
-                          <p className="text-xl bg-white border min-w-64 border-gray-400 p-4 py-2 rounded-l-lg">
+                          <p className="text-theme-h5 bg-white border min-w-64 border-gray-400 p-4 py-2 rounded-l-lg">
                             {company.company_domain}
                           </p>
-                          <p className="text-xl border border-gray-400 p-4 py-2 rounded-r-lg bg-gray-200">
+                          <p className="text-theme-h5 border border-gray-400 p-4 py-2 rounded-r-lg bg-gray-200">
                             .platform.com
                           </p>
                         </span>
@@ -216,7 +216,7 @@ export default function VendorsApplicationsPage() {
                       {/* Status pills */}
                       <div className="flex gap-3 mt-2">
                         <span
-                          className={`text-xs font-semibold px-3 py-1 rounded-full border ${
+                          className={`text-theme-caption font-semibold px-3 py-1 rounded-full border ${
                             vendor.vendor_status === "pending"
                               ? "bg-amber-50 text-amber-600 border-amber-200"
                               : "bg-emerald-50 text-emerald-600 border-emerald-200"
@@ -225,7 +225,7 @@ export default function VendorsApplicationsPage() {
                           Vendor: {vendor.vendor_status}
                         </span>
                         <span
-                          className={`text-xs font-semibold px-3 py-1 rounded-full border ${
+                          className={`text-theme-caption font-semibold px-3 py-1 rounded-full border ${
                             company.company_status === "pending"
                               ? "bg-amber-50 text-amber-600 border-amber-200"
                               : "bg-emerald-50 text-emerald-600 border-emerald-200"
@@ -243,7 +243,7 @@ export default function VendorsApplicationsPage() {
                   {/* ── Validation Actions ── */}
                   <span className="flex gap-6 justify-between items-baseline">
                     <div className="flex flex-1 flex-col gap-6 border-2 border-gray-300 rounded-xl mt-6 px-8 py-4">
-                      <h1 className="font-bold text-2xl">Validation Actions</h1>
+                      <h1 className="font-bold text-theme-h4">Validation Actions</h1>
                       <p>
                         By approving, a dedicated database instance will be
                         provisioned for

@@ -44,7 +44,7 @@ export function DocumentCard({
                 ) : isPdf ? (
                     <div className="flex flex-col items-center gap-1 text-red-400">
                         <FileText size={32} />
-                        <span className="text-xs font-bold tracking-widest text-red-300">{DOCUMENT_CARD_TEXT.PDF}</span>
+                        <span className="text-theme-caption font-bold tracking-widest text-red-300">{DOCUMENT_CARD_TEXT.PDF}</span>
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                             <ZoomIn size={20} className="text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
@@ -52,17 +52,17 @@ export function DocumentCard({
                 ) : (
                     <div className="flex flex-col items-center gap-1 text-gray-400">
                         <FileText size={32} />
-                        <span className="text-xs">{DOCUMENT_CARD_TEXT.FILE}</span>
+                        <span className="text-theme-caption">{DOCUMENT_CARD_TEXT.FILE}</span>
                     </div>
                 )}
             </div>
 
             {/* Meta */}
             <div className="px-3 py-2 flex flex-col gap-1">
-                <p className="text-xs font-semibold text-gray-700 truncate capitalize">
+                <p className="text-theme-caption font-semibold text-gray-700 truncate capitalize">
                     {formatStructure(doc.document_type)}
                 </p>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border w-fit ${statusClass}`}>
+                <span className={`text-theme-tiny font-semibold px-2 py-0.5 rounded-full border w-fit ${statusClass}`}>
                     {doc.document_status}
                 </span>
             </div>

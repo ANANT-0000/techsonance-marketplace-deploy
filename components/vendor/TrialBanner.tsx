@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import { Clock, AlertTriangle, Lock, X } from 'lucide-react';
 import { BASE_API_URL } from '@/constants';
 import { authToken } from '@/utils/authToken';
@@ -12,6 +12,36 @@ interface SubscriptionStatus {
   banner_urgency: BannerUrgency;
   in_grace_period: boolean;
   is_expired: boolean;
+}
+
+export enum BannerActionType {
+  SET_STATUS = 'SET_STATUS',
+  DISMISS = 'DISMISS',
+}
+
+interface BannerState {
+  status: SubscriptionStatus | null;
+  dismissed: boolean;
+}
+
+type BannerAction =
+  | { type: BannerActionType.SET_STATUS; payload: SubscriptionStatus | null }
+  | { type: BannerActionType.DISMISS };
+
+const initialBannerState: BannerState = {
+  status: null,
+  dismissed: false,
+};
+
+function bannerReducer(state: BannerState, action: BannerAction): BannerState {
+  switch (action.type) {
+    case BannerActionType.SET_STATUS:
+      return { ...state, status: action.payload };
+    case BannerActionType.DISMISS:
+      return { ...state, dismissed: true };
+    default:
+      return state;
+  }
 }
 
 const CONFIG = {
@@ -34,8 +64,8 @@ interface Props {
 }
 
 export function TrialBanner({ vendorId }: Props) {
-  const [status, setStatus] = useState<SubscriptionStatus | null>(null);
-  const [dismissed, setDismissed] = useState(false);
+  const [state, dispatch] = useReducer(bannerReducer, initialBannerState);
+  const { status, dismissed } = state;
 
   const getStatus = async () => {
     const token = authToken();
@@ -50,7 +80,7 @@ export function TrialBanner({ vendorId }: Props) {
         },
       });
       const json = await res.json();
-      setStatus(json.data ?? null);
+      dispatch({ type: BannerActionType.SET_STATUS, payload: json.data ?? null });
     } catch {
       // silently skip — banner is non-critical
     }
@@ -66,7 +96,7 @@ export function TrialBanner({ vendorId }: Props) {
   const { bg, text, border, Icon } = CONFIG[status.banner_urgency];
 
   return (
-    <div className={`flex items-center justify-between gap-3 px-4 py-2.5 text-sm border-b ${bg} ${text} ${border}`}>
+    <div className={`flex items-center justify-between gap-3 px-4 py-2.5 text-theme-body-sm border-b ${bg} ${text} ${border}`}>
       <div className="flex items-center gap-2">
         <Icon size={14} className="shrink-0" />
         <span>
@@ -82,7 +112,7 @@ export function TrialBanner({ vendorId }: Props) {
       {/* Only allow dismissal on info urgency — warning/danger stay visible */}
       {status.banner_urgency === BannerUrgency.INFO && (
         <button
-          onClick={() => setDismissed(true)}
+          onClick={() => dispatch({ type: BannerActionType.DISMISS })}
           className="p-0.5 rounded opacity-60 hover:opacity-100 transition-opacity"
           aria-label={TRIAL_BANNER_TEXT.DISMISS}
         >

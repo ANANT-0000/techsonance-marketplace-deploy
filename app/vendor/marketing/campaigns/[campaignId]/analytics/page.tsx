@@ -49,13 +49,13 @@ export default function CampaignAnalyticsPage() {
     <div className="w-full p-6  mx-auto">
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors"
+        className="flex items-center gap-2 text-theme-body-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors"
       >
         <ArrowLeft size={16} /> Back to Campaigns
       </button>
 
-      <h1 className="text-2xl font-bold text-gray-800 mb-1">Campaign Analytics</h1>
-      <p className="text-sm text-gray-500 mb-8">Funnel performance from view to redemption.</p>
+      <h1 className="text-theme-h4 font-bold text-gray-800 mb-1">Campaign Analytics</h1>
+      <p className="text-theme-body-sm text-gray-500 mb-8">Funnel performance from view to redemption.</p>
 
       {loading ? (
         <div className="flex justify-center py-20"><LoaderSpinner /></div>
@@ -67,31 +67,31 @@ export default function CampaignAnalyticsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {FUNNEL_STEPS.map((step) => (
               <div key={step.key} className={`rounded-2xl border p-5 ${step.color}`}>
-                <div className="flex items-center gap-2 mb-3">{step.icon}<span className="text-xs font-bold uppercase tracking-wider">{step.label}</span></div>
-                <p className="text-3xl font-bold">{data.funnel[step.key].toLocaleString()}</p>
+                <div className="flex items-center gap-2 mb-3">{step.icon}<span className="text-theme-caption font-bold uppercase tracking-wider">{step.label}</span></div>
+                <p className="text-theme-h3 font-bold">{data.funnel[step.key].toLocaleString()}</p>
               </div>
             ))}
           </div>
 
           {/* Conversion rates */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <h2 className="text-base font-semibold text-gray-800 mb-4">Conversion Rates</h2>
+            <h2 className="text-theme-body font-semibold text-gray-800 mb-4">Conversion Rates</h2>
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">View → Redeem</p>
-                <p className="text-4xl font-bold text-gray-900">{data.conversion_rates.view_to_redeem_pct}%</p>
+                <p className="text-theme-caption text-gray-500 uppercase tracking-wider mb-1">View → Redeem</p>
+                <p className="text-theme-h2 font-bold text-gray-900">{data.conversion_rates.view_to_redeem_pct}%</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Apply → Redeem</p>
-                <p className="text-4xl font-bold text-gray-900">{data.conversion_rates.apply_to_redeem_pct}%</p>
+                <p className="text-theme-caption text-gray-500 uppercase tracking-wider mb-1">Apply → Redeem</p>
+                <p className="text-theme-h2 font-bold text-gray-900">{data.conversion_rates.apply_to_redeem_pct}%</p>
               </div>
             </div>
           </div>
 
           {/* Total discount granted */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total Discount Granted</p>
-            <p className="text-4xl font-bold text-gray-900">
+            <p className="text-theme-caption text-gray-500 uppercase tracking-wider mb-1">Total Discount Granted</p>
+            <p className="text-theme-h2 font-bold text-gray-900">
               ₹{data.funnel.total_discount_granted.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </p>
           </div>

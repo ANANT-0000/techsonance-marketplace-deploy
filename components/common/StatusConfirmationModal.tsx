@@ -39,10 +39,10 @@ export const StatusConfirmationModal = ({ onConfirm, onCancel,isActive }: { onCo
 
                         {/* Text */}
                         <div className="text-center">
-                            <h3 className="text-base font-bold text-gray-800 mb-1">
+                            <h3 className="text-theme-body font-bold text-gray-800 mb-1">
                                 {isActive ? STATUS_CONFIRMATION_MODAL_TEXT.DEACTIVATE_PRODUCT : STATUS_CONFIRMATION_MODAL_TEXT.ACTIVATE_PRODUCT}
                             </h3>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-theme-body-sm text-gray-500">
                                 {isActive
                                     ? STATUS_CONFIRMATION_MODAL_TEXT.DEACTIVATE_DESCRIPTION
                                     : STATUS_CONFIRMATION_MODAL_TEXT.ACTIVATE_DESCRIPTION}
@@ -51,13 +51,13 @@ export const StatusConfirmationModal = ({ onConfirm, onCancel,isActive }: { onCo
 
                         {/* Status change preview */}
                         <div className="flex items-center justify-center gap-3 bg-gray-50 rounded-xl py-3 px-4 border border-gray-100">
-                            <span className={`inline-flex items-center gap-1 py-1 px-3 rounded-full text-xs font-semibold border ${isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-500 border-gray-200"}`}>
+                            <span className={`inline-flex items-center gap-1 py-1 px-3 rounded-full text-theme-caption font-semibold border ${isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-500 border-gray-200"}`}>
                                 ● {isActive ? STATUS_CONFIRMATION_MODAL_TEXT.ACTIVE : STATUS_CONFIRMATION_MODAL_TEXT.INACTIVE}
                             </span>
                             <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                             </svg>
-                            <span className={`inline-flex items-center gap-1 py-1 px-3 rounded-full text-xs font-semibold border ${!isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-500 border-gray-200"}`}>
+                            <span className={`inline-flex items-center gap-1 py-1 px-3 rounded-full text-theme-caption font-semibold border ${!isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-500 border-gray-200"}`}>
                                 ● {isActive ? STATUS_CONFIRMATION_MODAL_TEXT.INACTIVE : STATUS_CONFIRMATION_MODAL_TEXT.ACTIVE}
                             </span>
                         </div>
@@ -66,13 +66,13 @@ export const StatusConfirmationModal = ({ onConfirm, onCancel,isActive }: { onCo
                         <div className="flex gap-3 mt-1">
                             <button
                                 onClick={() => onCancel()}
-                                className="flex-1 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200 py-2.5 rounded-xl transition-colors"
+                                className="flex-1 text-theme-body-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200 py-2.5 rounded-xl transition-colors"
                             >
                                 {STATUS_CONFIRMATION_MODAL_TEXT.CANCEL}
                             </button>
                             <button
                                 onClick={() => onConfirm()}
-                                className={`flex-1 text-sm font-semibold text-white py-2.5 rounded-xl transition-colors ${isActive
+                                className={`flex-1 text-theme-body-sm font-semibold text-white py-2.5 rounded-xl transition-colors ${isActive
                                     ? "bg-red-500 hover:bg-red-600 active:bg-red-700"
                                     : "bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700"
                                     }`}

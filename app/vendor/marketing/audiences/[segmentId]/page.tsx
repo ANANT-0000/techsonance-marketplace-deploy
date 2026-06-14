@@ -47,14 +47,14 @@ export default function SegmentDetailPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 mb-6">
+      <button onClick={() => router.back()} className="flex items-center gap-2 text-theme-body-sm text-gray-500 hover:text-gray-800 mb-6">
         <ArrowLeft size={16} /> Back
       </button>
 
       <div className="flex items-start justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">{data.name}</h1>
-          <p className="text-sm text-gray-500 mt-1">{data.description ?? "No description"}</p>
+          <h1 className="text-theme-h4 font-bold text-gray-800">{data.name}</h1>
+          <p className="text-theme-body-sm text-gray-500 mt-1">{data.description ?? "No description"}</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -72,13 +72,13 @@ export default function SegmentDetailPage() {
 
       {/* Criteria */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm mb-6">
-        <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4">
+        <h2 className="text-theme-body-sm font-bold text-gray-700 uppercase tracking-wider mb-4">
           Criteria ({data.criteria_operator})
         </h2>
         <div className="space-y-2">
           {(data.criteria as any[]).map((c: any, i: number) => (
-            <div key={i} className="flex items-center gap-3 text-sm">
-              <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded font-mono text-xs">{c.field}</span>
+            <div key={i} className="flex items-center gap-3 text-theme-body-sm">
+              <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded font-mono text-theme-caption">{c.field}</span>
               <span className="text-gray-400">{c.operator}</span>
               <span className="font-semibold text-gray-800">{c.value}</span>
             </div>
@@ -89,13 +89,13 @@ export default function SegmentDetailPage() {
       {/* Members preview */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-theme-body-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
             <Users size={16} /> Members
-            <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs font-bold">
+            <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-theme-caption font-bold">
               {data.member_count ?? 0}
             </span>
           </h2>
-          <p className="text-xs text-gray-400">
+          <p className="text-theme-caption text-gray-400">
             Last synced:{" "}
             {data.last_recalculated_at
               ? new Date(data.last_recalculated_at).toLocaleString("en-IN")
@@ -104,17 +104,17 @@ export default function SegmentDetailPage() {
         </div>
         <div className="divide-y divide-gray-50">
           {(data.members as any[]).length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-10">No members yet. Run recalculation to populate.</p>
+            <p className="text-theme-body-sm text-gray-400 text-center py-10">No members yet. Run recalculation to populate.</p>
           ) : (
             (data.members as any[]).map((m: any) => (
               <div key={m.user_id} className="flex items-center justify-between px-5 py-3">
                 <div>
-                  <p className="text-sm font-medium text-gray-800">
+                  <p className="text-theme-body-sm font-medium text-gray-800">
                     {[m.first_name, m.last_name].filter(Boolean).join(" ") || "—"}
                   </p>
-                  <p className="text-xs text-gray-500">{m.email}</p>
+                  <p className="text-theme-caption text-gray-500">{m.email}</p>
                 </div>
-                <p className="text-xs text-gray-400">
+                <p className="text-theme-caption text-gray-400">
                   Joined {new Date(m.joined_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                 </p>
               </div>

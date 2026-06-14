@@ -38,7 +38,7 @@ const RatingBar = ({ label, count, total }: { label: string; count: number; tota
     const pct = total > 0 ? Math.round((count / total) * 100) : 0;
     return (
         <div className="flex items-center gap-2.5 group">
-            <span className="text-xs font-semibold text-gray-500 w-4 shrink-0 text-right">{label}</span>
+            <span className="text-theme-caption font-semibold text-gray-500 w-4 shrink-0 text-right">{label}</span>
             <Star size={10} fill="#F59E0B" className="text-amber-400 shrink-0" />
             <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <motion.div
@@ -49,7 +49,7 @@ const RatingBar = ({ label, count, total }: { label: string; count: number; tota
                     transition={{ duration: 0.7, ease: 'easeOut', delay: Number(label) * 0.04 }}
                 />
             </div>
-            <span className="text-[11px] text-gray-400 w-6 shrink-0">{count}</span>
+            <span className="text-theme-xxs text-gray-400 w-6 shrink-0">{count}</span>
         </div>
     );
 };
@@ -66,7 +66,7 @@ const Avatar = ({ name }: { name: string }) => {
     const hue = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
     return (
         <div
-            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white font-bold text-xs select-none"
+            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white font-bold text-theme-caption select-none"
             style={{ background: `hsl(${hue},55%,55%)` }}
         >
             {initials || <User size={14} />}
@@ -129,8 +129,8 @@ export const ProductReview = ({ productId }: { productId: string }) => {
         return (
             <div className="py-16 flex flex-col items-center justify-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
                 <MessageSquareQuote size={36} className="text-gray-300 mb-3" strokeWidth={1.5} />
-                <p className="text-gray-700 font-semibold text-base">{PRODUCT_REVIEW_TEXT.NO_REVIEWS_TITLE}</p>
-                <p className="text-gray-400 text-sm mt-1">{PRODUCT_REVIEW_TEXT.NO_REVIEWS_DESC}</p>
+                <p className="text-gray-700 font-semibold text-theme-body">{PRODUCT_REVIEW_TEXT.NO_REVIEWS_TITLE}</p>
+                <p className="text-gray-400 text-theme-body-sm mt-1">{PRODUCT_REVIEW_TEXT.NO_REVIEWS_DESC}</p>
             </div>
         );
     }
@@ -149,7 +149,7 @@ export const ProductReview = ({ productId }: { productId: string }) => {
                                 {avgDisplay}
                             </span>
                             <StarRow rating={Math.round(avg)} size={18} />
-                            <span className="text-xs text-gray-400 font-medium mt-1">
+                            <span className="text-theme-caption text-gray-400 font-medium mt-1">
                                 {PRODUCT_REVIEW_TEXT.BASED_ON} {total} {total === 1 ? PRODUCT_REVIEW_TEXT.REVIEW : PRODUCT_REVIEW_TEXT.REVIEWS}
                             </span>
                         </>
@@ -204,10 +204,10 @@ export const ProductReview = ({ productId }: { productId: string }) => {
                                     <div className="flex items-center gap-3 min-w-0">
                                         <Avatar name={fullName} />
                                         <div className="min-w-0">
-                                            <p className="text-sm font-bold text-gray-900 capitalize truncate leading-tight">
+                                            <p className="text-theme-body-sm font-bold text-gray-900 capitalize truncate leading-tight">
                                                 {fullName}
                                             </p>
-                                            <time className="text-[11px] text-gray-400 font-medium">
+                                            <time className="text-theme-xxs text-gray-400 font-medium">
                                                 {date}
                                             </time>
                                         </div>
@@ -218,14 +218,14 @@ export const ProductReview = ({ productId }: { productId: string }) => {
                                 </div>
 
                                 {/* Review text */}
-                                <p className="text-sm text-gray-600 leading-relaxed italic border-l-2 border-gray-100 pl-3">
+                                <p className="text-theme-body-sm text-gray-600 leading-relaxed italic border-l-2 border-gray-100 pl-3">
                                     "{review.review}"
                                 </p>
 
                                 {/* Verified badge */}
                                 <div className="flex items-center gap-1.5 pt-1 border-t border-gray-50">
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                    <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">
+                                    <span className="text-theme-tiny font-semibold text-emerald-600 uppercase tracking-wider">
                                         {PRODUCT_REVIEW_TEXT.VERIFIED_PURCHASE}
                                     </span>
                                 </div>
@@ -246,7 +246,7 @@ export const ProductReview = ({ productId }: { productId: string }) => {
                     >
                         <button
                             onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
-                            className="flex items-center gap-2 px-6 py-3 rounded-2xl border-2 border-gray-200 hover:border-gray-900 text-sm font-bold text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 group"
+                            className="flex items-center gap-2 px-6 py-3 rounded-2xl border-2 border-gray-200 hover:border-gray-900 text-theme-body-sm font-bold text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 group"
                         >
                             {PRODUCT_REVIEW_TEXT.LOAD_MORE}
                             <ChevronDown

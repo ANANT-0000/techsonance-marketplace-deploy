@@ -26,9 +26,9 @@ import { CAMPAIGN_FORM_TEXT } from "@/constants/vendorText";
 // Styles (keep in sync with PromotionConfigurator)
 // ─────────────────────────────────────────────
 const fieldBase =
-  "w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all bg-white";
+  "w-full px-3 py-2 text-theme-body-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all bg-white";
 const labelBase =
-  "block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5";
+  "block text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-1.5";
 const sectionContainer =
   "border border-gray-100 rounded-2xl p-5 bg-gray-50/50";
 
@@ -478,10 +478,10 @@ export default function CampaignForm({
           <Megaphone size={22} />
         </div>
         <div>
-          <h2 className="text-base font-bold text-gray-800">
+          <h2 className="text-theme-body font-bold text-gray-800">
             {isEdit ? CAMPAIGN_FORM_TEXT.HEADER.EDIT : CAMPAIGN_FORM_TEXT.HEADER.CREATE}
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-theme-caption text-gray-500 mt-0.5">
             {CAMPAIGN_FORM_TEXT.HEADER.DESC}
           </p>
         </div>
@@ -554,7 +554,7 @@ export default function CampaignForm({
                 placeholder="10"
                 className={fieldBase}
               />
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-theme-caption text-gray-400">
                 {CAMPAIGN_FORM_TEXT.BASIC_INFO.PRIORITY_HINT}
               </p>
             </div>
@@ -567,10 +567,10 @@ export default function CampaignForm({
                   onChange={(e) => setIsAutoApplied(e.target.checked)}
                   className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-theme-body-sm font-medium text-gray-700">
                   {CAMPAIGN_FORM_TEXT.BASIC_INFO.AUTO_APPLY}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-theme-caption text-gray-400">
                   {CAMPAIGN_FORM_TEXT.BASIC_INFO.AUTO_APPLY_HINT}
                 </span>
               </label>
@@ -581,10 +581,10 @@ export default function CampaignForm({
                   onChange={(e) => setIsExclusive(e.target.checked)}
                   className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-theme-body-sm font-medium text-gray-700">
                   {CAMPAIGN_FORM_TEXT.BASIC_INFO.EXCLUSIVE}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-theme-caption text-gray-400">
                   {CAMPAIGN_FORM_TEXT.BASIC_INFO.EXCLUSIVE_HINT}
                 </span>
               </label>
@@ -594,7 +594,7 @@ export default function CampaignForm({
 
         {/* ── Discount Configuration ── */}
         <section className={sectionContainer}>
-          <div className="flex items-center gap-2 mb-4 text-gray-800 font-bold text-sm">
+          <div className="flex items-center gap-2 mb-4 text-gray-800 font-bold text-theme-body-sm">
             <Tag size={16} />
             {CAMPAIGN_FORM_TEXT.DISCOUNT_CONFIG}
           </div>
@@ -613,7 +613,7 @@ export default function CampaignForm({
 
         {/* ── Schedule & Usage ── */}
         <section className={sectionContainer}>
-          <div className="flex items-center gap-2 mb-4 text-gray-800 font-bold text-sm">
+          <div className="flex items-center gap-2 mb-4 text-gray-800 font-bold text-theme-body-sm">
             <Calendar size={16} />
             {CAMPAIGN_FORM_TEXT.SCHEDULE_USAGE.TITLE}
           </div>
@@ -636,7 +636,7 @@ export default function CampaignForm({
                 onChange={(e) => setValidTo(e.target.value)}
                 className={fieldBase}
               />
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-theme-caption text-gray-400">
                 {CAMPAIGN_FORM_TEXT.SCHEDULE_USAGE.VALID_TO_HINT}
               </p>
             </div>
@@ -649,7 +649,7 @@ export default function CampaignForm({
                 placeholder={CAMPAIGN_FORM_TEXT.SCHEDULE_USAGE.GLOBAL_CAP_PH}
                 className={fieldBase}
               />
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-theme-caption text-gray-400">
                 {CAMPAIGN_FORM_TEXT.SCHEDULE_USAGE.GLOBAL_CAP_HINT}
               </p>
             </div>
@@ -661,7 +661,7 @@ export default function CampaignForm({
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:text-gray-800"
+            className="px-5 py-2.5 text-theme-body-sm font-bold text-gray-600 hover:text-gray-800"
           >
             {CAMPAIGN_FORM_TEXT.FOOTER.CANCEL}
           </button>

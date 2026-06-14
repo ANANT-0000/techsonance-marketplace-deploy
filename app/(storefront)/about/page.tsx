@@ -17,8 +17,8 @@ export default function AboutAs() {
                 style={{ backgroundImage: `url(${aboutContent.heroImg || ''})` }}
             >
                 <div className="absolute inset-0 bg-black/35 z-0" />
-                <h2 className="font-bold text-white relative z-10 text-3xl">{aboutContent.heroTitle}</h2>
-                <p className="text-5xl text-white max-w-2xl font-light relative z-10">
+                <h2 className="font-bold text-white relative z-10 text-theme-h3">{aboutContent.heroTitle}</h2>
+                <p className="text-theme-h1 text-white max-w-2xl font-light relative z-10">
                     {aboutContent.heroDesc}
                 </p>
             </div>
@@ -32,7 +32,7 @@ export default function AboutAs() {
                     />
                 </div>
                 <div className="flex-1 w-full">
-                    <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">{aboutContent.ownThoughtsTitle}</h1>
+                    <h1 className="text-theme-h3 font-extrabold text-gray-900 leading-tight">{aboutContent.ownThoughtsTitle}</h1>
                     <p className="mt-4 text-gray-600 leading-relaxed">
                         {aboutContent.ownThoughtsDesc}
                     </p>
@@ -44,8 +44,8 @@ export default function AboutAs() {
                             className="w-16 h-16 object-cover object-top rounded-full border border-gray-200" 
                         />
                         <span>
-                            <h3 className="text-lg font-bold text-gray-900">{aboutContent.founderName}</h3>
-                            <p className="text-sm text-purple-600 font-semibold">{aboutContent.founderTitle}</p>
+                            <h3 className="text-theme-h6 font-bold text-gray-900">{aboutContent.founderName}</h3>
+                            <p className="text-theme-body-sm text-purple-600 font-semibold">{aboutContent.founderTitle}</p>
                         </span>
                     </div>
                 </div>
@@ -57,7 +57,7 @@ export default function AboutAs() {
             >
                 <div className="absolute inset-0 bg-black/60 z-0 rounded-2xl" />
                 <div className="relative z-10 max-w-3xl mx-auto">
-                    <h1 className="text-primary text-3xl font-extrabold text-white">
+                    <h1 className="text-primary text-theme-h3 font-extrabold text-white">
                         {aboutContent.coreValuesTitle}
                     </h1>
                     <p className="text-gray-200 mt-4 leading-relaxed">
@@ -68,7 +68,7 @@ export default function AboutAs() {
 
             <div className="flex flex-col md:flex-row xl:pt-10 pb-12 xl:px-32 lg:px-8 md:px-4 sm:px-2 py-1 gap-12 items-center justify-center">
                 <div className="left_section flex-1 w-full">
-                    <h1 className="text-3xl font-extrabold text-gray-900 mb-4">
+                    <h1 className="text-theme-h3 font-extrabold text-gray-900 mb-4">
                         {aboutContent.missionTitle}
                     </h1>
                     <p className="text-gray-600 mb-6 leading-relaxed">
@@ -77,9 +77,9 @@ export default function AboutAs() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         {missionToDeliver.map((mission: any) => (
                             <div key={mission.id} className="mt-2 bg-gray-50 border border-gray-100 p-4 rounded-xl">
-                                <h3 className="text-base font-bold text-gray-800">{mission.title}</h3>
-                                <p className="text-xs text-gray-500 mt-1">{mission.tagline}</p>
-                                <p className="text-gray-600 mt-2 text-sm leading-relaxed">{mission.description}</p>
+                                <h3 className="text-theme-body font-bold text-gray-800">{mission.title}</h3>
+                                <p className="text-theme-caption text-gray-500 mt-1">{mission.tagline}</p>
+                                <p className="text-gray-600 mt-2 text-theme-body-sm leading-relaxed">{mission.description}</p>
                             </div>
                         ))}
                     </div>

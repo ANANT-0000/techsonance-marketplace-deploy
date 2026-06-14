@@ -97,7 +97,7 @@ export function ProductList({ products = [], styles }: { products?: Product[], s
 
 function ProductCard({ product, isMobile }: { product: Product, isMobile: boolean }) {
     return (
-        <li className="flex flex-col justify-between text-lg text-gray-700 hover:text-gray-900 cursor-pointer border-2 border-gray-200 rounded-lg p-4 relative  transition-shadow hover:shadow-md"
+        <li className="flex flex-col justify-between text-theme-h6 text-gray-700 hover:text-gray-900 cursor-pointer border-2 border-gray-200 rounded-lg p-4 relative  transition-shadow hover:shadow-md"
         >
 
             <div className="flex flex-col h-full">
@@ -110,8 +110,8 @@ function ProductCard({ product, isMobile }: { product: Product, isMobile: boolea
                         alt={product.name?.trim()}
                     />
                 </Link>
-                <h3 className="font-semibold text-sm lg:line-clamp-1 line-clamp-2 leading-4 mb-1">{product.name}</h3>
-                <p className="lg:text-sm text-xs  text-gray-500 lg:line-clamp-2 line-clamp-2 leading-5 overflow-hidden mb-4 h-10">
+                <h3 className="font-semibold text-theme-body-sm lg:line-clamp-1 line-clamp-2 leading-4 mb-1">{product.name}</h3>
+                <p className="lg:text-theme-body-sm text-theme-caption  text-gray-500 lg:line-clamp-2 line-clamp-2 leading-5 overflow-hidden mb-4 h-10">
                     {product.description}
                 </p>
             </div>
@@ -119,15 +119,15 @@ function ProductCard({ product, isMobile }: { product: Product, isMobile: boolea
 
             <div className="mt-auto">
                 <div className="flex items-baseline gap-2   flex-wrap">
-                    <span className="font-bold  text-gray-900 lg:text-xl text-sm">₹{product.base_price}</span>
+                    <span className="font-bold  text-gray-900 lg:text-theme-h5 text-theme-body-sm">₹{product.base_price}</span>
                     {Number(product.discount_percent) > 0 && (
                         <>
                             <div className="flex gap-2  ">
 
-                                <span className="text-xs line-through text-gray-400">
+                                <span className="text-theme-caption line-through text-gray-400">
                                     ₹{Math.floor(Number(product.base_price) / (1 - Number(product.discount_percent) / 100))}
                                 </span>
-                                <span className="text-xs font-bold text-green-500">
+                                <span className="text-theme-caption font-bold text-green-500">
                                     {Math.round(Number(product.discount_percent))}% {PRODUCT_LIST_TEXT.OFF}
                                 </span>
                             </div>

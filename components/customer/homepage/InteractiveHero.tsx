@@ -15,7 +15,13 @@ import {
 
 import { useImageColors } from "@/hooks/useImageColors";
 import { Skeleton } from "@/components/ui/skeleton";
-import { VIDEO_HERO_DEFAULT } from "@/constants/storefront";
+import {
+  VIDEO_HERO_DEFAULT,
+  COLOR_WHITE,
+  COLOR_WHITE_MUTED,
+  COLOR_SLATE_MUTED,
+  COLOR_SLATE_DARK,
+} from "@/constants/storefront";
 import { INTERACTIVE_HERO_TEXT } from "@/constants/customerText";
 
 export enum HeroLayout {
@@ -57,16 +63,34 @@ export interface InteractiveHeroProps {
   slides?: HeroSlide[];
 }
 
-function getTextColorForBg(rgbaStr: string) {
-  const match = rgbaStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-  if (!match) return "#ffffff";
-  const r = parseInt(match[1], 10);
-  const g = parseInt(match[2], 10);
-  const b = parseInt(match[3], 10);
+function getTextColorForBg(colorStr: string) {
+  if (!colorStr) return COLOR_WHITE;
+
+  let r = 255;
+  let g = 255;
+  let b = 255;
+
+  const rgbMatch = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (rgbMatch) {
+    r = parseInt(rgbMatch[1], 10);
+    g = parseInt(rgbMatch[2], 10);
+    b = parseInt(rgbMatch[3], 10);
+  } else if (colorStr.startsWith("#")) {
+    const hex = colorStr.replace("#", "");
+    if (hex.length === 3) {
+      r = parseInt(hex[0] + hex[0], 16);
+      g = parseInt(hex[1] + hex[1], 16);
+      b = parseInt(hex[2] + hex[2], 16);
+    } else if (hex.length === 6 || hex.length === 8) {
+      r = parseInt(hex.substring(0, 2), 16);
+      g = parseInt(hex.substring(2, 4), 16);
+      b = parseInt(hex.substring(4, 6), 16);
+    }
+  }
 
   // Calculate relative luminance: Y = 0.299R + 0.587G + 0.114B
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.55 ? "#0f172a" : "#ffffff"; // dark slate for light bg, white for dark bg
+  return luminance > 0.55 ? COLOR_SLATE_DARK : COLOR_WHITE;
 }
 
 export function InteractiveHero({
@@ -89,7 +113,11 @@ export function InteractiveHero({
 
   // Auto-play timer for carousel
   useEffect(() => {
-    if (displayBannerType !== HeroBannerType.CAROUSEL || displaySlides.length <= 1) return;
+    if (
+      displayBannerType !== HeroBannerType.CAROUSEL ||
+      displaySlides.length <= 1
+    )
+      return;
     const timer = setInterval(() => {
       setCurrentIdx((prev) => (prev + 1) % displaySlides.length);
     }, 6000);
@@ -98,7 +126,9 @@ export function InteractiveHero({
 
   const handlePrev = () => {
     if (displaySlides.length <= 1) return;
-    setCurrentIdx((prev) => (prev - 1 + displaySlides.length) % displaySlides.length);
+    setCurrentIdx(
+      (prev) => (prev - 1 + displaySlides.length) % displaySlides.length,
+    );
   };
 
   const handleNext = () => {
@@ -140,28 +170,28 @@ export function InteractiveHero({
 
   const currentSlide = activeSlides[currentIdx];
   const activeSlideImage = currentSlide?.image_url;
-  const { bg: bgColor, solidBg } = useImageColors(activeSlideImage);
+  const bgColor = currentSlide?.bg_color
+    ? currentSlide.bg_color
+    : useImageColors(activeSlideImage).bg;
 
   // Background style selection
   const bgStyleValue = currentSlide?.bg_style || HeroBgStyle.GRADIENT;
   const isCustomBg = bgStyleValue === "custom";
   const isGradient = bgStyleValue === HeroBgStyle.GRADIENT;
-  const finalBg = isCustomBg
-    ? (currentSlide?.bg_color || solidBg)
-    : isGradient
-    ? bgColor
-    : solidBg;
+  const finalBg = isCustomBg || bgColor;
 
   // Layout selection
   const layoutStyle = currentSlide?.layout || HeroLayout.CENTER_OVERLAY;
   const isOverlay = layoutStyle === HeroLayout.CENTER_OVERLAY;
 
   // Text color contrast check
-  const textColor = isOverlay ? "#ffffff" : getTextColorForBg(solidBg);
+  const textColor = isOverlay
+    ? COLOR_WHITE
+    : getTextColorForBg(bgColor as string);
   const subtitleColor =
-    textColor === "#ffffff" ? "rgba(255,255,255,0.7)" : "rgba(15,23,42,0.7)";
+    textColor === COLOR_WHITE ? COLOR_WHITE_MUTED : COLOR_SLATE_MUTED;
   const btnClass =
-    textColor === "#ffffff"
+    textColor === COLOR_WHITE
       ? "bg-white text-black hover:bg-slate-100"
       : "bg-slate-900 text-white hover:bg-slate-800";
 
@@ -216,23 +246,23 @@ export function InteractiveHero({
           <div className="max-w-screen-xl mx-auto px-6 lg:px-16 xl:px-24 w-full">
             <div className="max-w-2xl text-white">
               {eyebrow && (
-                <span className="inline-block text-[10px] font-bold tracking-[0.25em] text-blue-400 uppercase bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full mb-6">
+                <span className="inline-block text-theme-tiny font-bold tracking-[0.25em] text-blue-400 uppercase bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full mb-6">
                   {eyebrow}
                 </span>
               )}
               {title && (
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif tracking-tight leading-[1.1] mb-6">
+                <h1 className="text-theme-h2 sm:text-theme-h1 lg:text-6xl font-serif tracking-tight leading-[1.1] mb-6">
                   {title}
                 </h1>
               )}
               {desc && (
-                <p className="text-base sm:text-lg text-white/80 font-light leading-relaxed mb-8 max-w-lg">
+                <p className="text-theme-body sm:text-theme-h6 text-white/80 font-light leading-relaxed mb-8 max-w-lg">
                   {desc}
                 </p>
               )}
               {btnText && (
                 <Link href={btnLink || "/store"}>
-                  <button className="bg-white text-black hover:bg-slate-100 transition-all duration-300 px-8 py-3.5 text-xs uppercase tracking-[0.2em] font-bold rounded-xl shadow-lg hover:shadow-white/10 hover:-translate-y-0.5">
+                  <button className="bg-white text-black hover:bg-slate-100 transition-all duration-300 px-8 py-3.5 text-theme-caption uppercase tracking-[0.2em] font-bold rounded-xl shadow-lg hover:shadow-white/10 hover:-translate-y-0.5">
                     {btnText}
                   </button>
                 </Link>
@@ -246,7 +276,7 @@ export function InteractiveHero({
 
   return (
     <section
-      style={{ background: finalBg }}
+      style={{ background: finalBg as string }}
       className="relative w-full h-[65vh] lg:h-[75vh] min-h-[450px] overflow-hidden group transition-colors duration-700"
     >
       {/* Slides Carousel container */}
@@ -269,6 +299,7 @@ export function InteractiveHero({
                     alt={currentSlide.title || "Banner"}
                     fill
                     priority
+                    loading="eager"
                     className="object-contain rounded-4xl"
                     sizes="100vw"
                   />
@@ -285,7 +316,7 @@ export function InteractiveHero({
                           initial={{ opacity: 0, y: 15 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2, duration: 0.5 }}
-                          className="text-[14px] sm:text-lg font-bold uppercase tracking-[0.3em] mb-4"
+                          className="text-theme-body-sm sm:text-theme-h6 font-bold uppercase tracking-[0.3em] mb-4"
                           style={{ color: subtitleColor }}
                         >
                           {currentSlide.subtitle}
@@ -296,9 +327,10 @@ export function InteractiveHero({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.6 }}
-                        className="text-3xl sm:text-5xl lg:text-6xl font-serif tracking-tight leading-[1.1] mb-6"
+                        className="text-theme-h3 sm:text-theme-h1 lg:text-6xl font-serif tracking-tight leading-[1.1] mb-6"
                       >
-                        {currentSlide.title || INTERACTIVE_HERO_TEXT.DEFAULT_TITLE}
+                        {currentSlide.title ||
+                          INTERACTIVE_HERO_TEXT.DEFAULT_TITLE}
                       </motion.h1>
 
                       {currentSlide.btn_text && (
@@ -309,7 +341,7 @@ export function InteractiveHero({
                         >
                           <Link href={currentSlide.btn_link || "/store"}>
                             <button
-                              className={`hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 px-8 py-3.5 text-[16px] sm:text-lg uppercase tracking-[0.2em] font-bold rounded-xl shadow-lg cursor-pointer ${btnClass}`}
+                              className={`hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 px-8 py-3.5 text-theme-body sm:text-theme-h6 uppercase tracking-[0.2em] font-bold rounded-xl shadow-lg cursor-pointer ${btnClass}`}
                             >
                               {currentSlide.btn_text}
                             </button>
@@ -340,7 +372,7 @@ export function InteractiveHero({
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.5 }}
-                        className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.3em] mb-4"
+                        className="text-theme-tiny sm:text-theme-caption font-bold uppercase tracking-[0.3em] mb-4"
                         style={{ color: subtitleColor }}
                       >
                         {currentSlide.subtitle}
@@ -351,9 +383,10 @@ export function InteractiveHero({
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3, duration: 0.6 }}
-                      className="text-4xl sm:text-5xl lg:text-5xl font-serif tracking-tight leading-[1.15] mb-6"
+                      className="text-theme-h2 sm:text-theme-h1 lg:text-theme-h1 font-serif tracking-tight leading-[1.15] mb-6"
                     >
-                      {currentSlide.title || INTERACTIVE_HERO_TEXT.DEFAULT_TITLE}
+                      {currentSlide.title ||
+                        INTERACTIVE_HERO_TEXT.DEFAULT_TITLE}
                     </motion.h1>
 
                     {currentSlide.btn_text && (
@@ -364,7 +397,7 @@ export function InteractiveHero({
                       >
                         <Link href={currentSlide.btn_link || "/store"}>
                           <button
-                            className={`hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 px-8 py-3.5 text-[11px] uppercase tracking-[0.2em] font-bold rounded-xl shadow-lg cursor-pointer ${btnClass}`}
+                            className={`hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 px-8 py-3.5 text-theme-xxs uppercase tracking-[0.2em] font-bold rounded-xl shadow-lg cursor-pointer ${btnClass}`}
                           >
                             {currentSlide.btn_text}
                           </button>
@@ -382,18 +415,19 @@ export function InteractiveHero({
                       : "order-1"
                   }`}
                 >
-                  {currentSlide.image_url ?(
+                  {currentSlide.image_url ? (
                     <Image
                       src={currentSlide.image_url}
                       alt={currentSlide.title || "Banner"}
                       fill
                       priority
+                      loading="eager"
                       className="object-contain p-4 lg:p-8 rounded-4xl"
                       sizes="(max-width: 1024px) 100vw, 50vw"
                     />
-                  ) :
-                  <Skeleton className="w-full h-full p-4 lg:p-8 rounded-4xl" />
-                  }
+                  ) : (
+                    <Skeleton className="w-full h-full p-4 lg:p-8 rounded-4xl" />
+                  )}
                 </div>
               </div>
             )}

@@ -4,36 +4,70 @@ import { CartSidebar } from "@/components/customer/CartSidebar";
 import { TabNavBar } from "@/components/customer/TabNavBar";
 import { ThemeProvider } from "@/components/customer/ThemeProvider";
 import { getCompanyDomain } from "@/lib/get-domain";
-import { BASE_API_URL } from "@/constants";
+import {
+  BASE_API_URL,
+  DEFAULT_FAVICON_PATH,
+  DEFAULT_STORE_NAME,
+  STORE_SUFFIX,
+  BRANDING_ENDPOINT,
+  HEADER_COMPANY_DOMAIN,
+  REVALIDATE_INTERVAL,
+  TWITTER_CARD,
+  OG_TYPE,
+  NAVBAR_STYLE,
+  getWelcomeDescription,
+} from "@/constants";
 import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
   const companyDomain = await getCompanyDomain();
 
-  let storeName = "Marketplace Store";
+  let storeName = DEFAULT_STORE_NAME;
+  let faviconUrl = DEFAULT_FAVICON_PATH;
   if (companyDomain) {
     const namePart = companyDomain.split(".")[0] || "";
     if (namePart) {
       storeName =
-        namePart.charAt(0).toUpperCase() + namePart.slice(1) + " Store";
+        namePart.charAt(0).toUpperCase() + namePart.slice(1) + STORE_SUFFIX;
     }
   }
+
+  try {
+    const res = await fetch(`${BASE_API_URL}${BRANDING_ENDPOINT}`, {
+      headers: {
+        [HEADER_COMPANY_DOMAIN]: companyDomain || "",
+      },
+      next: { revalidate: REVALIDATE_INTERVAL },
+    });
+    if (res.ok) {
+      const result = await res.json();
+      const branding = result?.data;
+      if (branding && typeof branding === "object" && branding.favicon_url) {
+        faviconUrl = branding.favicon_url;
+      }
+    }
+  } catch (err) {}
+
+  const descriptionText = getWelcomeDescription(storeName);
 
   return {
     title: {
       template: `%s | ${storeName}`,
       default: storeName,
     },
-    description: `Welcome to ${storeName}. Discover a curated selection of premium products, handcrafted items, and exclusive deals.`,
+    description: descriptionText,
+    icons: {
+      icon: faviconUrl,
+    },
     openGraph: {
       title: storeName,
-      description: `Welcome to ${storeName}. Discover a curated selection of premium products, handcrafted items, and exclusive deals.`,
-      type: "website",
+      description: descriptionText,
+      type: OG_TYPE,
     },
     twitter: {
-      card: "summary_large_image",
+      card: TWITTER_CARD,
       title: storeName,
-      description: `Welcome to ${storeName}. Discover a curated selection of premium products, handcrafted items, and exclusive deals.`,
+      description: descriptionText,
     },
   };
 }
@@ -46,11 +80,11 @@ export default async function ShopLayout({
   const companyDomain = await getCompanyDomain();
   let themeData: any = {};
   try {
-    const res = await fetch(`${BASE_API_URL}/v1/company-identity/branding`, {
+    const res = await fetch(`${BASE_API_URL}${BRANDING_ENDPOINT}`, {
       headers: {
-        "company-domain": companyDomain || "",
+        [HEADER_COMPANY_DOMAIN]: companyDomain || "",
       },
-      next: { revalidate: 60 },
+      next: { revalidate: REVALIDATE_INTERVAL },
     });
     if (res.ok) {
       const result = await res.json();
@@ -76,7 +110,7 @@ export default async function ShopLayout({
 
   return (
     <ThemeProvider theme={themeData}>
-      <Navbar styles="bg-navbar" />
+      <Navbar styles={NAVBAR_STYLE} />
       <CartSidebar />
       {children}
       <TabNavBar />

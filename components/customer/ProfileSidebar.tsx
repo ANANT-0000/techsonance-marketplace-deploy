@@ -100,7 +100,7 @@ export function ProfileSidebar() {
                                 onClick={() => handleNavigation(link.path)}
                                 className={`
                                     w-full flex flex-col items-center justify-center gap-2 px-4 py-6
-                                    rounded-xl border text-sm font-medium transition-all shadow-sm
+                                    rounded-xl border text-theme-body-sm font-medium transition-all shadow-sm
                                     ${isActive
                                         ? 'border-theme-primary/50 bg-theme-primary/5 text-theme-primary'
                                         : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
@@ -145,10 +145,10 @@ export function ProfileSidebar() {
                             />
                         </div>
                         <div className="flex flex-col">
-                            <h2 className="text-lg font-semibold text-gray-900">
+                            <h2 className="text-theme-h6 font-semibold text-gray-900">
                                 {`${user.first_name} ${user.last_name}`}
                             </h2>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-theme-body-sm text-gray-500">
                                 {user.email}
                             </p>
                         </div>
@@ -176,7 +176,7 @@ export function ProfileSidebar() {
                                 onClick={() => handleNavigation(link.path)}
                                 className={`
                                 relative w-full flex items-center gap-3 px-4 py-3
-                                rounded-md text-sm font-medium transition-colors group
+                                rounded-md text-theme-body-sm font-medium transition-colors group
                                 ${isDanger
                                         ? 'text-red-600 hover:bg-red-50'
                                         : isActive

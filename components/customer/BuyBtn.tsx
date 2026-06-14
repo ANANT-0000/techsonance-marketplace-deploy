@@ -45,7 +45,7 @@ export function BuyBtn({ id, styles, iconStyles, mode, selectedCoupon, quantity 
       className={`flex items-center justify-center gap-2 whitespace-nowrap select-none ${styles}`}
     >
       <CreditCard size={16} className={iconStyles || 'text-white'} />
-      <span className="text-[13px] font-semibold tracking-wide ">{BUY_BTN_TEXT.BUY_NOW}</span>
+      <span className="text-theme-caption-lg font-semibold tracking-wide ">{BUY_BTN_TEXT.BUY_NOW}</span>
     </motion.button>
   );
 }

@@ -17,7 +17,7 @@ export default async function RolesPage({ params }: { params: Promise<{ adminId:
     const rolePerms = await fetchRolePermissions(token);
     return (
         <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
-            <h1 className="text-lg font-semibold text-gray-800">RBAC Management</h1>
+            <h1 className="text-theme-h6 font-semibold text-gray-800">RBAC Management</h1>
 
             <RolesSection roles={roles} adminId={adminId} />
             <hr />

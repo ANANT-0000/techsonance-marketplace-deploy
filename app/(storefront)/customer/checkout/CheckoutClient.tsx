@@ -264,7 +264,7 @@ function MobileSummarySheet({
           <div className="w-10 h-1 rounded-full bg-gray-200 mb-3" />
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-gray-700">Order Summary</span>
+              <span className="text-theme-caption-lg font-semibold text-gray-700">Order Summary</span>
               {isExpanded
                 ? <ChevronDown size={14} className="text-gray-400" />
                 : <ChevronUp size={14} className="text-gray-400" />
@@ -274,7 +274,7 @@ function MobileSummarySheet({
               key={displayedTotal}
               initial={{ y: 4, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="text-[15px] font-bold text-gray-900"
+              className="text-theme-body-plus font-bold text-gray-900"
             >
               ₹{formatCurrency(displayedTotal)}
             </motion.span>
@@ -299,8 +299,8 @@ function MobileSummarySheet({
                       <div className="flex items-center gap-2.5">
                         <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
                         <div>
-                          <p className="text-xs font-bold text-emerald-800 uppercase tracking-wide">{couponApplied.code}</p>
-                          <p className="text-[11px] text-emerald-600">{couponLabel} · Saving ₹{formatCurrency(couponDiscount)}</p>
+                          <p className="text-theme-caption font-bold text-emerald-800 uppercase tracking-wide">{couponApplied.code}</p>
+                          <p className="text-theme-xxs text-emerald-600">{couponLabel} · Saving ₹{formatCurrency(couponDiscount)}</p>
                         </div>
                       </div>
                       <button onClick={onCouponRemove} className="p-1.5 text-emerald-400 hover:text-red-500 rounded-lg transition-colors">
@@ -318,19 +318,19 @@ function MobileSummarySheet({
                             value={couponCode}
                             onChange={e => onCouponCodeChange(e.target.value.toUpperCase())}
                             onKeyDown={onCouponKeyDown}
-                            className="pl-8 h-9 text-xs font-mono tracking-widest uppercase border-gray-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                            className="pl-8 h-9 text-theme-caption font-mono tracking-widest uppercase border-gray-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
                           />
                         </div>
                         <button
                           onClick={onCouponApply}
                           disabled={isCouponValidating || !couponCode.trim()}
-                          className="bg-gray-900 text-white px-4 h-9 rounded-lg text-xs font-semibold hover:bg-gray-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
+                          className="bg-gray-900 text-white px-4 h-9 rounded-lg text-theme-caption font-semibold hover:bg-gray-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
                         >
                           {isCouponValidating ? <Loader2 size={12} className="animate-spin" /> : 'Apply'}
                         </button>
                       </div>
                       {couponError && (
-                        <div className="flex items-center gap-1.5 text-[11px] text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                        <div className="flex items-center gap-1.5 text-theme-xxs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
                           <AlertCircle size={11} className="shrink-0" />
                           {couponError}
                         </div>
@@ -346,24 +346,24 @@ function MobileSummarySheet({
                   {!isQuickBuy && cartItems.map(item => {
                     const liveQty = reduxCartItems.find((i: any) => i.productVariantId === item.product_variant_id)?.quantity ?? item.quantity;
                     return (
-                      <div key={item.id} className="flex justify-between text-[11px] text-gray-500">
+                      <div key={item.id} className="flex justify-between text-theme-xxs text-gray-500">
                         <span className="line-clamp-1 max-w-[60%]">{item.productVariant.variant_name} ×{liveQty}</span>
                         <span className="font-medium text-gray-700">₹{formatCurrency(Number(item.productVariant.price) * liveQty)}</span>
                       </div>
                     );
                   })}
                   {isQuickBuy && quickBuyVariant && (
-                    <div className="flex justify-between text-[11px] text-gray-500">
+                    <div className="flex justify-between text-theme-xxs text-gray-500">
                       <span className="line-clamp-1 max-w-[60%]">{quickBuyVariant.variant_name} ×{quickBuyQty}</span>
                       <span className="font-medium text-gray-700">₹{formatCurrency(Number(quickBuyVariant.price) * quickBuyQty)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-xs text-gray-600 pt-1">
+                  <div className="flex justify-between text-theme-caption text-gray-600 pt-1">
                     <span>Subtotal</span>
                     <span>₹{formatCurrency(subtotal)}</span>
                   </div>
                   {delivery > 0 && (
-                    <div className="flex justify-between text-xs text-gray-600">
+                    <div className="flex justify-between text-theme-caption text-gray-600">
                       <span>Delivery</span>
                       <span>₹{formatCurrency(delivery)}</span>
                     </div>
@@ -371,7 +371,7 @@ function MobileSummarySheet({
                   {couponApplied && couponDiscount === 0 && (() => {
                     const minOrder = getMinOrderAmount(couponApplied);
                     return minOrder !== null ? (
-                      <div className="flex items-center gap-1.5 text-[11px] text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-1.5 text-theme-xxs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
                         <AlertCircle size={11} className="shrink-0" />
                         Min. order ₹{formatCurrency(minOrder)} required.
                       </div>
@@ -381,20 +381,20 @@ function MobileSummarySheet({
                     {isTaxLoading ? <TaxLoadingSkeleton /> : (
                       <TaxBreakdownPanel tax={taxBreakdown} deliveryFee={delivery} discount={couponDiscount} />
                     )}
-                    {taxError && <p className="text-[11px] text-amber-600 mt-1">{taxError}</p>}
+                    {taxError && <p className="text-theme-xxs text-amber-600 mt-1">{taxError}</p>}
                   </div>
                 </div>
 
                 <Separator className="border-dashed border-gray-200" />
 
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-bold text-gray-900">Total</span>
-                  <motion.span key={displayedTotal} initial={{ y: 5, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-lg font-bold text-gray-900">
+                  <span className="text-theme-body-sm font-bold text-gray-900">Total</span>
+                  <motion.span key={displayedTotal} initial={{ y: 5, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-theme-h6 font-bold text-gray-900">
                     ₹{formatCurrency(displayedTotal)}
                   </motion.span>
                 </div>
                 {taxBreakdown && (
-                  <p className="text-[10px] text-gray-400 text-center -mt-2">✓ Inclusive of all applicable taxes</p>
+                  <p className="text-theme-tiny text-gray-400 text-center -mt-2">✓ Inclusive of all applicable taxes</p>
                 )}
               </div>
             </motion.div>
@@ -406,7 +406,7 @@ function MobileSummarySheet({
           <button
             onClick={onPay}
             disabled={selectedAddressId === null || isProcessing || isTaxLoading}
-            className="w-full bg-blue-600 text-white font-semibold py-3.5 rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:bg-blue-300 disabled:cursor-not-allowed text-[15px] shadow-sm shadow-blue-200"
+            className="w-full bg-blue-600 text-white font-semibold py-3.5 rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:bg-blue-300 disabled:cursor-not-allowed text-theme-body-plus shadow-sm shadow-blue-200"
           >
             {isProcessing ? (
               <><Loader2 size={16} className="animate-spin" />Processing…</>
@@ -419,7 +419,7 @@ function MobileSummarySheet({
               </>
             )}
           </button>
-          <p className="text-center text-[11px] text-gray-400 flex items-center justify-center gap-1.5">
+          <p className="text-center text-theme-xxs text-gray-400 flex items-center justify-center gap-1.5">
             <ShieldCheck size={11} className="text-gray-400" />
             Safe & Secure · 100% Authentic products
           </p>
@@ -749,7 +749,7 @@ function CheckoutClientInner() {
         <p className="text-gray-700 font-medium text-center">{state.checkoutError}</p>
         <button
           onClick={() => router.back()}
-          className="px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-sm font-semibold text-gray-700 transition-colors"
+          className="px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-theme-body-sm font-semibold text-gray-700 transition-colors"
         >
           Go back
         </button>
@@ -765,7 +765,7 @@ function CheckoutClientInner() {
         toastOptions={{
           style: {
             borderRadius: '12px',
-            fontSize: '13px',
+            fontSize: "var(--font-size-theme-caption-lg)",
             fontWeight: '500',
             boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
           }
@@ -777,11 +777,11 @@ function CheckoutClientInner() {
         <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ShieldCheck size={18} className="text-blue-500" />
-            <span className="text-[15px] font-bold text-gray-900 tracking-tight">Secure Checkout</span>
+            <span className="text-theme-body-plus font-bold text-gray-900 tracking-tight">Secure Checkout</span>
           </div>
           <Badge
             variant="secondary"
-            className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${isQuickBuy
+            className={`text-theme-xxs font-semibold px-2.5 py-1 rounded-full ${isQuickBuy
               ? 'bg-amber-50 text-amber-700 border border-amber-200'
               : 'bg-blue-50 text-blue-700 border border-blue-200'
               }`}
@@ -820,7 +820,7 @@ function CheckoutClientInner() {
             {/* Payment method */}
             <Card className="rounded-2xl border border-gray-100 shadow-sm">
               <CardHeader className="pb-3 pt-4 px-4 lg:px-5">
-                <CardTitle className="flex items-center gap-2 text-[15px] font-semibold text-gray-900">
+                <CardTitle className="flex items-center gap-2 text-theme-body-plus font-semibold text-gray-900">
                   <div className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0">
                     <CreditCard className="w-3.5 h-3.5 text-gray-600" />
                   </div>
@@ -845,7 +845,7 @@ function CheckoutClientInner() {
           <div className="hidden lg:block lg:sticky lg:top-[65px]">
             <Card className="rounded-2xl border border-gray-100 shadow-sm">
               <CardHeader className="pb-3 pt-5 px-5">
-                <CardTitle className="text-base font-bold text-gray-900">Order Summary</CardTitle>
+                <CardTitle className="text-theme-body font-bold text-gray-900">Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-5 space-y-4">
 
@@ -856,8 +856,8 @@ function CheckoutClientInner() {
                       <div className="flex items-center gap-3">
                         <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
                         <div>
-                          <p className="text-xs font-bold text-emerald-800 uppercase tracking-wide">{state.couponApplied.code}</p>
-                          <p className="text-[11px] text-emerald-600">{couponLabel} · Saving ₹{formatCurrency(couponDiscount)}</p>
+                          <p className="text-theme-caption font-bold text-emerald-800 uppercase tracking-wide">{state.couponApplied.code}</p>
+                          <p className="text-theme-xxs text-emerald-600">{couponLabel} · Saving ₹{formatCurrency(couponDiscount)}</p>
                         </div>
                       </div>
                       <button
@@ -881,19 +881,19 @@ function CheckoutClientInner() {
                               dispatch({ type: CheckoutActionType.SET_COUPON_ERROR, payload: null });
                             }}
                             onKeyDown={e => e.key === 'Enter' && handleCouponApply()}
-                            className="pl-8 h-9 text-xs font-mono tracking-widest uppercase border-gray-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                            className="pl-8 h-9 text-theme-caption font-mono tracking-widest uppercase border-gray-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
                           />
                         </div>
                         <button
                           onClick={handleCouponApply}
                           disabled={state.isCouponValidating || !state.couponCode.trim()}
-                          className="bg-gray-900 text-white px-4 h-9 rounded-lg text-xs font-semibold hover:bg-gray-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
+                          className="bg-gray-900 text-white px-4 h-9 rounded-lg text-theme-caption font-semibold hover:bg-gray-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
                         >
                           {state.isCouponValidating ? <Loader2 size={12} className="animate-spin" /> : 'Apply'}
                         </button>
                       </div>
                       {state.couponError && (
-                        <div className="flex items-center gap-1.5 text-[11px] text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                        <div className="flex items-center gap-1.5 text-theme-xxs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
                           <AlertCircle size={11} className="shrink-0" />
                           {state.couponError}
                         </div>
@@ -909,26 +909,26 @@ function CheckoutClientInner() {
                   {!isQuickBuy && state.cartItems.map(item => {
                     const liveQty = reduxCartItems.find(i => i.productVariantId === item.product_variant_id)?.quantity ?? item.quantity;
                     return (
-                      <div key={item.id} className="flex justify-between text-[11px] text-gray-500">
+                      <div key={item.id} className="flex justify-between text-theme-xxs text-gray-500">
                         <span className="line-clamp-1 max-w-[60%]">{item.productVariant.variant_name} ×{liveQty}</span>
                         <span className="font-medium text-gray-700">₹{formatCurrency(Number(item.productVariant.price) * liveQty)}</span>
                       </div>
                     );
                   })}
                   {isQuickBuy && state.quickBuyVariant && (
-                    <div className="flex justify-between text-[11px] text-gray-500">
+                    <div className="flex justify-between text-theme-xxs text-gray-500">
                       <span className="line-clamp-1 max-w-[60%]">{state.quickBuyVariant.variant_name} ×{state.quickBuyQty}</span>
                       <span className="font-medium text-gray-700">₹{formatCurrency(Number(state.quickBuyVariant.price) * state.quickBuyQty)}</span>
                     </div>
                   )}
 
-                  <div className="flex justify-between text-sm text-gray-600 pt-1">
+                  <div className="flex justify-between text-theme-body-sm text-gray-600 pt-1">
                     <span>Subtotal</span>
                     <span className="font-medium">₹{formatCurrency(subtotal)}</span>
                   </div>
 
                   {delivery > 0 && (
-                    <div className="flex justify-between text-sm text-gray-600">
+                    <div className="flex justify-between text-theme-body-sm text-gray-600">
                       <span>Delivery</span>
                       <span>₹{formatCurrency(delivery)}</span>
                     </div>
@@ -937,7 +937,7 @@ function CheckoutClientInner() {
                   {state.couponApplied && couponDiscount === 0 && (() => {
                     const minOrder = getMinOrderAmount(state.couponApplied);
                     return minOrder !== null ? (
-                      <div className="flex items-center gap-1.5 text-[11px] text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-1.5 text-theme-xxs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
                         <AlertCircle size={11} className="shrink-0" />
                         Min. order ₹{formatCurrency(minOrder)} required.
                       </div>
@@ -948,29 +948,29 @@ function CheckoutClientInner() {
                     {state.isTaxLoading ? <TaxLoadingSkeleton /> : (
                       <TaxBreakdownPanel tax={state.taxBreakdown} deliveryFee={delivery} discount={couponDiscount} />
                     )}
-                    {state.taxError && <p className="text-[11px] text-amber-600 mt-1">{state.taxError}</p>}
+                    {state.taxError && <p className="text-theme-xxs text-amber-600 mt-1">{state.taxError}</p>}
                   </div>
                 </div>
 
                 <Separator className="border-dashed border-gray-200" />
 
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-bold text-gray-900">Total</span>
+                  <span className="text-theme-body-sm font-bold text-gray-900">Total</span>
                   <motion.span
                     key={displayedTotal}
                     initial={{ y: 6, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    className="text-xl font-bold text-gray-900"
+                    className="text-theme-h5 font-bold text-gray-900"
                   >
                     ₹{formatCurrency(displayedTotal)}
                   </motion.span>
                 </div>
                 {state.taxBreakdown && (
-                  <p className="text-[10px] text-gray-400 text-center -mt-2">✓ Inclusive of all applicable taxes</p>
+                  <p className="text-theme-tiny text-gray-400 text-center -mt-2">✓ Inclusive of all applicable taxes</p>
                 )}
 
                 {state.checkoutError && (
-                  <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3.5 py-2.5">
+                  <div className="flex items-center gap-2 text-theme-caption text-red-600 bg-red-50 border border-red-100 rounded-xl px-3.5 py-2.5">
                     <AlertCircle size={13} className="shrink-0" />
                     {state.checkoutError}
                   </div>
@@ -980,7 +980,7 @@ function CheckoutClientInner() {
                 <button
                   onClick={handlePayment}
                   disabled={state.selectedAddressId === null || state.isProcessing || state.isTaxLoading}
-                  className="w-full bg-blue-600 text-white font-semibold py-3.5 rounded-xl hover:bg-blue-700 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:bg-blue-300 disabled:cursor-not-allowed text-[15px] shadow-sm shadow-blue-100"
+                  className="w-full bg-blue-600 text-white font-semibold py-3.5 rounded-xl hover:bg-blue-700 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:bg-blue-300 disabled:cursor-not-allowed text-theme-body-plus shadow-sm shadow-blue-100"
                 >
                   {state.isProcessing ? (
                     <><Loader2 size={16} className="animate-spin" />Processing…</>
@@ -994,7 +994,7 @@ function CheckoutClientInner() {
                   )}
                 </button>
 
-                <p className="text-center text-[11px] text-gray-400 flex items-center justify-center gap-1.5">
+                <p className="text-center text-theme-xxs text-gray-400 flex items-center justify-center gap-1.5">
                   <ShieldCheck size={11} className="text-gray-400" />
                   Safe & Secure · 100% Authentic products
                 </p>

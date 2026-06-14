@@ -1008,3 +1008,284 @@ export const LOGO_UPLOAD_TEXT = {
   REPLACE: "Click to replace",
   UPLOAD: "Upload image"
 };
+
+export const CUSTOMER_CARE_TEXT = {
+  TITLE: "Customer Care",
+  VIEW_CONVERSATION: "View Conversation",
+  SHOWING_TICKETS: "Showing {count} of {total} tickets",
+  CREATE_NEW_TICKET: "Create New Ticket",
+  SUBJECT: "Subject",
+  DESCRIPTION: "Description",
+  PRIORITY: "Priority",
+  ATTACHMENT: "Attachment (Optional)",
+  CREATING: "Creating...",
+  CREATE_TICKET: "Create Ticket",
+  PRIORITY_OPTIONS: {
+    HIGH: "High",
+    MEDIUM: "Medium",
+    LOW: "Low",
+  },
+};
+
+export const BANNERS_TEXT = {
+  TITLE: "Banners",
+  SUBTITLE: "Manage storefront display banners across placement slots.",
+  CREATE_BANNER: "Create Banner",
+  FAILED_LOAD: "Failed to load banners",
+  FAILED_UPDATE: "Failed to update banner",
+  UNTITLED_BANNER: "Untitled banner",
+  EXPIRED: "Expired",
+  UNTIL: "Until {date}",
+  NO_EXPIRY: "No expiry",
+  NO_BANNERS_TITLE: "No banners yet",
+  NO_BANNERS_DESC: "Create a banner and assign it to a storefront placement slot.",
+  PLACEMENT_LABELS: {
+    homepage_hero: "Homepage Hero",
+    homepage_secondary: "Homepage Secondary",
+    category_page: "Category Page",
+    product_page: "Product Page",
+    cart_sidebar: "Cart Sidebar",
+    checkout: "Checkout",
+  }
+};
+
+export const GST_TEXT = {
+  TITLE: "GST Registrations",
+  ADD_GST: "Add GST Number",
+  SEARCH_PLACEHOLDER: "Search by GSTIN or Legal Name",
+  ALL_TYPES: "All Types",
+  REGULAR: "Regular",
+  COMPOSITION: "Composition",
+  NEWEST_FIRST: "Newest First",
+  OLDEST_FIRST: "Oldest First",
+  SELECT_DATE: "Select Date",
+  NO_RECORDS: "No GST configurations found.",
+  DEFAULT_BADGE: "DEFAULT",
+  ACTIVE_BADGE: "Active",
+  EDIT_LINK: "Edit →",
+  SHOWING: "showing {count} of {total}",
+  TABLE_HEADERS: {
+    GSTIN: "GSTIN",
+    LEGAL_NAME: "Legal Name",
+    STATE_CODE: "State Code",
+    TYPE: "Type",
+    STATUS: "Status",
+    EFFECTIVE_DATE: "Effective Date",
+    ACTIONS: "Actions",
+  }
+};
+
+export const FINANCES_TEXT = {
+  TITLE: "Earnings & Settlements",
+  SUBTITLE: "Vendor financial ledger — orders × payments",
+  REFRESH: "Refresh",
+  CLEARED_EARNINGS: "Cleared Earnings",
+  PENDING_EARNINGS: "Pending Earnings",
+  SEARCH_PLACEHOLDER: "Search by Transaction ID, Order Ref, or Txn Ref",
+  ALL_STATUS: "All Status",
+  CLEARED: "Cleared",
+  PENDING: "Pending",
+  REVERSED: "Reversed",
+  NEWEST_FIRST: "Newest First",
+  OLDEST_FIRST: "Oldest First",
+  HIGHEST_AMOUNT: "Highest Amount",
+  SELECT_DATE: "Select Date",
+  FILTER_DATE: "Filter by Date",
+  LOAD_ERROR: "Failed to load earnings. Please try again.",
+  NO_RECORDS_VENDOR: "No earning records found for this vendor.",
+  NO_RECORDS_FILTER: "No records match your current filters.",
+  DEFAULT_BADGE: "DEFAULT",
+  ACTIVE_BADGE: "Active",
+  VIEW_ORDER: "View Order →",
+  TABLE_HEADERS: {
+    TRANSACTION_ID: "Transaction ID",
+    ORDER_REF: "Order Ref",
+    TRANSACTION_REF: "Transaction Ref",
+    NET_EARNING: "Net Earning",
+    STATUS: "Status",
+    DATE: "Date",
+    ACTIONS: "Actions",
+  }
+};
+
+export const LOCATIONS_TEXT = {
+  TITLE: "Business Addresses",
+  SUBTITLE: "Manage your registered, billing, and operational addresses.",
+  ADD_NEW_ADDRESS: "Add New Address",
+  LOADING: "Loading addresses...",
+  NO_ADDRESSES: "No addresses found",
+  NO_ADDRESSES_DESC: "You haven't added any business addresses yet.",
+  ADD_FIRST_ADDRESS: "+ Add your first address",
+  DEFAULT_BADGE: "Default",
+  ADD_TITLE: "Add Business Address",
+  CANCEL: "Cancel",
+  SAVE_ADDRESS: "Save Address",
+  SAVING: "Saving...",
+  FAILED_SAVE: "Failed to save address. Please check your inputs.",
+  FORM: {
+    ADDRESS_TYPE: "Address Type",
+    ADDRESS_LINE_1: "Address Line 1",
+    ADDRESS_LINE_2: "Address Line 2",
+    CITY: "City",
+    STREET: "Street",
+    STATE: "State",
+    LANDMARK: "Landmark",
+    POSTAL_CODE: "Postal Code (PIN)",
+    COUNTRY: "Country",
+    DEFAULT_ADDRESS: "Default Address",
+  }
+};
+
+export const CHANGE_PASSWORD_TEXT = {
+  TITLE: "Set a New Password",
+  SUBTITLE: "Choose a strong password to replace the temporary one and protect your vendor account.",
+  CURRENT_PASSWORD: "Current Password",
+  NEW_PASSWORD: "New Password",
+  CONFIRM_PASSWORD: "Confirm Password",
+  REQUIRED_LENGTH: "Must be at least 8 characters long.",
+  UPDATE_PASSWORD: "Update Password",
+  SAVING: "Saving Password...",
+  SUCCESS_TITLE: "Password Secured!",
+  SUCCESS_SUBTITLE: "Your password has been successfully updated and encrypted. Redirecting you to the dashboard...",
+  ERRORS: {
+    FILL_ALL: "Please fill in all fields.",
+    LENGTH: "Password must be at least 8 characters long.",
+    MISMATCH: "Passwords do not match.",
+    NO_TOKEN: "Authentication token is missing. Please log in again.",
+    UNEXPECTED: "An unexpected error occurred.",
+  }
+};
+
+export const COMPLIANCE_TEXT = {
+  TITLE: "Compliance & Documents",
+  SUBTITLE: "All regulatory registrations and proof documents submitted during and after onboarding. Each record may have a linked certificate or proof file.",
+  SEARCH_PLACEHOLDER: "Search by key or value…",
+  ALL_STATUSES: "All statuses",
+  STATUS_VERIFIED: "Verified",
+  STATUS_PENDING: "Pending review",
+  STATUS_REJECTED: "Rejected",
+  STATUS_EXPIRED: "Expired",
+  STATUS_NO_DOC: "No document",
+  ALL_COUNTRIES: "All countries",
+  LOADING: "Loading compliance records…",
+  LOAD_ERROR: "Failed to load compliance records.",
+  TRY_AGAIN: "Try again",
+  NO_RECORDS_TITLE: "No compliance records yet",
+  NO_RECORDS_DESC: "Compliance fields such as GSTIN, PAN, and CIN are added during onboarding and will appear here.",
+  NO_MATCHES_TITLE: "No records match your filters",
+  CLEAR_FILTERS: "Clear all filters",
+  FOOTER_NOTE: "Records marked as Verified have been reviewed by the platform team. Contact support if you believe a rejection was made in error.",
+  STATS: {
+    TOTAL: "Total registrations",
+    VERIFIED: "Verified",
+    PENDING: "Pending review",
+    MISSING: "Missing documents",
+    EXPIRING: "Expiring soon",
+  }
+};
+
+export const PRODUCTS_LIST_TEXT = {
+  TITLE: "Products",
+  ADD_PRODUCT: "Add Product",
+  SEARCH_PLACEHOLDER: "Search by name, email or domain",
+  ALL_STATUS: "All Status",
+  ACTIVE: "Active",
+  INACTIVE: "Inactive",
+  ALL_CATEGORIES: "All Categories",
+  NO_PRODUCTS: "No products found.",
+  VARIANT_SINGULAR: "Variant",
+  VARIANT_PLURAL: "Variants",
+  ADD_VARIANT: "Add Variant",
+  VIEW_VARIANTS: "View Variants",
+  TABLE_HEADERS: {
+    PRODUCT: "PRODUCT",
+    CATEGORY: "CATEGORY",
+    VARIANT: "VARIANT",
+    SKU: "SKU",
+    STOCK: "STOCK",
+    PRICE: "PRICE",
+    ACTION: "ACTION",
+  }
+};
+
+export const STOCK_MANAGER_TEXT = {
+  HEADER: {
+    TITLE: "Stock Manager",
+    SUBTITLE: "Manage inventory locations, quantities, and visibility",
+    REFRESH: "Refresh Data",
+  },
+  STATS: {
+    TOTAL_SKUS: "Total SKUs",
+    LOW_STOCK: "Low Stock",
+    OUT_OF_STOCK: "Out of Stock",
+    HEALTHY: "Healthy",
+  },
+  FILTERS: {
+    SEARCH_PLACEHOLDER: "Search by product name or SKU…",
+    ALL_STATUSES: "All statuses",
+    STATUS_ACTIVE: "Active",
+    STATUS_INACTIVE: "Inactive",
+    SORT_STOCK_ASC: "Stock: Low → High",
+    SORT_STOCK_DESC: "Stock: High → Low",
+    SORT_NAME_ASC: "Name: A → Z",
+    RECORDS_MATCHING: "records matching",
+  },
+  TABLE: {
+    NO_DATA: "No inventory data matching your filters.",
+    BTN_ADJUST: "Adjust",
+    STATUS_ACTIVE: "Active",
+    STATUS_INACTIVE: "Inactive",
+  },
+  FOOTER: {
+    SHOWING: "Showing",
+    OF: "of",
+    ITEMS_CLICK_ANY: "items. Click any",
+    ROW: "row",
+    TO_EDIT_QUANTITY: "to edit quantity.",
+  },
+  MODAL: {
+    TITLE: "Inventory Adjustment",
+    CURRENT_STOCK: "Current Stock",
+    NEW_VALUE: "New Value",
+    SET_EXACT_QUANTITY: "Set Exact Quantity",
+    UNITS: "Units",
+    NO_CHANGES: "No changes to commit",
+    STOCKING_UP: "Stocking up: +",
+    REDUCING_BY: "Reducing by: ",
+    CANCEL: "Cancel",
+    COMMIT: "Commit",
+    SAVING: "Saving…",
+  },
+};
+
+export const PRODUCT_VARIANTS_TEXT = {
+  TITLE: "Product Variants",
+  SUBTITLE: "Manage stock, pricing, and details for each variation.",
+  BTN_EDIT_PRODUCT: "Edit Main Product",
+  BTN_ADD_VARIANT: "Add Variant",
+  STATS_VARIANT: "Variant",
+  STATS_VARIANTS: "Variants",
+  EMPTY: {
+    TITLE: "No variants yet",
+    DESC: "This product has no variations. Create one to get started.",
+    BTN_CREATE: "Create First Variant",
+  },
+  CARD: {
+    SKU: "SKU",
+    ATTRIBUTES: "Attributes",
+    PRICE: "Price",
+    BTN_EDIT: "Edit Variant",
+    STATUS_ACTIVE: "Active",
+    STATUS_INACTIVE: "Inactive",
+    SAVING: "Saving...",
+  },
+};
+
+
+
+
+
+
+
+
+

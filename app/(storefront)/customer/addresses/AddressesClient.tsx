@@ -181,10 +181,10 @@ export default function AddressesClient() {
     <section className="w-full max-w-[1200px] mx-auto py-4 md:py-8 lg:px-8 px-4 pb-24 font-sans">
       {/* Desktop Header */}
       <div className="hidden sm:block mb-8">
-        <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
+        <h1 className="text-theme-h3 font-extrabold text-foreground tracking-tight">
           Saved Addresses
         </h1>
-        <p className="text-base text-muted-foreground mt-2">
+        <p className="text-theme-body text-muted-foreground mt-2">
           Manage your shipping and billing locations for faster checkout.
         </p>
       </div>
@@ -215,10 +215,10 @@ export default function AddressesClient() {
             <div className="w-14 h-14 rounded-full bg-theme-primary/5 text-theme-primary hover:bg-theme-secondary/50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <MapPinPlus size={24} strokeWidth={2} />
             </div>
-            <h3 className="font-bold text-foreground text-lg">
+            <h3 className="font-bold text-foreground text-theme-h6">
               Add New Address
             </h3>
-            <p className="text-muted-foreground text-sm mt-1">
+            <p className="text-muted-foreground text-theme-body-sm mt-1">
               Add a new shipping destination
             </p>
           </motion.button>

@@ -33,7 +33,7 @@ export function CategoryList({ categories, styles }: { categories?: CategoryList
                 initial={{ opacity: 0, y: -20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="text-2xl text-center font-bold mt-8 mb-8"
+                className="text-theme-h4 text-center font-bold mt-8 mb-8"
             >
                 {CATEGORY_LIST_TEXT.TITLE}
             </motion.h2>
@@ -60,7 +60,7 @@ export function CategoryList({ categories, styles }: { categories?: CategoryList
                                 alt={category.title.trim()}
                             />
                         </div>
-                        <span className="mt-4 text-lg font-medium text-gray-700 group-hover:text-theme-primary transition-colors">
+                        <span className="mt-4 text-theme-h6 font-medium text-gray-700 group-hover:text-theme-primary transition-colors">
                             {category.title.trim()}
                         </span>
                     </motion.li>

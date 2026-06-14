@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useReducer, useMemo } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -8,7 +8,6 @@ import {
   IndianRupee,
   TrendingUp,
   Clock,
-  ArrowDownToLine,
   Search,
   RefreshCw,
 } from "lucide-react";
@@ -18,40 +17,28 @@ import Link from "next/link";
 import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
 import { Pagination } from "@/components/common/Pagination";
+import { FINANCES_TEXT } from "@/constants/vendorText";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 // Mirrors the shape returned by FinancesService.getVendorFinancial()
-// data.earnings[]
 interface EarningRecord {
   id: string; // payment.id or "calc-{order.id}"
   order_id: string; // orders.id
-  //   gross_amount: string;    // orders.total_amount  (string decimal)
-
   net_earning: string; // gross - fee
   status: "PENDING" | "CLEARED" | "REVERSED";
   created_at: string | Date;
   transaction_ref: string; // payments.transaction_ref or "N/A"
 }
 
-// Full API response shape from getVendorFinancial()
-interface EarningsResponse {
-  total_transactions: number;
-  total_cleared_earnings: string;
-  total_pending_earnings: string;
-  earnings: EarningRecord[];
-}
-
 // ─── Table header columns ─────────────────────────────────────────────────────
 const TABLE_HEADERS = [
-  "Transaction ID",
-  "Order Ref",
-  "Transaction Ref",
-  //   "Gross Amount",
-  //   "Platform Fee",
-  "Net Earning",
-  "Status",
-  "Date",
-  "Actions",
+  FINANCES_TEXT.TABLE_HEADERS.TRANSACTION_ID,
+  FINANCES_TEXT.TABLE_HEADERS.ORDER_REF,
+  FINANCES_TEXT.TABLE_HEADERS.TRANSACTION_REF,
+  FINANCES_TEXT.TABLE_HEADERS.NET_EARNING,
+  FINANCES_TEXT.TABLE_HEADERS.STATUS,
+  FINANCES_TEXT.TABLE_HEADERS.DATE,
+  FINANCES_TEXT.TABLE_HEADERS.ACTIONS,
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -73,25 +60,25 @@ function StatusBadge({ status }: { status: string }) {
   const s = status?.toUpperCase();
   if (s === "CLEARED")
     return (
-      <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-xs font-semibold">
+      <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-        Cleared
+        {FINANCES_TEXT.CLEARED}
       </span>
     );
 
   if (s === "REVERSED")
     return (
-      <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-600 border border-red-200 py-1 px-3 rounded-full text-xs font-semibold">
+      <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-600 border border-red-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
         <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
-        Reversed
+        {FINANCES_TEXT.REVERSED}
       </span>
     );
 
   // PENDING
   return (
-    <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-xs font-semibold">
+    <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse" />
-      Pending
+      {FINANCES_TEXT.PENDING}
     </span>
   );
 }
@@ -116,96 +103,220 @@ function SummaryCard({
     >
       <span className={`p-2.5 rounded-xl ${color}`}>{icon}</span>
       <div>
-        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-0.5">
+        <p className="text-theme-caption text-gray-500 font-medium uppercase tracking-wider mb-0.5">
           {label}
         </p>
-        <p className="text-xl font-bold text-gray-900 flex items-center gap-0.5">
+        <p className="text-theme-h5 font-bold text-gray-900 flex items-center gap-0.5">
           <IndianRupee size={16} className="text-gray-600" />
           {value}
         </p>
-        {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+        {sub && <p className="text-theme-caption text-gray-400 mt-0.5">{sub}</p>}
       </div>
     </div>
   );
 }
 
+// ─── useReducer Action Types & State ─────────────────────────────────────────
+enum FinancesActionType {
+  SET_LOADING = "SET_LOADING",
+  SET_ERROR = "SET_ERROR",
+  SET_EARNINGS_DATA = "SET_EARNINGS_DATA",
+  SET_SEARCH = "SET_SEARCH",
+  SET_DEBOUNCED_SEARCH = "SET_DEBOUNCED_SEARCH",
+  SET_STATUS_FILTER = "SET_STATUS_FILTER",
+  SET_SORT_BY = "SET_SORT_BY",
+  SET_DATE = "SET_DATE",
+  SET_CALENDAR_OPEN = "SET_CALENDAR_OPEN",
+  SET_CURRENT_PAGE = "SET_CURRENT_PAGE",
+}
+
+interface FinancesState {
+  earnings: EarningRecord[] | null;
+  loading: boolean;
+  error: string | null;
+  clearedEarnings: string;
+  pendingEarnings: string;
+  totalTransactions: number;
+  search: string;
+  debouncedSearch: string;
+  statusFilter: string;
+  sortBy: string;
+  date: Date | undefined;
+  calendarOpen: boolean;
+  totalPages: number;
+  currentPage: number;
+  itemsPerPage: number;
+}
+
+const initialState: FinancesState = {
+  earnings: null,
+  loading: true,
+  error: null,
+  clearedEarnings: "0.00",
+  pendingEarnings: "0.00",
+  totalTransactions: 0,
+  search: "",
+  debouncedSearch: "",
+  statusFilter: "all",
+  sortBy: "desc",
+  date: undefined,
+  calendarOpen: false,
+  totalPages: 1,
+  currentPage: 1,
+  itemsPerPage: 10,
+};
+
+type FinancesAction =
+  | { type: FinancesActionType.SET_LOADING; payload: boolean }
+  | { type: FinancesActionType.SET_ERROR; payload: string | null }
+  | {
+      type: FinancesActionType.SET_EARNINGS_DATA;
+      payload: {
+        earnings: EarningRecord[] | null;
+        clearedEarnings: string;
+        pendingEarnings: string;
+        totalTransactions: number;
+        totalPages: number;
+      };
+    }
+  | { type: FinancesActionType.SET_SEARCH; payload: string }
+  | { type: FinancesActionType.SET_DEBOUNCED_SEARCH; payload: string }
+  | { type: FinancesActionType.SET_STATUS_FILTER; payload: string }
+  | { type: FinancesActionType.SET_SORT_BY; payload: string }
+  | { type: FinancesActionType.SET_DATE; payload: Date | undefined }
+  | { type: FinancesActionType.SET_CALENDAR_OPEN; payload: boolean }
+  | { type: FinancesActionType.SET_CURRENT_PAGE; payload: number };
+
+function financesReducer(state: FinancesState, action: FinancesAction): FinancesState {
+  switch (action.type) {
+    case FinancesActionType.SET_LOADING:
+      return { ...state, loading: action.payload };
+    case FinancesActionType.SET_ERROR:
+      return { ...state, error: action.payload };
+    case FinancesActionType.SET_EARNINGS_DATA:
+      return {
+        ...state,
+        earnings: action.payload.earnings,
+        clearedEarnings: action.payload.clearedEarnings,
+        pendingEarnings: action.payload.pendingEarnings,
+        totalTransactions: action.payload.totalTransactions,
+        totalPages: action.payload.totalPages,
+      };
+    case FinancesActionType.SET_SEARCH:
+      return { ...state, search: action.payload };
+    case FinancesActionType.SET_DEBOUNCED_SEARCH:
+      return { ...state, debouncedSearch: action.payload };
+    case FinancesActionType.SET_STATUS_FILTER:
+      return { ...state, statusFilter: action.payload };
+    case FinancesActionType.SET_SORT_BY:
+      return { ...state, sortBy: action.payload };
+    case FinancesActionType.SET_DATE:
+      return { ...state, date: action.payload };
+    case FinancesActionType.SET_CALENDAR_OPEN:
+      return { ...state, calendarOpen: action.payload };
+    case FinancesActionType.SET_CURRENT_PAGE:
+      return { ...state, currentPage: action.payload };
+    default:
+      return state;
+  }
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function EarningsPage() {
-  // ── state ──
-  const [earnings, setEarnings] = useState<EarningRecord[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [clearedEarnings, setClearedEarnings] = useState<string>("0.00");
-  const [pendingEarnings, setPendingEarnings] = useState<string>("0.00");
-  const [totalTransactions, setTotalTransactions] = useState<number>(0);
+  const [state, dispatch] = useReducer(financesReducer, initialState);
+  const {
+    earnings,
+    loading,
+    error,
+    clearedEarnings,
+    pendingEarnings,
+    totalTransactions,
+    search,
+    debouncedSearch,
+    statusFilter,
+    sortBy,
+    date,
+    calendarOpen,
+    totalPages,
+    currentPage,
+    itemsPerPage,
+  } = state;
 
-  // filters
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"asc" | "desc">("desc");
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [calendarOpen, setCalendarOpen] = useState(false);
-
-  const [totalPages, setTotalPages] = useState(1);
-  const [itemsPerPage, setItemPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
   const offset = (currentPage - 1) * itemsPerPage;
   const token = authToken();
+
   // ── fetch ──
   const fetchEarnings = async (
-    search: string,
-    offset: number,
-    statusFilter: string,
-    date: Date | undefined,
-    sortby: "asc" | "desc",
-    token: string,
+    currentSearch: string,
+    currentOffset: number,
+    currentStatusFilter: string,
+    currentDate: Date | undefined,
+    currentSortBy: string,
+    currentToken: string,
   ) => {
-    setLoading(true);
-    setError(null);
+    dispatch({ type: FinancesActionType.SET_LOADING, payload: true });
+    dispatch({ type: FinancesActionType.SET_ERROR, payload: null });
     try {
       const response = await AxiosAPI.get(
-        `/v1/finances/earnings?search=${debouncedSearch ?? ""}&offset=${offset ?? 0}&limit=${itemsPerPage}&status=${statusFilter ?? ""}&date=${date?.toISOString() ?? ""}&sortby=${sortby ?? ""}`,
+        `/v1/finances/earnings?search=${currentSearch}&offset=${currentOffset}&limit=${itemsPerPage}&status=${currentStatusFilter}&date=${currentDate?.toISOString() ?? ""}&sortby=${currentSortBy}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${currentToken}`,
           },
         },
       );
       if (response.status !== 200)
         throw new Error(`HTTP ${response.status}: ${response.data.message}`);
 
-      setEarnings(response.data?.data.earnings ?? []);
-      setClearedEarnings(response.data?.data.total_cleared_earnings ?? "0.00");
-      setPendingEarnings(response.data?.data.total_pending_earnings ?? "0.00");
-      setTotalTransactions(response.data?.data.total_transactions ?? 0);
-      const totalTransactions = response.data?.data.total_transactions;
-      setTotalPages(Math.ceil(totalTransactions / itemsPerPage) || 1);
+      const data = response.data?.data;
+      const earningsList = data?.earnings ?? [];
+      const cleared = data?.total_cleared_earnings ?? "0.00";
+      const pending = data?.total_pending_earnings ?? "0.00";
+      const total = data?.total_transactions ?? 0;
+      const calculatedTotalPages = Math.ceil(total / itemsPerPage) || 1;
+
+      dispatch({
+        type: FinancesActionType.SET_EARNINGS_DATA,
+        payload: {
+          earnings: earningsList,
+          clearedEarnings: cleared,
+          pendingEarnings: pending,
+          totalTransactions: total,
+          totalPages: calculatedTotalPages,
+        },
+      });
     } catch (err: any) {
-      setError("Failed to load earnings. Please try again.");
-      setEarnings(null);
+      dispatch({ type: FinancesActionType.SET_ERROR, payload: FINANCES_TEXT.LOAD_ERROR });
+      dispatch({
+        type: FinancesActionType.SET_EARNINGS_DATA,
+        payload: {
+          earnings: null,
+          clearedEarnings: "0.00",
+          pendingEarnings: "0.00",
+          totalTransactions: 0,
+          totalPages: 1,
+        },
+      });
     } finally {
-      setLoading(false);
+      dispatch({ type: FinancesActionType.SET_LOADING, payload: false });
     }
   };
 
   useEffect(() => {
-    if (token) fetchEarnings(search, offset, statusFilter, date, sortBy, token);
+    if (token) {
+      fetchEarnings(debouncedSearch, offset, statusFilter, date, sortBy, token);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, offset, statusFilter, date, sortBy, search]);
+  }, [token, offset, statusFilter, date, sortBy, debouncedSearch]);
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
-      setDebouncedSearch(search);
-      setCurrentPage(1); // Reset to first page on new search
+      dispatch({ type: FinancesActionType.SET_DEBOUNCED_SEARCH, payload: search });
+      dispatch({ type: FinancesActionType.SET_CURRENT_PAGE, payload: 1 }); // Reset to first page on new search
     }, 500); // 500ms delay
 
     return () => clearTimeout(debounceTimer);
   }, [search]);
-  const clearDate = () => {
-    setDate(undefined);
-    setCalendarOpen(false);
-  };
 
   // ─────────────────────────────────────────────────────────────────────────────
   return (
@@ -217,15 +328,15 @@ export default function EarningsPage() {
             <Wallet size={22} className="text-emerald-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 leading-tight">
-              Earnings & Settlements
+            <h1 className="text-theme-h4 font-bold text-gray-800 leading-tight">
+              {FINANCES_TEXT.TITLE}
             </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Vendor financial ledger — orders × payments
+            <p className="text-theme-caption text-gray-400 mt-0.5">
+              {FINANCES_TEXT.SUBTITLE}
             </p>
           </div>
           {!loading && earnings && (
-            <span className="ml-1 bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full">
+            <span className="ml-1 bg-emerald-100 text-emerald-700 text-theme-caption font-bold px-2.5 py-1 rounded-full">
               {totalTransactions}
             </span>
           )}
@@ -234,12 +345,12 @@ export default function EarningsPage() {
         <button
           onClick={() =>
             token &&
-            fetchEarnings(search, offset, statusFilter, date, sortBy, token)
+            fetchEarnings(debouncedSearch, offset, statusFilter, date, sortBy, token)
           }
-          className="flex items-center gap-2 text-sm border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 rounded-xl px-4 py-2 transition-colors font-medium shadow-sm"
+          className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 rounded-xl px-4 py-2 transition-colors font-medium shadow-sm"
         >
           <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
-          Refresh
+          {FINANCES_TEXT.REFRESH}
         </button>
       </header>
 
@@ -248,7 +359,7 @@ export default function EarningsPage() {
         <div className="flex flex-wrap gap-3 mb-5">
           <SummaryCard
             icon={<TrendingUp size={18} className="text-emerald-600" />}
-            label="Cleared Earnings"
+            label={FINANCES_TEXT.CLEARED_EARNINGS}
             color="bg-emerald-50"
             value={formatINR(clearedEarnings)}
             sub={clearedEarnings}
@@ -256,7 +367,7 @@ export default function EarningsPage() {
 
           <SummaryCard
             icon={<Clock size={18} className="text-amber-500" />}
-            label="Pending Earnings"
+            label={FINANCES_TEXT.PENDING_EARNINGS}
             color="bg-amber-50"
             value={formatINR(pendingEarnings)}
             sub={pendingEarnings}
@@ -272,9 +383,9 @@ export default function EarningsPage() {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="text-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
-            placeholder="Search by Transaction ID, Order Ref, or Txn Ref"
+            onChange={(e) => dispatch({ type: FinancesActionType.SET_SEARCH, payload: e.target.value })}
+            className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
+            placeholder={FINANCES_TEXT.SEARCH_PLACEHOLDER}
           />
         </span>
 
@@ -282,52 +393,43 @@ export default function EarningsPage() {
         <span className="flex flex-wrap gap-3 items-center">
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-emerald-400 cursor-pointer transition-colors"
+            onChange={(e) => dispatch({ type: FinancesActionType.SET_STATUS_FILTER, payload: e.target.value })}
+            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-emerald-400 cursor-pointer transition-colors"
           >
-            <option value="all">All Status</option>
-            <option value="cleared">Cleared</option>
-            <option value="pending">Pending</option>
-            <option value="reversed">Reversed</option>
+            <option value="all">{FINANCES_TEXT.ALL_STATUS}</option>
+            <option value="cleared">{FINANCES_TEXT.CLEARED}</option>
+            <option value="pending">{FINANCES_TEXT.PENDING}</option>
+            <option value="reversed">{FINANCES_TEXT.REVERSED}</option>
           </select>
 
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "asc" | "desc")}
-            className="text-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-emerald-400 cursor-pointer transition-colors"
+            onChange={(e) => dispatch({ type: FinancesActionType.SET_SORT_BY, payload: e.target.value })}
+            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-emerald-400 cursor-pointer transition-colors"
           >
-            <option value="desc">Newest First</option>
-            <option value="asc">Oldest First</option>
-            <option value="amount_highest">Highest Amount</option>
+            <option value="desc">{FINANCES_TEXT.NEWEST_FIRST}</option>
+            <option value="asc">{FINANCES_TEXT.OLDEST_FIRST}</option>
+            <option value="amount_highest">{FINANCES_TEXT.HIGHEST_AMOUNT}</option>
           </select>
 
           {/* Date picker toggle */}
           {calendarOpen ? (
             <button
-              onClick={() => setCalendarOpen(false)}
-              className="flex items-center gap-2 text-sm border border-emerald-300 bg-emerald-50 text-emerald-600 rounded-xl px-3 py-2 font-medium transition-colors"
+              onClick={() => dispatch({ type: FinancesActionType.SET_CALENDAR_OPEN, payload: false })}
+              className="flex items-center gap-2 text-theme-body-sm border border-emerald-300 bg-emerald-50 text-emerald-600 rounded-xl px-3 py-2 font-medium transition-colors"
             >
-              {date ? date.toDateString() : "Select Date"}
+              {date ? date.toDateString() : FINANCES_TEXT.SELECT_DATE}
               <ChevronUp size={16} />
             </button>
           ) : (
             <button
-              onClick={() => setCalendarOpen(true)}
-              className="flex items-center gap-2 text-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
+              onClick={() => dispatch({ type: FinancesActionType.SET_CALENDAR_OPEN, payload: true })}
+              className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
             >
-              {date ? date.toDateString() : "Filter by Date"}
+              {date ? date.toDateString() : FINANCES_TEXT.FILTER_DATE}
               <ChevronDown size={16} />
             </button>
           )}
-
-          {/* {date && (
-             <button
-               onClick={clearDate}
-               className="text-xs text-gray-400 hover:text-red-500 transition-colors underline underline-offset-2"
-             >
-               Clear date
-             </button>
-            )} */}
         </span>
 
         {/* Calendar dropdown */}
@@ -337,8 +439,8 @@ export default function EarningsPage() {
               mode="single"
               selected={date}
               onSelect={(d) => {
-                setDate(d);
-                setCalendarOpen(false);
+                dispatch({ type: FinancesActionType.SET_DATE, payload: d });
+                dispatch({ type: FinancesActionType.SET_CALENDAR_OPEN, payload: false });
               }}
               className="rounded-xl bg-white"
               captionLayout="dropdown"
@@ -349,7 +451,7 @@ export default function EarningsPage() {
 
       {/* ── Error state ── */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4">
+        <div className="bg-red-50 border border-red-200 text-red-600 text-theme-body-sm rounded-xl px-4 py-3 mb-4">
           {error}
         </div>
       )}
@@ -368,7 +470,7 @@ export default function EarningsPage() {
               {TABLE_HEADERS.map((h) => (
                 <th
                   key={h}
-                  className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
                 >
                   {h}
                 </th>
@@ -382,12 +484,12 @@ export default function EarningsPage() {
               <tr>
                 <td
                   colSpan={TABLE_HEADERS.length + 1}
-                  className="py-16 text-center text-gray-400 text-sm"
+                  className="py-16 text-center text-gray-400 text-theme-body-sm"
                 >
                   <Wallet size={36} className="mx-auto mb-3 opacity-25" />
                   {earnings?.length === 0
-                    ? "No earning records found for this vendor."
-                    : "No records match your current filters."}
+                    ? FINANCES_TEXT.NO_RECORDS_VENDOR
+                    : FINANCES_TEXT.NO_RECORDS_FILTER}
                 </td>
               </tr>
             ) : (
@@ -407,7 +509,7 @@ export default function EarningsPage() {
 
                   {/* TRANSACTION ID */}
                   <td className="p-4">
-                    <span className="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">
+                    <span className="font-mono text-theme-caption font-semibold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">
                       TRX-{shortId(item.id)}
                     </span>
                   </td>
@@ -416,7 +518,7 @@ export default function EarningsPage() {
                   <td className="p-4">
                     <Link
                       href={`/vendor/orders/${item.order_id}`}
-                      className="font-mono text-sm font-semibold text-emerald-600 hover:underline"
+                      className="font-mono text-theme-body-sm font-semibold text-emerald-600 hover:underline"
                     >
                       ORD-{shortId(item.order_id)}
                     </Link>
@@ -424,7 +526,7 @@ export default function EarningsPage() {
 
                   {/* TRANSACTION REF (from payments.transaction_ref) */}
                   <td className="p-4">
-                    <span className="font-mono text-xs text-gray-500">
+                    <span className="font-mono text-theme-caption text-gray-500">
                       {item.transaction_ref === "N/A" ? (
                         <span className="text-gray-300 italic">N/A</span>
                       ) : (
@@ -433,7 +535,7 @@ export default function EarningsPage() {
                     </span>
                   </td>
 
-                  <td className="p-4 text-sm text-gray-600">
+                  <td className="p-4 text-theme-body-sm text-gray-600">
                     ₹{formatINR(item.net_earning)}
                   </td>
 
@@ -443,7 +545,7 @@ export default function EarningsPage() {
                   </td>
 
                   {/* DATE (orders.created_at) */}
-                  <td className="p-4 text-sm text-gray-500 whitespace-nowrap">
+                  <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap">
                     {new Date(item.created_at).toLocaleDateString("en-GB", {
                       day: "numeric",
                       month: "short",
@@ -455,9 +557,9 @@ export default function EarningsPage() {
                   <td className="p-4">
                     <Link
                       href={`/vendor/orders/${item.order_id}`}
-                      className="text-xs font-semibold text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                      className="text-theme-caption font-semibold text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
                     >
-                      View Order →
+                      {FINANCES_TEXT.VIEW_ORDER}
                     </Link>
                   </td>
                 </tr>
@@ -469,7 +571,12 @@ export default function EarningsPage() {
 
       <Pagination
         count={currentPage}
-        setCount={setCurrentPage}
+        setCount={(page) =>
+          dispatch({
+            type: FinancesActionType.SET_CURRENT_PAGE,
+            payload: typeof page === "function" ? page(currentPage) : page,
+          })
+        }
         totalPages={totalPages}
       />
     </section>
