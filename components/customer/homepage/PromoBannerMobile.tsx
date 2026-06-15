@@ -26,6 +26,8 @@ export function PromoBannerMobile({
         fill
         className="object-contain"
         sizes="(max-width: 768px) calc(100vw - 32px)"
+        priority={true}
+        loading="eager"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/20" />
       <div className="absolute inset-0 flex flex-col justify-center px-5">

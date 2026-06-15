@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { LoaderSpinner } from "@/components/common/LoaderSpinner";
 import { authToken } from "@/utils/authToken";
 import { toast } from "react-hot-toast";
+import { AUDIENCES_PAGE_TEXT } from "@/constants/vendorText";
 
 interface Segment {
   id: string;
@@ -40,7 +41,7 @@ export default function AudiencesPage() {
 
       setSegments(res.data.data ?? []);
     } catch {
-      toast.error("Failed to load audiences");
+      toast.error(AUDIENCES_PAGE_TEXT.TOASTS.LOAD_ERR);
     } finally {
       setLoading(false);
     }
@@ -57,10 +58,10 @@ export default function AudiencesPage() {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-      toast.success(`Recalculated — ${res.data.matched} members matched`);
+      toast.success(AUDIENCES_PAGE_TEXT.TOASTS.RECALC_SUCCESS(res.data.matched));
       fetchSegments();
     } catch {
-      toast.error("Recalculation failed");
+      toast.error(AUDIENCES_PAGE_TEXT.TOASTS.RECALC_FAIL);
     } finally {
       setRecalculating(null);
     }
@@ -74,17 +75,16 @@ export default function AudiencesPage() {
     <div className="p-6 w-full mx-auto">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-theme-h4 font-bold text-gray-800">Audiences</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">{AUDIENCES_PAGE_TEXT.HEADER.TITLE}</h1>
           <p className="text-theme-body-sm text-gray-500 mt-1">
-            Group customers by behaviour. Use segments to target campaigns
-            precisely.
+            {AUDIENCES_PAGE_TEXT.HEADER.SUBTITLE}
           </p>
         </div>
         <Button
           onClick={() => router.push(`/vendor/marketing/audiences/form`)}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5"
         >
-          <Plus size={18} /> Create Segment
+          <Plus size={18} /> {AUDIENCES_PAGE_TEXT.HEADER.CREATE_BTN}
         </Button>
       </header>
 
@@ -92,7 +92,7 @@ export default function AudiencesPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <p className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-2">
-            Segments
+            {AUDIENCES_PAGE_TEXT.METRICS.SEGMENTS}
           </p>
           <p className="text-theme-h4 font-bold text-gray-800">
             {loading ? "—" : segments.length}
@@ -100,7 +100,7 @@ export default function AudiencesPage() {
         </div>
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <p className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-2">
-            Total Members
+            {AUDIENCES_PAGE_TEXT.METRICS.TOTAL_MEMBERS}
           </p>
           <p className="text-theme-h4 font-bold text-gray-800">
             {loading ? "—" : totalMembers.toLocaleString()}
@@ -135,7 +135,7 @@ export default function AudiencesPage() {
                     </p>
                     <p className="text-theme-body-sm text-gray-500 truncate">
                       {seg.description ??
-                        `${seg.criteria.length} criteria · ${seg.criteria_operator}`}
+                        AUDIENCES_PAGE_TEXT.CARD.CRITERIA_DESC(seg.criteria.length, seg.criteria_operator)}
                     </p>
                   </div>
                 </div>
@@ -145,24 +145,24 @@ export default function AudiencesPage() {
                     <p className="text-theme-h6 font-bold text-gray-800">
                       {(seg.member_count ?? 0).toLocaleString()}
                     </p>
-                    <p className="text-theme-caption text-gray-400">members</p>
+                    <p className="text-theme-caption text-gray-400">{AUDIENCES_PAGE_TEXT.CARD.MEMBERS}</p>
                   </div>
                   <div className="text-right hidden md:block">
-                    <p className="text-theme-caption text-gray-400">Last synced</p>
+                    <p className="text-theme-caption text-gray-400">{AUDIENCES_PAGE_TEXT.CARD.LAST_SYNCED}</p>
                     <p className="text-theme-caption font-medium text-gray-600">
                       {seg.last_recalculated_at
                         ? new Date(seg.last_recalculated_at).toLocaleDateString(
                             "en-IN",
                             { day: "numeric", month: "short" },
                           )
-                        : "Never"}
+                        : AUDIENCES_PAGE_TEXT.CARD.NEVER_SYNCED}
                     </p>
                   </div>
                   <button
                     onClick={(e) => triggerRecalculate(seg.id, e)}
                     disabled={recalculating === seg.id}
                     className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Recalculate members"
+                    title={AUDIENCES_PAGE_TEXT.CARD.RECALCULATE}
                   >
                     <RefreshCw
                       size={16}
@@ -177,16 +177,15 @@ export default function AudiencesPage() {
           {segments.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
               <Users size={32} className="text-gray-300 mb-4" />
-              <h3 className="font-bold text-gray-800 mb-1">No segments yet</h3>
+              <h3 className="font-bold text-gray-800 mb-1">{AUDIENCES_PAGE_TEXT.EMPTY.TITLE}</h3>
               <p className="text-theme-body-sm text-gray-500 mb-6 text-center max-w-xs">
-                Create a segment to group customers by spend, order history, or
-                registration date.
+                {AUDIENCES_PAGE_TEXT.EMPTY.DESC}
               </p>
               <Button
                 onClick={() => router.push(`/vendor/marketing/audiences/form`)}
                 className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5"
               >
-                <Plus size={16} className="mr-2" /> Create First Segment
+                <Plus size={16} className="mr-2" /> {AUDIENCES_PAGE_TEXT.EMPTY.CREATE_FIRST_BTN}
               </Button>
             </div>
           )}

@@ -15,7 +15,7 @@ export enum UserAddressTypeEnum {
   WORK = "work",
   OTHER = "other",
 }
-export enum OrderStatusEnum{
+export enum OrderStatusEnum {
   PENDING = "pending",
   PROCESSING = "processing",
   SHIPPED = "shipped",
@@ -25,7 +25,15 @@ export enum OrderStatusEnum{
   REFUNDED = "refunded",
   REPLACED = "replaced",
 }
-export type OrderStatus = typeof OrderStatusEnum[keyof typeof OrderStatusEnum];
+export enum ActivityType {
+  ORDER = "order",
+  ADDRESS = "address",
+  WISHLIST = "wishlist",
+  REVIEW = "review",
+  SECURITY = "security",
+}
+export type OrderStatus =
+  (typeof OrderStatusEnum)[keyof typeof OrderStatusEnum];
 export enum ProductVariantStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
@@ -1052,3 +1060,26 @@ export interface VariantDetails {
   images?: { image_url: string }[] | string;
   product_id?: string;
 }
+export enum FieldType {
+  TEXT = "text",
+  TEXTAREA = "textarea",
+  CHECKBOX = "checkbox",
+  SELECT = "select",
+  DATE = "date",
+  NUMBER = "number",
+}
+export enum GridSpan {
+  ONE = 1,
+  TWO = 2,
+}
+export type FieldConfig = {
+  name: string;
+  label: string;
+  type: FieldType;
+  required?: boolean;
+  note?: string;
+  step?: string;
+  options?: { value: string; label: string }[];
+  placeholder?: string;
+  gridSpan?: GridSpan;
+};

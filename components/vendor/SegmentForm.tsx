@@ -17,6 +17,8 @@ import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
 import { SEGMENT_FORM_TEXT } from "@/constants/vendorText";
 
+import { SegmentCriteriaOperator } from "@/utils/Types";
+
 // ── Reusable Styles ──
 const fieldBase =
   "w-full px-3 py-2 text-theme-body-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all bg-white";
@@ -62,7 +64,9 @@ export default function SegmentForm({
   const [existingData, setExistingData] = useState<any>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [operator, setOperator] = useState<"AND" | "OR">("AND");
+  const [operator, setOperator] = useState<SegmentCriteriaOperator>(
+    SegmentCriteriaOperator.AND,
+  );
   const [criteria, setCriteria] = useState<Criterion[]>(
     existingData?.criteria?.map((c: any) => ({
       ...c,
@@ -182,7 +186,7 @@ export default function SegmentForm({
             <label className={labelBase}>{SEGMENT_FORM_TEXT.FIELDS.MATCH_LOGIC_LBL}</label>
             <Select
               value={operator}
-              onValueChange={(v) => setOperator(v as "AND" | "OR")}
+              onValueChange={(v) => setOperator(v as SegmentCriteriaOperator)}
             >
               <SelectTrigger className={fieldBase}>
                 <SelectValue />

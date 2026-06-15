@@ -2,7 +2,8 @@
 import type { RootState } from '@/lib/store';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { useAppSelector } from '@/hooks/reduxHooks';
+import { useAppSelector, useAppDispatch } from '@/hooks/reduxHooks';
+import { openLoginModal } from '@/lib/features/auth/authSlice';
 import { useRouter } from 'next/navigation';
 import { BuyBtnMode, Coupon } from '@/utils/Types';
 import { createCheckoutSession } from '@/hooks/UseCheckoutSession';
@@ -15,6 +16,7 @@ export function BuyBtn({ id, styles, iconStyles, mode, selectedCoupon, quantity 
   const token = authToken();
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const isSmall = styles?.includes('small');
   useEffect(() => {
     setIsMounted(true);
@@ -28,7 +30,7 @@ export function BuyBtn({ id, styles, iconStyles, mode, selectedCoupon, quantity 
       } else if (mode === BuyBtnMode.QUICK_BUY && id) {
         redirectTarget = `/customer/checkout?type=product&id=${id}&qty=${quantity ?? 1}${selectedCoupon?.id ? '&couponId=' + selectedCoupon.id : ''}`;
       }
-      return router.push(`/auth/customerLogin?redirect=${encodeURIComponent(redirectTarget)}`);
+      return dispatch(openLoginModal(redirectTarget));
     }
 
     createCheckoutSession();

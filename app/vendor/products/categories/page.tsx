@@ -4,6 +4,7 @@ import CategoryManager from "@/components/vendor/CategoryManager";
 import { authToken } from "@/utils/authToken";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
+import { CATEGORY_MANAGER_TEXT } from "@/constants/vendorText";
 
 const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
   await fetchVendorsProductsCategory(token)
@@ -39,10 +40,10 @@ export default function CategoryPage() {
     <div className=" p-6 w-full">
       <header className="mb-8">
         <h1 className="text-theme-h4 font-bold text-gray-800">
-          Category Management
+          {CATEGORY_MANAGER_TEXT.HEADER.TITLE}
         </h1>
         <p className="text-gray-500">
-          Organize your products by creating descriptive categories.
+          {CATEGORY_MANAGER_TEXT.HEADER.DESC}
         </p>
       </header>
 

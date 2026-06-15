@@ -148,7 +148,7 @@ export default function VariantListingPage() {
   const handleConfirm = async () => {
     dispatch({ type: VariantListingActionType.SET_LOADING, payload: true });
     if (!token) {
-      toast.error("Authentication Token not found");
+      toast.error(PRODUCT_VARIANTS_TEXT.TOASTS.AUTH_ERR);
       return;
     }
     const isCurrentlyActive = status === ProductVariantStatus.ACTIVE;
@@ -161,7 +161,7 @@ export default function VariantListingPage() {
         type: VariantListingActionType.CONFIRM_STATUS_UPDATE,
         payload: nextStatus,
       });
-      toast.success("Status updated successfully");
+      toast.success(PRODUCT_VARIANTS_TEXT.TOASTS.UPDATE_SUCCESS);
     } catch (err) {
     } finally {
       dispatch({ type: VariantListingActionType.SET_LOADING, payload: false });

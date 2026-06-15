@@ -308,3 +308,15 @@ select:-webkit-autofill {
            hover:bg-gray-50 transition-colors text-left group;
   }
 } */
+
+/* Customer dashboard mobile: hide parent storefront navbar on mobile to prevent duplicate headers */
+@media (max-width: 1023px) {
+  body.customer-dashboard-mobile nav.storefront-nav {
+      display: none !important;
+  }
+}
+
+/* Safe area bottom padding for layout components */
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}

@@ -14,10 +14,6 @@ export const InnerSideBar = ({
 }) => {
     const path = usePathname()
     const [isClosed, setIsClosed] = useState(false)
-    const [isMounted, setIsMounted] = useState(false)
-    useEffect(() => {
-        setIsMounted(true)
-    }, [])
     const [hovered, setHovered] = useState(false);
     const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -50,13 +46,6 @@ export const InnerSideBar = ({
         const isMatch = allPaths.some((p) => p !== path)
         if (isMatch) setIsClosed(false)
     }, [])
-    if (!isMounted) return (
-        <div className="w-20 animate-pulse space-y-4 p-4">
-            <div className="h-6 bg-gray-300 rounded w-3/4 mx-auto"></div>
-            <div className="h-4 bg-gray-300 rounded w-1/2 mx-auto"></div>
-            <div className="h-4 bg-gray-300 rounded w-1/3 mx-auto"></div>
-        </div>
-    )
     return (
         <AnimatePresence mode="wait">
             <div

@@ -1,10 +1,11 @@
-﻿"use client";
+"use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import CampaignForm, { ExistingPromotion } from "@/components/vendor/CampaignForm";
 import { LoaderSpinner } from "@/components/common/LoaderSpinner";
 import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
+import { CAMPAIGN_FORM_TEXT } from "@/constants/vendorText";
 
 export default function EditCampaignPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
@@ -25,8 +26,12 @@ export default function EditCampaignPage() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-theme-h4 font-bold text-gray-900">Edit Campaign</h1>
-        <p className="text-theme-body-sm text-gray-500 mt-1">Update promotion settings. Changes do not affect past orders.</p>
+        <h1 className="text-theme-h4 font-bold text-gray-900">
+          {CAMPAIGN_FORM_TEXT.HEADER.EDIT}
+        </h1>
+        <p className="text-theme-body-sm text-gray-500 mt-1">
+          {CAMPAIGN_FORM_TEXT.HEADER.EDIT_DESC}
+        </p>
       </div>
       <CampaignForm existingData={data as ExistingPromotion} />
     </div>

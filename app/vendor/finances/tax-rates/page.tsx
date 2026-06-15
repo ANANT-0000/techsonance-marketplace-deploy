@@ -8,6 +8,7 @@ import { TableRowSkeleton } from "@/components/common/skeletons";
 import { redirect } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { fetchTaxSlabs } from "@/utils/vendorApiClient";
+import { TAX_RATES_TEXT } from "@/constants/vendorText";
 
 export interface TaxSlab {
   id: string; // UUID
@@ -23,14 +24,13 @@ export interface TaxSlab {
   created_at: string; // ISO timestamp
 }
 
-export const taxSlabTableHeader = [
-  "Rate Name",
-  "State / Region",
-  "Tax Value (%)",
-  "Exemption Status",
-  "Effective From",
-  "Effective To",
-  // "Actions"
+const taxSlabTableHeader = [
+  TAX_RATES_TEXT.TABLE.HEADERS.RATE_NAME,
+  TAX_RATES_TEXT.TABLE.HEADERS.STATE_REGION,
+  TAX_RATES_TEXT.TABLE.HEADERS.TAX_VALUE,
+  TAX_RATES_TEXT.TABLE.HEADERS.EXEMPTION_STATUS,
+  TAX_RATES_TEXT.TABLE.HEADERS.EFFECTIVE_FROM,
+  TAX_RATES_TEXT.TABLE.HEADERS.EFFECTIVE_TO,
 ];
 
 export default function TaxSlabsPage() {
@@ -79,7 +79,7 @@ export default function TaxSlabsPage() {
         <div className="flex items-center gap-2 text-gray-700">
           <Percent size={22} className="text-blue-500" />
           <h1 className="text-theme-h4 font-bold text-gray-800">
-            Tax Types & Rates
+            {TAX_RATES_TEXT.HEADER.TITLE}
           </h1>
           {taxSlabs && taxSlabs.length > 0 && (
             <span className="ml-2 bg-blue-100 text-blue-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
@@ -98,7 +98,7 @@ export default function TaxSlabsPage() {
             className="flex items-center gap-2 font-semibold text-theme-body-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm"
           >
             <Plus size={16} />
-            New Tax Rate
+            {TAX_RATES_TEXT.HEADER.NEW_RATE}
           </button>
         </div>
       </header>
@@ -114,7 +114,7 @@ export default function TaxSlabsPage() {
           <input
             type="text"
             className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
-            placeholder="Search by Rate Name or State..."
+            placeholder={TAX_RATES_TEXT.FILTERS.SEARCH_PLACEHOLDER}
           />
         </span>
 
@@ -125,8 +125,8 @@ export default function TaxSlabsPage() {
             onChange={(e) => setSortBy(e.target.value)}
             name="sort_by"
           >
-            <option value="desc">Highest Rate First</option>
-            <option value="asc">Lowest Rate First</option>
+            <option value="desc">{TAX_RATES_TEXT.FILTERS.SORT_HIGHEST}</option>
+            <option value="asc">{TAX_RATES_TEXT.FILTERS.SORT_LOWEST}</option>
           </select>
 
           {/* {isOpen ? (
@@ -166,9 +166,9 @@ export default function TaxSlabsPage() {
         <table className="w-full table-auto min-w-[900px] border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 text-left">
-              <th className="p-4 w-10">
+              {/* <th className="p-4 w-10">
                 <input type="checkbox" className="rounded" />
-              </th>
+              </th> */}
               {taxSlabTableHeader.map((header) => (
                 <th
                   key={header}
@@ -192,7 +192,7 @@ export default function TaxSlabsPage() {
                     size={36}
                     className="mx-auto mb-3 opacity-30 text-blue-400"
                   />
-                  No tax rates configured. Defaults will apply.
+                  {TAX_RATES_TEXT.TABLE.NO_DATA}
                 </td>
               </tr>
             ) : (
@@ -202,12 +202,12 @@ export default function TaxSlabsPage() {
                   key={item.id}
                   className="hover:bg-gray-50 transition-colors group"
                 >
-                  <td className="p-4">
+                  {/* <td className="p-4">
                     <input
                       type="checkbox"
                       className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
                     />
-                  </td>
+                  </td> */}
 
                   <td className="p-4">
                     <span className="font-semibold text-gray-800">
@@ -228,11 +228,11 @@ export default function TaxSlabsPage() {
                   <td className="p-4">
                     {item.is_exempt ? (
                       <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
-                        ● Exempt
+                        ● {TAX_RATES_TEXT.TABLE.STATUS_EXEMPT}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
-                        ● Taxable
+                        ● {TAX_RATES_TEXT.TABLE.STATUS_TAXABLE}
                       </span>
                     )}
                   </td>
@@ -243,7 +243,7 @@ export default function TaxSlabsPage() {
 
                   <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap">
                     {item.effective_to === "2099-12-31" || !item.effective_to
-                      ? "Ongoing"
+                      ? TAX_RATES_TEXT.TABLE.ONGOING
                       : new Date(item.effective_to).toLocaleDateString("en-GB")}
                   </td>
                   {/* 

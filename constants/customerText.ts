@@ -309,3 +309,115 @@ export const TESTIMONIALS_TEXT = {
     WHAT_CUSTOMERS_SAY: "What Our Customers Say",
     WHAT_CUSTOMERS_SAY_MOBILE: "What Customers Say"
 };
+
+export const DASHBOARD_TEXT = {
+    // Profile Hero
+    MEMBER_SINCE_PREFIX: "Member since ",
+    EDIT_PROFILE: "Edit Profile",
+    ONLINE_TITLE: "Online",
+
+    // Error state
+    ERROR_DEFAULT_TITLE: "Something went wrong",
+    ERROR_DEFAULT_DESC: "We couldn't load your data. Please try again.",
+    ERROR_RETRY: "Retry",
+    ERROR_STATS: "Couldn't load your stats",
+    ERROR_ORDERS: "Couldn't load orders",
+    ERROR_ACTIVITY: "Couldn't load activity",
+
+    // Empty states
+    EMPTY_ORDERS_TITLE: "No orders yet",
+    EMPTY_ORDERS_DESC: "Your order history will appear here",
+    EMPTY_ORDERS_CTA: "Start Shopping",
+    EMPTY_ACTIVITY_TITLE: "No activity yet",
+    EMPTY_ACTIVITY_DESC: "Your account activity will show up here",
+    EMPTY_ACTIVITY_CTA: "Explore the store",
+
+    // Stat cards
+    STAT_TOTAL_ORDERS: "Total Orders",
+    STAT_ACTIVE_ORDERS: "Active Orders",
+    STAT_WISHLIST: "Wishlist Items",
+    STAT_REVIEWS: "Reviews Written",
+    STAT_REWARD_POINTS: "Reward Points",
+    STAT_ADDRESSES: "Addresses",
+    STAT_VIEW_ALL: "View all",
+
+    // Account settings section
+    SECTION_ACCOUNT_TITLE: "Account Settings",
+    SECTION_ACCOUNT_SUBTITLE: "Manage your account preferences and settings",
+
+    // Account cards
+    CARD_ADDRESSES_TITLE: "Saved Addresses",
+    CARD_ADDRESSES_DESC: "Manage delivery locations for faster checkout.",
+    CARD_ADDRESSES_INFO_LABEL: "Default Address",
+    CARD_ADDRESSES_INFO_VALUE: "No default address set",
+    CARD_ADDRESSES_ACTION: "Manage Addresses",
+
+    CARD_SECURITY_TITLE: "Login & Security",
+    CARD_SECURITY_DESC: "Update your password and secure your account.",
+    CARD_SECURITY_INFO_LABEL: "Password",
+    CARD_SECURITY_INFO_VALUE: "Last updated 30 days ago",
+    CARD_SECURITY_ACTION: "Manage Security",
+
+    CARD_NOTIFICATIONS_TITLE: "Notifications",
+    CARD_NOTIFICATIONS_DESC: "Control email and push notification preferences.",
+    CARD_NOTIFICATIONS_INFO_LABEL: "Email Notifications",
+    CARD_NOTIFICATIONS_INFO_VALUE: "All alerts enabled",
+    CARD_NOTIFICATIONS_ACTION: "Manage Preferences",
+
+    CARD_PAYMENTS_TITLE: "Payment Methods",
+    CARD_PAYMENTS_DESC: "Manage your saved cards and preferred payment options.",
+    CARD_PAYMENTS_INFO_LABEL: "Saved Cards",
+    CARD_PAYMENTS_INFO_VALUE: "None saved yet",
+    CARD_PAYMENTS_ACTION: "Manage Payments",
+
+    CARD_REVIEWS_TITLE: "My Reviews",
+    CARD_REVIEWS_DESC: "See your submitted reviews and ratings.",
+    CARD_REVIEWS_INFO_LABEL: "Reviews Submitted",
+    CARD_REVIEWS_INFO_VALUE: "—",
+    CARD_REVIEWS_ACTION: "View Reviews",
+
+    CARD_REWARDS_TITLE: "Rewards & Loyalty",
+    CARD_REWARDS_DESC: "View your points balance and membership tier.",
+    CARD_REWARDS_INFO_LABEL: "Current Points",
+    CARD_REWARDS_INFO_VALUE: "—",
+    CARD_REWARDS_ACTION: "View Rewards",
+
+    // Orders section
+    SECTION_ORDERS_TITLE: "Recent Orders",
+    SECTION_ORDERS_SUBTITLE: "Your latest purchases",
+    SECTION_ORDERS_VIEW_ALL: "View all",
+
+    // Activity section
+    SECTION_ACTIVITY_TITLE: "Recent Activity",
+    SECTION_ACTIVITY_SUBTITLE: "What's been happening on your account",
+
+    // Order status labels
+    STATUS_PENDING: "Pending",
+    STATUS_PROCESSING: "Processing",
+    STATUS_SHIPPED: "Shipped",
+    STATUS_DELIVERED: "Delivered",
+    STATUS_CANCELLED: "Cancelled",
+
+    // Support section
+    SECTION_SUPPORT_TITLE: "Need Help?",
+    SECTION_SUPPORT_SUBTITLE: "Our support team is here to assist you",
+
+    SUPPORT_HELP_CENTER_TITLE: "Help Center",
+    SUPPORT_HELP_CENTER_DESC: "Browse articles and guides",
+    SUPPORT_TICKETS_TITLE: "Support Tickets",
+    SUPPORT_TICKETS_DESC: "Track your open support requests",
+    SUPPORT_CONTACT_TITLE: "Contact Support",
+    SUPPORT_CONTACT_DESC: "Get in touch with our team",
+
+    // Seller banner
+    SELLER_BANNER_TITLE: "Become a Seller",
+    SELLER_BANNER_DESC: "Start selling your products on Techsonance marketplace.",
+    SELLER_BANNER_CTA: "Start Selling",
+
+    // Misc
+    FALLBACK_USER_ALT: "User",
+    FALLBACK_STAT: "—",
+    ORDER_ID_PREFIX: "#",
+    ITEM_SINGULAR: "item",
+    ITEM_PLURAL: "items",
+};

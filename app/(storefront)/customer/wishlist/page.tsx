@@ -5,6 +5,7 @@ import { AddToCart } from "@/components/customer/AddToCart";
 import { addToWishlist, removeFromWishlist } from "@/lib/features/Wishlist";
 import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
   fetchCustomerWishlist,
@@ -45,16 +46,19 @@ export default function WishlistPage() {
   const dispatch = useAppDispatch();
 
   const [wishlistItems, setWishlistItems] = useState<WishlistItemType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const token = authToken();
 
   useEffect(() => {
     const getWishlistProducts = async () => {
       if (!user?.id) {
         toast.error("User ID is missing");
+        setIsLoading(false);
         return;
       }
       if (!token) {
         toast.error("Authentication token is missing");
+        setIsLoading(false);
         return;
       }
 
@@ -64,10 +68,15 @@ export default function WishlistPage() {
         })
         .catch((error) => {
           toast.error("Error fetching wishlist products:", error);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     };
     if (user?.id) {
       getWishlistProducts();
+    } else {
+      setIsLoading(false);
     }
   }, [wishItems, user, token]);
 
@@ -129,7 +138,25 @@ export default function WishlistPage() {
 
         {/* Content */}
         <div>
-          {isEmpty ? (
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 relative animate-pulse shadow-sm"
+                >
+                  <div className="shrink-0 w-24 h-24 sm:w-32 sm:h-32 bg-gray-100 rounded-xl" />
+                  <div className="flex-1 flex flex-col justify-between py-1 space-y-3">
+                    <div className="space-y-2">
+                      <div className="h-6 bg-gray-200 rounded w-3/4" />
+                      <div className="h-5 bg-gray-200 rounded w-1/4" />
+                    </div>
+                    <div className="h-11 bg-gray-200 rounded-xl w-full sm:w-40" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : isEmpty ? (
             <div className="flex flex-col items-center justify-center py-20 bg-white border border-gray-200 rounded-2xl shadow-sm">
               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                 <HeartCrack className="w-8 h-8 text-gray-400" />
@@ -167,15 +194,18 @@ export default function WishlistPage() {
                   {/* Product Image */}
                   <Link
                     href={`/store/${item.productVariant.product_id}`}
-                    className="shrink-0 w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden block"
+                    className="shrink-0 w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden block relative"
                   >
-                    <img
+                    <Image
                       src={
                         item.productVariant.images?.[0]?.image_url ||
                         "https://placehold.co/400x400/f8fafc/94a3b8?text=Product"
                       }
                       alt={item.productVariant.variant_name}
-                      className="w-full h-full object-cover mix-blend-multiply"
+                      fill
+                      sizes="(max-width: 640px) 96px, 128px"
+                      loading="eager"
+                      className="object-cover mix-blend-multiply"
                     />
                   </Link>
 

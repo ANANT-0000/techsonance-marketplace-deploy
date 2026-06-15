@@ -1,6 +1,8 @@
-﻿import { Building2, FileArchive, Globe2, ShieldCheck } from "lucide-react";
+import { Building2, FileArchive, Globe2, ShieldCheck } from "lucide-react";
 import { BusinessStructure, categoryOptions, COUNTRY_CODES } from "./common";
 import { VendorRegisterSchema } from "@/utils/validation";
+import { FieldConfig, FieldType } from "@/utils/Types";
+import { TAX_PROFILE_FORM_TEXT, TAX_RATES_FORM_TEXT } from "./vendorText";
 export const STEPS = [
   { id: 0, label: "Organization", icon: Building2 },
   { id: 1, label: "Domain", icon: Globe2 },
@@ -494,5 +496,180 @@ export const PRODUCT_FORM_FIELDS = [
       { name: "status", label: "Status", type: "select" },
       { name: "taxProfile", label: "Tax Profile", type: "select" },
     ],
+  },
+];
+// 3. DYNAMIC FIELDS ARRAY
+export const GST_FORM_FIELDS = [
+  {
+    name: "gst_number",
+    label: "GSTIN Number",
+    type: "text",
+    required: true,
+    placeholder: "e.g. 22AAAAA0000A1Z5",
+    gridSpan: 2,
+  },
+  {
+    name: "legal_name",
+    label: "Legal Name (As per PAN)",
+    type: "text",
+    required: true,
+    gridSpan: 1,
+  },
+  {
+    name: "trade_name",
+    label: "Trade Name",
+    type: "text",
+    required: true,
+    gridSpan: 1,
+  },
+  {
+    name: "state_code",
+    label: "State Code",
+    type: "text",
+    required: true,
+    placeholder: "e.g. 22",
+    gridSpan: 1,
+  },
+  {
+    name: "registration_type",
+    label: "Registration Type",
+    type: "select",
+    options: [
+      { label: "Regular", value: "Regular" },
+      { label: "Composition", value: "Composition" },
+    ],
+    gridSpan: 1,
+  },
+  {
+    name: "registration_date",
+    label: "Registration Date",
+    type: "date",
+    required: true,
+    gridSpan: 1,
+  },
+  {
+    name: "effective_from",
+    label: "Effective From",
+    type: "date",
+    required: true,
+    gridSpan: 1,
+  },
+  {
+    name: "is_default",
+    label: "Set as Primary/Default GST Number",
+    type: "checkbox",
+    gridSpan: 2,
+  },
+];
+
+export const TAX_PROFILE_FORM_FIELDS: FieldConfig[] = [
+  {
+    name: "profile_type",
+    label: TAX_PROFILE_FORM_TEXT.FIELDS.NAME_LABEL,
+    type: FieldType.TEXT,
+    required: true,
+    placeholder: TAX_PROFILE_FORM_TEXT.FIELDS.NAME_PLACEHOLDER,
+    gridSpan: 2,
+  },
+  {
+    name: "tax_profile_description",
+    label: TAX_PROFILE_FORM_TEXT.FIELDS.DESC_LABEL,
+    type: FieldType.TEXTAREA,
+    required: true,
+    placeholder: TAX_PROFILE_FORM_TEXT.FIELDS.DESC_PLACEHOLDER,
+    gridSpan: 2,
+  },
+  {
+    name: "is_default",
+    label: TAX_PROFILE_FORM_TEXT.FIELDS.DEFAULT_LABEL,
+    type: FieldType.CHECKBOX,
+    gridSpan: 2,
+  },
+];
+export const TAXSLAB_FORM_FIELDS: FieldConfig[] = [
+  // Links to Tax Profile (required by tax_types insert)
+  {
+    name: "tax_profile_id",
+    label: TAX_RATES_FORM_TEXT.FIELDS.TAX_PROFILE.LABEL,
+    type: FieldType.SELECT,
+    required: true,
+    placeholder: TAX_RATES_FORM_TEXT.FIELDS.TAX_PROFILE.PLACEHOLDER,
+    note: TAX_RATES_FORM_TEXT.FIELDS.TAX_PROFILE.NOTE,
+    gridSpan: 2,
+  },
+
+  // tax_types fields (semantic definition)
+  {
+    name: "tax_name",
+    label: TAX_RATES_FORM_TEXT.FIELDS.TAX_NAME.LABEL,
+    type: FieldType.TEXT,
+    required: true,
+    placeholder: TAX_RATES_FORM_TEXT.FIELDS.TAX_NAME.PLACEHOLDER,
+    note: TAX_RATES_FORM_TEXT.FIELDS.TAX_NAME.NOTE,
+  },
+  {
+    name: "tax_code",
+    label: TAX_RATES_FORM_TEXT.FIELDS.TAX_CODE.LABEL,
+    type: FieldType.TEXT,
+    required: true,
+    placeholder: TAX_RATES_FORM_TEXT.FIELDS.TAX_CODE.PLACEHOLDER,
+    note: TAX_RATES_FORM_TEXT.FIELDS.TAX_CODE.NOTE,
+  },
+  {
+    name: "tax_scope",
+    label: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.LABEL,
+    type: FieldType.SELECT,
+    required: true,
+    options: [
+      { value: "Intra-state", label: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.OPTIONS.INTRA },
+      { value: "Inter-state", label: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.OPTIONS.INTER },
+      { value: "Both", label: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.OPTIONS.BOTH },
+    ],
+
+    note: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.NOTE,
+    gridSpan: 2,
+  },
+
+  // tax_slabs fields (numeric rate)
+  {
+    name: "slab_name",
+    label: TAX_RATES_FORM_TEXT.FIELDS.SLAB_NAME.LABEL,
+    type: FieldType.TEXT,
+    required: true,
+    placeholder: TAX_RATES_FORM_TEXT.FIELDS.SLAB_NAME.PLACEHOLDER,
+  },
+  {
+    name: "total_rate",
+    label: TAX_RATES_FORM_TEXT.FIELDS.TOTAL_RATE.LABEL,
+    type: FieldType.NUMBER,
+    required: true,
+    placeholder: TAX_RATES_FORM_TEXT.FIELDS.TOTAL_RATE.PLACEHOLDER,
+    step: "0.01",
+    note: TAX_RATES_FORM_TEXT.FIELDS.TOTAL_RATE.NOTE,
+  },
+  {
+    name: "description",
+    label: TAX_RATES_FORM_TEXT.FIELDS.DESCRIPTION.LABEL,
+    type: FieldType.TEXTAREA,
+    placeholder: TAX_RATES_FORM_TEXT.FIELDS.DESCRIPTION.PLACEHOLDER,
+    note: TAX_RATES_FORM_TEXT.FIELDS.DESCRIPTION.NOTE,
+    gridSpan: 2,
+  },
+  {
+    name: "effective_from",
+    label: TAX_RATES_FORM_TEXT.FIELDS.EFFECTIVE_FROM.LABEL,
+    type: FieldType.DATE,
+    required: true,
+  },
+  {
+    name: "effective_to",
+    label: TAX_RATES_FORM_TEXT.FIELDS.EFFECTIVE_TO.LABEL,
+    type: FieldType.DATE,
+  },
+  {
+    name: "is_exempt",
+    label: TAX_RATES_FORM_TEXT.FIELDS.IS_EXEMPT.LABEL,
+    type: FieldType.CHECKBOX,
+    gridSpan: 2,
   },
 ];

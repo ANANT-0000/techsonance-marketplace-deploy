@@ -20,6 +20,7 @@ import { redirect } from "next/navigation";
 import { Country, State, City } from "country-state-city";
 import { FormInput } from "@/components/common/FormInput";
 import { WAREHOUSE_ADDRESS_FIELDS } from "@/constants";
+import { WAREHOUSE_LOCATIONS_TEXT } from "@/constants/vendorText";
 
 interface Address {
   id: string;
@@ -325,7 +326,7 @@ export default function LocationsPage() {
                   onClick={closeModal}
                   className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  Cancel
+                  {WAREHOUSE_LOCATIONS_TEXT.FORM.CANCEL}
                 </button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -333,7 +334,7 @@ export default function LocationsPage() {
                   type="submit"
                   className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
                 >
-                  Save Address
+                  {WAREHOUSE_LOCATIONS_TEXT.FORM.SAVE}
                 </motion.button>
               </div>
             </motion.form>
@@ -343,14 +344,14 @@ export default function LocationsPage() {
 
       <section className="w-full p-6 bg-white rounded-lg border border-gray-200 shadow-sm mx-auto">
         <div className="w-full flex justify-between items-center mb-6 border-b pb-4">
-          <h1 className="text-theme-h4 font-bold text-gray-800">Pickup Locations</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">{WAREHOUSE_LOCATIONS_TEXT.HEADER.TITLE}</h1>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="px-6 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
             onClick={() => setClosedLocationForm(true)}
           >
-            + Add New
+            {WAREHOUSE_LOCATIONS_TEXT.HEADER.ADD_BTN}
           </motion.button>
         </div>
 
@@ -363,7 +364,7 @@ export default function LocationsPage() {
                 exit={{ opacity: 0 }}
                 className="text-gray-500 text-center py-8"
               >
-                No locations added yet.
+                {WAREHOUSE_LOCATIONS_TEXT.EMPTY}
               </motion.p>
             ) : (
               locationList.map((location, index) => (
@@ -388,7 +389,7 @@ export default function LocationsPage() {
                     <div>
                       {location.address.is_default && (
                         <span className="inline-block py-1 px-3 rounded-full text-theme-caption font-bold text-blue-700 bg-blue-100 mb-3">
-                          Default Location
+                          {WAREHOUSE_LOCATIONS_TEXT.CARD.DEFAULT}
                         </span>
                       )}
                       <h2 className="text-theme-h6 font-bold text-gray-900 flex items-center gap-2">
@@ -413,7 +414,7 @@ export default function LocationsPage() {
                         {location.address.number && (
                           <p>
                             <span className="font-semibold text-gray-700">
-                              Contact:
+                              {WAREHOUSE_LOCATIONS_TEXT.CARD.CONTACT}
                             </span>{" "}
                             {location.address.number}
                           </p>
@@ -426,13 +427,13 @@ export default function LocationsPage() {
                         className="px-4 py-1.5 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
                         onClick={() => handleEditLocation(location)}
                       >
-                        Edit
+                        {WAREHOUSE_LOCATIONS_TEXT.CARD.EDIT}
                       </button>
                       <button
                         onClick={() => deleteLocation(location.id)}
                         className="px-4 py-1.5 bg-red-50 text-red-600 font-semibold rounded-lg hover:bg-red-100 transition-colors"
                       >
-                        Delete
+                        {WAREHOUSE_LOCATIONS_TEXT.CARD.DELETE}
                       </button>
                     </div>
                   </div>

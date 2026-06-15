@@ -20,6 +20,7 @@ import { authToken } from "@/utils/authToken";
 import { CouponModel } from "@/components/vendor/CouponModel";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
+import { COUPONS_PAGE_TEXT } from "@/constants/vendorText";
 
 export default function CouponsPage() {
   const router = useRouter();
@@ -111,9 +112,9 @@ export default function CouponsPage() {
       {/* ── Page header ── */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-theme-h4 font-bold text-gray-800">Discount Coupons</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">{COUPONS_PAGE_TEXT.HEADER.TITLE}</h1>
           <p className="text-theme-body-sm text-gray-500 mt-1">
-            Manage promo codes customers apply at checkout.
+            {COUPONS_PAGE_TEXT.HEADER.SUBTITLE}
           </p>
         </div>
         <Button
@@ -121,7 +122,7 @@ export default function CouponsPage() {
           className="flex items-center gap-2 whitespace-nowrap bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-100 px-5 py-2.5"
         >
           <Plus size={18} />
-          Create Coupon
+          {COUPONS_PAGE_TEXT.HEADER.CREATE_BTN}
         </Button>
       </header>
 
@@ -130,7 +131,7 @@ export default function CouponsPage() {
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
-              Active Coupons
+              {COUPONS_PAGE_TEXT.METRICS.ACTIVE_COUPONS}
             </span>
             <span className="bg-emerald-50 text-emerald-600 p-2 rounded-lg">
               <Zap size={18} />
@@ -140,14 +141,14 @@ export default function CouponsPage() {
             {loading ? "—" : activeCoupons}
           </h3>
           <p className="text-theme-caption text-gray-500 mt-1 font-medium">
-            Currently live
+            {COUPONS_PAGE_TEXT.METRICS.ACTIVE_SUB}
           </p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
-              Expired
+              {COUPONS_PAGE_TEXT.METRICS.EXPIRED}
             </span>
             <span className="bg-gray-100 text-gray-500 p-2 rounded-lg">
               <Calendar size={18} />
@@ -157,14 +158,14 @@ export default function CouponsPage() {
             {loading ? "—" : expiredCoupons}
           </h3>
           <p className="text-theme-caption text-gray-500 mt-1 font-medium">
-            Past validity
+            {COUPONS_PAGE_TEXT.METRICS.EXPIRED_SUB}
           </p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
-              Total Redemptions
+              {COUPONS_PAGE_TEXT.METRICS.TOTAL_REDEMPTIONS}
             </span>
             <span className="bg-blue-50 text-blue-600 p-2 rounded-lg">
               <TrendingUp size={18} />
@@ -174,7 +175,7 @@ export default function CouponsPage() {
             {loading ? "—" : totalRedemptions}
           </h3>
           <p className="text-theme-caption text-gray-500 mt-1 font-medium">
-            All-time uses
+            {COUPONS_PAGE_TEXT.METRICS.REDEMPTIONS_SUB}
           </p>
         </div>
       </div>
@@ -189,7 +190,7 @@ export default function CouponsPage() {
 
           <input
             type="text"
-            placeholder="Search by code or description…"
+            placeholder={COUPONS_PAGE_TEXT.FILTERS.SEARCH_PLACEHOLDER}
             className="w-full pl-10 pr-4 py-2 text-theme-body-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -237,7 +238,11 @@ export default function CouponsPage() {
                           : "bg-amber-50 text-amber-700 border-amber-200"
                     }`}
                   >
-                    {isActive ? "Active" : isExpired ? "Expired" : "Inactive"}
+                    {isActive
+                      ? COUPONS_PAGE_TEXT.CARD.STATUS_ACTIVE
+                      : isExpired
+                        ? COUPONS_PAGE_TEXT.CARD.STATUS_EXPIRED
+                        : COUPONS_PAGE_TEXT.CARD.STATUS_INACTIVE}
                   </span>
                 </div>
 
@@ -246,7 +251,7 @@ export default function CouponsPage() {
                   <p className="text-theme-body-sm font-semibold text-gray-800 mb-2 leading-snug">
                     {coupon.description ?? (
                       <span className="text-gray-400 italic">
-                        No description
+                        {COUPONS_PAGE_TEXT.CARD.NO_DESCRIPTION}
                       </span>
                     )}
                   </p>
@@ -260,7 +265,7 @@ export default function CouponsPage() {
                   <div className="flex items-center justify-between text-theme-caption text-gray-500">
                     <span className="flex items-center gap-1.5">
                       <Calendar size={13} />
-                      Expires
+                      {COUPONS_PAGE_TEXT.CARD.EXPIRES}
                     </span>
                     <span className="font-medium text-gray-700">
                       {new Date(coupon.valid_to).toLocaleDateString("en-IN", {
@@ -275,7 +280,7 @@ export default function CouponsPage() {
                     <div className="flex items-center justify-between text-theme-caption text-gray-500">
                       <span className="flex items-center gap-1.5">
                         <Activity size={13} />
-                        Redemptions
+                        {COUPONS_PAGE_TEXT.CARD.REDEMPTIONS}
                       </span>
                       <span className="font-medium text-gray-700">
                         {coupon.total_used}
@@ -312,12 +317,12 @@ export default function CouponsPage() {
                 <Ticket size={32} className="text-gray-300" />
               </div>
               <h3 className="text-theme-body font-bold text-gray-800 mb-1">
-                No coupons found
+                {COUPONS_PAGE_TEXT.EMPTY.TITLE}
               </h3>
               <p className="text-theme-body-sm text-gray-500 max-w-xs mb-6">
                 {searchTerm
-                  ? "No coupons match your search. Try a different code or description."
-                  : "You haven't created any promo codes yet. Start with your first one."}
+                  ? COUPONS_PAGE_TEXT.EMPTY.SEARCH_DESC
+                  : COUPONS_PAGE_TEXT.EMPTY.DEFAULT_DESC}
               </p>
               {!searchTerm && (
                 <Button
@@ -325,7 +330,7 @@ export default function CouponsPage() {
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-100 px-5"
                 >
                   <Plus size={16} />
-                  Create Your First Coupon
+                  {COUPONS_PAGE_TEXT.EMPTY.CREATE_FIRST_BTN}
                 </Button>
               )}
             </div>

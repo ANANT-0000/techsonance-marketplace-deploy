@@ -26,12 +26,12 @@ import { useAppSelector } from "@/hooks/reduxHooks";
 import { STOCK_MANAGER_TEXT } from "@/constants";
 
 export const stockTableHeader = [
-  "Product / Variant",
-  "SKU",
-  "Warehouse",
-  "Stock",
-  "Status",
-  "Actions",
+  STOCK_MANAGER_TEXT.TABLE.HEADERS.PRODUCT_VARIANT,
+  STOCK_MANAGER_TEXT.TABLE.HEADERS.SKU,
+  STOCK_MANAGER_TEXT.TABLE.HEADERS.WAREHOUSE,
+  STOCK_MANAGER_TEXT.TABLE.HEADERS.STOCK,
+  STOCK_MANAGER_TEXT.TABLE.HEADERS.STATUS,
+  STOCK_MANAGER_TEXT.TABLE.HEADERS.ACTIONS,
 ];
 
 function stockClass(stock: number): "out" | "low" | "ok" {
@@ -243,7 +243,7 @@ export default function StockManagerPage() {
       await updateProductVariantStatus(variantId, nextStatus, token as string);
       dispatch({ type: StockManagerActionType.SET_CONFIRM_CONFIG, payload: null });
     } catch {
-      alert("Failed to update status");
+      alert(STOCK_MANAGER_TEXT.TOASTS.UPDATE_STATUS_FAIL);
       // Revert if API fails
       dispatch({
         type: StockManagerActionType.UPDATE_VARIANT_STATUS,
@@ -256,7 +256,7 @@ export default function StockManagerPage() {
 
   const handleSaveStock = async () => {
     if (!activeModalItem) return;
-    if (editStockValue < 0) return alert("Stock cannot be less than zero.");
+    if (editStockValue < 0) return alert(STOCK_MANAGER_TEXT.TOASTS.STOCK_MIN_ERR);
     dispatch({ type: StockManagerActionType.SET_IS_SAVING, payload: true });
     try {
       await quickUpdateStock(
@@ -270,7 +270,7 @@ export default function StockManagerPage() {
       });
       dispatch({ type: StockManagerActionType.CLOSE_MODAL });
     } catch {
-      alert("Failed to update stock.");
+      alert(STOCK_MANAGER_TEXT.TOASTS.UPDATE_STOCK_FAIL);
     } finally {
       dispatch({ type: StockManagerActionType.SET_IS_SAVING, payload: false });
     }
@@ -783,14 +783,14 @@ export default function StockManagerPage() {
         onClose={() => dispatch({ type: StockManagerActionType.SET_CONFIRM_CONFIG, payload: null })}
         onConfirm={executeStatusToggle}
         isLoading={isStatusUpdating}
-        title={isActivating ? "Publish Variant?" : "Deactivate Variant?"}
+        title={isActivating ? STOCK_MANAGER_TEXT.CONFIRM.PUBLISH_TITLE : STOCK_MANAGER_TEXT.CONFIRM.DEACTIVATE_TITLE}
         message={
           isActivating
-            ? `Are you sure you want to activate "${confirmConfig?.productName.trim().split(" ").slice(0, 2).join(" ")}"? Turning this on will publish this variant to customers and make it available for purchase.`
-            : `Are you sure you want to deactivate "${confirmConfig?.productName.trim().split(" ").slice(0, 2).join(" ")}"? This will immediately hide the variant from customers.`
+            ? STOCK_MANAGER_TEXT.CONFIRM.PUBLISH_MSG(confirmConfig?.productName.trim().split(" ").slice(0, 2).join(" ") ?? "")
+            : STOCK_MANAGER_TEXT.CONFIRM.DEACTIVATE_MSG(confirmConfig?.productName.trim().split(" ").slice(0, 2).join(" ") ?? "")
         }
         actionType={isActivating ? "activate" : "deactivate"}
-        confirmText={isActivating ? "Publish Variant" : "Deactivate"}
+        confirmText={isActivating ? STOCK_MANAGER_TEXT.CONFIRM.PUBLISH_BTN : STOCK_MANAGER_TEXT.CONFIRM.DEACTIVATE_BTN}
       />
     </main>
   );

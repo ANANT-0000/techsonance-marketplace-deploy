@@ -12,10 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Tooling configs that intentionally use console
-    "wdyr.ts",
-    "sentry.*.config.ts",
-    "instrumentation*.ts",
+     
   ]),
   {
     // ── PR hygiene rules ─────────────────────────────────────────────────

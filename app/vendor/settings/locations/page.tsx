@@ -69,11 +69,11 @@ const FORM_FIELDS: FormField[] = [
     colSpan: "full",
     options: [
       {
-        label: "Registered Office (As per GST/PAN)",
+        label: LOCATIONS_TEXT.FORM.OPTIONS.REGISTERED,
         value: "Registered Office",
       },
-      { label: "Billing Address", value: "Billing Address" },
-      { label: "Corporate / Branch Office", value: "Corporate Office" },
+      { label: LOCATIONS_TEXT.FORM.OPTIONS.BILLING, value: "Billing Address" },
+      { label: LOCATIONS_TEXT.FORM.OPTIONS.CORPORATE, value: "Corporate Office" },
     ],
   },
   {
@@ -82,14 +82,14 @@ const FORM_FIELDS: FormField[] = [
     type: "text",
     required: true,
     colSpan: "full",
-    placeholder: "Flat, House no., Building, Company, Apartment",
+    placeholder: LOCATIONS_TEXT.FORM.PLACEHOLDERS.LINE_1,
   },
   {
     name: "address_line_2",
     label: LOCATIONS_TEXT.FORM.ADDRESS_LINE_2,
     type: "text",
     colSpan: "full",
-    placeholder: "Area, Street, Sector, Village",
+    placeholder: LOCATIONS_TEXT.FORM.PLACEHOLDERS.LINE_2,
   },
   {
     name: "city",
@@ -139,7 +139,7 @@ const FORM_FIELDS: FormField[] = [
     label: LOCATIONS_TEXT.FORM.DEFAULT_ADDRESS,
     type: "checkbox",
     colSpan: "full",
-    checkboxLabel: "Set as primary default address",
+    checkboxLabel: LOCATIONS_TEXT.FORM.DEFAULT_CHECKBOX,
   },
 ];
 

@@ -9,7 +9,6 @@ import { useEffect } from "react";
 import { RootState } from "@/lib/store";
 import { UserRole } from "@/constants";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
-import Navbar from "@/components/vendor/Navbar";
 import AxiosAPI from "@/lib/axios";
 import { TrialBanner } from "@/components/vendor/TrialBanner";
 
@@ -35,17 +34,22 @@ export default function VendorLayout({
       router.replace(ROOT_PATH);
     }
   }, []);
-  // Axios interceptor in lib/axios.ts
-  AxiosAPI.interceptors.response.use(
-    (res) => res,
-    (err) => {
-      if (err.response?.status === STATUS_PAYMENT_REQUIRED) {
-        // Subscription expired — redirect to upgrade
-        window.location.href = BILLING_REDIRECT_URL;
-      }
-      return Promise.reject(err);
-    },
-  );
+  useEffect(() => {
+    // Axios interceptor in lib/axios.ts
+    const interceptor = AxiosAPI.interceptors.response.use(
+      (res) => res,
+      (err) => {
+        if (err.response?.status === STATUS_PAYMENT_REQUIRED) {
+          // Subscription expired — redirect to upgrade
+          window.location.href = BILLING_REDIRECT_URL;
+        }
+        return Promise.reject(err);
+      },
+    );
+    return () => {
+      AxiosAPI.interceptors.response.eject(interceptor);
+    };
+  }, []);
   return (
     <>
       <main className={`flex w-full`}>

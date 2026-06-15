@@ -9,6 +9,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { fetchTaxProfiles } from "@/utils/vendorApiClient";
+import { TAX_PROFILES_TEXT } from "@/constants/vendorText";
 
 interface TaxProfileType {
   id: string;
@@ -18,20 +19,20 @@ interface TaxProfileType {
   created_at: string;
 }
 
-export const taxProfileHeader = [
-  "Profile Type",
-  "Description",
-  "Status",
-  "Created Date",
-  "Actions",
-];
-
 export default function TaxProfilesPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isOpen, setIsOpen] = useState(false);
   const [sortBy, setSortBy] = useState<string>("desc");
   const [profiles, setProfiles] = useState<TaxProfileType[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const taxProfileHeader = [
+    TAX_PROFILES_TEXT.TABLE.HEADERS.PROFILE_TYPE,
+    TAX_PROFILES_TEXT.TABLE.HEADERS.DESCRIPTION,
+    TAX_PROFILES_TEXT.TABLE.HEADERS.STATUS,
+    TAX_PROFILES_TEXT.TABLE.HEADERS.CREATED_DATE,
+    TAX_PROFILES_TEXT.TABLE.HEADERS.ACTIONS,
+  ];
 
   const handleDateChange = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
@@ -66,7 +67,9 @@ export default function TaxProfilesPage() {
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">
           <Layers size={22} className="text-blue-500" />
-          <h1 className="text-theme-h4 font-bold text-gray-800">Tax Profiles</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">
+            {TAX_PROFILES_TEXT.HEADER.TITLE}
+          </h1>
           {profiles && profiles.length > 0 && (
             <span className="ml-2 bg-blue-100 text-blue-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
               {profiles.length}
@@ -75,13 +78,13 @@ export default function TaxProfilesPage() {
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 font-semibold text-theme-body-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl px-5 py-2.5 transition-colors shadow-sm">
-            <Download size={16} /> Export
+            <Download size={16} /> {TAX_PROFILES_TEXT.HEADER.EXPORT}
           </button>
           <button
             onClick={() => handleRoute(null)}
             className="flex items-center gap-2 font-semibold text-theme-body-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm"
           >
-            <Plus size={16} /> New Profile
+            <Plus size={16} /> {TAX_PROFILES_TEXT.HEADER.NEW_PROFILE}
           </button>
         </div>
       </header>
@@ -96,7 +99,7 @@ export default function TaxProfilesPage() {
           <input
             type="text"
             className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
-            placeholder="Search profiles by name or description..."
+            placeholder={TAX_PROFILES_TEXT.FILTERS.SEARCH_PLACEHOLDER}
           />
         </span>
 
@@ -107,8 +110,8 @@ export default function TaxProfilesPage() {
             onChange={(e) => setSortBy(e.target.value)}
             name="sort_by"
           >
-            <option value="desc">Newest First</option>
-            <option value="asc">Oldest First</option>
+            <option value="desc">{TAX_PROFILES_TEXT.FILTERS.SORT_NEWEST}</option>
+            <option value="asc">{TAX_PROFILES_TEXT.FILTERS.SORT_OLDEST}</option>
           </select>
 
           {isOpen ? (
@@ -116,7 +119,7 @@ export default function TaxProfilesPage() {
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 text-theme-body-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
             >
-              {date ? date.toDateString() : "Select Date"}{" "}
+              {date ? date.toDateString() : TAX_PROFILES_TEXT.FILTERS.SELECT_DATE}{" "}
               <ChevronUp size={16} />
             </button>
           ) : (
@@ -124,7 +127,7 @@ export default function TaxProfilesPage() {
               onClick={() => setIsOpen(true)}
               className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
             >
-              {date ? date.toDateString() : "Select Date"}{" "}
+              {date ? date.toDateString() : TAX_PROFILES_TEXT.FILTERS.SELECT_DATE}{" "}
               <ChevronDown size={16} />
             </button>
           )}
@@ -173,7 +176,7 @@ export default function TaxProfilesPage() {
                     size={36}
                     className="mx-auto mb-3 opacity-30 text-blue-400"
                   />
-                  No tax profiles found. Create one to get started.
+                  {TAX_PROFILES_TEXT.TABLE.NO_DATA}
                 </td>
               </tr>
             ) : (
@@ -194,7 +197,7 @@ export default function TaxProfilesPage() {
                       {item.profile_type}
                       {item.is_default && (
                         <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-theme-tiny tracking-wide font-bold">
-                          DEFAULT
+                          {TAX_PROFILES_TEXT.TABLE.DEFAULT_BADGE}
                         </span>
                       )}
                     </span>
@@ -204,7 +207,7 @@ export default function TaxProfilesPage() {
                   </td>
                   <td className="p-4">
                     <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
-                      Active
+                      {TAX_PROFILES_TEXT.TABLE.STATUS_ACTIVE}
                     </span>
                   </td>
                   <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap">
@@ -215,7 +218,7 @@ export default function TaxProfilesPage() {
                       onClick={() => handleRoute(item.id)}
                       className="text-theme-caption font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
                     >
-                      Edit →
+                      {TAX_PROFILES_TEXT.TABLE.ACTION_EDIT}
                     </button>
                   </td>
                 </tr>

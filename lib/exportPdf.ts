@@ -1,6 +1,4 @@
 // lib/exportPdf.ts
-import { toPng } from "html-to-image";
-import jsPDF from "jspdf";
 
 export const exportDashboardToPDF = async (
   elementId: string,
@@ -10,6 +8,11 @@ export const exportDashboardToPDF = async (
   if (!element) return;
 
   try {
+    const [{ toPng }, { default: jsPDF }] = await Promise.all([
+      import("html-to-image"),
+      import("jspdf"),
+    ]);
+
     // 1. Add class to force safe rendering dimensions
     element.classList.add("pdf-export-mode");
 

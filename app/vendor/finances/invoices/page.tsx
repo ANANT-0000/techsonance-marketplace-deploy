@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { fetchGstInvoices } from "@/utils/vendorApiClient";
 import { Pagination } from "@/components/common/Pagination";
+import { INVOICES_TEXT } from "@/constants/vendorText";
 
 interface InvoiceType {
   id: string;
@@ -21,17 +22,6 @@ interface InvoiceType {
   total_tax: string;
   invoice_date: string;
 }
-
-export const invoiceTableHeader = [
-  "Invoice No.",
-  "Order Ref",
-  "CGST",
-  "SGST",
-  "IGST",
-  "Total Tax",
-  "Date",
-  // "Actions"
-];
 
 export default function InvoicesPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -45,6 +35,17 @@ export default function InvoicesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalInvoices, setTotalInvoices] = useState(0);
+
+  const invoiceTableHeader = [
+    INVOICES_TEXT.TABLE.HEADERS.INVOICE_NO,
+    INVOICES_TEXT.TABLE.HEADERS.ORDER_REF,
+    INVOICES_TEXT.TABLE.HEADERS.CGST,
+    INVOICES_TEXT.TABLE.HEADERS.SGST,
+    INVOICES_TEXT.TABLE.HEADERS.IGST,
+    INVOICES_TEXT.TABLE.HEADERS.TOTAL_TAX,
+    INVOICES_TEXT.TABLE.HEADERS.DATE,
+  ];
+
   const handleDateChange = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
     setIsOpen(false);
@@ -82,6 +83,7 @@ export default function InvoicesPage() {
   useEffect(() => {
     setTotalPages(Math.ceil(totalInvoices / limit));
   }, [totalInvoices, limit]);
+
   // Debounce effect - waits 500ms after user stops typing before updating search
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -98,7 +100,9 @@ export default function InvoicesPage() {
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">
           <FileText size={22} className="text-purple-500" />
-          <h1 className="text-theme-h4 font-bold text-gray-800">GST Invoices</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">
+            {INVOICES_TEXT.HEADER.TITLE}
+          </h1>
           {invoices && invoices.length > 0 && (
             <span className="ml-2 bg-purple-100 text-purple-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
               {invoices.length}
@@ -122,7 +126,7 @@ export default function InvoicesPage() {
           <input
             type="text"
             className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
-            placeholder="Search by Invoice No. or Order Ref"
+            placeholder={INVOICES_TEXT.FILTERS.SEARCH_PLACEHOLDER}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -135,8 +139,8 @@ export default function InvoicesPage() {
             onChange={(e) => setSortBy(e.target.value)}
             name="sort_by"
           >
-            <option value="desc">Newest First</option>
-            <option value="asc">Oldest First</option>
+            <option value="desc">{INVOICES_TEXT.FILTERS.SORT_NEWEST}</option>
+            <option value="asc">{INVOICES_TEXT.FILTERS.SORT_OLDEST}</option>
           </select>
 
           {/* {isOpen ? (
@@ -199,7 +203,7 @@ export default function InvoicesPage() {
                   className="py-16 text-center text-gray-400 text-theme-body-sm"
                 >
                   <FileText size={36} className="mx-auto mb-3 opacity-30" />
-                  No invoices generated yet.
+                  {INVOICES_TEXT.TABLE.NO_DATA}
                 </td>
               </tr>
             ) : (
@@ -266,7 +270,8 @@ export default function InvoicesPage() {
         {/* Pagination here */}
         <div className="flex items-center gap-2 text-theme-body-sm text-gray-600">
           <span className=" flex ">
-            showing {limit} of {totalInvoices}
+            {INVOICES_TEXT.PAGINATION.SHOWING} {limit}{" "}
+            {INVOICES_TEXT.PAGINATION.OF} {totalInvoices}
           </span>
           <Pagination
             count={currentPage}

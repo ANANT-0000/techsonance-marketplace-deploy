@@ -28,6 +28,8 @@ import {
 } from "@/utils/vendorApiClient";
 import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
+import Image from "next/image";
+import { BASE_API_URL } from "@/constants";
 import { UiText } from "@/constants/ui-text";
 import { CancelModal } from "@/components/vendor/CancelModal";
 import { StatusEditor } from "@/components/vendor/OrderStatusEditor";
@@ -528,11 +530,15 @@ export default function VendorOrderDetails({}) {
                     >
                       {/* Product row */}
                       <div className="flex items-start gap-3">
-                        <div className="w-14 h-14 rounded-xl overflow-hidden border border-slate-100 bg-slate-50 flex-shrink-0">
-                          <img
+                        <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-slate-100 bg-slate-50 flex-shrink-0">
+                          <Image
                             src={item.product_variant.image_url}
                             alt={item.product_variant.variant_name}
-                            className="w-full h-full object-cover"
+                            className="object-cover"
+                            fill
+                            loading="eager"
+                            sizes="48px"
+                            style={{ objectFit: "cover" }}
                           />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -669,11 +675,16 @@ export default function VendorOrderDetails({}) {
                                           href={img.url}
                                           target="_blank"
                                           rel="noopener noreferrer"
+                                          className="relative w-14 h-14 block"
                                         >
-                                          <img
+                                          <Image
                                             src={img.url}
                                             alt={`Evidence ${idx + 1}`}
-                                            className="w-14 h-14 object-cover rounded-lg border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer"
+                                            className="object-cover rounded-lg border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer"
+                                            loading="eager"
+                                            fill
+                                            sizes="64px"
+                                            style={{ objectFit: "contain" }}
                                           />
                                         </a>
                                       ),

@@ -4,6 +4,7 @@ import { formatCurrency } from "@/lib/utils";
 import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { useMediaQuery } from "react-responsive";
 import { useState, useRef, useEffect } from "react";
 import { OrderItemAPIResponse as OrderItemType, ReturnRequest, AddressPayload } from "./OrderList";
@@ -51,9 +52,11 @@ function OrderItemRow({ item, highlighted }: { item: OrderItemType; highlighted:
     return (
         <div className={`flex gap-3 rounded-xl overflow-hidden border transition-colors shadow-sm ${highlighted ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200 bg-white'}`}>
             <div className="w-20 sm:w-24 bg-gray-50 flex-shrink-0 flex items-center justify-center p-2">
-                <img
+                <Image
                     src={item.variant.images[0]?.image_url || "https://placehold.co/150x150/f9fafb/333?text=Product"}
                     alt={item.variant.variant_name}
+                    width={80}
+                    height={80}
                     className="w-full h-auto object-contain mix-blend-multiply"
                 />
             </div>

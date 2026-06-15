@@ -2,6 +2,7 @@
 import { useEffect, useReducer } from "react";
 import { Pagination } from "@/components/common/Pagination";
 import { searchImgDark } from "@/constants/common";
+import Image from "next/image";
 import {
   AlertTriangle,
   Package,
@@ -333,7 +334,9 @@ export default function InventoryPage() {
         {/* ── Filters ─────────────────────────────────────────────── */}
         <div className="flex gap-3 mb-4 flex-wrap items-center justify-between">
           <span className="border-2 flex items-center gap-0 border-gray-300 px-4 rounded-2xl bg-white">
-            <img className="w-5 h-5" src={searchImgDark} alt="search" />
+            <div className="relative w-5 h-5 shrink-0">
+              <Image src={searchImgDark} alt="search" fill sizes="20px" />
+            </div>
             <input
               type="text"
               className="py-2 px-3 w-64 text-theme-body-sm outline-none bg-transparent"
@@ -442,11 +445,16 @@ export default function InventoryPage() {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         {item.variant_image ? (
-                          <img
-                            src={item.variant_image}
-                            alt={item.variant_name}
-                            className="w-10 h-10 object-cover rounded-lg border border-gray-200"
-                          />
+                          <div className="relative w-10 h-10 shrink-0">
+                            <Image
+                              src={item.variant_image}
+                              alt={item.variant_name}
+                              className="object-cover rounded-lg border border-gray-200"
+                              fill
+                              sizes="40px"
+                              style={{ objectFit: "cover" }}
+                            />
+                          </div>
                         ) : (
                           <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
                             <Package size={16} className="text-gray-400" />

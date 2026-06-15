@@ -284,7 +284,7 @@ export default function VendorLoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 font-sans">
+    <main className="min-h-screen flex items-center justify-center p-4 font-sans bg-white">
       <div
         className="w-full grid grid-cols-2 bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200"
         style={{ minHeight: "620px" }}
@@ -327,7 +327,9 @@ export default function VendorLoginPage() {
                   className="bg-white/10 rounded-xl p-3.5 flex-1"
                 >
                   <div className="text-white/50 mb-1">{s.icon}</div>
-                  <div className="text-theme-h5 font-bold text-white">{s.num}</div>
+                  <div className="text-theme-h5 font-bold text-white">
+                    {s.num}
+                  </div>
                   <div className="text-theme-xxs text-white/55 mt-0.5">
                     {s.label}
                   </div>

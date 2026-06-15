@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User, UserRole, VendorUser } from "../../../utils/Types";
 import {
   ACCESS_TOKEN_KEY,
@@ -11,33 +11,33 @@ import {
 } from "@/constants";
 
 // Helper to get User
-const getUserFromLocalStorage = () => {
-  if (!isClient) return null;
-  try {
-    const serializedUser = localStorage.getItem(USER_STORAGE_KEY);
-    if (
-      serializedUser &&
-      serializedUser !== "undefined" &&
-      serializedUser !== "null"
-    ) {
-      return JSON.parse(serializedUser);
-    }
-    return null;
-  } catch (e) {
-    return null;
-  }
-};
+// const getUserFromLocalStorage = () => {
+//   if (!isClient) return null;
+//   try {
+//     const serializedUser = localStorage.getItem(USER_STORAGE_KEY);
+//     if (
+//       serializedUser &&
+//       serializedUser !== "undefined" &&
+//       serializedUser !== "null"
+//     ) {
+//       return JSON.parse(serializedUser);
+//     }
+//     return null;
+//   } catch (e) {
+//     return null;
+//   }
+// };
 
 // Helper to get Token
-const getAccessTokenFromLocalStorage = () => {
-  if (!isClient) return null;
-  return localStorage.getItem(ACCESS_TOKEN_KEY) || null;
-};
+// const getAccessTokenFromLocalStorage = () => {
+//   if (!isClient) return null;
+//   return localStorage.getItem(ACCESS_TOKEN_KEY) || null;
+// };
 
-const getRefreshTokenFromLocalStorage = () => {
-  if (!isClient) return null;
-  return localStorage.getItem(REFRESH_TOKEN_KEY) || null;
-};
+// const getRefreshTokenFromLocalStorage = () => {
+//   if (!isClient) return null;
+//   return localStorage.getItem(REFRESH_TOKEN_KEY) || null;
+// };
 
 export interface AuthType {
   isAuthenticated: boolean;
@@ -47,45 +47,25 @@ export interface AuthType {
   access_token: string | null;
   refresh_token: string | null;
   role: UserRole;
+  isLoginModalOpen: boolean;
+  loginRedirectUrl: string | null;
 }
 
 const initialState: AuthType = {
   isAuthenticated: false,
-  user: getUserFromLocalStorage(),
+  user: null,
   loading: false,
   error: null,
-  access_token: getAccessTokenFromLocalStorage(),
-  refresh_token: getRefreshTokenFromLocalStorage(),
+  access_token: null,
+  refresh_token: null,
   role: UserRole.Customer,
+  isLoginModalOpen: false,
+  loginRedirectUrl: null,
 };
 
 export const getPreloadedAuthState = (): { auth: AuthType } => {
-  if (!isClient) {
-    return {
-      auth: {
-        isAuthenticated: false,
-        user: null,
-        loading: false,
-        error: null,
-        access_token: null,
-        refresh_token: null,
-        role: UserRole.Customer,
-      },
-    };
-  }
-  const isAuthRaw = localStorage.getItem(IS_AUTHENTICATED_KEY);
-  const parsedAuth = isAuthRaw ? JSON.parse(isAuthRaw) : null;
-
   return {
-    auth: {
-      isAuthenticated: !!parsedAuth?.isAuthenticated,
-      user: getUserFromLocalStorage(),
-      loading: false,
-      error: null,
-      access_token: getAccessTokenFromLocalStorage(),
-      refresh_token: getRefreshTokenFromLocalStorage(),
-      role: parsedAuth?.role || UserRole.Customer,
-    },
+    auth: initialState,
   };
 };
 
@@ -93,6 +73,40 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    hydrateAuth(state) {
+      if (isClient) {
+        try {
+          const isAuthRaw = localStorage.getItem(IS_AUTHENTICATED_KEY);
+          const parsedAuth = isAuthRaw ? JSON.parse(isAuthRaw) : null;
+
+          state.isAuthenticated = !!parsedAuth?.isAuthenticated;
+          state.role = parsedAuth?.role || UserRole.Customer;
+
+          const serializedUser = localStorage.getItem(USER_STORAGE_KEY);
+          if (
+            serializedUser &&
+            serializedUser !== "undefined" &&
+            serializedUser !== "null"
+          ) {
+            state.user = JSON.parse(serializedUser);
+          } else {
+            state.user = null;
+          }
+
+          state.access_token = localStorage.getItem(ACCESS_TOKEN_KEY) || null;
+          state.refresh_token = localStorage.getItem(REFRESH_TOKEN_KEY) || null;
+        } catch (e) {}
+      }
+    },
+    openLoginModal(state, action: PayloadAction<string | null>) {
+      state.isLoginModalOpen = true;
+      state.loginRedirectUrl = action.payload || null;
+    },
+    closeLoginModal(state) {
+      state.isLoginModalOpen = false;
+      state.loginRedirectUrl = null;
+      state.error = null;
+    },
     loginStart(state) {
       state.loading = true;
       state.error = null;
@@ -122,6 +136,8 @@ const authSlice = createSlice({
       state.role = action.payload.role;
       state.loading = false;
       state.error = null;
+      state.isLoginModalOpen = false;
+      state.loginRedirectUrl = null;
 
       if (isClient) {
         // Keep everything uniformly in localStorage
@@ -164,6 +180,9 @@ const authSlice = createSlice({
 });
 
 export const {
+  hydrateAuth,
+  openLoginModal,
+  closeLoginModal,
   loginStart,
   loginEnd,
   loginFailure,

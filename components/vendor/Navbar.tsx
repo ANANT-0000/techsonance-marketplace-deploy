@@ -6,21 +6,16 @@ import { LogOut, Building2, Mail, ChevronDown } from 'lucide-react';
 import { logOut } from '@/lib/features/auth/authSlice';
 import { VENDOR_NAVBAR_TEXT } from '@/constants/vendorText';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function Navbar({ title }: { title?: string }) {
-// export default function Navbar() {
     const dispatch = useAppDispatch();
     const router = useRouter();
 
-    const [isMounted, setIsMounted] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const { user } = useAppSelector((state: any) => state.auth);
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -59,7 +54,7 @@ export default function Navbar({ title }: { title?: string }) {
 
             {/* Right Side */}
             <div className="relative ml-auto" ref={dropdownRef}>
-                {!isMounted ? (
+                {!user ? (
                     /* Skeleton Loader (Server Render) */
                     <div className="flex items-center gap-3 px-3 py-1.5">
                         <div className="text-right hidden sm:block space-y-1">
@@ -85,10 +80,12 @@ export default function Navbar({ title }: { title?: string }) {
                             </span>
                             
                             <span className="relative block">
-                                <img
+                                <Image
                                     src={userIcon}
                                     alt="Profile"
-                                    className="w-9 h-9 rounded-full object-cover border-2 border-gray-200"
+                                    width={36}
+                                    height={36}
+                                    className="rounded-full object-cover border-2 border-gray-200"
                                 />
                                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 border-2 border-white rounded-full" />
                             </span>

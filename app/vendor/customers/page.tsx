@@ -16,6 +16,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { fetchCompanyCustomers } from "@/utils/vendorApiClient";
+import { CUSTOMERS_TEXT } from "@/constants/vendorText";
 
 export enum AccessStatus {
   ACTIVE = "ACTIVE",
@@ -31,48 +32,56 @@ interface CustomerType {
   created_at: string;
   user_status: string;
 }
-export const customerTableHeader = [
-  "Customer ID",
-  "Name",
-  "Status",
-  "Joined Date",
-];
 
-const getCustomerStatusBadge = (status: string) => {
+const getCustomerStatusBadge = (
+  status: string,
+  text: typeof CUSTOMERS_TEXT.TABLE,
+) => {
   switch (status?.toUpperCase()) {
-    case "ACTIVE":
+    case AccessStatus.ACTIVE:
       return (
         <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
-          ● Active
+          ● {text.STATUS_ACTIVE}
         </span>
       );
-    case "SUSPENDED":
+    case AccessStatus.SUSPENDED:
       return (
         <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
-          ● Suspended
+          ● {text.STATUS_SUSPENDED}
         </span>
       );
-    case "DEACTIVATED":
+    case AccessStatus.DEACTIVATED:
       return (
         <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
-          ● Deactivated
+          ● {text.STATUS_DEACTIVATED}
         </span>
       );
     default:
       return (
         <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize">
-          ● {status || "Pending"}
+          ● {status || text.STATUS_PENDING}
         </span>
       );
   }
 };
 
-export default function VendorCustomersPage() {
+export default function VendorCustomersPage({
+  uiText = CUSTOMERS_TEXT,
+}: {
+  uiText?: typeof CUSTOMERS_TEXT;
+}) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isOpen, setIsOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("desc");
   const [customers, setCustomers] = useState<CustomerType[]>([]);
+
+  const customerTableHeader = [
+    uiText.TABLE.HEADERS.CUSTOMER_ID,
+    uiText.TABLE.HEADERS.NAME,
+    uiText.TABLE.HEADERS.STATUS,
+    uiText.TABLE.HEADERS.JOINED_DATE,
+  ];
 
   const handleDateChange = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
@@ -102,7 +111,9 @@ export default function VendorCustomersPage() {
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">
           <Users size={22} className="text-blue-500" />
-          <h1 className="text-theme-h4 font-bold text-gray-800">Customers</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">
+            {uiText.HEADER.TITLE}
+          </h1>
           {customers && customers.length > 0 && (
             <span className="ml-2 bg-blue-100 text-blue-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
               {customers.length}
@@ -127,7 +138,7 @@ export default function VendorCustomersPage() {
           <input
             type="text"
             className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
-            placeholder="Search by name or email"
+            placeholder={uiText.FILTERS.SEARCH_PLACEHOLDER}
           />
         </span>
 
@@ -138,9 +149,13 @@ export default function VendorCustomersPage() {
             onChange={(e) => setStatusFilter(e.target.value)}
             value={statusFilter}
           >
-            <option value="">All Statuses</option>
-            <option value={AccessStatus.ACTIVE}>Active</option>
-            <option value={AccessStatus.SUSPENDED}>Suspended</option>
+            <option value="">{uiText.FILTERS.ALL_STATUSES}</option>
+            <option value={AccessStatus.ACTIVE}>
+              {uiText.FILTERS.STATUS_ACTIVE}
+            </option>
+            <option value={AccessStatus.SUSPENDED}>
+              {uiText.FILTERS.STATUS_SUSPENDED}
+            </option>
           </select>
 
           <select
@@ -148,8 +163,8 @@ export default function VendorCustomersPage() {
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
           >
-            <option value="desc">Newest First</option>
-            <option value="asc">Oldest First</option>
+            <option value="desc">{uiText.FILTERS.SORT_NEWEST}</option>
+            <option value="asc">{uiText.FILTERS.SORT_OLDEST}</option>
           </select>
 
           {isOpen ? (
@@ -157,7 +172,7 @@ export default function VendorCustomersPage() {
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 text-theme-body-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
             >
-              {date ? date.toDateString() : "Select Date"}
+              {date ? date.toDateString() : uiText.FILTERS.SELECT_DATE}
               <ChevronUp size={16} />
             </button>
           ) : (
@@ -165,7 +180,7 @@ export default function VendorCustomersPage() {
               onClick={() => setIsOpen(true)}
               className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
             >
-              {date ? date.toDateString() : "Select Date"}
+              {date ? date.toDateString() : uiText.FILTERS.SELECT_DATE}
               <ChevronDown size={16} />
             </button>
           )}
@@ -212,7 +227,7 @@ export default function VendorCustomersPage() {
                   className="py-16 text-center text-gray-400 text-theme-body-sm"
                 >
                   <Users size={36} className="mx-auto mb-3 opacity-30" />
-                  No customers found.
+                  {uiText.TABLE.NO_DATA}
                 </td>
               </tr>
             ) : (
@@ -251,7 +266,7 @@ export default function VendorCustomersPage() {
 
                   {/* STATUS */}
                   <td className="p-4 whitespace-nowrap">
-                    {getCustomerStatusBadge(customer.user_status)}
+                    {getCustomerStatusBadge(customer.user_status, uiText.TABLE)}
                   </td>
 
                   {/* JOINED DATE */}

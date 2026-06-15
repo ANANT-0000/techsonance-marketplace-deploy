@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useMemo } from "react";
+import React, { createContext, useContext, useMemo, useState, useEffect } from "react";
 import { StorefrontTheme, useThemeData } from "@/hooks/useThemeData";
 
 // Helper to convert hex to RGB
@@ -76,6 +76,11 @@ export function ThemeProvider({
   children,
 }: ThemeProviderProps) {
   const { themeData: clientTheme } = useThemeData();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const mergedTheme = useMemo(() => {
     // If the server-side fetched theme is empty or incomplete, fall back to client-cached theme data
@@ -132,10 +137,6 @@ export function ThemeProvider({
     }
     if (correctedTheme.secondary_color)
       styles["--brand-secondary"] = correctedTheme.secondary_color;
-    if (correctedTheme.background_color)
-      styles["--background"] = correctedTheme.background_color;
-    if (correctedTheme.text_color)
-      styles["--foreground"] = correctedTheme.text_color;
     if (correctedTheme.navbar_bg) styles["--navbar"] = correctedTheme.navbar_bg;
     if (correctedTheme.navbar_fg)
       styles["--navbar-foreground"] = correctedTheme.navbar_fg;
@@ -199,9 +200,9 @@ export function ThemeProvider({
 
   return (
     <ThemeContext.Provider value={{ theme: correctedTheme }}>
-      {fontLink && <link rel="stylesheet" href={fontLink} />}
-      <style dangerouslySetInnerHTML={{ __html: cssText }} />
-      <div style={inlineStyles} className="min-h-screen flex flex-col w-full">
+      {fontLink && mounted && <link rel="stylesheet" href={fontLink} />}
+      {mounted && <style dangerouslySetInnerHTML={{ __html: cssText }} />}
+      <div style={mounted ? inlineStyles : undefined} className="min-h-screen flex flex-col w-full">
         {children}
       </div>
     </ThemeContext.Provider>
@@ -265,10 +266,6 @@ export function ThemeSection({
     }
     if (correctedTheme.secondary_color)
       styles["--brand-secondary"] = correctedTheme.secondary_color;
-    if (correctedTheme.background_color)
-      styles["--background"] = correctedTheme.background_color;
-    if (correctedTheme.text_color)
-      styles["--foreground"] = correctedTheme.text_color;
     return styles as React.CSSProperties;
   }, [correctedTheme]);
 

@@ -27,6 +27,7 @@ import { CouponCardList } from "@/components/vendor/CouponCardList";
 import { Coupon } from "@/utils/Types";
 import { RootState } from "@/lib/store";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { MARKETING_TEXT } from "@/constants/vendorText";
 // --- Interfaces ---
 interface OverallMetrics {
   totalCarts: number;
@@ -158,7 +159,7 @@ export default function MarketingPage() {
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      alert("Failed to download CSV.");
+      alert(MARKETING_TEXT.ALERTS.EXPORT_FAILED);
     } finally {
       setIsExporting(false);
     }
@@ -181,10 +182,10 @@ export default function MarketingPage() {
         <header className="flex justify-between items-center py-6">
           <div>
             <h1 className="text-theme-h4 font-bold text-gray-800">
-              Marketing & Analytics
+              {MARKETING_TEXT.HEADER.TITLE}
             </h1>
             <p className="text-theme-body-sm text-gray-500 mt-1">
-              Track conversions and manage promotions.
+              {MARKETING_TEXT.HEADER.SUBTITLE}
             </p>
           </div>
 
@@ -199,14 +200,14 @@ export default function MarketingPage() {
               ) : (
                 <Download size={18} />
               )}
-              {isExporting ? "Exporting..." : "Export CSV"}
+              {isExporting ? MARKETING_TEXT.HEADER.EXPORTING : MARKETING_TEXT.HEADER.EXPORT_CSV}
             </button>
 
             <button
               className="py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-100 transition-all flex items-center gap-2"
               onClick={openNewPromoModal}
             >
-              <Plus size={18} /> Add New Promo
+              <Plus size={18} /> {MARKETING_TEXT.HEADER.ADD_NEW_PROMO}
             </button>
           </div>
         </header>
@@ -219,7 +220,7 @@ export default function MarketingPage() {
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
-                  Store Conversion
+                  {MARKETING_TEXT.METRICS.STORE_CONVERSION}
                 </span>
                 <span className="bg-emerald-50 text-emerald-600 p-2 rounded-lg">
                   <Target size={18} />
@@ -229,14 +230,14 @@ export default function MarketingPage() {
                 {`${overallMetrics?.conversionRate || 0}%`}
               </h3>
               <p className="text-theme-caption text-gray-500 mt-1 font-medium">
-                Orders / Total Carts
+                {MARKETING_TEXT.METRICS.CONVERSION_SUB}
               </p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
-                  Abandonment Rate
+                  {MARKETING_TEXT.METRICS.ABANDONMENT_RATE}
                 </span>
                 <span className="bg-red-50 text-red-600 p-2 rounded-lg">
                   <AlertTriangle size={18} />
@@ -246,14 +247,14 @@ export default function MarketingPage() {
                 {`${overallMetrics?.abandonmentRate || 0}%`}
               </h3>
               <p className="text-theme-caption text-red-500 mt-1 font-medium">
-                Missed checkout opportunities
+                {MARKETING_TEXT.METRICS.ABANDONMENT_SUB}
               </p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
-                  Active Carts
+                  {MARKETING_TEXT.METRICS.ACTIVE_CARTS}
                 </span>
                 <span className="bg-blue-50 text-blue-600 p-2 rounded-lg">
                   <ShoppingCart size={18} />
@@ -263,14 +264,14 @@ export default function MarketingPage() {
                 {overallMetrics?.totalCarts || 0}
               </h3>
               <p className="text-theme-caption text-gray-500 mt-1 font-medium">
-                Total intent to buy
+                {MARKETING_TEXT.METRICS.CARTS_SUB}
               </p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider">
-                  Completed Orders
+                  {MARKETING_TEXT.METRICS.COMPLETED_ORDERS}
                 </span>
                 <span className="bg-purple-50 text-purple-600 p-2 rounded-lg">
                   <TrendingUp size={18} />
@@ -280,7 +281,7 @@ export default function MarketingPage() {
                 {overallMetrics?.totalOrders || 0}
               </h3>
               <p className="text-theme-caption text-gray-500 mt-1 font-medium">
-                Successfully processed
+                {MARKETING_TEXT.METRICS.ORDERS_SUB}
               </p>
             </div>
           </div>
@@ -297,11 +298,10 @@ export default function MarketingPage() {
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-8">
           <div className="px-5 py-4 border-b border-gray-100">
             <h2 className="font-bold text-theme-h6 text-gray-800">
-              Product Funnel Analytics
+              {MARKETING_TEXT.FUNNEL.TITLE}
             </h2>
             <p className="text-theme-caption text-gray-500 mt-1">
-              Identify which products are being abandoned at checkout to
-              optimize pricing.
+              {MARKETING_TEXT.FUNNEL.SUBTITLE}
             </p>
           </div>
 
@@ -309,11 +309,11 @@ export default function MarketingPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  <th className="p-4">Product Variant</th>
-                  <th className="p-4">SKU</th>
-                  <th className="p-4 text-center">Cart Additions</th>
-                  <th className="p-4 text-center">Purchased</th>
-                  <th className="p-4">Conversion Rate</th>
+                  <th className="p-4">{MARKETING_TEXT.FUNNEL.HEADERS.PRODUCT_VARIANT}</th>
+                  <th className="p-4">{MARKETING_TEXT.FUNNEL.HEADERS.SKU}</th>
+                  <th className="p-4 text-center">{MARKETING_TEXT.FUNNEL.HEADERS.CART_ADDITIONS}</th>
+                  <th className="p-4 text-center">{MARKETING_TEXT.FUNNEL.HEADERS.PURCHASED}</th>
+                  <th className="p-4">{MARKETING_TEXT.FUNNEL.HEADERS.CONVERSION_RATE}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -326,7 +326,7 @@ export default function MarketingPage() {
                       colSpan={5}
                       className="p-8 text-center text-gray-400 text-theme-body-sm"
                     >
-                      No conversion data available yet.
+                      {MARKETING_TEXT.FUNNEL.NO_DATA}
                     </td>
                   </tr>
                 ) : (

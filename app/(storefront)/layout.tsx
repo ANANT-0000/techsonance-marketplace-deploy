@@ -3,6 +3,7 @@ import { Footer } from "@/components/customer/Footer";
 import { CartSidebar } from "@/components/customer/CartSidebar";
 import { TabNavBar } from "@/components/customer/TabNavBar";
 import { ThemeProvider } from "@/components/customer/ThemeProvider";
+import { CustomerLoginModal } from "@/components/customer/CustomerLoginModal";
 import { getCompanyDomain } from "@/lib/get-domain";
 import {
   BASE_API_URL,
@@ -111,6 +112,7 @@ export default async function ShopLayout({
   return (
     <ThemeProvider theme={themeData}>
       <Navbar styles={NAVBAR_STYLE} />
+      <CustomerLoginModal />
       <CartSidebar />
       {children}
       <TabNavBar />

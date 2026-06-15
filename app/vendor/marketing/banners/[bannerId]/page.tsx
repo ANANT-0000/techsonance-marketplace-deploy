@@ -13,10 +13,12 @@ import {
   Users,
   Image as ImageIcon,
 } from "lucide-react";
+import Image from "next/image";
 import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
 import { LoaderSpinner } from "@/components/common/LoaderSpinner";
 import { Button } from "@/components/ui/button";
+import { BANNER_DETAILS_PAGE_TEXT } from "@/constants/vendorText";
 
 // --- Types based on your Unified Ecosystem ---
 interface BannerDetails {
@@ -89,14 +91,14 @@ export default function BannerDetailsPage() {
     return (
       <div className="p-6 max-w-5xl mx-auto text-center">
         <h2 className="text-theme-h5 font-bold text-gray-800 light:text-white">
-          Banner Not Found
+          {BANNER_DETAILS_PAGE_TEXT.ERRORS.NOT_FOUND}
         </h2>
         <Button
           onClick={() => router.back()}
           className="mt-4"
           variant="outline"
         >
-          Go Back
+          {BANNER_DETAILS_PAGE_TEXT.ERRORS.GO_BACK}
         </Button>
       </div>
     );
@@ -130,7 +132,7 @@ export default function BannerDetailsPage() {
             </span>
           </div>
           <p className="text-theme-body-sm text-gray-500 mt-1">
-            Banner Performance & Configuration Details
+            {BANNER_DETAILS_PAGE_TEXT.HEADER.SUBTITLE}
           </p>
         </div>
       </div>
@@ -142,18 +144,21 @@ export default function BannerDetailsPage() {
           <div className="bg-white light:bg-gray-800 rounded-xl shadow-sm border border-gray-100 light:border-gray-700 overflow-hidden">
             <div className="h-40 bg-gray-100 light:bg-gray-900 relative group flex items-center justify-center border-b border-gray-100 light:border-gray-700">
               {banner.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={banner.image_url}
                   alt={banner.title}
-                  className="w-full h-full object-cover"
+                  className="object-cover"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 800px"
+                  loading="eager"
+                  style={{ objectFit: "contain" }}
                 />
               ) : (
                 <ImageIcon size={40} className="text-gray-300" />
               )}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <span className="text-white font-medium text-theme-body-sm">
-                  Preview Asset
+                  {BANNER_DETAILS_PAGE_TEXT.CONFIG.PREVIEW_ASSET}
                 </span>
               </div>
             </div>
@@ -172,14 +177,16 @@ export default function BannerDetailsPage() {
           {/* Configuration Card */}
           <div className="bg-white light:bg-gray-800 rounded-xl shadow-sm border border-gray-100 light:border-gray-700 p-5 space-y-4">
             <h3 className="font-semibold text-gray-900 light:text-white border-b pb-3 light:border-gray-700">
-              Configuration
+              {BANNER_DETAILS_PAGE_TEXT.CONFIG.TITLE}
             </h3>
 
             <div className="space-y-3 text-theme-body-sm">
               <div className="flex items-start gap-3">
                 <ImageIcon size={16} className="text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-gray-500 font-medium">Placement</p>
+                  <p className="text-gray-500 font-medium">
+                    {BANNER_DETAILS_PAGE_TEXT.CONFIG.PLACEMENT}
+                  </p>
                   <p className="text-gray-900 light:text-gray-200 capitalize">
                     {banner.placement.replace(/_/g, " ")}
                   </p>
@@ -189,12 +196,14 @@ export default function BannerDetailsPage() {
               <div className="flex items-start gap-3">
                 <Calendar size={16} className="text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-gray-500 font-medium">Active Period</p>
+                  <p className="text-gray-500 font-medium">
+                    {BANNER_DETAILS_PAGE_TEXT.CONFIG.ACTIVE_PERIOD}
+                  </p>
                   <p className="text-gray-900 light:text-gray-200">
                     {new Date(banner.start_date).toLocaleDateString()} -{" "}
                     {banner.end_date
                       ? new Date(banner.end_date).toLocaleDateString()
-                      : "Ongoing"}
+                      : BANNER_DETAILS_PAGE_TEXT.CONFIG.ONGOING}
                   </p>
                 </div>
               </div>
@@ -202,7 +211,9 @@ export default function BannerDetailsPage() {
               <div className="flex items-start gap-3">
                 <Tag size={16} className="text-indigo-400 mt-0.5" />
                 <div>
-                  <p className="text-gray-500 font-medium">Linked Promotion</p>
+                  <p className="text-gray-500 font-medium">
+                    {BANNER_DETAILS_PAGE_TEXT.CONFIG.LINKED_PROMO}
+                  </p>
                   {banner.promotion_id ? (
                     <button
                       onClick={() =>
@@ -212,11 +223,12 @@ export default function BannerDetailsPage() {
                       }
                       className="text-indigo-600 hover:underline font-medium"
                     >
-                      {banner.promotion_name || "View Attached Campaign"}
+                      {banner.promotion_name ||
+                        BANNER_DETAILS_PAGE_TEXT.CONFIG.VIEW_CAMPAIGN}
                     </button>
                   ) : (
                     <span className="text-gray-400 italic">
-                      No promotion linked (Informational only)
+                      {BANNER_DETAILS_PAGE_TEXT.CONFIG.NO_PROMO}
                     </span>
                   )}
                 </div>
@@ -225,14 +237,16 @@ export default function BannerDetailsPage() {
               <div className="flex items-start gap-3">
                 <Users size={16} className="text-orange-400 mt-0.5" />
                 <div>
-                  <p className="text-gray-500 font-medium">Target Audience</p>
+                  <p className="text-gray-500 font-medium">
+                    {BANNER_DETAILS_PAGE_TEXT.CONFIG.TARGET_AUDIENCE}
+                  </p>
                   <span
                     className={`px-2 py-0.5 rounded text-theme-caption font-semibold ${banner.target_segment_id ? "bg-orange-50 text-orange-700" : "bg-gray-100 text-gray-600"}`}
                   >
                     {banner.segment_name ||
                       (banner.target_segment_id
-                        ? "Custom Segment"
-                        : "Global (All Users)")}
+                        ? BANNER_DETAILS_PAGE_TEXT.CONFIG.CUSTOM_SEGMENT
+                        : BANNER_DETAILS_PAGE_TEXT.CONFIG.GLOBAL_USERS)}
                   </span>
                 </div>
               </div>
@@ -243,7 +257,7 @@ export default function BannerDetailsPage() {
         {/* Right Column: Analytics & Performance Engine */}
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-theme-h6 font-bold text-gray-900 light:text-white">
-            Performance Overview
+            {BANNER_DETAILS_PAGE_TEXT.ANALYTICS.TITLE}
           </h2>
 
           {/* KPI Grid */}
@@ -253,7 +267,7 @@ export default function BannerDetailsPage() {
                 <Eye size={20} />
               </div>
               <p className="text-theme-caption text-gray-500 font-medium uppercase tracking-wider">
-                Impressions
+                {BANNER_DETAILS_PAGE_TEXT.ANALYTICS.IMPRESSIONS}
               </p>
               <p className="text-theme-h4 font-bold text-gray-900 light:text-white mt-1">
                 {analytics?.views?.toLocaleString() || 0}
@@ -265,7 +279,7 @@ export default function BannerDetailsPage() {
                 <MousePointerClick size={20} />
               </div>
               <p className="text-theme-caption text-gray-500 font-medium uppercase tracking-wider">
-                Clicks
+                {BANNER_DETAILS_PAGE_TEXT.ANALYTICS.CLICKS}
               </p>
               <p className="text-theme-h4 font-bold text-gray-900 light:text-white mt-1">
                 {analytics?.clicks?.toLocaleString() || 0}
@@ -277,7 +291,7 @@ export default function BannerDetailsPage() {
                 <ShoppingCart size={20} />
               </div>
               <p className="text-theme-caption text-gray-500 font-medium uppercase tracking-wider">
-                Conversions
+                {BANNER_DETAILS_PAGE_TEXT.ANALYTICS.CONVERSIONS}
               </p>
               <p className="text-theme-h4 font-bold text-gray-900 light:text-white mt-1">
                 {analytics?.conversions?.toLocaleString() || 0}
@@ -289,18 +303,17 @@ export default function BannerDetailsPage() {
                 <TrendingUp size={20} />
               </div>
               <p className="text-theme-caption text-gray-500 font-medium uppercase tracking-wider">
-                Revenue (₹)
+                {BANNER_DETAILS_PAGE_TEXT.ANALYTICS.REVENUE}
               </p>
               <p className="text-theme-h4 font-bold text-green-600 mt-1">
                 ₹{analytics?.revenue_generated?.toLocaleString() || 0}
               </p>
             </div>
           </div>
-
           {/* Conversion Funnel Analysis */}
           <div className="bg-white light:bg-gray-800 rounded-xl shadow-sm border border-gray-100 light:border-gray-700 p-6">
             <h3 className="font-bold text-gray-900 light:text-white mb-6">
-              Funnel Analysis
+              {BANNER_DETAILS_PAGE_TEXT.ANALYTICS.FUNNEL_TITLE}
             </h3>
 
             <div className="space-y-6">
@@ -308,7 +321,7 @@ export default function BannerDetailsPage() {
               <div>
                 <div className="flex justify-between text-theme-body-sm mb-2">
                   <span className="font-medium text-gray-600 light:text-gray-300">
-                    Click-Through Rate (CTR)
+                    {BANNER_DETAILS_PAGE_TEXT.ANALYTICS.CTR_LABEL}
                   </span>
                   <span className="font-bold text-purple-600">
                     {analytics?.ctr?.toFixed(1) || 0}%
@@ -321,7 +334,7 @@ export default function BannerDetailsPage() {
                   ></div>
                 </div>
                 <p className="text-theme-caption text-gray-500 mt-2">
-                  Percentage of users who saw the banner and clicked it.
+                  {BANNER_DETAILS_PAGE_TEXT.ANALYTICS.CTR_DESC}
                 </p>
               </div>
 
@@ -330,7 +343,7 @@ export default function BannerDetailsPage() {
                 <div>
                   <div className="flex justify-between text-theme-body-sm mb-2">
                     <span className="font-medium text-gray-600 light:text-gray-300">
-                      Conversion Rate (CVR)
+                      {BANNER_DETAILS_PAGE_TEXT.ANALYTICS.CVR_LABEL}
                     </span>
                     <span className="font-bold text-emerald-600">
                       {analytics?.cvr?.toFixed(1) || 0}%
@@ -345,8 +358,7 @@ export default function BannerDetailsPage() {
                     ></div>
                   </div>
                   <p className="text-theme-caption text-gray-500 mt-2">
-                    Percentage of users who clicked the banner and completed a
-                    purchase with the linked promotion.
+                    {BANNER_DETAILS_PAGE_TEXT.ANALYTICS.CVR_DESC}
                   </p>
                 </div>
               )}
@@ -361,12 +373,8 @@ export default function BannerDetailsPage() {
                 router.push(`/vendor/marketing/banners/form/${bannerId}`)
               }
             >
-              Edit Banner Design
+              {BANNER_DETAILS_PAGE_TEXT.ACTIONS.EDIT_DESIGN}
             </Button>
-            {/* Add state toggling if needed */}
-            {/* <Button variant='default'>
-                Export Analytics Report
-              </Button> */}
           </div>
         </div>
       </div>

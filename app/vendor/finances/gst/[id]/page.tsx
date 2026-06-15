@@ -13,17 +13,10 @@ import {
   fetchSingleGstRecord,
   fetchUpdateGstRecord,
 } from "@/utils/vendorApiClient";
+import { GST_FORM_TEXT } from "@/constants/vendorText";
+import { GST_FORM_FIELDS } from "@/constants";
 
 // --- DYNAMIC FIELD CONFIGURATION TYPE ---
-type FieldConfig = {
-  name: string;
-  label: string;
-  type: "text" | "date" | "select" | "checkbox";
-  required?: boolean;
-  placeholder?: string;
-  options?: { label: string; value: string }[];
-  gridSpan?: 1 | 2;
-};
 
 export default function GstFormPage() {
   const params = useParams();
@@ -45,70 +38,6 @@ export default function GstFormPage() {
     reset,
     formState: { isSubmitting, errors },
   } = useForm();
-
-  // 3. DYNAMIC FIELDS ARRAY
-  const gstFormFields: FieldConfig[] = [
-    {
-      name: "gst_number",
-      label: "GSTIN Number",
-      type: "text",
-      required: true,
-      placeholder: "e.g. 22AAAAA0000A1Z5",
-      gridSpan: 2,
-    },
-    {
-      name: "legal_name",
-      label: "Legal Name (As per PAN)",
-      type: "text",
-      required: true,
-      gridSpan: 1,
-    },
-    {
-      name: "trade_name",
-      label: "Trade Name",
-      type: "text",
-      required: true,
-      gridSpan: 1,
-    },
-    {
-      name: "state_code",
-      label: "State Code",
-      type: "text",
-      required: true,
-      placeholder: "e.g. 22",
-      gridSpan: 1,
-    },
-    {
-      name: "registration_type",
-      label: "Registration Type",
-      type: "select",
-      options: [
-        { label: "Regular", value: "Regular" },
-        { label: "Composition", value: "Composition" },
-      ],
-      gridSpan: 1,
-    },
-    {
-      name: "registration_date",
-      label: "Registration Date",
-      type: "date",
-      required: true,
-      gridSpan: 1,
-    },
-    {
-      name: "effective_from",
-      label: "Effective From",
-      type: "date",
-      required: true,
-      gridSpan: 1,
-    },
-    {
-      name: "is_default",
-      label: "Set as Primary/Default GST Number",
-      type: "checkbox",
-      gridSpan: 2,
-    },
-  ];
 
   // 4. FETCH DATA IF EDIT MODE
   useEffect(() => {
@@ -149,13 +78,19 @@ export default function GstFormPage() {
       }
       router.push(`/vendor/finances/gst`);
     } catch (error) {
-      alert(`Failed to ${isEditMode ? "update" : "create"} GST.`);
+      alert(
+        isEditMode
+          ? GST_FORM_TEXT.ALERTS.FAILED_UPDATE
+          : GST_FORM_TEXT.ALERTS.FAILED_CREATE,
+      );
     }
   };
 
   if (loading)
     return (
-      <div className="p-10 text-center text-gray-500">Loading form data...</div>
+      <div className="p-10 text-center text-gray-500">
+        {GST_FORM_TEXT.LOADING}
+      </div>
     );
 
   return (
@@ -164,14 +99,14 @@ export default function GstFormPage() {
         <div className="flex items-center gap-2 text-gray-700">
           <Building2 size={22} className="text-emerald-500" />
           <h1 className="text-theme-h4 font-bold text-gray-800">
-            {isEditMode ? "Edit GST Registration" : "New GST Registration"}
+            {isEditMode ? GST_FORM_TEXT.HEADER.EDIT : GST_FORM_TEXT.HEADER.NEW}
           </h1>
         </div>
         <Link
           href={`/vendor/finances/gst`}
           className="flex items-center gap-2 text-theme-body-sm bg-white border border-gray-200 text-gray-700 rounded-xl px-5 py-2.5 shadow-sm hover:bg-gray-50"
         >
-          <ArrowLeft size={16} /> Back to List
+          <ArrowLeft size={16} /> {GST_FORM_TEXT.HEADER.BACK}
         </Link>
       </header>
 
@@ -181,7 +116,7 @@ export default function GstFormPage() {
           className="grid grid-cols-2 gap-6"
         >
           {/* 6. DYNAMIC RENDERING ENGINE */}
-          {gstFormFields.map((field) => {
+          {GST_FORM_FIELDS.map((field) => {
             // Handle Checkboxes
             if (field.type === "checkbox") {
               return (
@@ -222,7 +157,7 @@ export default function GstFormPage() {
                     {...register(field.name, { required: field.required })}
                     className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-emerald-400 focus:bg-white focus:outline-none transition-colors"
                   >
-                    <option value="">Select...</option>
+                    <option value="">{GST_FORM_TEXT.FIELDS.SELECT}</option>
                     {field.options?.map((opt) => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label}
@@ -241,7 +176,7 @@ export default function GstFormPage() {
                 {/* Inline Validation Errors */}
                 {errors[field.name] && (
                   <span className="text-theme-caption text-red-500 mt-1 block">
-                    This field is required
+                    {GST_FORM_TEXT.FIELDS.REQUIRED_ERROR}
                   </span>
                 )}
               </div>
@@ -255,13 +190,13 @@ export default function GstFormPage() {
               className="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 transition-colors shadow-sm disabled:opacity-70"
             >
               {isSubmitting ? (
-                "Processing..."
+                GST_FORM_TEXT.ACTIONS.PROCESSING
               ) : (
                 <>
                   <Save size={18} />
                   {isEditMode
-                    ? "Update Configuration"
-                    : "Save GST Registration"}
+                    ? GST_FORM_TEXT.ACTIONS.UPDATE
+                    : GST_FORM_TEXT.ACTIONS.SAVE}
                 </>
               )}
             </button>

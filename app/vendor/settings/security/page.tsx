@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { ToggleLeft, ToggleRight } from "lucide-react";
 import { useState } from "react";
 import { ChangePasswordData } from "@/utils/validation";
+import { SECURITY_SETTINGS_TEXT } from "@/constants/vendorText";
 
 export interface securitySettingsDataType {
   two_factor_enabled: boolean;
@@ -50,38 +51,38 @@ export default function SecurityPage() {
           className="vendor_settings_content   mt-0  px-6 py-6 bg-white border-2 border-gray-300 rounded-lg"
           onSubmit={handleSubmit((data) => {})}
         >
-          <h2 className="text-theme-h4 font-bold mb-4">Security Settings</h2>
+          <h2 className="text-theme-h4 font-bold mb-4">{SECURITY_SETTINGS_TEXT.TITLE}</h2>
           <section className="space-y-5">
             <div>
               <label className="block text-gray-700 mb-2 font-bold">
-                Current Password
+                {SECURITY_SETTINGS_TEXT.LABELS.CURRENT_PASSWORD}
               </label>
               <input
                 type="password"
                 className="w-full border border-gray-300 rounded-lg py-2 px-4"
-                placeholder="Enter current password"
+                placeholder={SECURITY_SETTINGS_TEXT.PLACEHOLDERS.CURRENT_PASSWORD}
                 {...register("current_password")}
               />
             </div>
             <div>
               <label className="block text-gray-700 mb-2 font-bold">
-                New Password
+                {SECURITY_SETTINGS_TEXT.LABELS.NEW_PASSWORD}
               </label>
               <input
                 type="password"
                 className="w-full border border-gray-300 rounded-lg py-2 px-4"
-                placeholder="Enter new password"
+                placeholder={SECURITY_SETTINGS_TEXT.PLACEHOLDERS.NEW_PASSWORD}
                 {...register("new_password")}
               />
             </div>
             <div>
               <label className="block text-gray-700 mb-2 font-bold">
-                Confirm New Password
+                {SECURITY_SETTINGS_TEXT.LABELS.CONFIRM_PASSWORD}
               </label>
               <input
                 type="password"
                 className="w-full border border-gray-300 rounded-lg py-2 px-4"
-                placeholder="Confirm new password"
+                placeholder={SECURITY_SETTINGS_TEXT.PLACEHOLDERS.CONFIRM_PASSWORD}
                 {...register("confirm_password")}
               />
             </div>
@@ -91,7 +92,7 @@ export default function SecurityPage() {
               type="submit"
               className="px-6 py-2 bg-blue-500 text-white font-medium rounded-xl"
             >
-              Update Password
+              {SECURITY_SETTINGS_TEXT.UPDATE_BTN}
             </button>
           </div>
         </form>
@@ -100,13 +101,10 @@ export default function SecurityPage() {
           <div className="flex  justify-between items-center gap-12">
             <span>
               <h2 className="text-theme-h4 font-bold mb-4">
-                Two-Factor Authentication
+                {SECURITY_SETTINGS_TEXT.TFA.TITLE}
               </h2>
               <p className="text-gray-600 mb-4">
-                Enhance the security of your account by enabling two-factor
-                authentication (2FA). With 2FA, you'll need to provide an
-                additional verification code from your mobile device when
-                logging in.
+                {SECURITY_SETTINGS_TEXT.TFA.DESC}
               </p>
             </span>
             {
@@ -142,14 +140,12 @@ export default function SecurityPage() {
           </div>
           <h1></h1>
           <div className="mt-10">
-            <h2 className="text-theme-h4 font-bold mb-4">Active Sessions</h2>
+            <h2 className="text-theme-h4 font-bold mb-4">{SECURITY_SETTINGS_TEXT.SESSIONS.TITLE}</h2>
             <p className="text-gray-600 mb-4">
-              Review and manage your active sessions. If you notice any
-              unfamiliar devices or locations, you can log out of those sessions
-              to protect your account.
+              {SECURITY_SETTINGS_TEXT.SESSIONS.DESC}
             </p>
             <button className="px-6 py-2 bg-red-500 text-white font-medium rounded-xl">
-              Manage Active Sessions
+              {SECURITY_SETTINGS_TEXT.SESSIONS.MANAGE_BTN}
             </button>
           </div>
         </section>

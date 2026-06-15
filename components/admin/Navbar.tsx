@@ -8,22 +8,17 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, ChevronDown, LogOut, Mail } from "lucide-react";
 import { NAVBAR_TEXT } from "@/constants/adminText";
+import Image from "next/image";
 
 export function Navbar({ title }: { title: string }) {
     const dispatch = useAppDispatch()
     const { theme } = useAppSelector((state: RootState) => state.adminTheme)
     const { isSidebarOpen } = useAppSelector((state: RootState) => state.sidebar);
-        const router = useRouter();
-    
-        const [isMounted, setIsMounted] = useState(false);
-        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-        const dropdownRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
     
         const { user } = useAppSelector((state: any) => state.auth);
-    
-        useEffect(() => {
-            setIsMounted(true);
-        }, []);
     
         useEffect(() => {
             const handleClickOutside = (e: MouseEvent) => {
@@ -67,7 +62,7 @@ export function Navbar({ title }: { title: string }) {
 
                     </div>
                    <div className="relative ml-auto" ref={dropdownRef}>
-                {!isMounted ? (
+                {!user ? (
                     /* Skeleton Loader (Server Render) */
                     <div className="flex items-center gap-3 px-3 py-1.5">
                         <div className="text-right hidden sm:block space-y-1">
@@ -90,10 +85,12 @@ export function Navbar({ title }: { title: string }) {
                             </span>
                             
                             <span className="relative block">
-                                <img
+                                <Image
                                     src={userIcon}
                                     alt="Profile"
-                                    className="w-9 h-9 rounded-full object-cover border-2 border-gray-200"
+                                    width={36}
+                                    height={36}
+                                    className="rounded-full object-cover border-2 border-gray-200"
                                 />
                                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 border-2 border-white rounded-full" />
                             </span>

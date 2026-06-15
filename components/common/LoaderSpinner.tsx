@@ -1,7 +1,5 @@
-﻿'use client';
+'use client';
 export const LoaderSpinner = () => {
-    const isClient = typeof window !== 'undefined';
-    if (!isClient) return null;
     return (
         <div className="flex-col gap-4 w-full h-full flex items-center justify-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 backdrop-blur-sm    ">
             <div className="w-28 h-28 border-8 text-blue-400 text-theme-h2 animate-spin border-gray-300 flex items-center justify-center border-t-blue-400 rounded-full">

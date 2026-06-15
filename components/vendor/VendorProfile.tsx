@@ -1,4 +1,5 @@
 import { VENDOR_PROFILE_TEXT } from "@/constants/vendorText";
+import Image from "next/image";
 
 export type CompanyProfile = {
   id: string;
@@ -96,9 +97,11 @@ export function VendorProfile({
           <div className="flex gap-6 items-start">
             <div className="w-24 h-24 rounded-3xl bg-white shadow-xl border border-slate-100 flex items-center justify-center p-3">
               {profile?.companyBranding?.logo_url ? (
-                <img
+                <Image
                   src={profile.companyBranding.logo_url}
                   alt="logo"
+                  width={96}
+                  height={96}
                   className="w-full h-full object-cover rounded-2xl"
                 />
               ) : (

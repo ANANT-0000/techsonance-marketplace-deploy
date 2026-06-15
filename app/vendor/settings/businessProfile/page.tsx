@@ -1,6 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import { BUSINESS_PROFILE_TEXT } from "@/constants/vendorText";
 
 interface BusinessProfile {
   id: number;
@@ -46,28 +47,28 @@ export default function BusinessProfilePage() {
           className="vendor_settings_content p-6 bg-white rounded-lg border-2 border-gray-300 "
           onSubmit={handleSubmit((data) => {})}
         >
-          <h2 className="text-theme-h4 font-bold mb-4">Business Profile</h2>
+          <h2 className="text-theme-h4 font-bold mb-4">{BUSINESS_PROFILE_TEXT.TITLE}</h2>
           <section className="space-y-5">
             <span className="flex  gap-12 justify-between">
               <div className="flex-1">
                 <label className="block text-gray-700 mb-2 font-bold">
-                  Full Name
+                  {BUSINESS_PROFILE_TEXT.LABELS.FULL_NAME}
                 </label>
                 <input
                   type="text"
                   className="w-full border border-gray-300 rounded-lg py-2 px-4"
-                  placeholder="Enter full name"
+                  placeholder={BUSINESS_PROFILE_TEXT.PLACEHOLDERS.FULL_NAME}
                   {...register("full_name")}
                 />
               </div>
               <div className="flex-1">
                 <label className="block text-gray-700 mb-2 font-bold">
-                  Business Name
+                  {BUSINESS_PROFILE_TEXT.LABELS.BUSINESS_NAME}
                 </label>
                 <input
                   type="text"
                   className="w-full border border-gray-300 rounded-lg py-2 px-4"
-                  placeholder="Enter business name"
+                  placeholder={BUSINESS_PROFILE_TEXT.PLACEHOLDERS.BUSINESS_NAME}
                   {...register("business_name")}
                 />
               </div>
@@ -75,34 +76,34 @@ export default function BusinessProfilePage() {
             <span className="flex  gap-12 justify-between">
               <div className="flex-1">
                 <label className="block text-gray-700 mb-2 font-bold">
-                  Contact Email
+                  {BUSINESS_PROFILE_TEXT.LABELS.CONTACT_EMAIL}
                 </label>
                 <input
                   type="email"
                   className="w-full border border-gray-300 rounded-lg py-2 px-4"
-                  placeholder="Enter contact email"
+                  placeholder={BUSINESS_PROFILE_TEXT.PLACEHOLDERS.CONTACT_EMAIL}
                   {...register("contact_email")}
                 />
               </div>
               <div className="flex-1">
                 <label className="block text-gray-700 mb-2 font-bold">
-                  Contact Phone
+                  {BUSINESS_PROFILE_TEXT.LABELS.CONTACT_PHONE}
                 </label>
                 <input
                   type="tel"
                   className="w-full border border-gray-300 rounded-lg py-2 px-4"
-                  placeholder="Enter contact phone"
+                  placeholder={BUSINESS_PROFILE_TEXT.PLACEHOLDERS.CONTACT_PHONE}
                   {...register("contact_phone")}
                 />
               </div>
             </span>
             <div>
               <label className="block text-gray-700 mb-2 font-bold">
-                Description
+                {BUSINESS_PROFILE_TEXT.LABELS.DESCRIPTION}
               </label>
               <textarea
                 className="w-full border border-gray-300 rounded-lg py-2 px-4"
-                placeholder="Enter business description"
+                placeholder={BUSINESS_PROFILE_TEXT.PLACEHOLDERS.DESCRIPTION}
                 {...register("description")}
               ></textarea>
             </div>
@@ -112,7 +113,7 @@ export default function BusinessProfilePage() {
               type="submit"
               className="px-6 py-2 bg-blue-500 text-white font-medium rounded-xl"
             >
-              Save Changes
+              {BUSINESS_PROFILE_TEXT.SAVE_BTN}
             </button>
           </div>
         </form>

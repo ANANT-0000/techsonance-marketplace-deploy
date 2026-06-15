@@ -15,6 +15,17 @@ import Link from "next/link";
 import { fetchGetCompanyRefunds } from "@/utils/vendorApiClient";
 import { authToken } from "@/utils/authToken";
 import { redirect } from "next/navigation";
+import { REFUNDS_TEXT } from "@/constants/vendorText";
+const RefundsTableHeader = [
+  REFUNDS_TEXT.TABLE.HEADERS.REFUND_ID,
+  REFUNDS_TEXT.TABLE.HEADERS.ORDER_REF,
+  REFUNDS_TEXT.TABLE.HEADERS.CUSTOMER,
+  REFUNDS_TEXT.TABLE.HEADERS.PAYMENT_METHOD,
+  REFUNDS_TEXT.TABLE.HEADERS.AMOUNT_FULFILLMENT,
+  REFUNDS_TEXT.TABLE.HEADERS.REFUND_TYPE,
+  REFUNDS_TEXT.TABLE.HEADERS.REASON,
+  REFUNDS_TEXT.TABLE.HEADERS.DATE,
+];
 // Mapped exactly to your backend response structure
 interface RefundRecord {
   id: string;
@@ -62,18 +73,6 @@ interface RefundDashboardData {
   refunds: RefundRecord[];
 }
 
-export const RefundsTableHeader = [
-  "Refund ID",
-  "Order Ref",
-  "Customer",
-  "Payment Method ",
-  "Amount & Fulfillment",
-  "Refund Type",
-  "Reason",
-  // "Status",
-  "Date",
-];
-
 export default function RefundsPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isOpen, setIsOpen] = useState(false);
@@ -109,19 +108,19 @@ export default function RefundsPage() {
     if (s === "PENDING")
       return (
         <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
-          ● Pending
+          ● {REFUNDS_TEXT.FILTERS.PENDING}
         </span>
       );
     if (s === "PROCESSED")
       return (
         <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
-          ● Processed
+          ● {REFUNDS_TEXT.FILTERS.PROCESSED}
         </span>
       );
     if (s === "REJECTED")
       return (
         <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-theme-caption font-semibold">
-          ● Rejected
+          ● {REFUNDS_TEXT.FILTERS.REJECTED}
         </span>
       );
 
@@ -146,17 +145,19 @@ export default function RefundsPage() {
         <div className="flex flex-wrap items-center gap-4 text-gray-700">
           <div className="flex items-center gap-2">
             <CornerDownLeft size={24} className="text-orange-500" />
-            <h1 className="text-theme-h4 font-bold text-gray-800">Refunds Hub</h1>
+            <h1 className="text-theme-h4 font-bold text-gray-800">
+              {REFUNDS_TEXT.HEADER.TITLE}
+            </h1>
           </div>
           {/* Displaying Summary Stats from Backend */}
           {dashboardData && (
             <div className="flex gap-2">
               <span className="bg-orange-100 text-orange-700 text-theme-caption font-semibold px-3 py-1.5 rounded-full">
-                {dashboardData.total} Total Requests
+                {dashboardData.total} {REFUNDS_TEXT.HEADER.TOTAL_REQUESTS}
               </span>
               <span className="bg-red-50 border border-red-100 text-red-600 text-theme-caption font-bold px-3 py-1.5 rounded-full">
-                ₹{formatCurrency(dashboardData.totalPendingAmount)} Pending
-                Clearance
+                ₹{formatCurrency(dashboardData.totalPendingAmount)}{" "}
+                {REFUNDS_TEXT.HEADER.PENDING} {REFUNDS_TEXT.HEADER.CLEARANCE}
               </span>
             </div>
           )}
@@ -179,7 +180,7 @@ export default function RefundsPage() {
           <input
             type="text"
             className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
-            placeholder="Search by Refund ID or Order Ref"
+            placeholder={REFUNDS_TEXT.FILTERS.SEARCH_PLACEHOLDER}
           />
         </span>
 
@@ -189,19 +190,25 @@ export default function RefundsPage() {
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-orange-400 cursor-pointer transition-colors"
             name="status"
           >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="processed">Processed</option>
-            <option value="rejected">Rejected</option>
+            <option value="all">{REFUNDS_TEXT.FILTERS.ALL_STATUS}</option>
+            <option value="pending">{REFUNDS_TEXT.FILTERS.PENDING}</option>
+            <option value="processed">{REFUNDS_TEXT.FILTERS.PROCESSED}</option>
+            <option value="rejected">{REFUNDS_TEXT.FILTERS.REJECTED}</option>
           </select>
 
           <select
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-orange-400 cursor-pointer transition-colors"
             name="sort_by"
           >
-            <option value="date_newest">Newest First</option>
-            <option value="date_oldest">Oldest First</option>
-            <option value="amount_highest">Highest Amount</option>
+            <option value="date_newest">
+              {REFUNDS_TEXT.FILTERS.SORT_NEWEST}
+            </option>
+            <option value="date_oldest">
+              {REFUNDS_TEXT.FILTERS.SORT_OLDEST}
+            </option>
+            <option value="amount_highest">
+              {REFUNDS_TEXT.FILTERS.SORT_HIGHEST}
+            </option>
           </select>
 
           {isOpen ? (
@@ -209,7 +216,7 @@ export default function RefundsPage() {
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 text-theme-body-sm border border-orange-300 bg-orange-50 text-orange-600 rounded-xl px-3 py-2 font-medium transition-colors"
             >
-              {date ? date.toDateString() : "Select Date"}
+              {date ? date.toDateString() : REFUNDS_TEXT.FILTERS.SELECT_DATE}
               <ChevronUp size={16} />
             </button>
           ) : (
@@ -217,7 +224,7 @@ export default function RefundsPage() {
               onClick={() => setIsOpen(true)}
               className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
             >
-              {date ? date.toDateString() : "Select Date"}
+              {date ? date.toDateString() : REFUNDS_TEXT.FILTERS.SELECT_DATE}
               <ChevronDown size={16} />
             </button>
           )}
@@ -270,7 +277,7 @@ export default function RefundsPage() {
                     size={36}
                     className="mx-auto mb-3 opacity-30"
                   />
-                  No refund records found.
+                  {REFUNDS_TEXT.TABLE.NO_DATA}
                 </td>
               </tr>
             ) : (
@@ -336,10 +343,10 @@ export default function RefundsPage() {
                       title={item.refund_reason}
                     >
                       {isCancelled
-                        ? "Order Cancelled"
+                        ? REFUNDS_TEXT.TABLE.ORDER_CANCELLED
                         : isReplacedAndReturnd
-                          ? `Order ${item.orderItem.return_request.type}`
-                          : "N/A"}
+                          ? `${REFUNDS_TEXT.TABLE.ORDER_PREFIX}${item.orderItem.return_request.type}`
+                          : REFUNDS_TEXT.TABLE.NA}
                     </td>
                     <td className="p-4 text-theme-body-sm text-gray-500 max-w-[200px] truncate">
                       {item.refund_reason}

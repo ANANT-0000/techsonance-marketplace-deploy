@@ -1,5 +1,6 @@
 'use client';
 import { useAppSelector } from "@/hooks/reduxHooks";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/utils";
 import { AddToCart } from "./AddToCart";
@@ -21,9 +22,11 @@ export function CartItemRow({ item }: { item: CartItemDisplay }) {
     >
       {/* Product image */}
       <div className="shrink-0 w-[52px] h-[52px] rounded-xl overflow-hidden bg-white border border-gray-100 shadow-sm">
-        <img
+        <Image
           src={item.productVariant.images[0]?.image_url ?? "/placeholder.png"}
           alt={item.productVariant.variant_name}
+          width={52}
+          height={52}
           className="w-full h-full object-cover"
         />
       </div>

@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'motion/react';
 import { WishListBtn } from './WishListBtn';
 import { AddToCart } from './AddToCart';
@@ -35,12 +36,16 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
             >
                 <WishListBtn productVariantId={variantId} styles="absolute md:top-3 top-0 md:right-3 right-1 z-10 md:w-9 md:h-9 w-7 h-7 bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center rounded-full text-gray-600 hover:text-red-500 transition-colors" />
                 <Link href={`/store/${product.id}`} className="block w-full h-full p-4">
-                    <img
-                        loading="lazy"
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 rounded-xl"
-                        src={primaryImage}
-                        alt={product.name?.trim()}
-                    />
+                    <div className="relative w-full h-full">
+                        <Image
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-contain group-hover:scale-105 transition-transform duration-500 rounded-xl"
+                            src={primaryImage}
+                            alt={product.name?.trim() || "Product image"}
+                            style={{ objectFit: "contain" }}
+                        />
+                    </div>
                 </Link>
                 {/* Seamless Edge Blending Overlay */}
                 <div 

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -32,38 +32,82 @@ import { bannerSchema } from "@/utils/validation";
 import { authToken } from "@/utils/authToken";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
+import { BANNER_FORM_TEXT } from "@/constants/vendorText";
 
 // ─────────────────────────────────────────────
 // Types & Constants
 // ─────────────────────────────────────────────
 export enum BannerPlacement {
-  HOMEPAGE_HERO       = "homepage_hero",
-  HOMEPAGE_SECONDARY  = "homepage_secondary",
-  CATEGORY_TOP        = "category_top",
-  PRODUCT_PAGE        = "product_page",
-  CART_SIDEBAR        = "cart_sidebar",
-  CHECKOUT_TOP        = "checkout_top",
-  MY_OFFERS_PAGE      = "my_offers_page",
+  HOMEPAGE_HERO = "homepage_hero",
+  HOMEPAGE_SECONDARY = "homepage_secondary",
+  CATEGORY_TOP = "category_top",
+  PRODUCT_PAGE = "product_page",
+  CART_SIDEBAR = "cart_sidebar",
+  CHECKOUT_TOP = "checkout_top",
+  MY_OFFERS_PAGE = "my_offers_page",
 }
 
 // Human-readable labels + recommended image dimensions per placement
 const PLACEMENT_META: Record<
   BannerPlacement,
-  { label: string; desktopSize: string; mobileSize: string; description: string }
+  {
+    label: string;
+    desktopSize: string;
+    mobileSize: string;
+    description: string;
+  }
 > = {
-  [BannerPlacement.HOMEPAGE_HERO]:      { label: "Homepage — Hero",       desktopSize: "1440×500", mobileSize: "768×400",  description: "Full-width hero banner at the top of the home page." },
-  [BannerPlacement.HOMEPAGE_SECONDARY]: { label: "Homepage — Secondary",  desktopSize: "1440×300", mobileSize: "768×250",  description: "Below-fold secondary banner strip on the home page." },
-  [BannerPlacement.CATEGORY_TOP]:       { label: "Category — Top",        desktopSize: "1200×200", mobileSize: "768×160",  description: "Top banner shown on category listing pages." },
-  [BannerPlacement.PRODUCT_PAGE]:       { label: "Product Page",          desktopSize: "800×200",  mobileSize: "375×150",  description: "Inline banner shown on individual product pages." },
-  [BannerPlacement.CART_SIDEBAR]:       { label: "Cart — Sidebar",        desktopSize: "300×400",  mobileSize: "375×200",  description: "Sidebar slot displayed in the shopping cart." },
-  [BannerPlacement.CHECKOUT_TOP]:       { label: "Checkout — Top",        desktopSize: "1200×120", mobileSize: "768×100",  description: "Slim banner above the checkout flow." },
-  [BannerPlacement.MY_OFFERS_PAGE]:     { label: "My Offers Page",        desktopSize: "1440×300", mobileSize: "768×250",  description: "Banner shown on the customer's offers/deals page." },
+  [BannerPlacement.HOMEPAGE_HERO]: {
+    label: "Homepage — Hero",
+    desktopSize: "1440×500",
+    mobileSize: "768×400",
+    description: "Full-width hero banner at the top of the home page.",
+  },
+  [BannerPlacement.HOMEPAGE_SECONDARY]: {
+    label: "Homepage — Secondary",
+    desktopSize: "1440×300",
+    mobileSize: "768×250",
+    description: "Below-fold secondary banner strip on the home page.",
+  },
+  [BannerPlacement.CATEGORY_TOP]: {
+    label: "Category — Top",
+    desktopSize: "1200×200",
+    mobileSize: "768×160",
+    description: "Top banner shown on category listing pages.",
+  },
+  [BannerPlacement.PRODUCT_PAGE]: {
+    label: "Product Page",
+    desktopSize: "800×200",
+    mobileSize: "375×150",
+    description: "Inline banner shown on individual product pages.",
+  },
+  [BannerPlacement.CART_SIDEBAR]: {
+    label: "Cart — Sidebar",
+    desktopSize: "300×400",
+    mobileSize: "375×200",
+    description: "Sidebar slot displayed in the shopping cart.",
+  },
+  [BannerPlacement.CHECKOUT_TOP]: {
+    label: "Checkout — Top",
+    desktopSize: "1200×120",
+    mobileSize: "768×100",
+    description: "Slim banner above the checkout flow.",
+  },
+  [BannerPlacement.MY_OFFERS_PAGE]: {
+    label: "My Offers Page",
+    desktopSize: "1440×300",
+    mobileSize: "768×250",
+    description: "Banner shown on the customer's offers/deals page.",
+  },
 };
 
-const HEADLINE_MAX    = 80;
+const HEADLINE_MAX = 80;
 const SUBHEADLINE_MAX = 180;
 
-interface PromotionOption { id: string; name: string; }
+interface PromotionOption {
+  id: string;
+  name: string;
+}
 
 // ─────────────────────────────────────────────
 // Styles
@@ -72,8 +116,7 @@ const fieldBase =
   "w-full px-3 py-2 text-theme-body-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all bg-white";
 const labelBase =
   "block text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-1.5";
-const sectionContainer =
-  "border border-gray-100 rounded-2xl p-5 bg-gray-50/50";
+const sectionContainer = "border border-gray-100 rounded-2xl p-5 bg-gray-50/50";
 const sectionTitle =
   "w-full flex items-center gap-2 mb-4 font-bold text-theme-body-sm text-gray-800";
 const errorText = "mt-1 text-theme-caption text-red-500";
@@ -99,7 +142,11 @@ function CharCount({ current, max }: { current: number; max: number }) {
   return (
     <span
       className={`text-theme-caption ${
-        over ? "text-red-500 font-semibold" : near ? "text-amber-500" : "text-gray-400"
+        over
+          ? "text-red-500 font-semibold"
+          : near
+            ? "text-amber-500"
+            : "text-gray-400"
       }`}
     >
       {current}/{max}
@@ -131,7 +178,9 @@ function ToggleField({
         <ToggleLeft size={28} className="text-gray-300 flex-shrink-0" />
       )}
       <div>
-        <p className="text-theme-body-sm font-semibold text-gray-700">{label}</p>
+        <p className="text-theme-body-sm font-semibold text-gray-700">
+          {label}
+        </p>
         {description && (
           <p className="text-theme-caption text-gray-400">{description}</p>
         )}
@@ -170,13 +219,16 @@ function ImageSlot({
       {!preview ? (
         <label className="flex flex-col items-center justify-center h-36 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all group">
           <div className="p-2 bg-gray-100 rounded-full mb-2 group-hover:bg-blue-100 transition-colors">
-            <ImageIcon className="text-gray-400 group-hover:text-blue-500 transition-colors" size={20} />
+            <ImageIcon
+              className="text-gray-400 group-hover:text-blue-500 transition-colors"
+              size={20}
+            />
           </div>
           <span className="text-theme-caption font-semibold text-gray-500 group-hover:text-blue-600 transition-colors">
-            Click to upload
+            {BANNER_FORM_TEXT.ASSETS.UPLOAD_BTN}
           </span>
           <span className="text-theme-xxs text-gray-400 mt-0.5">
-            PNG, JPG, WebP · max 5 MB
+            {BANNER_FORM_TEXT.ASSETS.UPLOAD_HINT}
           </span>
           <input
             type="file"
@@ -200,7 +252,7 @@ function ImageSlot({
             type="button"
             onClick={onRemove}
             className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full text-white hover:bg-red-500 transition-colors opacity-0 group-hover:opacity-100"
-            title="Remove image"
+            title={BANNER_FORM_TEXT.ASSETS.REMOVE_TITLE}
           >
             <X size={13} />
           </button>
@@ -217,18 +269,18 @@ function ImageSlot({
 // Main Component
 // ─────────────────────────────────────────────
 export default function BannerForm() {
-  const bannerId     = useSearchParams().get("id");
-  const router       = useRouter();
-  const isEdit       = !!bannerId;
-  const token        = authToken();
+  const bannerId = useSearchParams().get("id");
+  const router = useRouter();
+  const isEdit = !!bannerId;
+  const token = authToken();
 
   const { user } = useAppSelector((state: RootState) => state.auth);
   const userId =
     user && "user_id" in user
       ? user.user_id
       : user && "id" in user
-      ? user.id
-      : "";
+        ? user.id
+        : "";
 
   const {
     register,
@@ -241,41 +293,45 @@ export default function BannerForm() {
   } = useForm({
     resolver: zodResolver(bannerSchema),
     defaultValues: {
-      placement:        BannerPlacement.HOMEPAGE_HERO,
-      promotion_id:     "",
-      is_active:        true,
-      display_order:    0,
-      image_alt_text:   "",
-      headline:         "",
-      sub_headline:     "",
-      cta_label:        "",
-      cta_url:          "",
-      valid_from:       "",
-      valid_to:         "",
+      placement: BannerPlacement.HOMEPAGE_HERO,
+      promotion_id: "",
+      is_active: true,
+      display_order: 0,
+      image_alt_text: "",
+      headline: "",
+      sub_headline: "",
+      cta_label: "",
+      cta_url: "",
+      valid_from: "",
+      valid_to: "",
       // internal image-removal flags
-      remove_image_url:        false,
+      remove_image_url: false,
       remove_image_url_mobile: false,
     },
   });
 
-  const [loading,          setLoading]          = useState(false);
-  const [fetching,         setFetching]         = useState(false);
-  const [promotionOptions, setPromotionOptions] = useState<PromotionOption[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [promotionOptions, setPromotionOptions] = useState<PromotionOption[]>(
+    [],
+  );
 
   // Previews stored as object URLs (blobs) or server URLs
   const [previews, setPreviews] = useState<{
     desktop: string | null;
-    mobile:  string | null;
+    mobile: string | null;
   }>({ desktop: null, mobile: null });
 
   // Track which previews are blob URLs so we can revoke them on cleanup
   const blobUrls = useRef<Set<string>>(new Set());
 
-  const watchedHeadline    = watch("headline")    ?? "";
+  const watchedHeadline = watch("headline") ?? "";
   const watchedSubheadline = watch("sub_headline") ?? "";
-  const watchedPlacement   = watch("placement") as BannerPlacement;
-  const watchedIsActive    = watch("is_active");
-  const placementMeta      = PLACEMENT_META[watchedPlacement] ?? PLACEMENT_META[BannerPlacement.HOMEPAGE_HERO];
+  const watchedPlacement = watch("placement") as BannerPlacement;
+  const watchedIsActive = watch("is_active");
+  const placementMeta =
+    PLACEMENT_META[watchedPlacement] ??
+    PLACEMENT_META[BannerPlacement.HOMEPAGE_HERO];
 
   // ── Fetch promotions ──
   useEffect(() => {
@@ -284,7 +340,7 @@ export default function BannerForm() {
         const { data } = await AxiosAPI.get("/v1/promotions/options");
         setPromotionOptions(data.data ?? []);
       } catch {
-        toast.error("Failed to load promotion options");
+        toast.error(BANNER_FORM_TEXT.TOASTS.LOAD_PROMO_ERR);
       }
     })();
   }, []);
@@ -297,37 +353,45 @@ export default function BannerForm() {
       const { data } = await AxiosAPI.get(`/v1/banners/${bannerId}`);
       // Reset form with server data — image_url fields come back as strings (server URLs)
       reset({
-        placement:      data.placement,
-        promotion_id:   data.promotion_id ?? "",
-        is_active:      data.is_active ?? true,
-        display_order:  data.display_order ?? 0,
+        placement: data.placement,
+        promotion_id: data.promotion_id ?? "",
+        is_active: data.is_active ?? true,
+        display_order: data.display_order ?? 0,
         image_alt_text: data.image_alt_text ?? "",
-        headline:       data.headline ?? "",
-        sub_headline:   data.sub_headline ?? "",
-        cta_label:      data.cta_label ?? "",
-        cta_url:        data.cta_url ?? "",
-        valid_from:     data.valid_from ? new Date(data.valid_from).toISOString().slice(0, 16) : "",
-        valid_to:       data.valid_to   ? new Date(data.valid_to).toISOString().slice(0, 16)   : "",
-        remove_image_url:        false,
+        headline: data.headline ?? "",
+        sub_headline: data.sub_headline ?? "",
+        cta_label: data.cta_label ?? "",
+        cta_url: data.cta_url ?? "",
+        valid_from: data.valid_from
+          ? new Date(data.valid_from).toISOString().slice(0, 16)
+          : "",
+        valid_to: data.valid_to
+          ? new Date(data.valid_to).toISOString().slice(0, 16)
+          : "",
+        remove_image_url: false,
         remove_image_url_mobile: false,
       });
       setPreviews({
-        desktop: data.image_url        ?? null,
-        mobile:  data.image_url_mobile ?? null,
+        desktop: data.image_url ?? null,
+        mobile: data.image_url_mobile ?? null,
       });
     } catch {
-      toast.error("Failed to load banner");
+      toast.error(BANNER_FORM_TEXT.TOASTS.LOAD_BANNER_ERR);
     } finally {
       setFetching(false);
     }
   }, [bannerId, isEdit, reset]);
 
-  useEffect(() => { fetchBanner(); }, [fetchBanner]);
+  useEffect(() => {
+    fetchBanner();
+  }, [fetchBanner]);
 
   // ── Cleanup blob URLs on unmount ──
   useEffect(() => {
     const blobs = blobUrls.current;
-    return () => { blobs.forEach((url) => URL.revokeObjectURL(url)); };
+    return () => {
+      blobs.forEach((url) => URL.revokeObjectURL(url));
+    };
   }, []);
 
   // ── Image handlers ──
@@ -341,14 +405,11 @@ export default function BannerForm() {
     const url = URL.createObjectURL(file);
     blobUrls.current.add(url);
     setPreviews((p) => ({ ...p, [key]: url }));
-    setValue(
-      key === "desktop" ? "image_url" : "image_url_mobile",
-      file as any
-    );
+    setValue(key === "desktop" ? "image_url" : "image_url_mobile", file as any);
     // Clear any removal flag
     setValue(
       key === "desktop" ? "remove_image_url" : "remove_image_url_mobile",
-      false
+      false,
     );
   };
 
@@ -362,7 +423,7 @@ export default function BannerForm() {
     setValue(key === "desktop" ? "image_url" : "image_url_mobile", null as any);
     setValue(
       key === "desktop" ? "remove_image_url" : "remove_image_url_mobile",
-      true
+      true,
     );
   };
 
@@ -371,8 +432,10 @@ export default function BannerForm() {
     setLoading(true);
     const formData = new FormData();
 
-    if (data.image_url        instanceof File) formData.append("image_url",        data.image_url);
-    if (data.image_url_mobile instanceof File) formData.append("image_url_mobile", data.image_url_mobile);
+    if (data.image_url instanceof File)
+      formData.append("image_url", data.image_url);
+    if (data.image_url_mobile instanceof File)
+      formData.append("image_url_mobile", data.image_url_mobile);
 
     const payload = { ...data };
     delete payload.image_url;
@@ -380,7 +443,7 @@ export default function BannerForm() {
 
     // Normalise empty dates to null
     if (!payload.valid_from) payload.valid_from = null;
-    if (!payload.valid_to)   payload.valid_to   = null;
+    if (!payload.valid_to) payload.valid_to = null;
     if (!payload.promotion_id) payload.promotion_id = null;
 
     formData.append("formData", JSON.stringify(payload));
@@ -388,18 +451,26 @@ export default function BannerForm() {
     try {
       if (isEdit) {
         await AxiosAPI.patch(`/v1/banners/${bannerId}`, formData, {
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         });
-        toast.success("Banner updated");
+        toast.success(BANNER_FORM_TEXT.TOASTS.UPDATED);
       } else {
         await AxiosAPI.post(`/v1/banners/${userId}`, formData, {
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         });
-        toast.success("Banner created");
+        toast.success(BANNER_FORM_TEXT.TOASTS.CREATED);
       }
       router.back();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to save banner");
+      toast.error(
+        err.response?.data?.message || BANNER_FORM_TEXT.TOASTS.SAVE_ERR,
+      );
     } finally {
       setLoading(false);
     }
@@ -425,10 +496,12 @@ export default function BannerForm() {
           </div>
           <div>
             <h2 className="text-theme-body font-bold text-gray-800">
-              {isEdit ? "Edit Banner" : "Create New Banner"}
+              {isEdit
+                ? BANNER_FORM_TEXT.HEADER.EDIT
+                : BANNER_FORM_TEXT.HEADER.CREATE}
             </h2>
             <p className="text-theme-caption text-gray-500 mt-0.5">
-              Define placement, visual assets, and content for your banner.
+              {BANNER_FORM_TEXT.HEADER.DESC}
             </p>
           </div>
         </div>
@@ -437,17 +510,18 @@ export default function BannerForm() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
         {/* ── Placement & Promotion ── */}
         <section className={sectionContainer}>
           <div className={sectionTitle}>
-            <Tag size={16} /> Placement &amp; Promotion
+            <Tag size={16} /> {BANNER_FORM_TEXT.PLACEMENT.TITLE}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Placement */}
             <div>
-              <label className={labelBase}>Placement *</label>
+              <label className={labelBase}>
+                {BANNER_FORM_TEXT.PLACEMENT.LABEL}
+              </label>
               <Controller
                 name="placement"
                 control={control}
@@ -536,8 +610,8 @@ export default function BannerForm() {
                 placeholder="0"
               />
               <p className="mt-1 text-theme-caption text-gray-400">
-                Lower number = shown first when multiple banners share the
-                same placement.
+                Lower number = shown first when multiple banners share the same
+                placement.
               </p>
               {errors.display_order && (
                 <p className={errorText}>
@@ -550,49 +624,58 @@ export default function BannerForm() {
 
         {/* ── Schedule ── */}
         <section className={sectionContainer}>
-          <div className={ `  ${sectionTitle} justify-between gap-6 items-start `}>
+          <div
+            className={`  ${sectionTitle} justify-between gap-6 items-start `}
+          >
             <div className="flex items-center gap-2">
-            <Calendar size={16} /> Schedule
-
+              <Calendar size={16} /> {BANNER_FORM_TEXT.SCHEDULE.TITLE}
             </div>
-<Controller 
-          name="is_active"
-          control={control}
-          render={({ field }) => (
-            <ToggleField
-              checked={field.value}
-              onChange={field.onChange}
-              label={field.value ? "Active" : "Inactive"}
-              description={
-                field.value
-                  ? "Banner is live and visible to customers"
-                  : "Banner is hidden from customers"
-              }
+            <Controller
+              name="is_active"
+              control={control}
+              render={({ field }) => (
+                <ToggleField
+                  checked={field.value}
+                  onChange={field.onChange}
+                  label={
+                    field.value
+                      ? BANNER_FORM_TEXT.SCHEDULE.ACTIVE
+                      : BANNER_FORM_TEXT.SCHEDULE.INACTIVE
+                  }
+                  description={
+                    field.value
+                      ? BANNER_FORM_TEXT.SCHEDULE.LIVE_DESC
+                      : BANNER_FORM_TEXT.SCHEDULE.HIDDEN_DESC
+                  }
+                />
+              )}
             />
-          )}
-        />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className={labelBase}>Show From</label>
+              <label className={labelBase}>
+                {BANNER_FORM_TEXT.SCHEDULE.SHOW_FROM}
+              </label>
               <Input
                 type="datetime-local"
                 {...register("valid_from")}
                 className={fieldBase}
               />
               <p className="mt-1 text-theme-caption text-gray-400">
-                Leave blank to show immediately.
+                {BANNER_FORM_TEXT.SCHEDULE.SHOW_FROM_HINT}
               </p>
             </div>
             <div>
-              <label className={labelBase}>Show Until</label>
+              <label className={labelBase}>
+                {BANNER_FORM_TEXT.SCHEDULE.SHOW_UNTIL}
+              </label>
               <Input
                 type="datetime-local"
                 {...register("valid_to")}
                 className={fieldBase}
               />
               <p className="mt-1 text-theme-caption text-gray-400">
-                Leave blank for no expiry.
+                {BANNER_FORM_TEXT.SCHEDULE.SHOW_UNTIL_HINT}
               </p>
             </div>
           </div>
@@ -601,12 +684,12 @@ export default function BannerForm() {
         {/* ── Assets ── */}
         <section className={sectionContainer}>
           <div className={sectionTitle}>
-            <ImageIcon size={16} /> Assets
+            <ImageIcon size={16} /> {BANNER_FORM_TEXT.ASSETS.TITLE}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ImageSlot
-              label="Desktop Image"
+              label={BANNER_FORM_TEXT.ASSETS.DESKTOP_IMG}
               preview={previews.desktop}
               onFile={(f) => handleFileChange(f, "desktop")}
               onRemove={() => removeImage("desktop")}
@@ -615,7 +698,7 @@ export default function BannerForm() {
               dimensionLabel="Desktop"
             />
             <ImageSlot
-              label="Mobile Image"
+              label={BANNER_FORM_TEXT.ASSETS.MOBILE_IMG}
               preview={previews.mobile}
               onFile={(f) => handleFileChange(f, "mobile")}
               onRemove={() => removeImage("mobile")}
@@ -626,11 +709,13 @@ export default function BannerForm() {
           </div>
 
           <div className="mt-4">
-            <label className={labelBase}>Alt Text</label>
+            <label className={labelBase}>
+              {BANNER_FORM_TEXT.ASSETS.ALT_TEXT}
+            </label>
             <Input
               {...register("image_alt_text")}
               className={fieldBase}
-              placeholder="Description for screen readers and SEO"
+              placeholder={BANNER_FORM_TEXT.ASSETS.ALT_TEXT_PH}
             />
             {errors.image_alt_text && (
               <p className={errorText}>
@@ -643,14 +728,16 @@ export default function BannerForm() {
         {/* ── Content ── */}
         <section className={sectionContainer}>
           <div className={sectionTitle}>
-            <Layout size={16} /> Content
+            <Layout size={16} /> {BANNER_FORM_TEXT.CONTENT.TITLE}
           </div>
 
           <div className="space-y-4">
             {/* Headline */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className={labelBase + " mb-0"}>Headline</label>
+                <label className={labelBase + " mb-0"}>
+                  {BANNER_FORM_TEXT.CONTENT.HEADLINE}
+                </label>
                 <CharCount
                   current={watchedHeadline.length}
                   max={HEADLINE_MAX}
@@ -659,7 +746,7 @@ export default function BannerForm() {
               <Input
                 {...register("headline")}
                 className={fieldBase}
-                placeholder="e.g. Up to 50% off Summer Essentials"
+                placeholder={BANNER_FORM_TEXT.CONTENT.HEADLINE_PH}
                 maxLength={HEADLINE_MAX}
               />
               {errors.headline && (
@@ -670,7 +757,9 @@ export default function BannerForm() {
             {/* Sub-headline */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className={labelBase + " mb-0"}>Sub-headline</label>
+                <label className={labelBase + " mb-0"}>
+                  {BANNER_FORM_TEXT.CONTENT.SUBHEADLINE}
+                </label>
                 <CharCount
                   current={watchedSubheadline.length}
                   max={SUBHEADLINE_MAX}
@@ -680,7 +769,7 @@ export default function BannerForm() {
                 {...register("sub_headline")}
                 className={fieldBase}
                 rows={2}
-                placeholder="Supporting copy shown below the headline"
+                placeholder={BANNER_FORM_TEXT.CONTENT.SUBHEADLINE_PH}
                 maxLength={SUBHEADLINE_MAX}
               />
               {errors.sub_headline && (
@@ -693,11 +782,13 @@ export default function BannerForm() {
             {/* CTA */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className={labelBase}>CTA Button Label</label>
+                <label className={labelBase}>
+                  {BANNER_FORM_TEXT.CONTENT.CTA_LABEL}
+                </label>
                 <Input
                   {...register("cta_label")}
                   className={fieldBase}
-                  placeholder="e.g. Shop Now"
+                  placeholder={BANNER_FORM_TEXT.CONTENT.CTA_LABEL_PH}
                 />
                 {errors.cta_label && (
                   <p className={errorText}>
@@ -713,9 +804,7 @@ export default function BannerForm() {
                   placeholder="e.g. /sale or https://…"
                 />
                 {errors.cta_url && (
-                  <p className={errorText}>
-                    {String(errors.cta_url.message)}
-                  </p>
+                  <p className={errorText}>{String(errors.cta_url.message)}</p>
                 )}
               </div>
             </div>
@@ -730,7 +819,7 @@ export default function BannerForm() {
             onClick={() => router.back()}
             className="rounded-xl px-5"
           >
-            Cancel
+            {BANNER_FORM_TEXT.ACTIONS.CANCEL}
           </Button>
           <Button
             type="submit"
@@ -742,7 +831,11 @@ export default function BannerForm() {
             ) : (
               <Save size={16} />
             )}
-            {loading ? "Saving…" : isEdit ? "Update Banner" : "Create Banner"}
+            {loading
+              ? BANNER_FORM_TEXT.ACTIONS.SAVING
+              : isEdit
+                ? BANNER_FORM_TEXT.ACTIONS.UPDATE
+                : BANNER_FORM_TEXT.ACTIONS.CREATE}
           </Button>
         </div>
       </form>

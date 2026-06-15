@@ -4,14 +4,14 @@ export function PageLoader() {
       {/* Animated logo rings */}
       <div className="relative flex items-center justify-center mb-8">
         <span
-          className="absolute w-24 h-24 rounded-full border-2 border-theme-primary/20 animate-ping"
+          className="absolute w-24 h-24 rounded-full border-2 border-black/5 animate-ping"
           style={{ animationDuration: "2s" }}
         />
         <span
-          className="absolute w-16 h-16 rounded-full border-2 border-theme-primary/30 animate-ping"
+          className="absolute w-16 h-16 rounded-full border-2 border-black/10 animate-ping"
           style={{ animationDuration: "1.5s", animationDelay: "0.3s" }}
         />
-        <span className="w-12 h-12 rounded-full bg-gradient-to-br from-theme-primary/80 to-theme-primary flex items-center justify-center shadow-lg shadow-theme-primary/20">
+        <span className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center shadow-lg shadow-black/10">
           <svg
             width="22"
             height="22"
@@ -34,16 +34,17 @@ export function PageLoader() {
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="w-2 h-2 rounded-full bg-theme-primary/60"
+            className="w-2 h-2 rounded-full bg-zinc-800"
             style={{
               animation: "pulse 1.2s ease-in-out infinite",
               animationDelay: `${i * 0.2}s`,
+              opacity: 0.6,
             }}
           />
         ))}
       </div>
 
-      <p className="text-theme-body-sm font-medium text-gray-400 tracking-widest uppercase">
+      <p className="text-theme-body-sm font-semibold text-zinc-500 tracking-widest uppercase">
         Loading...
       </p>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Edit, Plus, Download, Package, Eye, MoveRight } from "lucide-react";
 import { Pagination } from "@/components/common/Pagination";
 import {
@@ -367,11 +368,20 @@ export default function Products() {
                     {/* Product Image + Name */}
                     <TableCell className="px-4 py-3">
                       <div className="flex items-center gap-3 min-w-[220px] max-w-[320px]">
-                        <img
-                          className="w-10 h-10 rounded-lg object-cover border border-gray-100 shrink-0"
-                          src={firstVariant?.images?.[0]?.image_url}
-                          alt={item.name}
-                        />
+                        <div className="relative w-10 h-10 shrink-0">
+                          <Image
+                            className="rounded-lg object-cover border border-gray-100"
+                            src={
+                              firstVariant?.images?.[0]?.image_url ||
+                              "https://res.cloudinary.com/dxv3xtahf/image/upload/v1781174571/file_mc1spf.png"
+                            }
+                            alt={item.name || "Product"}
+                            loading="eager"
+                            fill
+                            sizes="40px"
+                            style={{ objectFit: "contain" }}
+                          />
+                        </div>
 
                         <span className="text-theme-body-sm font-medium text-gray-800 line-clamp-2 leading-tight">
                           {item.name.trimStart()}

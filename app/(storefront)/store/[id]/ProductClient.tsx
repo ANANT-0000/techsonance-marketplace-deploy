@@ -43,7 +43,8 @@ import { useMediaQuery } from "react-responsive";
 import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
 import toast, { Toaster } from "react-hot-toast";
-import { useAppSelector } from "@/hooks/reduxHooks";
+import { useAppSelector, useAppDispatch } from "@/hooks/reduxHooks";
+import { openLoginModal } from "@/lib/features/auth/authSlice";
 import { RootState } from "@/lib/store";
 import { AxiosError, AxiosResponse } from "axios";
 import { PageLoader } from "@/components/customer/PageLoader";
@@ -119,7 +120,6 @@ type Tab = "description" | "specs" | "reviews";
 
 // ─── Reducer ──────────────────────────────────────────────────────────────────
 interface State {
-  isMounted: boolean;
   isLoading: boolean;
   product: Product | undefined;
   activeVariant: Variant | undefined;
@@ -134,7 +134,6 @@ interface State {
 }
 
 enum ActionType {
-  SET_MOUNTED = "SET_MOUNTED",
   SET_LOADING = "SET_LOADING",
   SET_PRODUCT_DATA = "SET_PRODUCT_DATA",
   SET_ACTIVE_VARIANT = "SET_ACTIVE_VARIANT",
@@ -148,7 +147,6 @@ enum ActionType {
 }
 
 type Action =
-  | { type: ActionType.SET_MOUNTED; payload: boolean }
   | { type: ActionType.SET_LOADING; payload: boolean }
   | {
       type: ActionType.SET_PRODUCT_DATA;
@@ -179,8 +177,6 @@ function reducer(state: State, action: Action): State {
   switch (action.type) {
     case ActionType.SET_PAGE_LOADING:
       return { ...state, isPageLoading: action.payload };
-    case ActionType.SET_MOUNTED:
-      return { ...state, isMounted: action.payload };
     case ActionType.SET_LOADING:
       return { ...state, isLoading: action.payload };
     case ActionType.SET_PRODUCT_DATA:
@@ -222,10 +218,10 @@ export default function ProductClient({ id }: { id: string }) {
   const token = authToken();
   const { user } = useAppSelector((state: RootState) => state.auth);
   const isMobile = useMediaQuery({ maxWidth: "1024px" });
+  const reduxDispatch = useAppDispatch();
 
   const [state, dispatch] = useReducer(reducer, {
     isPageLoading: true,
-    isMounted: false,
     isLoading: false,
     product: undefined,
     activeVariant: undefined,
@@ -278,7 +274,6 @@ export default function ProductClient({ id }: { id: string }) {
         console.error("Error fetching product:", error);
       } finally {
         dispatch({ type: ActionType.SET_LOADING, payload: false });
-        dispatch({ type: ActionType.SET_MOUNTED, payload: true });
         dispatch({ type: ActionType.SET_PAGE_LOADING, payload: false });
       }
     };
@@ -400,7 +395,7 @@ export default function ProductClient({ id }: { id: string }) {
   };
 
   const handleCouponModalOpen = () => {
-    if (!token) router.push("/auth/customerLogin");
+    if (!token) reduxDispatch(openLoginModal(null));
     else dispatch({ type: ActionType.SET_COUPON_MODAL_OPEN, payload: true });
   };
 
@@ -480,8 +475,8 @@ export default function ProductClient({ id }: { id: string }) {
                 />
               </div>
 
-              {isMobile ? (
-                /* Mobile carousel */
+              <div className="block lg:hidden">
+                {/* Mobile carousel */}
                 <>
                   <AnimatePresence mode="wait">
                     <motion.img
@@ -587,7 +582,8 @@ export default function ProductClient({ id }: { id: string }) {
                     </button>
                   )}
                 </>
-              ) : (
+              </div>
+              <div className="hidden lg:block relative flex-1 rounded-3xl overflow-hidden transition-colors duration-500">
                 /* Desktop main image */
                 <AnimatePresence mode="wait">
                   <motion.img
@@ -601,7 +597,7 @@ export default function ProductClient({ id }: { id: string }) {
                     className="w-full aspect-square object-contain"
                   />
                 </AnimatePresence>
-              )}
+              </div>
             </div>
           </div>
 
@@ -968,8 +964,8 @@ export default function ProductClient({ id }: { id: string }) {
       </section>
 
       {/* ── Mobile: Sticky bottom CTA ──────────────────────────────── */}
-      {state.isMounted && isMobile && state.activeVariant && (
-        <div className="fixed bottom-8 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-xl px-4 py-3">
+      {state.activeVariant && (
+        <div className="block lg:hidden fixed bottom-8 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-xl px-4 py-3">
           <div className="flex gap-3 max-w-lg mx-auto h-12">
             <AddToCart
               productVariantId={state.activeVariant.id}

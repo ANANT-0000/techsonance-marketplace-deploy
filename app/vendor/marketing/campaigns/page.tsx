@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { LoaderSpinner } from "@/components/common/LoaderSpinner";
 import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
+import { CAMPAIGNS_PAGE_TEXT } from "@/constants/vendorText";
 
 interface Campaign {
   id: string;
@@ -117,9 +118,9 @@ export default function CampaignsPage() {
     <div className="p-6 w-full mx-auto">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-theme-h4 font-bold text-gray-800">Campaigns</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">{CAMPAIGNS_PAGE_TEXT.HEADER.TITLE}</h1>
           <p className="text-theme-body-sm text-gray-500 mt-1">
-            Auto-applied promotions, tiered discounts, bundles, and BOGO deals.
+            {CAMPAIGNS_PAGE_TEXT.HEADER.SUBTITLE}
           </p>
         </div>
         <Button
@@ -128,27 +129,26 @@ export default function CampaignsPage() {
           }
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5"
         >
-          <Plus size={18} /> Create Campaign
+          <Plus size={18} /> {CAMPAIGNS_PAGE_TEXT.HEADER.CREATE_BTN}
         </Button>
       </header>
 
-      {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {[
           {
-            label: "Active",
+            label: CAMPAIGNS_PAGE_TEXT.METRICS.ACTIVE,
             value: active,
             icon: <Zap size={18} />,
             color: "bg-emerald-50 text-emerald-600",
           },
           {
-            label: "Drafts",
+            label: CAMPAIGNS_PAGE_TEXT.METRICS.DRAFTS,
             value: draft,
             icon: <Tag size={18} />,
             color: "bg-amber-50 text-amber-600",
           },
           {
-            label: "Total Redemptions",
+            label: CAMPAIGNS_PAGE_TEXT.METRICS.TOTAL_REDEMPTIONS,
             value: totalRedemptions,
             icon: <TrendingUp size={18} />,
             color: "bg-blue-50 text-blue-600",
@@ -171,7 +171,6 @@ export default function CampaignsPage() {
         ))}
       </div>
 
-      {/* Search + filter */}
       <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-6 shadow-sm flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-md">
           <Search
@@ -180,7 +179,7 @@ export default function CampaignsPage() {
           />
           <input
             className="w-full pl-10 pr-4 py-2 text-theme-body-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100"
-            placeholder="Search campaigns…"
+            placeholder={CAMPAIGNS_PAGE_TEXT.FILTERS.SEARCH_PLACEHOLDER}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -199,7 +198,7 @@ export default function CampaignsPage() {
             "INACTIVE",
           ].map((s) => (
             <option key={s} value={s}>
-              {s === "ALL" ? "All Statuses" : s}
+              {s === "ALL" ? CAMPAIGNS_PAGE_TEXT.FILTERS.ALL_STATUSES : s}
             </option>
           ))}
         </select>
@@ -233,12 +232,12 @@ export default function CampaignsPage() {
                     <div className="flex items-center gap-2">
                       {c.is_auto_applied && (
                         <span className="px-2 py-0.5 text-theme-tiny font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-full">
-                          AUTO
+                          {CAMPAIGNS_PAGE_TEXT.CARD.AUTO}
                         </span>
                       )}
                       {c.is_exclusive && (
                         <span className="px-2 py-0.5 text-theme-tiny font-bold bg-rose-50 text-rose-700 border border-rose-200 rounded-full">
-                          EXCLUSIVE
+                          {CAMPAIGNS_PAGE_TEXT.CARD.EXCLUSIVE}
                         </span>
                       )}
                       <span
@@ -254,7 +253,7 @@ export default function CampaignsPage() {
                   </h3>
                   <p className="text-theme-body-sm text-gray-500 mb-3 line-clamp-2 flex-grow">
                     {c.description ?? (
-                      <span className="italic">No description</span>
+                      <span className="italic">{CAMPAIGNS_PAGE_TEXT.CARD.NO_DESCRIPTION}</span>
                     )}
                   </p>
 
@@ -266,7 +265,7 @@ export default function CampaignsPage() {
                     <div className="flex items-center justify-between text-theme-caption text-gray-500">
                       <span className="flex items-center gap-1.5">
                         <Calendar size={13} />
-                        Valid until
+                        {CAMPAIGNS_PAGE_TEXT.CARD.VALID_UNTIL}
                       </span>
                       <span className="font-medium text-gray-700">
                         {c.valid_to
@@ -275,13 +274,13 @@ export default function CampaignsPage() {
                               month: "short",
                               year: "numeric",
                             })
-                          : "No end date"}
+                          : CAMPAIGNS_PAGE_TEXT.CARD.NO_END_DATE}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-theme-caption text-gray-500">
                       <span className="flex items-center gap-1.5">
                         <Activity size={13} />
-                        Redemptions
+                        {CAMPAIGNS_PAGE_TEXT.CARD.REDEMPTIONS}
                       </span>
                       <span className="font-medium text-gray-700">
                         {c.total_used}
@@ -308,7 +307,7 @@ export default function CampaignsPage() {
                       );
                     }}
                   >
-                    View analytics →
+                    {CAMPAIGNS_PAGE_TEXT.CARD.VIEW_ANALYTICS}
                   </button>
                 </div>
               );
@@ -318,12 +317,12 @@ export default function CampaignsPage() {
             <div className="col-span-full flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
               <Tag size={32} className="text-gray-300 mb-4" />
               <h3 className="font-bold text-gray-800 mb-1">
-                No campaigns found
+                {CAMPAIGNS_PAGE_TEXT.EMPTY.TITLE}
               </h3>
               <p className="text-theme-body-sm text-gray-500 mb-6">
                 {search
-                  ? "No matches. Try a different name."
-                  : "Create your first campaign to get started."}
+                  ? CAMPAIGNS_PAGE_TEXT.EMPTY.SEARCH_DESC
+                  : CAMPAIGNS_PAGE_TEXT.EMPTY.DEFAULT_DESC}
               </p>
               {!search && (
                 <Button
@@ -332,7 +331,7 @@ export default function CampaignsPage() {
                   }
                   className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5"
                 >
-                  <Plus size={16} className="mr-2" /> Create Campaign
+                  <Plus size={16} className="mr-2" /> {CAMPAIGNS_PAGE_TEXT.HEADER.CREATE_BTN}
                 </Button>
               )}
             </div>

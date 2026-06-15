@@ -26,9 +26,10 @@ export function PromoBannerDesktop({
         src={imageUrl}
         alt={title}
         fill
-        className="object-contain  "
+        className="object-contain"
         sizes="100vw"
-        priority={false}
+        priority={true}
+        loading="eager"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
       <div className="absolute inset-0 flex items-center">

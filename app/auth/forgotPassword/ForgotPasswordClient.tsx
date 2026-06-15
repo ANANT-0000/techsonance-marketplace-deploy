@@ -130,17 +130,17 @@ export default function ForgotPasswordClient() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden"
+                className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden text-slate-700"
             >
-                {/* Header with Gradient */}
-                <div className="bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-600 px-8 py-10 text-white relative overflow-hidden">
+                {/* Header with Gradient using Theme Colors */}
+                <div className="bg-gradient-to-br from-theme-primary via-theme-primary/95 to-theme-secondary px-8 py-10 text-theme-primary-foreground relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-20"></div>
 
                     <div className="relative">
                         {state.step === 2 && (
                             <button
                                 onClick={() => dispatch({ type: ForgotPasswordActionType.SET_STEP, payload: 1 })}
-                                className="mb-3 flex items-center gap-1 text-white/80 hover:text-white transition-colors text-theme-body-sm"
+                                className="mb-3 flex items-center gap-1 text-theme-primary-foreground/80 hover:text-theme-primary-foreground transition-colors text-theme-body-sm cursor-pointer border-none bg-transparent"
                             >
                                 <ArrowLeft className="w-4 h-4" />
                                 Back
@@ -148,19 +148,19 @@ export default function ForgotPasswordClient() {
                         )}
 
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                <Lock className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 rounded-full bg-theme-primary-foreground/20 backdrop-blur-xs flex items-center justify-center">
+                                <Lock className="w-6 h-6 text-theme-primary-foreground" />
                             </div>
                             <div>
                                 <h2 className="text-theme-h4 font-bold">Reset Password</h2>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <div className={`w-8 h-1 rounded-full ${state.step >= 1 ? 'bg-white' : 'bg-white/30'}`}></div>
-                                    <div className={`w-8 h-1 rounded-full ${state.step >= 2 ? 'bg-white' : 'bg-white/30'}`}></div>
+                                    <div className={`w-8 h-1 rounded-full ${state.step >= 1 ? 'bg-theme-primary-foreground' : 'bg-theme-primary-foreground/30'}`}></div>
+                                    <div className={`w-8 h-1 rounded-full ${state.step >= 2 ? 'bg-theme-primary-foreground' : 'bg-theme-primary-foreground/30'}`}></div>
                                 </div>
                             </div>
                         </div>
 
-                        <p className="text-white/90 text-theme-body-sm">
+                        <p className="text-theme-primary-foreground/90 text-theme-body-sm">
                             {state.step === 1
                                 ? "Enter your email address and we'll send you a verification code."
                                 : "Enter the 6-digit code sent to your email and create a new password."}
@@ -214,7 +214,7 @@ export default function ForgotPasswordClient() {
                                         Email Address
                                     </label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-theme-primary transition-colors">
                                             <Mail className="w-5 h-5" />
                                         </div>
                                         <input
@@ -222,7 +222,7 @@ export default function ForgotPasswordClient() {
                                             required
                                             value={state.email}
                                             onChange={(e) => dispatch({ type: ForgotPasswordActionType.SET_EMAIL, payload: e.target.value })}
-                                            className="w-full pl-12 pr-4 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-teal-100 focus:border-teal-500 outline-none transition-all text-slate-700 placeholder:text-slate-400"
+                                            className="w-full pl-12 pr-4 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-theme-primary/20 focus:border-theme-primary outline-none transition-all text-slate-700 placeholder:text-slate-400 text-theme-body-sm"
                                             placeholder="manish@example.com"
                                         />
                                     </div>
@@ -234,7 +234,7 @@ export default function ForgotPasswordClient() {
                                 <button
                                     type="submit"
                                     disabled={state.isLoading || !state.email}
-                                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white py-3.5 rounded-xl font-semibold transition-all shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none group"
+                                    className="w-full flex items-center justify-center gap-2 bg-theme-primary text-theme-primary-foreground hover:bg-theme-secondary py-3.5 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none group cursor-pointer border-none"
                                 >
                                     {state.isLoading ? (
                                         <>
@@ -273,7 +273,7 @@ export default function ForgotPasswordClient() {
                                         Verification Code
                                     </label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-theme-primary transition-colors">
                                             <KeyRound className="w-5 h-5" />
                                         </div>
                                         <input
@@ -282,7 +282,7 @@ export default function ForgotPasswordClient() {
                                             maxLength={6}
                                             value={state.otp}
                                             onChange={(e) => dispatch({ type: ForgotPasswordActionType.SET_OTP, payload: e.target.value.replace(/\D/g, '') })}
-                                            className="w-full pl-12 pr-4 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-teal-100 focus:border-teal-500 outline-none transition-all tracking-[0.5em] font-mono text-theme-h4 text-center font-bold text-slate-700"
+                                            className="w-full pl-12 pr-4 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-theme-primary/20 focus:border-theme-primary outline-none transition-all tracking-[0.5em] font-mono text-theme-h4 text-center font-bold text-slate-700"
                                             placeholder="000000"
                                         />
                                     </div>
@@ -293,7 +293,7 @@ export default function ForgotPasswordClient() {
                                         <button
                                             type="button"
                                             onClick={() => dispatch({ type: ForgotPasswordActionType.RESET_FORM })}
-                                            className="text-theme-caption text-teal-600 hover:text-teal-700 font-medium"
+                                            className="text-theme-caption text-theme-primary hover:text-theme-secondary font-semibold bg-transparent border-none cursor-pointer"
                                         >
                                             Resend code
                                         </button>
@@ -306,7 +306,7 @@ export default function ForgotPasswordClient() {
                                         New Password
                                     </label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-600 transition-colors">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-theme-primary transition-colors">
                                             <Lock className="w-5 h-5" />
                                         </div>
                                         <input
@@ -315,13 +315,13 @@ export default function ForgotPasswordClient() {
                                             minLength={8}
                                             value={state.newPassword}
                                             onChange={(e) => dispatch({ type: ForgotPasswordActionType.SET_NEW_PASSWORD, payload: e.target.value })}
-                                            className="w-full pl-12 pr-12 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-teal-100 focus:border-teal-500 outline-none transition-all text-slate-700"
+                                            className="w-full pl-12 pr-12 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-theme-primary/20 focus:border-theme-primary outline-none transition-all text-slate-700 text-theme-body-sm"
                                             placeholder="Enter a strong password"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => dispatch({ type: ForgotPasswordActionType.TOGGLE_PASSWORD_VISIBILITY })}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-theme-caption font-medium"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-theme-primary text-theme-caption font-semibold cursor-pointer border-none bg-transparent"
                                         >
                                             {state.showPassword ? 'Hide' : 'Show'}
                                         </button>
@@ -364,7 +364,7 @@ export default function ForgotPasswordClient() {
                                 <button
                                     type="submit"
                                     disabled={state.isLoading || state.otp.length !== 6 || !state.newPassword || state.newPassword.length < 8}
-                                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white py-3.5 rounded-xl font-semibold transition-all shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none group"
+                                    className="w-full flex items-center justify-center gap-2 bg-theme-primary text-theme-primary-foreground hover:bg-theme-secondary py-3.5 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none group cursor-pointer border-none"
                                 >
                                     {state.isLoading ? (
                                         <>
@@ -389,7 +389,7 @@ export default function ForgotPasswordClient() {
                         Remember your password?{' '}
                         <button
                             onClick={() => router.push('/auth/customerLogin')}
-                            className="text-teal-600 hover:text-teal-700 font-semibold hover:underline"
+                            className="text-theme-primary hover:text-theme-secondary font-semibold hover:underline bg-transparent border-none cursor-pointer"
                         >
                             Back to Login
                         </button>

@@ -13,15 +13,9 @@ import {
   fetchSingleTaxProfile,
   fetchUpdateTaxProfile,
 } from "@/utils/vendorApiClient";
-
-type FieldConfig = {
-  name: string;
-  label: string;
-  type: "text" | "textarea" | "checkbox";
-  required?: boolean;
-  placeholder?: string;
-  gridSpan?: 1 | 2;
-};
+import { TAX_PROFILE_FORM_TEXT } from "@/constants/vendorText";
+import { FieldConfig, FieldType } from "@/utils/Types";
+import { TAX_PROFILE_FORM_FIELDS } from "@/constants";
 
 export default function UnifiedTaxProfileFormPage() {
   const params = useParams();
@@ -44,30 +38,6 @@ export default function UnifiedTaxProfileFormPage() {
   } = useForm();
 
   // Dynamic Field Configuration
-  const formFields: FieldConfig[] = [
-    {
-      name: "profile_type",
-      label: "Profile Name (Category)",
-      type: "text",
-      required: true,
-      placeholder: "e.g. Electronics 18%, Apparel 5%",
-      gridSpan: 2,
-    },
-    {
-      name: "tax_profile_description",
-      label: "Description",
-      type: "textarea",
-      required: true,
-      placeholder: "Briefly describe what products this applies to...",
-      gridSpan: 2,
-    },
-    {
-      name: "is_default",
-      label: "Set as default profile for new products",
-      type: "checkbox",
-      gridSpan: 2,
-    },
-  ];
 
   // Fetch existing data for Edit Mode
   useEffect(() => {
@@ -97,13 +67,19 @@ export default function UnifiedTaxProfileFormPage() {
       }
       router.push(`/vendor/finances/tax-profiles`);
     } catch (error) {
-      alert(`Failed to ${isEditMode ? "update" : "create"} Tax Profile.`);
+      alert(
+        isEditMode
+          ? TAX_PROFILE_FORM_TEXT.ALERTS.FAILED_UPDATE
+          : TAX_PROFILE_FORM_TEXT.ALERTS.FAILED_CREATE,
+      );
     }
   };
 
   if (loading)
     return (
-      <div className="p-10 text-center text-gray-500">Loading form data...</div>
+      <div className="p-10 text-center text-gray-500">
+        {TAX_PROFILE_FORM_TEXT.LOADING}
+      </div>
     );
 
   return (
@@ -112,14 +88,16 @@ export default function UnifiedTaxProfileFormPage() {
         <div className="flex items-center gap-2 text-gray-700">
           <Layers size={22} className="text-blue-500" />
           <h1 className="text-theme-h4 font-bold text-gray-800">
-            {isEditMode ? "Edit Tax Profile" : "New Tax Profile"}
+            {isEditMode
+              ? TAX_PROFILE_FORM_TEXT.HEADER.EDIT
+              : TAX_PROFILE_FORM_TEXT.HEADER.NEW}
           </h1>
         </div>
         <Link
           href={`/vendor/finances/tax-profiles`}
           className="flex items-center gap-2 text-theme-body-sm bg-white border border-gray-200 text-gray-700 rounded-xl px-5 py-2.5 shadow-sm hover:bg-gray-50"
         >
-          <ArrowLeft size={16} /> Back to Profiles
+          <ArrowLeft size={16} /> {TAX_PROFILE_FORM_TEXT.HEADER.BACK}
         </Link>
       </header>
 
@@ -128,7 +106,7 @@ export default function UnifiedTaxProfileFormPage() {
           onSubmit={handleSubmit(onSubmit)}
           className="grid grid-cols-2 gap-6"
         >
-          {formFields.map((field) => {
+          {TAX_PROFILE_FORM_FIELDS.map((field) => {
             if (field.type === "checkbox") {
               return (
                 <div
@@ -171,7 +149,7 @@ export default function UnifiedTaxProfileFormPage() {
 
                   {errors[field.name] && (
                     <span className="text-theme-caption text-red-500 mt-1 block">
-                      This field is required
+                      {TAX_PROFILE_FORM_TEXT.FIELDS.REQUIRED_ERROR}
                     </span>
                   )}
                 </div>
@@ -196,7 +174,7 @@ export default function UnifiedTaxProfileFormPage() {
 
                 {errors[field.name] && (
                   <span className="text-theme-caption text-red-500 mt-1 block">
-                    This field is required
+                    {TAX_PROFILE_FORM_TEXT.FIELDS.REQUIRED_ERROR}
                   </span>
                 )}
               </div>
@@ -210,11 +188,13 @@ export default function UnifiedTaxProfileFormPage() {
               className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-colors shadow-sm disabled:opacity-70"
             >
               {isSubmitting ? (
-                "Processing..."
+                TAX_PROFILE_FORM_TEXT.ACTIONS.PROCESSING
               ) : (
                 <>
                   <Save size={18} />
-                  {isEditMode ? "Update Profile" : "Save Profile"}
+                  {isEditMode
+                    ? TAX_PROFILE_FORM_TEXT.ACTIONS.UPDATE
+                    : TAX_PROFILE_FORM_TEXT.ACTIONS.SAVE}
                 </>
               )}
             </button>

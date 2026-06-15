@@ -10,99 +10,15 @@ import { useForm } from "react-hook-form";
 import { authToken } from "@/utils/authToken";
 import {
   fetchCreateTaxSlab,
-  fetchSingleTaxSlab, // Updated import
+  fetchSingleTaxSlab,
   fetchTaxProfiles,
   fetchUpdateTaxSlab,
 } from "@/utils/vendorApiClient";
+import { TAX_RATES_FORM_TEXT } from "@/constants/vendorText";
+import { FieldConfig, FieldType } from "@/utils/Types";
+import { TAXSLAB_FORM_FIELDS } from "@/constants";
 
 // ── Configuration Array ───────────────────────────────────────────────
-export const TAXSLAB_FORM_FIELDS = [
-  // Links to Tax Profile (required by tax_types insert)
-  {
-    name: "tax_profile_id",
-    label: "Tax Profile",
-    type: "select",
-    required: true,
-    placeholder: "Select a tax profile...",
-    note: "The category this slab belongs to (e.g. Electronics, Apparel)",
-    gridSpan: 2, // Added so it spans the full row
-  },
-
-  // tax_types fields (semantic definition)
-  {
-    name: "tax_name",
-    label: "Tax name",
-    type: "text",
-    required: true,
-    placeholder: "e.g. GST",
-    note: "The tax authority name",
-  },
-  {
-    name: "tax_code",
-    label: "Tax code",
-    type: "text",
-    required: true,
-    placeholder: "e.g. GST-IN-18",
-    note: "Unique identifier used in invoices and reports",
-  },
-  {
-    name: "tax_scope",
-    label: "Tax scope",
-    type: "select",
-    required: true,
-    options: [
-      { value: "Intra-state", label: "Intra-state (CGST + SGST)" },
-      { value: "Inter-state", label: "Inter-state (IGST)" },
-      { value: "Both", label: "Both — resolved at checkout" },
-    ],
-
-    note: "For Indian GST, always use 'Both' — the split is auto-detected from addresses",
-    gridSpan: 2,
-  },
-
-  // tax_slabs fields (numeric rate)
-  {
-    name: "slab_name",
-    label: "Slab name",
-    type: "text",
-    required: true,
-    placeholder: "e.g. GST 18% — Electronics",
-  },
-  {
-    name: "total_rate",
-    label: "Total GST rate (%)",
-    type: "number",
-    required: true,
-    placeholder: "18",
-    step: "0.01",
-    note: "Enter the full rate (e.g. 18 for GST 18%). Split calculated at checkout",
-  },
-  {
-    name: "description",
-    label: "Description",
-    type: "textarea",
-    placeholder: "Describe the slab...",
-    note: "Optional",
-    gridSpan: 2, // Make textarea span full width
-  },
-  {
-    name: "effective_from",
-    label: "Effective from",
-    type: "date",
-    required: true,
-  },
-  {
-    name: "effective_to",
-    label: "Effective to (leave blank if ongoing)",
-    type: "date",
-  },
-  {
-    name: "is_exempt",
-    label: "Tax exempt (0% rate)",
-    type: "checkbox",
-    gridSpan: 2,
-  },
-];
 
 // ── Main Component ────────────────────────────────────────────────────
 export default function TaxSlabFormPage() {
@@ -110,7 +26,7 @@ export default function TaxSlabFormPage() {
   const router = useRouter();
   const { user } = useAppSelector((state: RootState) => state.auth);
   const vendorId = user && "vendor_id" in user ? user.vendor_id : "";
-  const slabId = params.id as string; // Updated from rateId to slabId
+  const slabId = params.id as string;
 
   const isEditMode = slabId !== "new";
 
@@ -174,13 +90,19 @@ export default function TaxSlabFormPage() {
       }
       router.push(`/vendor/finances/tax-rates`);
     } catch (error) {
-      alert(`Failed to ${isEditMode ? "update" : "create"} Tax Rule.`);
+      alert(
+        isEditMode
+          ? TAX_RATES_FORM_TEXT.ALERTS.FAILED_UPDATE
+          : TAX_RATES_FORM_TEXT.ALERTS.FAILED_CREATE,
+      );
     }
   };
 
   if (loading)
     return (
-      <div className="p-10 text-center text-gray-500">Loading form data...</div>
+      <div className="p-10 text-center text-gray-500">
+        {TAX_RATES_FORM_TEXT.LOADING}
+      </div>
     );
 
   return (
@@ -189,14 +111,16 @@ export default function TaxSlabFormPage() {
         <div className="flex items-center gap-2 text-gray-700">
           <Percent size={22} className="text-blue-500" />
           <h1 className="text-theme-h4 font-bold text-gray-800">
-            {isEditMode ? "Edit Tax Rule & Rate" : "New Tax Rule & Rate"}
+            {isEditMode
+              ? TAX_RATES_FORM_TEXT.HEADER.EDIT
+              : TAX_RATES_FORM_TEXT.HEADER.NEW}
           </h1>
         </div>
         <Link
           href={`/vendor/finances/tax-rates`}
           className="flex items-center gap-2 text-theme-body-sm bg-white border border-gray-200 text-gray-700 rounded-xl px-5 py-2.5 shadow-sm hover:bg-gray-50"
         >
-          <ArrowLeft size={16} /> Back to Rates
+          <ArrowLeft size={16} /> {TAX_RATES_FORM_TEXT.HEADER.BACK}
         </Link>
       </header>
 
@@ -233,7 +157,8 @@ export default function TaxSlabFormPage() {
                       className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white focus:outline-none transition-colors"
                     >
                       <option value="">
-                        {field.placeholder ?? `Select...`}
+                        {field.placeholder ??
+                          TAX_RATES_FORM_TEXT.FIELDS.SELECT_DEFAULT}
                       </option>
                       {options.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -242,11 +167,13 @@ export default function TaxSlabFormPage() {
                       ))}
                     </select>
                     {field.note && (
-                      <p className="text-theme-caption text-gray-400 mt-1">{field.note}</p>
+                      <p className="text-theme-caption text-gray-400 mt-1">
+                        {field.note}
+                      </p>
                     )}
                     {errors[field.name] && (
                       <span className="text-theme-caption text-red-500 mt-1 block">
-                        This field is required
+                        {TAX_RATES_FORM_TEXT.FIELDS.REQUIRED_ERROR}
                       </span>
                     )}
                   </div>
@@ -271,11 +198,13 @@ export default function TaxSlabFormPage() {
                     />
 
                     {field.note && (
-                      <p className="text-theme-caption text-gray-400 mt-1">{field.note}</p>
+                      <p className="text-theme-caption text-gray-400 mt-1">
+                        {field.note}
+                      </p>
                     )}
                     {errors[field.name] && (
                       <span className="text-theme-caption text-red-500 mt-1 block">
-                        This field is required
+                        {TAX_RATES_FORM_TEXT.FIELDS.REQUIRED_ERROR}
                       </span>
                     )}
                   </div>
@@ -317,11 +246,13 @@ export default function TaxSlabFormPage() {
                   />
 
                   {field.note && (
-                    <p className="text-theme-caption text-gray-400 mt-1">{field.note}</p>
+                    <p className="text-theme-caption text-gray-400 mt-1">
+                      {field.note}
+                    </p>
                   )}
                   {errors[field.name] && (
                     <span className="text-theme-caption text-red-500 mt-1 block">
-                      This field is required
+                      {TAX_RATES_FORM_TEXT.FIELDS.REQUIRED_ERROR}
                     </span>
                   )}
                 </div>
@@ -336,11 +267,13 @@ export default function TaxSlabFormPage() {
               className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-colors shadow-sm disabled:opacity-70"
             >
               {isSubmitting ? (
-                "Processing..."
+                TAX_RATES_FORM_TEXT.ACTIONS.PROCESSING
               ) : (
                 <>
                   <Save size={18} />
-                  {isEditMode ? "Update Tax Rule" : "Save Tax Rule"}
+                  {isEditMode
+                    ? TAX_RATES_FORM_TEXT.ACTIONS.UPDATE
+                    : TAX_RATES_FORM_TEXT.ACTIONS.SAVE}
                 </>
               )}
             </button>

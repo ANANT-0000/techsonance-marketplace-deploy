@@ -47,52 +47,12 @@ interface ComplianceField {
 const FIELD_KEY_LABELS: Record<
   string,
   { label: string; icon: string; description: string }
-> = {
-  gstin: {
-    label: "GST Registration",
-    icon: "receipt-tax",
-    description:
-      "Goods and Services Tax Identification Number — mandatory for invoicing",
-  },
-  pan: {
-    label: "PAN",
-    icon: "id-badge",
-    description:
-      "Permanent Account Number — issued by the Income Tax Department of India",
-  },
-  cin: {
-    label: "CIN",
-    icon: "building-store",
-    description:
-      "Corporate Identification Number — issued by the Ministry of Corporate Affairs",
-  },
-  vat_number: {
-    label: "VAT Number",
-    icon: "world",
-    description:
-      "Value Added Tax registration number for applicable jurisdictions",
-  },
-  ein: {
-    label: "EIN",
-    icon: "id-badge-2",
-    description: "Employer Identification Number — US federal tax ID",
-  },
-  kvk: {
-    label: "KVK Number",
-    icon: "building",
-    description: "Netherlands Chamber of Commerce registration number",
-  },
-  trade_license: {
-    label: "Trade License",
-    icon: "certificate",
-    description: "Locally issued trade or business license",
-  },
-};
+> = COMPLIANCE_TEXT.FIELD_KEY_LABELS;
 
 function getFieldMeta(key: string) {
   return (
     // @ts-ignore
-    COUNTRIES[key] ?? {
+    FIELD_KEY_LABELS[key] ?? {
       label: key.replace(/_/g, " ").toUpperCase(),
       icon: "file-certificate",
       description: "Regulatory compliance identifier",
@@ -111,7 +71,7 @@ function getStatusConfig(
   icon: string;
 } {
   if (!isActive)
-    return { label: "Inactive", color: "gray", icon: "circle-off" };
+    return { label: COMPLIANCE_TEXT.STATUS_INACTIVE, color: "gray", icon: "circle-off" };
   switch (status?.toLowerCase()) {
     case "verified":
       return {
@@ -144,7 +104,7 @@ function getStatusConfig(
         icon: "alert-triangle",
       };
     default:
-      return { label: "Submitted", color: "blue", icon: "circle-dot" };
+      return { label: COMPLIANCE_TEXT.STATUS_SUBMITTED, color: "blue", icon: "circle-dot" };
   }
 }
 
@@ -252,7 +212,7 @@ function DocumentPreviewModal({
                 className="ti ti-external-link text-theme-caption"
                 aria-hidden="true"
               />
-              Open
+              {COMPLIANCE_TEXT.MODAL.OPEN}
             </a>
             <button
               onClick={onClose}
@@ -287,7 +247,7 @@ function DocumentPreviewModal({
                 aria-hidden="true"
               />
               <p className="text-theme-body-sm">
-                Preview not available for this file type.
+                {COMPLIANCE_TEXT.MODAL.PREVIEW_ERR}
               </p>
               <a
                 href={url}
@@ -295,7 +255,7 @@ function DocumentPreviewModal({
                 rel="noopener noreferrer"
                 className="text-blue-600 text-theme-body-sm underline"
               >
-                Download file
+                {COMPLIANCE_TEXT.MODAL.DOWNLOAD}
               </a>
             </div>
           )}
@@ -398,14 +358,14 @@ function ComplianceCard({
                 className={`ti ti-${expired ? "alert-circle" : expiring ? "alert-triangle" : "calendar"} text-theme-xxs`}
                 aria-hidden="true"
               />
-              {expired ? "Expired" : expiring ? "Expires soon" : "Valid until"}{" "}
+              {expired ? COMPLIANCE_TEXT.CARD.EXPIRED : expiring ? COMPLIANCE_TEXT.CARD.EXPIRES_SOON : COMPLIANCE_TEXT.CARD.VALID_UNTIL}{" "}
               {formatDate(field.valid_until)}
             </span>
           )}
 
           <span className="inline-flex items-center gap-1.5 text-theme-xxs text-stone-400 bg-stone-50 border border-stone-200 px-2.5 py-1 rounded-full">
             <i className="ti ti-clock text-theme-xxs" aria-hidden="true" />
-            Added {formatDate(field.created_at)}
+            {COMPLIANCE_TEXT.CARD.ADDED} {formatDate(field.created_at)}
           </span>
         </div>
 
@@ -417,7 +377,7 @@ function ComplianceCard({
               aria-hidden="true"
             />
             <p className="text-theme-caption text-red-700 leading-relaxed">
-              <span className="font-semibold">Rejection reason: </span>
+              <span className="font-semibold">{COMPLIANCE_TEXT.CARD.REJECTION_REASON}</span>
               {field.rejection_reason}
             </p>
           </div>
@@ -426,7 +386,7 @@ function ComplianceCard({
         {/* ── Proof document section ── */}
         <div className="border-t border-stone-100 pt-4 mt-auto">
           <p className="text-theme-tiny font-semibold text-stone-400 uppercase tracking-widest mb-3">
-            Proof document
+            {COMPLIANCE_TEXT.CARD.PROOF_DOC}
           </p>
 
           {doc ? (
@@ -452,7 +412,7 @@ function ComplianceCard({
                   className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-stone-200 bg-white text-theme-caption text-stone-600 hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm"
                 >
                   <i className="ti ti-eye text-theme-xxs" aria-hidden="true" />
-                  Preview
+                  {COMPLIANCE_TEXT.CARD.PREVIEW}
                 </button>
                 <a
                   href={doc.document_url}
@@ -501,7 +461,7 @@ function ComplianceCard({
                     className="ti ti-loader-2 animate-spin text-theme-body"
                     aria-hidden="true"
                   />
-                  <span className="text-theme-caption">Uploading…</span>
+                  <span className="text-theme-caption">{COMPLIANCE_TEXT.CARD.UPLOADING}</span>
                 </div>
               ) : (
                 <>
@@ -512,11 +472,11 @@ function ComplianceCard({
                     />
                   </div>
                   <p className="text-theme-caption text-stone-500">
-                    Drop file or{" "}
-                    <span className="text-blue-600 font-medium">browse</span>
+                    {COMPLIANCE_TEXT.CARD.DROP_FILE}{" "}
+                    <span className="text-blue-600 font-medium">{COMPLIANCE_TEXT.CARD.BROWSE}</span>
                   </p>
                   <p className="text-theme-tiny text-stone-400 mt-1">
-                    PDF, JPG, PNG, WEBP · max 10 MB
+                    {COMPLIANCE_TEXT.CARD.FILE_LIMIT}
                   </p>
                 </>
               )}
