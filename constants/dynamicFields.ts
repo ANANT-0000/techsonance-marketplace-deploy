@@ -351,13 +351,7 @@ export const WAREHOUSE_ADDRESS_FIELDS: {
     placeholder: "Enter street address",
     required: true,
   },
-  {
-    id: "address_line_2",
-    label: "Address Line 2",
-    type: "text",
-    placeholder: "Enter apartment, suite, etc.",
-    required: false,
-  },
+
   {
     id: "street",
     label: "Street",
@@ -621,9 +615,18 @@ export const TAXSLAB_FORM_FIELDS: FieldConfig[] = [
     type: FieldType.SELECT,
     required: true,
     options: [
-      { value: "Intra-state", label: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.OPTIONS.INTRA },
-      { value: "Inter-state", label: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.OPTIONS.INTER },
-      { value: "Both", label: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.OPTIONS.BOTH },
+      {
+        value: "Intra-state",
+        label: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.OPTIONS.INTRA,
+      },
+      {
+        value: "Inter-state",
+        label: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.OPTIONS.INTER,
+      },
+      {
+        value: "Both",
+        label: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.OPTIONS.BOTH,
+      },
     ],
 
     note: TAX_RATES_FORM_TEXT.FIELDS.TAX_SCOPE.NOTE,

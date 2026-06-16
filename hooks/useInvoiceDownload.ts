@@ -60,7 +60,7 @@ export interface Legal {
 export interface Address {
   recipientName: string;
   addressLine1: string;
-  addressLine2?: string;
+
   street: string;
   city: string;
   state: string;
@@ -197,7 +197,6 @@ function buildInvoiceHtml(payload: InvoicePayload): string {
       <div class="block-label">Sold By:</div>
       <div class="recipient-name">${seller.legalName}</div>
       <div class="address-line">${seller.address.addressLine1}</div>
-      ${seller.address.addressLine2 ? `<div class="address-line">${seller.address.addressLine2}</div>` : ""}
       <div class="address-line">${seller.address.city}, ${seller.address.state} ${seller.address.postalCode}</div>
       <div class="address-line">${seller.address.country}</div>
       <div style="margin-top:6px">
@@ -210,7 +209,7 @@ function buildInvoiceHtml(payload: InvoicePayload): string {
       <div class="block-label">Billing Address:</div>
       <div class="recipient-name">${customer.billingAddress.recipientName}</div>
       <div class="address-line">${customer.billingAddress.addressLine1}</div>
-      ${customer.billingAddress.addressLine2 ? `<div class="address-line">${customer.billingAddress.addressLine2}</div>` : ""}
+      
       <div class="address-line">${customer.billingAddress.city}, ${customer.billingAddress.state} ${customer.billingAddress.postalCode}</div>
       <div class="address-line">${customer.billingAddress.country}</div>
       ${customer.billingAddress.stateCode ? `<div class="address-line" style="font-weight:700">State/UT Code: ${customer.billingAddress.stateCode}</div>` : ""}
@@ -218,7 +217,7 @@ function buildInvoiceHtml(payload: InvoicePayload): string {
       <div class="block-label">Shipping Address:</div>
       <div class="recipient-name">${customer.shippingAddress.recipientName}</div>
       <div class="address-line">${customer.shippingAddress.addressLine1}</div>
-      ${customer.shippingAddress.addressLine2 ? `<div class="address-line">${customer.shippingAddress.addressLine2}</div>` : ""}
+        
       <div class="address-line">${customer.shippingAddress.city}, ${customer.shippingAddress.state} ${customer.shippingAddress.postalCode}</div>
       <div class="address-line">${customer.shippingAddress.country}</div>
       ${customer.placeOfSupply ? `<div class="address-line" style="font-weight:700;margin-top:2px">Place of supply: ${customer.placeOfSupply}</div>` : ""}

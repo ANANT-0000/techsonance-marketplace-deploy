@@ -15,7 +15,7 @@ export function Footer({ styles = "" }: { styles?: string }) {
     setHeaderCount(footerContent.length);
   }, []);
   // Skip footer for admin/vendor routes
-  if (path.startsWith("/admin") || path.startsWith("/vendor")) {
+  if (path && (path.startsWith("/admin") || path.startsWith("/vendor"))) {
     return <></>;
   }
 

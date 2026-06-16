@@ -15,7 +15,7 @@ interface AddressType {
   id: string;
   address_type: string;
   address_line_1: string;
-  address_line_2?: string;
+
   city: string;
   state: string;
   postal_code: string;
@@ -48,7 +48,7 @@ interface FormField {
 const INITIAL_FORM = {
   address_for: "Registered Office",
   address_line_1: "",
-  address_line_2: "",
+
   street: "",
   city: "",
   state: "",
@@ -73,7 +73,10 @@ const FORM_FIELDS: FormField[] = [
         value: "Registered Office",
       },
       { label: LOCATIONS_TEXT.FORM.OPTIONS.BILLING, value: "Billing Address" },
-      { label: LOCATIONS_TEXT.FORM.OPTIONS.CORPORATE, value: "Corporate Office" },
+      {
+        label: LOCATIONS_TEXT.FORM.OPTIONS.CORPORATE,
+        value: "Corporate Office",
+      },
     ],
   },
   {
@@ -84,13 +87,7 @@ const FORM_FIELDS: FormField[] = [
     colSpan: "full",
     placeholder: LOCATIONS_TEXT.FORM.PLACEHOLDERS.LINE_1,
   },
-  {
-    name: "address_line_2",
-    label: LOCATIONS_TEXT.FORM.ADDRESS_LINE_2,
-    type: "text",
-    colSpan: "full",
-    placeholder: LOCATIONS_TEXT.FORM.PLACEHOLDERS.LINE_2,
-  },
+
   {
     name: "city",
     label: LOCATIONS_TEXT.FORM.CITY,
@@ -246,7 +243,10 @@ type LocationsAction =
   | { type: LocationsActionType.SET_FORM_DATA; payload: FormData }
   | { type: LocationsActionType.RESET_FORM };
 
-function locationsReducer(state: LocationsState, action: LocationsAction): LocationsState {
+function locationsReducer(
+  state: LocationsState,
+  action: LocationsAction,
+): LocationsState {
   switch (action.type) {
     case LocationsActionType.SET_ADDRESSES:
       return { ...state, addresses: action.payload };
@@ -286,7 +286,10 @@ export default function VendorAddressesPage() {
     dispatch({ type: LocationsActionType.SET_LOADING, payload: true });
     try {
       const res = await fetchGetCompanyLocations(token || "");
-      dispatch({ type: LocationsActionType.SET_ADDRESSES, payload: res.data || [] });
+      dispatch({
+        type: LocationsActionType.SET_ADDRESSES,
+        payload: res.data || [],
+      });
     } catch (err) {
     } finally {
       dispatch({ type: LocationsActionType.SET_LOADING, payload: false });
@@ -342,7 +345,12 @@ export default function VendorAddressesPage() {
           </div>
         </div>
         <button
-          onClick={() => dispatch({ type: LocationsActionType.SET_SHOW_MODAL, payload: true })}
+          onClick={() =>
+            dispatch({
+              type: LocationsActionType.SET_SHOW_MODAL,
+              payload: true,
+            })
+          }
           className="flex items-center gap-2 font-semibold text-theme-body-sm bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm"
         >
           <Plus size={16} /> {LOCATIONS_TEXT.ADD_NEW_ADDRESS}
@@ -378,7 +386,12 @@ export default function VendorAddressesPage() {
               {LOCATIONS_TEXT.NO_ADDRESSES_DESC}
             </p>
             <button
-              onClick={() => dispatch({ type: LocationsActionType.SET_SHOW_MODAL, payload: true })}
+              onClick={() =>
+                dispatch({
+                  type: LocationsActionType.SET_SHOW_MODAL,
+                  payload: true,
+                })
+              }
               className="text-theme-body-sm font-semibold text-blue-600 hover:underline"
             >
               {LOCATIONS_TEXT.ADD_FIRST_ADDRESS}
@@ -417,11 +430,7 @@ export default function VendorAddressesPage() {
                       <h3 className="font-bold text-gray-800 mb-1 line-clamp-1">
                         {address.address_line_1}
                       </h3>
-                      {address.address_line_2 && (
-                        <p className="text-theme-body-sm text-gray-600 mb-1">
-                          {address.address_line_2}
-                        </p>
-                      )}
+
                       <p className="text-theme-body-sm text-gray-600">
                         {address.city}, {address.state} {address.postal_code}
                       </p>
@@ -465,7 +474,8 @@ export default function VendorAddressesPage() {
             >
               <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center z-10">
                 <h2 className="text-theme-h5 font-bold text-gray-800 flex items-center gap-2">
-                  <Building className="text-blue-500" size={20} /> {LOCATIONS_TEXT.ADD_TITLE}
+                  <Building className="text-blue-500" size={20} />{" "}
+                  {LOCATIONS_TEXT.ADD_TITLE}
                 </h2>
                 <button
                   onClick={closeModal}
@@ -520,7 +530,9 @@ export default function VendorAddressesPage() {
                     ) : (
                       <Save size={18} />
                     )}
-                    {saving ? LOCATIONS_TEXT.SAVING : LOCATIONS_TEXT.SAVE_ADDRESS}
+                    {saving
+                      ? LOCATIONS_TEXT.SAVING
+                      : LOCATIONS_TEXT.SAVE_ADDRESS}
                   </button>
                 </div>
               </form>

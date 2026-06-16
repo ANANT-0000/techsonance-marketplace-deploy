@@ -29,7 +29,7 @@ import { UiText } from "@/constants/ui-text";
 
 interface Address {
   address_line_1?: string;
-  address_line_2?: string;
+
   city?: string;
   state?: string;
   country?: string;
@@ -611,7 +611,7 @@ export default function BackOrderDetailPage() {
                 {address ? (
                   <div className="text-theme-body-sm text-gray-700 space-y-0.5 leading-relaxed">
                     {address.address_line_1 && <p>{address.address_line_1}</p>}
-                    {address.address_line_2 && <p>{address.address_line_2}</p>}
+
                     {(address.city || address.state) && (
                       <p>
                         {[address.city, address.state]

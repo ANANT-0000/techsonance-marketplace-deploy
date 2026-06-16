@@ -71,7 +71,7 @@ interface OrderItem {
 interface Address {
   name: string;
   address_line_1: string;
-  address_line_2: string;
+
   city: string;
   state: string;
   postal_code: string;
@@ -347,9 +347,7 @@ export default function OrderDetailsPage() {
                       {order.address.name}
                     </p>
                     <p>{order.address.address_line_1}</p>
-                    {order.address.address_line_2 && (
-                      <p>{order.address.address_line_2}</p>
-                    )}
+
                     <p>
                       {order.address.city}, {order.address.state}{" "}
                       {order.address.postal_code}
@@ -366,7 +364,9 @@ export default function OrderDetailsPage() {
             {/* Items Card */}
             <Card className="shadow-sm rounded-2xl overflow-hidden px-2 py-2 ">
               <CardHeader className="bg-gray-50/50 flex flex-row justify-between items-center ">
-                <CardTitle className="text-theme-h6">Items In This Order</CardTitle>
+                <CardTitle className="text-theme-h6">
+                  Items In This Order
+                </CardTitle>
                 <Badge
                   variant="secondary"
                   className="rounded-full bg-blue-50 text-blue-700 font-semibold border-blue-100 border-b"

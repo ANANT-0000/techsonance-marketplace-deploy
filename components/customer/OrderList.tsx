@@ -14,7 +14,7 @@ export enum OrderActionType {
   FETCH_ERROR = "FETCH_ERROR",
   LOAD_MORE = "LOAD_MORE",
   SET_DATE_FILTER = "SET_DATE_FILTER",
-  RESET_PAGINATION = "RESET_PAGINATION"
+  RESET_PAGINATION = "RESET_PAGINATION",
 }
 
 // shadcn/ui imports
@@ -45,7 +45,7 @@ export interface ReturnRequest {
 export interface AddressPayload {
   name: string;
   address_line_1: string;
-  address_line_2?: string;
+
   city: string;
   state: string;
   postal_code: string;
@@ -479,7 +479,10 @@ export function OrdersList({
           className={`rounded-full h-8 text-theme-caption font-semibold px-4 shrink-0 ${state.dateFilter === "last30" ? "bg-black text-white hover:bg-gray-800" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
           onClick={() => {
             setStatus(null);
-            dispatch({ type: OrderActionType.SET_DATE_FILTER, payload: "last30" });
+            dispatch({
+              type: OrderActionType.SET_DATE_FILTER,
+              payload: "last30",
+            });
           }}
         >
           {ORDER_LIST_TEXT.LAST_30_DAYS}

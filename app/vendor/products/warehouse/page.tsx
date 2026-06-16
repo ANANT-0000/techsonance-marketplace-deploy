@@ -28,7 +28,7 @@ interface Address {
   number: string;
   address_type: "warehouse" | string;
   address_line_1: string;
-  address_line_2: string;
+
   street: string;
   city: string;
   state: string;
@@ -81,7 +81,7 @@ export default function LocationsPage() {
       is_default: false,
       phone: "",
       address_line_1: "",
-      address_line_2: "",
+
       city: "",
       state: "",
       street: "",
@@ -215,7 +215,7 @@ export default function LocationsPage() {
         is_default: selectedLocation.address.is_default || false,
         phone: selectedLocation.address.number || "",
         address_line_1: selectedLocation.address.address_line_1 || "",
-        address_line_2: selectedLocation.address.address_line_2 || "",
+
         city: selectedLocation.address.city || "",
         state: selectedLocation.address.state || "",
         street: selectedLocation.address.street || "",
@@ -344,7 +344,9 @@ export default function LocationsPage() {
 
       <section className="w-full p-6 bg-white rounded-lg border border-gray-200 shadow-sm mx-auto">
         <div className="w-full flex justify-between items-center mb-6 border-b pb-4">
-          <h1 className="text-theme-h4 font-bold text-gray-800">{WAREHOUSE_LOCATIONS_TEXT.HEADER.TITLE}</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">
+            {WAREHOUSE_LOCATIONS_TEXT.HEADER.TITLE}
+          </h1>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

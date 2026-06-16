@@ -4,7 +4,20 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMediaQuery } from "react-responsive";
 import { BRAND_LOGO } from "@/constants/common";
-import { Bell, Heart, ShoppingBag, User, Search, Menu, ChevronDown, ShoppingCart, MapPin, HelpCircle, LogOut, LogIn } from "lucide-react";
+import {
+  Bell,
+  Heart,
+  ShoppingBag,
+  User,
+  Search,
+  Menu,
+  ChevronDown,
+  ShoppingCart,
+  MapPin,
+  HelpCircle,
+  LogOut,
+  LogIn,
+} from "lucide-react";
 import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import { motion } from "motion/react";
 import { RootState } from "@/lib/store";
@@ -15,6 +28,7 @@ import { openLoginModal, logOut } from "@/lib/features/auth/authSlice";
 import { SearchBar } from "./SearchBar";
 import { BackButton } from "../ui/back-button";
 import { SearchTrigger } from "./SearchOverlay";
+import { toggleMenu } from "@/lib/features/menuBar";
 
 export enum NavActionType {
   TOGGLE_SEARCH = "TOGGLE_SEARCH",
@@ -54,23 +68,22 @@ export function Navbar({
   const { items } = useAppSelector((state: RootState) => state.cart);
   const { wishItems } = useAppSelector((state: RootState) => state.wishlist);
   const { user } = useAppSelector((state: RootState) => state.auth);
-
+  const { isMenuOpen } = useAppSelector((state: RootState) => state.menu);
   const dispatch = useAppDispatch();
+
   const wishlistCount = wishItems.length; // Simplified since array length implies count
   const path = usePathname();
   const router = useRouter();
-  const isHome = path === "/";
-  const isTabletOrMobile = useMediaQuery({ query: "(max-width: 1224px)" });
+  const isDashboard = path ? path.includes("/customer") : false;
+  const isHome = path === "/" ? (isDashboard ? false : true) : false;
   const logoUrl = themeData.logo_url
     ? themeData.logo_url || themeData.logo_dark_url
     : BRAND_LOGO;
-  const [state, dispatchState] = useReducer(navReducer, {
-    isSearchOpen: false,
-    searchQuery: "",
-  });
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
+  const onOpenDrawer = () => {
+    dispatch(toggleMenu());
+  };
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       if (!(event.target as HTMLElement).closest(".user-dropdown-container")) {
@@ -132,9 +145,11 @@ export function Navbar({
   };
 
   if (
-    path.startsWith("/admin") ||
-    path.startsWith("/vendor") ||
-    path.includes("checkout")
+    path && (
+      path.startsWith("/admin") ||
+      path.startsWith("/vendor") ||
+      path.includes("checkout")
+    )
   ) {
     return null;
   }
@@ -157,7 +172,16 @@ export function Navbar({
       <nav
         className={`flex justify-between items-center px-4 py-1.5 bg-navbar text-navbar-foreground border-b border-gray-200 shadow-sm storefront-nav ${navPosCls} ${styles} xl:hidden`}
       >
-        {isHome ? null : <BackButton />}
+        {isHome && <BackButton />}
+        {isDashboard && (
+          <button
+            onClick={onOpenDrawer}
+            className="p-1.5 hover:bg-navbar-foreground/10 rounded-lg active:scale-95 transition-all text-current cursor-pointer animate-fade-in"
+            aria-label="Open navigation menu"
+          >
+            <Menu size={20} />
+          </button>
+        )}
         <Link href="/">
           <img
             src={logoUrl}
@@ -265,7 +289,10 @@ export function Navbar({
                   aria-label="User profile and menu"
                 >
                   <User size={20} strokeWidth={1.5} />
-                  <ChevronDown size={14} className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    size={14}
+                    className={`transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
 
                 {isDropdownOpen && (
@@ -305,8 +332,14 @@ export function Navbar({
                     >
                       {user?.id ? (
                         <>
-                          <LogOut size={16} strokeWidth={1.5} className="text-red-500" />
-                          <span className="text-red-500 hover:text-red-600">Log Out</span>
+                          <LogOut
+                            size={16}
+                            strokeWidth={1.5}
+                            className="text-red-500"
+                          />
+                          <span className="text-red-500 hover:text-red-600">
+                            Log Out
+                          </span>
                         </>
                       ) : (
                         <>

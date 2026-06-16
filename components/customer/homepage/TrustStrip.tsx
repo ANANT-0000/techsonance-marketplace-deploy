@@ -3,6 +3,9 @@ import { TRUST_BADGE_DEFAULT } from "@/constants/storefront";
 
 // Normalize icon names: "truck" → "Truck", "shield-check" → "ShieldCheck", "ShieldCheck" → "ShieldCheck"
 function toIconKey(name: string): string {
+  if (!/[_\s-]/.test(name)) {
+    return name;
+  }
   return name
     .split(/[-_\s]+/)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())

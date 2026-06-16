@@ -53,8 +53,8 @@ function Sk({
 export default function Home() {
   const { getField, banners, categories, heroSlides, isLoading } =
     useHomepageData();
-  const { getField: getStoreField } = useStoreFrontCmsData();
   const { themeData } = useThemeData();
+
   const layout: string[] = themeData?.homepage_layout || [
     LayoutSection.HERO,
     LayoutSection.CATEGORIES,
@@ -67,9 +67,6 @@ export default function Home() {
   const [products, setProducts] = useState<any[]>([]);
   const [newArrivals, setNewArrivals] = useState<any[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
-
-  const isPageLoading = isLoading && productsLoading;
-
   useEffect(() => {
     AxiosAPI.get("/v1/products/homepage?limit=8")
       .then((res) => {
@@ -512,7 +509,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans antialiased overflow-x-hidden">
       {/* Full-page loader */}
-      {isPageLoading && <PageLoader />}
+      {/* {isPageLoading && <PageLoader />} */}
 
       {/* ── DESKTOP ─────────────────────────────────────────────────────────── */}
       <div className="hidden lg:block">

@@ -16,6 +16,7 @@ interface AddToCartProps {
   productVariantId: string;
   styles?: string;
   productVariant?: Variant;
+  variant?: "default" | "pink";
 }
 
 export interface CartItemResponse {
@@ -31,6 +32,7 @@ export function AddToCart({
   productVariantId,
   styles,
   productVariant,
+  variant = "default",
 }: AddToCartProps) {
   const dispatch = useAppDispatch();
   const { items } = useAppSelector((state: RootState) => state.cart);
@@ -46,18 +48,25 @@ export function AddToCart({
     cartId?: string;
   } | null>(null);
 
-  const [resolvedVariant, setResolvedVariant] = useState<Variant | undefined>(productVariant);
+  const [resolvedVariant, setResolvedVariant] = useState<Variant | undefined>(
+    productVariant,
+  );
+  const currentVariant =
+    productVariant && productVariant.price !== undefined
+      ? productVariant
+      : resolvedVariant;
 
   useEffect(() => {
     if (productVariant && productVariant.price !== undefined) {
       setResolvedVariant(productVariant);
       return;
     }
-    
+
     let active = true;
     const loadVariantDetails = async () => {
       try {
-        const { fetchProductVariantDetails } = await import("@/utils/commonAPiClient");
+        const { fetchProductVariantDetails } =
+          await import("@/utils/commonAPiClient");
         const res = await fetchProductVariantDetails(productVariantId);
         if (active && res && res.success && res.data) {
           const vData = res.data;
@@ -132,7 +141,7 @@ export function AddToCart({
           cartItemId: "",
           productVariantId,
           quantity: optimisticQuantity,
-          productVariant: resolvedVariant,
+          productVariant: currentVariant,
         }),
       );
 
@@ -154,7 +163,7 @@ export function AddToCart({
         cartItemId: cartItem?.cartItemId ?? "",
         productVariantId,
         quantity: optimisticQuantity,
-        productVariant: resolvedVariant,
+        productVariant: currentVariant,
       }),
     );
 
@@ -188,7 +197,7 @@ export function AddToCart({
           cartItemId: cartResponse.cart_item_id,
           productVariantId: cartResponse.product_variant_id,
           quantity: cartResponse.quantity,
-          productVariant: resolvedVariant,
+          productVariant: currentVariant,
         }),
       );
     } catch (error: any) {
@@ -206,7 +215,7 @@ export function AddToCart({
               cartItemId: prevCartItemId ?? "",
               productVariantId,
               quantity: prevQuantity,
-              productVariant: resolvedVariant,
+              productVariant: currentVariant,
             }),
           );
         }
@@ -289,7 +298,7 @@ export function AddToCart({
             cartItemId: prevCartItemId,
             productVariantId,
             quantity: prevQuantity,
-            productVariant: resolvedVariant,
+            productVariant: currentVariant,
           }),
         );
       }
@@ -302,7 +311,11 @@ export function AddToCart({
 
   return (
     <div
-      className={`relative flex items-center justify-center overflow-hidden select-none transition-all duration-200 ${styles ?? ""}`}
+      className={
+        variant === "pink"
+          ? `flex items-center gap-3 bg-pink-50/50 dark:bg-pink-950/20 border border-pink-100/30 dark:border-pink-900/10 rounded-full px-3 py-1.5 shadow-sm text-pink-600 dark:text-pink-400 font-extrabold text-sm select-none transition-all duration-200 ${styles ?? ""}`
+          : `relative flex items-center justify-center overflow-hidden select-none transition-all duration-200 ${styles ?? ""}`
+      }
     >
       <AnimatePresence mode="wait">
         {quantity === 0 ? (
@@ -333,16 +346,24 @@ export function AddToCart({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.15 }}
-            className="absolute inset-0 flex items-center justify-between bg-theme-primary text-theme-primary-foreground px-1 py-1 w-full h-full"
+            className={
+              variant === "pink"
+                ? "flex items-center justify-between gap-3 w-full h-full text-pink-600 dark:text-pink-400"
+                : "absolute inset-0 flex items-center justify-between bg-theme-primary text-theme-primary-foreground px-1 py-1 w-full h-full"
+            }
           >
             <motion.button
               whileTap={isSyncing ? {} : { scale: 0.82 }}
               onClick={handleDecrement}
               disabled={isSyncing}
-              className="h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors disabled:opacity-50"
+              className={
+                variant === "pink"
+                  ? "text-pink-600 dark:text-pink-400 hover:bg-pink-100/50 rounded-full p-0.5 transition-colors cursor-pointer disabled:opacity-50"
+                  : "h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors disabled:opacity-50"
+              }
               aria-label={ADD_TO_CART_TEXT.ARIA_REMOVE}
             >
-              <Minus size={15} strokeWidth={2.5} />
+              <Minus size={variant === "pink" ? 14 : 15} strokeWidth={2.5} />
             </motion.button>
 
             <AnimatePresence mode="wait">
@@ -352,7 +373,11 @@ export function AddToCart({
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 8, opacity: 0 }}
                 transition={{ duration: 0.12 }}
-                className="font-bold text-theme-caption sm:text-theme-body-sm min-w-[20px] text-center tabular-nums grow"
+                className={
+                  variant === "pink"
+                    ? "font-extrabold text-sm tabular-nums min-w-[14px] text-center"
+                    : "font-bold text-theme-caption sm:text-theme-body-sm min-w-[20px] text-center tabular-nums grow"
+                }
               >
                 {quantity}
               </motion.span>
@@ -362,10 +387,14 @@ export function AddToCart({
               whileTap={isSyncing ? {} : { scale: 0.82 }}
               onClick={handleIncrement}
               disabled={isSyncing}
-              className="h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors disabled:opacity-50"
+              className={
+                variant === "pink"
+                  ? "text-pink-600 dark:text-pink-400 hover:bg-pink-100/50 rounded-full p-0.5 transition-colors cursor-pointer disabled:opacity-50"
+                  : "h-full aspect-square flex items-center justify-center rounded-md hover:bg-white/20 transition-colors disabled:opacity-50"
+              }
               aria-label={ADD_TO_CART_TEXT.ARIA_ADD}
             >
-              <Plus size={15} strokeWidth={2.5} />
+              <Plus size={variant === "pink" ? 14 : 15} strokeWidth={2.5} />
             </motion.button>
           </motion.div>
         )}

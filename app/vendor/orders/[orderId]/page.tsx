@@ -99,7 +99,7 @@ interface Order {
   shipping_address: {
     name: string;
     address_line_1: string;
-    address_line_2: string;
+
     city: string;
     state: string;
     postal_code: string;
@@ -780,9 +780,7 @@ export default function VendorOrderDetails({}) {
                       {order.shipping_address.name}
                     </p>
                     <p>{order.shipping_address.address_line_1}</p>
-                    {order.shipping_address.address_line_2 && (
-                      <p>{order.shipping_address.address_line_2}</p>
-                    )}
+
                     <p>
                       {order.shipping_address.city},{" "}
                       {order.shipping_address.state}{" "}

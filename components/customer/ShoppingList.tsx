@@ -231,7 +231,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
     delta: Record<string, string | number | undefined | null>,
   ) => {
     const next = buildParams(searchParams, delta);
-    router.push(`${pathname}?${next.toString()}`, { scroll: false });
+    router.push(`${pathname || ""}?${next.toString()}`, { scroll: false });
   };
 
   const handleSearch = (value: string) => {

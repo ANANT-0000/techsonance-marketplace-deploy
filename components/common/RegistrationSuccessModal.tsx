@@ -1,20 +1,23 @@
-import { CheckCircle2, Mail, Clock, ArrowRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { REGISTRATION_SUCCESS_MODAL_TEXT } from '@/constants/commonText';
+import { CheckCircle2, Mail, Clock, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { REGISTRATION_SUCCESS_MODAL_TEXT } from "@/constants/commonText";
 interface RegistrationSuccessModalProps {
-    isOpen: boolean;
-    onClose: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export const RegistrationSuccessModal = ({ isOpen, onClose }: RegistrationSuccessModalProps) => {
-    const router = useRouter();
-    if (!isOpen) return null;
-    if (isOpen) {
-        setTimeout(() => {
-            onClose();
-            router.push('/');
-        }, 3000);
-    }
+export const RegistrationSuccessModal = ({
+  isOpen,
+  onClose,
+}: RegistrationSuccessModalProps) => {
+  const router = useRouter();
+  if (!isOpen) return null;
+  if (isOpen) {
+    setTimeout(() => {
+      onClose();
+      router.push("/");
+    }, 3000);
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-300">
@@ -61,16 +64,20 @@ export const RegistrationSuccessModal = ({ isOpen, onClose }: RegistrationSucces
             onClick={onClose}
             className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-2xl transition-colors text-theme-body-sm"
           >
-            {REGISTRATION_SUCCESS_MODAL_TEXT.BACK_TO_HOME} <ArrowRight size={16} />
+            {REGISTRATION_SUCCESS_MODAL_TEXT.BACK_TO_HOME}{" "}
+            <ArrowRight size={16} />
           </button>
           <p className="text-theme-caption text-gray-400 mt-4">
             {REGISTRATION_SUCCESS_MODAL_TEXT.NEED_HELP}{" "}
-            <a href="mailto:support@platform.com" className="underline">
-              support@platform.com
+            <a
+              href={`mailto:${REGISTRATION_SUCCESS_MODAL_TEXT.SUPPORT_EMAIL}`}
+              className="underline"
+            >
+              {REGISTRATION_SUCCESS_MODAL_TEXT.SUPPORT_EMAIL}
             </a>
           </p>
         </div>
       </div>
     </div>
   );
-}
+};

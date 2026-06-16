@@ -1,8 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // webpack: (config, { dev }) => {
+  //   if (dev) {
+  //     config.devtool = false;
+  //   }
+  //   return config;
+  // },
+
   allowedDevOrigins: ["http://192.168.43.1:3000", "http://localhost:3000", "*"],
   experimental: {
+    serverSourceMaps: false,
+
     // Only list packages that are actually in package.json
     optimizePackageImports: [
       "lucide-react",
@@ -28,9 +37,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
-      { protocol: "https", hostname: "**" }
+      { protocol: "https", hostname: "**" },
     ],
-    qualities: [75, 90],
+    qualities: [100, 75, 90],
   },
 };
 

@@ -24,6 +24,7 @@ import {
   Home,
   ShoppingCart,
   Settings,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -40,7 +41,11 @@ import { DASHBOARD_TEXT } from "@/constants/customerText";
 import { useThemeData } from "@/hooks/useThemeData";
 import { BRAND_LOGO } from "@/constants/common";
 import { ProfileSidebar } from "@/components/customer/ProfileSidebar";
-import { ProfileSidebarLink, IS_AUTHENTICATED_KEY, USER_STORAGE_KEY } from "@/constants";
+import {
+  ProfileSidebarLink,
+  IS_AUTHENTICATED_KEY,
+  USER_STORAGE_KEY,
+} from "@/constants";
 
 // ─── Animation Variants ────────────────────────────────────────────────────────
 
@@ -338,227 +343,6 @@ function DashboardHeader({
 }
 
 /**
- * Sticky Mobile Header bar with hamburger logo, brand logo, notifications, and user avatar.
- */
-function MobileHeader({
-  profile,
-  labels = DASHBOARD_TEXT,
-  onOpenDrawer,
-}: {
-  profile: UserProfileDTO;
-  labels?: typeof DASHBOARD_TEXT;
-  onOpenDrawer: () => void;
-}) {
-  const { themeData } = useThemeData();
-  const logoUrl = themeData.logo_url
-    ? themeData.logo_url || themeData.logo_dark_url
-    : BRAND_LOGO;
-
-  return (
-    <header className="sticky top-0 bg-navbar text-navbar-foreground border-b border-border z-30 px-4 py-3 flex items-center justify-between h-[64px]">
-      <div className="flex items-center gap-3">
-        {/* Hamburger Menu Icon */}
-        <button
-          onClick={onOpenDrawer}
-          className="p-1.5 hover:bg-navbar-foreground/10 rounded-lg active:scale-95 transition-all text-current cursor-pointer animate-fade-in"
-          aria-label="Open navigation menu"
-        >
-          <Menu size={20} />
-        </button>
-      </div>
-
-      {/* Centered Brand Logo */}
-      <div className="flex items-center justify-center flex-1">
-        <Link href="/" className="flex flex-col items-center">
-          {logoUrl && (
-            <img
-              src={logoUrl}
-              alt="brand logo"
-              className="h-8 object-contain rounded-2xl"
-            />
-          )}
-        </Link>
-      </div>
-
-      <div className="flex items-center gap-3">
-        {/* Notification Bell */}
-        <button
-          className="relative w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-navbar-foreground/10 active:scale-95 transition-all text-current cursor-pointer"
-          aria-label={labels.CARD_NOTIFICATIONS_TITLE}
-        >
-          <Bell size={16} />
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xxs font-bold text-destructive-foreground"></span>
-        </button>
-      </div>
-    </header>
-  );
-}
-
-/**
- * Slide-over navigation menu drawer (Mobile).
- */
-function MobileDrawer({
-  isOpen,
-  onClose,
-  profile,
-  labels = DASHBOARD_TEXT,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  profile: UserProfileDTO;
-  labels?: typeof DASHBOARD_TEXT;
-}) {
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-  const currentPath = usePathname();
-  const { themeData } = useThemeData();
-  const logoUrl = themeData.logo_url
-    ? themeData.logo_url || themeData.logo_dark_url
-    : BRAND_LOGO;
-
-  const drawerLinks = [
-    { name: "Overview", path: "/customer", icon: Home },
-    { name: "My Orders", path: "/customer/orders", icon: ShoppingBag },
-    { name: "My Cart", path: "/customer/cart", icon: ShoppingCart },
-    { name: "Wishlist", path: "/wishlist", icon: Heart },
-    { name: "My Addresses", path: "/customer/addresses", icon: MapPin },
-    { name: "My Reviews", path: "/customer/reviews", icon: Star },
-    { name: "Support Tickets", path: "/customer/support", icon: Headphones },
-    { name: "Settings", path: "/customer/settings", icon: Settings },
-    { name: "Logout", path: "/logout", icon: RefreshCw, isDanger: true },
-  ];
-
-  const handleLinkClick = (path: string) => {
-    onClose();
-    if (path === "/logout") {
-      dispatch(logOut());
-      router.push("/");
-    } else {
-      router.push(path);
-    }
-  };
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          {/* Backdrop overlay */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-black/45 backdrop-blur-xs w-full h-full"
-          />
-
-          {/* Drawer content drawer panel */}
-          <motion.div
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "tween", duration: 0.25 }}
-            className="absolute top-0 bottom-0 left-0 w-[280px] bg-card border-r border-border shadow-2xl flex flex-col p-5"
-          >
-            {/* Logo row Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-border">
-              <Link
-                href="/"
-                className="flex flex-col text-left"
-                onClick={onClose}
-              >
-                {logoUrl && (
-                  <img
-                    src={logoUrl}
-                    alt="brand logo"
-                    className="h-8 object-contain rounded-2xl"
-                  />
-                )}
-              </Link>
-              <button
-                onClick={onClose}
-                className="p-1.5 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Profile Section */}
-            <div className="py-4 flex items-center gap-3 border-b border-border">
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-border bg-secondary shrink-0 relative">
-                <Image
-                  src={
-                    profile.avatarUrl ||
-                    "https://i.pinimg.com/originals/74/a3/b6/74a3b6a8856b004dfff824ae9668fe9b.jpg"
-                  }
-                  alt={`${profile.firstName} ${profile.lastName}`}
-                  fill
-                  loading="eager"
-                  className="object-cover"
-                  sizes="40px"
-                />
-              </div>
-              <div className="flex flex-col min-w-0 text-left">
-                <span className="text-xs font-bold text-foreground truncate">
-                  {profile.firstName} {profile.lastName}
-                </span>
-                <span className="text-[10px] text-muted-foreground truncate">
-                  {profile.email}
-                </span>
-              </div>
-            </div>
-
-            {/* Scrollable links menu */}
-            <nav className="flex-1 overflow-y-auto mt-4 space-y-1 hide-scrollbar">
-              {ProfileSidebarLink.map((link) => {
-                const isActive = currentPath === link.path;
-                return (
-                  <button
-                    key={link.name}
-                    onClick={() => handleLinkClick(link.path)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                      link.isDanger
-                        ? "text-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-950/20"
-                        : isActive
-                          ? "bg-rose-800 dark:bg-rose-900 text-white shadow-sm"
-                          : "text-foreground/80 hover:bg-secondary/60 hover:text-foreground"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <DynamicIcon
-                        name={link.icon as IconName}
-                        size={16}
-                        className={
-                          link.isDanger
-                            ? "text-rose-600"
-                            : isActive
-                              ? "text-white"
-                              : "text-muted-foreground"
-                        }
-                      />
-                      <span>{link.name}</span>
-                    </div>
-                    <ChevronRight
-                      size={12}
-                      className={
-                        link.isDanger
-                          ? "text-rose-500"
-                          : isActive
-                            ? "text-white"
-                            : "text-muted-foreground/50"
-                      }
-                    />
-                  </button>
-                );
-              })}
-            </nav>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-  );
-}
-
-/**
  * Cover banner showing user name, avatar, verification badge, and email capsule.
  */
 function ProfileHero({
@@ -585,7 +369,7 @@ function ProfileHero({
       <div className="absolute inset-0 opacity-15 pointer-events-none bg-radial from-theme-primary to-theme-secondary " />
 
       <div
-        className={`relative z-10 p-5 md:p-8 flex ${isMobile ? "flex-col gap-4" : "flex-col md:flex-row items-center justify-between gap-6"}`}
+        className={`relative z-10  md:p-8 flex ${isMobile ? "flex-col gap-4 py-2 px-4" : "flex-col md:flex-row items-center justify-between gap-6"}`}
       >
         <div
           className={`flex ${isMobile ? "flex-row items-start" : "flex-col md:flex-row items-center"} gap-4 text-left w-full relative`}
@@ -721,30 +505,33 @@ function StatsSection({
 
   if (isMobile) {
     return (
-      <section className="grid grid-cols-3 gap-2">
-        {statItems.map((item) => {
+      <section className="grid grid-cols-3 rounded-xl border border-border gap-3 p-3">
+        {statItems.map((item, index) => {
           const Icon = item.icon;
+          const isRightmost = index === statItems.length - 1;
           return (
             <div
               key={item.key}
-              className="rounded-2xl border border-border bg-card p-3 flex flex-col justify-between hover:shadow-md hover:border-primary/20 transition-all group text-left min-h-[140px]"
+              className={`bg-card flex flex-col justify-between hover:shadow-md hover:border-primary/20 transition-all group text-left   ${!isRightmost ? "border-r border-border" : ""}`}
             >
-              <div>
+              <div className="flex gap-2 ">
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.iconBg}`}
+                  className={`w-8 h-8 aspect-square rounded-lg flex items-center justify-center ${item.iconBg}`}
                 >
                   <Icon size={14} className={item.iconColor} />
                 </div>
-                <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-muted-foreground mt-3 truncate">
-                  {item.title}
-                </p>
-                <p className="text-xl sm:text-2xl font-extrabold text-foreground mt-0.5 tabular-nums">
-                  {item.value}
-                </p>
+                <div>
+                  <p className="text-tiny font-semibold capitalize  text-muted-foreground text-balance">
+                    {item.title}
+                  </p>
+                  <p className="text-md sm:text-xl font-extrabold text-foreground mt-0.5 tabular-nums">
+                    {item.value}
+                  </p>
+                </div>
               </div>
               <Link
                 href={item.href}
-                className="text-[8px] sm:text-[9px] font-bold text-rose-700 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300 mt-3 flex items-center gap-0.5 hover:underline transition-colors w-fit"
+                className="text-tiny font-semibold capitalize text-theme-secondary hover:text-theme-primary dark:text-theme-secondary-foreground dark:hover:text-theme-primary-foreground mt-3 flex items-center gap-0.5 hover:underline transition-colors w-fit"
               >
                 <span>{item.linkText}</span>
                 <ChevronRight size={8} className="shrink-0" />
@@ -764,27 +551,27 @@ function StatsSection({
         return (
           <div
             key={item.key}
-            className="rounded-2xl border border-border bg-card p-5 flex flex-col justify-between hover:shadow-md hover:border-primary/20 transition-all group text-left"
+            className="rounded-2xl border border-border bg-card px-5 py-3 flex  justify-start gap-4 items-start hover:shadow-md hover:border-primary/20 transition-all group text-left"
           >
-            <div>
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center ${item.iconBg}`}
-              >
-                <Icon size={18} className={item.iconColor} />
-              </div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-4">
+            <div
+              className={` h-16 w-16  aspect-4/4 rounded-md flex items-center justify-center ${item.iconBg}`}
+            >
+              <Icon size={24} className={item.iconColor} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <p className="text-xxs font-semibold uppercase tracking-wider text-muted-foreground ">
                 {item.title}
               </p>
-              <p className="text-3xl font-extrabold text-foreground mt-1 tabular-nums">
+              <p className="text-2xl font-bold text-foreground tabular-nums">
                 {item.value}
               </p>
+              <Link
+                href={item.href}
+                className="text-xs font-semibold text-theme-secondary hover:text-theme-primary dark:text-theme-secondary-foreground dark:hover:text-theme-primary-foreground inline-flex items-center gap-1.5 group-hover:underline transition-colors w-fit"
+              >
+                {item.linkText} <ArrowRight size={12} />
+              </Link>
             </div>
-            <Link
-              href={item.href}
-              className="text-xs font-semibold text-rose-700 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300 mt-5 inline-flex items-center gap-1.5 group-hover:underline transition-colors w-fit"
-            >
-              {item.linkText}
-            </Link>
           </div>
         );
       })}
@@ -859,7 +646,7 @@ function AccountSettingsGrid({
             <h2 className="text-sm font-bold text-foreground tracking-tight">
               {labels.SECTION_ACCOUNT_TITLE}
             </h2>
-            <p className="text-[10px] text-muted-foreground mt-0.5">
+            <p className="text-xxs text-muted-foreground mt-0.5">
               {labels.SECTION_ACCOUNT_SUBTITLE}
             </p>
           </div>
@@ -875,7 +662,7 @@ function AccountSettingsGrid({
           {listItems.map((item) => {
             const Icon = item.icon;
             const content = (
-              <div className="flex items-center justify-between p-4 bg-card border border-border rounded-2xl hover:bg-secondary/20 active:scale-[0.99] transition-all min-h-[64px] text-left cursor-pointer">
+              <div className="flex items-center justify-between p-4 bg-card border border-border rounded-xl hover:bg-secondary/20 active:scale-[0.99] transition-all min-h-[64px] text-left cursor-pointer">
                 <div className="flex items-center flex-1 min-w-0 pr-2">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.iconBg}`}
@@ -886,7 +673,7 @@ function AccountSettingsGrid({
                     <h4 className="font-bold text-xs text-foreground">
                       {item.title}
                     </h4>
-                    <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                    <p className="text-xxs text-muted-foreground truncate mt-0.5">
                       {item.description}
                     </p>
                   </div>
@@ -1150,7 +937,7 @@ function NeedHelpSection({
           {supportItems.map((item) => {
             const Icon = item.icon;
             const content = (
-              <div className="flex items-center justify-between p-4 bg-card border border-border rounded-2xl hover:bg-secondary/20 active:scale-[0.99] transition-all min-h-[64px] text-left cursor-pointer">
+              <div className="flex items-center justify-between p-4 bg-card border border-border rounded-xl hover:bg-secondary/20 active:scale-[0.99] transition-all min-h-[64px] text-left cursor-pointer">
                 <div className="flex items-center flex-1 min-w-0 pr-2">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.iconBg}`}
@@ -1304,88 +1091,59 @@ function NeedHelpSection({
 /**
  * Dismissible Become a Seller promo card banner (Mobile and Desktop).
  */
-function BecomeSellerCard({
-  labels = DASHBOARD_TEXT,
-  onClose,
-}: {
-  labels?: typeof DASHBOARD_TEXT;
-  onClose: () => void;
-}) {
-  return (
-    <div className="relative rounded-2xl overflow-hidden border border-rose-100 dark:border-rose-950 bg-rose-50/50 dark:bg-rose-950/10 p-5 flex items-center justify-between shadow-sm">
-      {/* Close Button Circle X Icon */}
-      <button
-        onClick={onClose}
-        className="absolute top-3 right-3 w-6 h-6 rounded-full bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/50 dark:hover:bg-rose-900/50 flex items-center justify-center transition-colors cursor-pointer"
-        aria-label="Dismiss banner"
-      >
-        <X size={12} className="text-rose-800 dark:text-rose-400" />
-      </button>
+// function BecomeSellerCard({
+//   labels = DASHBOARD_TEXT,
+//   onClose,
+// }: {
+//   labels?: typeof DASHBOARD_TEXT;
+//   onClose: () => void;
+// }) {
+//   return (
+//     <div className="relative rounded-2xl overflow-hidden border border-rose-100 dark:border-rose-950 bg-rose-50/50 dark:bg-rose-950/10 p-5 flex items-center justify-between shadow-sm">
+//       {/* Close Button Circle X Icon */}
+//       <button
+//         onClick={onClose}
+//         className="absolute top-3 right-3 w-6 h-6 rounded-full bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/50 dark:hover:bg-rose-900/50 flex items-center justify-center transition-colors cursor-pointer"
+//         aria-label="Dismiss banner"
+//       >
+//         <X size={12} className="text-rose-800 dark:text-rose-400" />
+//       </button>
 
-      {/* Left text column info */}
-      <div className="flex-1 pr-4 text-left">
-        <h4 className="font-bold text-sm text-rose-950 dark:text-rose-300">
-          {labels.SELLER_BANNER_TITLE}
-        </h4>
-        <p className="text-[10px] sm:text-xs text-rose-900/80 dark:text-rose-400/80 mt-1 leading-relaxed max-w-[170px] xs:max-w-xs">
-          Start selling your products on Techsonance.
-        </p>
-        <div className="mt-4">
-          <Link href="/vendor/register">
-            <span className="inline-flex items-center gap-1 px-3 py-1.5 border border-rose-800 text-rose-800 hover:bg-rose-800 hover:text-white dark:border-rose-400 dark:text-rose-400 dark:hover:bg-rose-400 dark:hover:text-zinc-950 rounded-lg text-[10px] font-bold transition-all cursor-pointer bg-white dark:bg-transparent">
-              Start Selling <ChevronRight size={10} className="ml-0.5" />
-            </span>
-          </Link>
-        </div>
-      </div>
+//       {/* Left text column info */}
+//       <div className="flex-1 pr-4 text-left">
+//         <h4 className="font-bold text-sm text-rose-950 dark:text-rose-300">
+//           {labels.SELLER_BANNER_TITLE}
+//         </h4>
+//         <p className="text-[10px] sm:text-xs text-rose-900/80 dark:text-rose-400/80 mt-1 leading-relaxed max-w-[170px] xs:max-w-xs">
+//           Start selling your products on Techsonance.
+//         </p>
+//         <div className="mt-4">
+//           <Link href="/vendor/register">
+//             <span className="inline-flex items-center gap-1 px-3 py-1.5 border border-rose-800 text-rose-800 hover:bg-rose-800 hover:text-white dark:border-rose-400 dark:text-rose-400 dark:hover:bg-rose-400 dark:hover:text-zinc-950 rounded-lg text-[10px] font-bold transition-all cursor-pointer bg-white dark:bg-transparent">
+//               Start Selling <ChevronRight size={10} className="ml-0.5" />
+//             </span>
+//           </Link>
+//         </div>
+//       </div>
 
-      {/* Right storefront icon box illustration */}
-      <div className="relative w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] shrink-0 bg-rose-100/40 dark:bg-rose-950/20 rounded-2xl flex items-center justify-center overflow-hidden border border-rose-100 dark:border-rose-900/40">
-        <svg
-          className="w-10 h-10 text-rose-800 dark:text-rose-400"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <polyline points="9 22 9 12 15 12 15 22" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Legal links and copyright layout page footer component.
- */
-function Footer() {
-  const currentYear = new Date().getFullYear();
-  return (
-    <footer className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-border text-[11px] text-muted-foreground gap-4">
-      <p>© {currentYear} Techsonance Marketplace. All rights reserved.</p>
-      <div className="flex gap-4">
-        <Link
-          href="/privacy"
-          className="hover:text-foreground transition-colors"
-        >
-          Privacy Policy
-        </Link>
-        <Link href="/terms" className="hover:text-foreground transition-colors">
-          Terms of Service
-        </Link>
-        <Link
-          href="/cookies"
-          className="hover:text-foreground transition-colors"
-        >
-          Cookie Policy
-        </Link>
-      </div>
-    </footer>
-  );
-}
+//       {/* Right storefront icon box illustration */}
+//       <div className="relative w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] shrink-0 bg-rose-100/40 dark:bg-rose-950/20 rounded-2xl flex items-center justify-center overflow-hidden border border-rose-100 dark:border-rose-900/40">
+//         <svg
+//           className="w-10 h-10 text-rose-800 dark:text-rose-400"
+//           viewBox="0 0 24 24"
+//           fill="none"
+//           stroke="currentColor"
+//           strokeWidth="2"
+//           strokeLinecap="round"
+//           strokeLinejoin="round"
+//         >
+//           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+//           <polyline points="9 22 9 12 15 12 15 22" />
+//         </svg>
+//       </div>
+//     </div>
+//   );
+// }
 
 // ─── Presentation Component ──────────────────────────────────────────────────
 
@@ -1405,17 +1163,7 @@ export function CustomerDashboardContent({
   onVisitHelpCenter,
   onContactSupport,
 }: CustomerDashboardProps) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSellerCardDismissed, setIsSellerCardDismissed] = useState(false);
-
-  useEffect(() => {
-    // Add custom class on mount to let stylesheet hide parent navbar on mobile
-    document.body.classList.add("customer-dashboard-mobile");
-    return () => {
-      // Remove custom class on unmount
-      document.body.classList.remove("customer-dashboard-mobile");
-    };
-  }, []);
 
   if (isLoading) {
     return (
@@ -1432,7 +1180,7 @@ export function CustomerDashboardContent({
     );
   }
 
-  if (!error || !data) {
+  if (error || !data) {
     return <ErrorState onRetry={onRetry} message={error} labels={labels} />;
   }
 
@@ -1440,21 +1188,6 @@ export function CustomerDashboardContent({
     <div className="w-full min-h-screen bg-background text-foreground flex flex-col">
       {/* ── MOBILE SHELL (block lg:hidden) ── */}
       <div className="flex flex-col lg:hidden w-full relative min-h-screen">
-        {/* Sticky Mobile Header */}
-        <MobileHeader
-          profile={data.profile}
-          labels={labels}
-          onOpenDrawer={() => setIsDrawerOpen(true)}
-        />
-
-        {/* Left sliding menu Drawer navigation */}
-        <MobileDrawer
-          isOpen={isDrawerOpen}
-          onClose={() => setIsDrawerOpen(false)}
-          profile={data.profile}
-          labels={labels}
-        />
-
         {/* Scrollable content container */}
         <main className="w-full px-4 pt-4 pb-8 space-y-6 flex-1">
           {/* Profile Hero Card banner */}
@@ -1489,17 +1222,12 @@ export function CustomerDashboardContent({
           />
 
           {/* Become a Seller card badge */}
-          {!isSellerCardDismissed && (
+          {/* {!isSellerCardDismissed && (
             <BecomeSellerCard
               labels={labels}
               onClose={() => setIsSellerCardDismissed(true)}
             />
-          )}
-
-          {/* Copyright footer row links */}
-          <div className="pt-4">
-            <Footer />
-          </div>
+          )} */}
         </main>
       </div>
 
@@ -1545,7 +1273,8 @@ export default function UserProfilePage() {
 
   const dispatch = useAppDispatch();
   const [isClientMounted, setIsClientMounted] = useState(false);
-  const [stats, setStats] = useState<DashboardStatsDTO | null>(null);
+  const [dashboardData, setDashboardData] =
+    useState<CustomerDashboardPayloadDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -1566,86 +1295,74 @@ export default function UserProfilePage() {
     }
   }, [isClientMounted, user, dispatch]);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     if (!user) return;
     setLoading(true);
     setError(null);
     try {
-      const statsRes = await AxiosAPI.get("/v1/customer/dashboard/stats");
-      if (statsRes.status === 200 || statsRes.status === 201) {
-        const statsData = statsRes.data?.data;
-        setStats({
-          totalOrders: statsData?.totalOrders ?? 12,
-          wishlistCount: statsData?.wishlistCount ?? wishItems.length,
-          reviewsCount: statsData?.reviewsWritten ?? 3,
-        });
+      const response = await AxiosAPI.get(`/v1/customers/dashboard/${user.id}`);
+      const res = response.data;
+      console.log(res, "res");
+      if (res.status === 200 || res.success) {
+        setDashboardData(res.data);
       } else {
-        throw new Error(statsRes.data?.message || "Failed to load statistics");
+        throw new Error(res.message || "Failed to load dashboard data");
       }
     } catch (err: any) {
-      // Gracefully fall back to local counts so the dashboard loads correctly
       setError(err.message || "Failed to load dashboard data");
-      setStats({
-        totalOrders: 12,
-        wishlistCount: wishItems.length || 0,
-        reviewsCount: 3,
+      // Fallback
+      setDashboardData({
+        profile: {
+          id: user.id || "",
+          firstName: user.first_name || "Guest",
+          lastName: user.last_name || "",
+          email: user.email || "",
+          phoneNumber: user.phone_number,
+          avatarUrl:
+            "profile_picture_url" in user && user.profile_picture_url
+              ? (user.profile_picture_url as string)
+              : null,
+          memberSinceDate:
+            "created_at" in user && user.created_at
+              ? new Date(user.created_at).toISOString()
+              : new Date("2026-06-01").toISOString(),
+          verification: {
+            isVerified: true,
+          },
+        },
+        stats: {
+          totalOrders: 0,
+          wishlistCount: wishItems.length || 0,
+          reviewsCount: 0,
+        },
+        addressesInfo: {
+          hasDefaultAddress: false,
+          defaultAddress: null,
+        },
+        securityStatus: {
+          passwordLastUpdated: new Date().toISOString(),
+          mfaEnabled: false,
+        },
+        notificationsPreferences: {
+          emailAlertsEnabled: true,
+          pushAlertsEnabled: true,
+          smsAlertsEnabled: false,
+        },
       });
     } finally {
       setLoading(false);
     }
-  }, [user, wishItems.length]);
+  };
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [user]);
 
-  if (!user) return null;
-
-  // Format standard API response payload properties
-  const payload: CustomerDashboardPayloadDTO = {
-    profile: {
-      id: user.id || "",
-      firstName: user.first_name || "Guest",
-      lastName: user.last_name || "",
-      email: user.email || "",
-      phoneNumber: user.phone_number,
-      avatarUrl:
-        "profile_picture_url" in user && user.profile_picture_url
-          ? (user.profile_picture_url as string)
-          : null,
-      memberSinceDate:
-        "created_at" in user && user.created_at
-          ? new Date(user.created_at).toISOString()
-          : new Date("2026-06-01").toISOString(),
-      verification: {
-        isVerified: true,
-      },
-    },
-    stats: stats || {
-      totalOrders: 12,
-      wishlistCount: wishItems.length || 0,
-      reviewsCount: 3,
-    },
-    addressesInfo: {
-      hasDefaultAddress: false,
-      defaultAddress: null,
-    },
-    securityStatus: {
-      passwordLastUpdated: new Date(
-        Date.now() - 30 * 24 * 60 * 60 * 1000,
-      ).toISOString(), // 30 days ago
-      mfaEnabled: false,
-    },
-    notificationsPreferences: {
-      emailAlertsEnabled: true,
-      pushAlertsEnabled: true,
-      smsAlertsEnabled: false,
-    },
-  };
+  if (!user || !dashboardData) return null;
 
   return (
     <CustomerDashboardContent
-      data={payload}
+      data={dashboardData}
       isLoading={loading}
       error={error}
       onRetry={fetchData}

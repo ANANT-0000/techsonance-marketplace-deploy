@@ -6,7 +6,7 @@ import { sidebarReducer } from "./features/sidebar";
 import { authReducer, getPreloadedAuthState } from "./features/auth/authSlice";
 import { WishlistReducer } from "./features/Wishlist";
 import { configureStore } from "@reduxjs/toolkit";
-import { set } from "zod";
+import { pageLoadingReducer } from "./features/pageLoading";
 
 const isClient = typeof window !== "undefined";
 
@@ -48,6 +48,7 @@ export const store = () => {
       cart: CartReducer,
       cartSidebar: cartSidebarReducer,
       wishlist: WishlistReducer,
+      pageLoading: pageLoadingReducer,
     },
     preloadedState: getPreloadedAuthState(),
     middleware: (getDefaultMiddleware) =>

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { formatCurrency } from "@/lib/utils";
 import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
@@ -7,288 +7,414 @@ import Link from "next/link";
 import Image from "next/image";
 import { useMediaQuery } from "react-responsive";
 import { useState, useRef, useEffect } from "react";
-import { OrderItemAPIResponse as OrderItemType, ReturnRequest, AddressPayload } from "./OrderList";
+import {
+  OrderItemAPIResponse as OrderItemType,
+  ReturnRequest,
+  AddressPayload,
+} from "./OrderList";
 import { Package, RotateCcw, XCircle, Truck, CheckCircle2 } from "lucide-react";
 import { ORDER_CARD_TEXT } from "@/constants/customerText";
 
 export interface OrderType {
+  id: string;
+  total_amount: string;
+  created_at: string;
+  address: AddressPayload;
+  payment?: {
     id: string;
-    total_amount: string;
-    created_at: string;
-    address: AddressPayload;
-    payment?: { id: string; payment_method: string; payment_status: string; transaction_ref: string; amount: string; };
-    shipping?: { tracking_url?: string };
-    items: OrderItemType[];
+    payment_method: string;
+    payment_status: string;
+    transaction_ref: string;
+    amount: string;
+  };
+  shipping?: { tracking_url?: string };
+  items: OrderItemType[];
 }
 
 function ItemStatusBadge({ status }: { status: string }) {
-    const s = status?.toLowerCase();
-    if (s === 'delivered')
-        return <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full"><CheckCircle2 size={9} />{ORDER_CARD_TEXT.STATUS_DELIVERED}</span>;
-    if (s === 'pending' || s === 'processing')
-        return <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full"><Truck size={9} />{status}</span>;
-    if (s === 'cancelled')
-        return <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full"><XCircle size={9} />{ORDER_CARD_TEXT.STATUS_CANCELLED}</span>;
-    return <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full capitalize">{status}</span>;
+  const s = status?.toLowerCase();
+  if (s === "delivered")
+    return (
+      <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+        <CheckCircle2 size={9} />
+        {ORDER_CARD_TEXT.STATUS_DELIVERED}
+      </span>
+    );
+  if (s === "pending" || s === "processing")
+    return (
+      <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
+        <Truck size={9} />
+        {status}
+      </span>
+    );
+  if (s === "cancelled")
+    return (
+      <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full">
+        <XCircle size={9} />
+        {ORDER_CARD_TEXT.STATUS_CANCELLED}
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-1 text-theme-tiny font-semibold bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full capitalize">
+      {status}
+    </span>
+  );
 }
 
 function ReturnBadge({ returnRequest }: { returnRequest: ReturnRequest }) {
-    const colorMap: Record<string, string> = {
-        pending: 'bg-amber-50 text-amber-700 border-amber-200',
-        approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        rejected: 'bg-red-50 text-red-700 border-red-200',
-        processing: 'bg-blue-50 text-blue-700 border-blue-200',
-    };
-    const color = colorMap[returnRequest.status?.toLowerCase()] ?? 'bg-gray-100 text-gray-600 border-gray-200';
-    return (
-        <span className={`inline-flex items-center gap-1 text-theme-tiny font-semibold border px-2 py-0.5 rounded-full ${color}`}>
-            <RotateCcw size={9} />
-            {ORDER_CARD_TEXT.RETURN} · {returnRequest.status}
-        </span>
-    );
+  const colorMap: Record<string, string> = {
+    pending: "bg-amber-50 text-amber-700 border-amber-200",
+    approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    rejected: "bg-red-50 text-red-700 border-red-200",
+    processing: "bg-blue-50 text-blue-700 border-blue-200",
+  };
+  const color =
+    colorMap[returnRequest.status?.toLowerCase()] ??
+    "bg-gray-100 text-gray-600 border-gray-200";
+  return (
+    <span
+      className={`inline-flex items-center gap-1 text-theme-tiny font-semibold border px-2 py-0.5 rounded-full ${color}`}
+    >
+      <RotateCcw size={9} />
+      {ORDER_CARD_TEXT.RETURN} · {returnRequest.status}
+    </span>
+  );
 }
 
-function OrderItemRow({ item, highlighted }: { item: OrderItemType; highlighted: boolean }) {
-    return (
-        <div className={`flex gap-3 rounded-xl overflow-hidden border transition-colors shadow-sm ${highlighted ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200 bg-white'}`}>
-            <div className="w-20 sm:w-24 bg-gray-50 flex-shrink-0 flex items-center justify-center p-2">
-                <Image
-                    src={item.variant.images[0]?.image_url || "https://placehold.co/150x150/f9fafb/333?text=Product"}
-                    alt={item.variant.variant_name}
-                    width={80}
-                    height={80}
-                    className="w-full h-auto object-contain mix-blend-multiply"
-                />
-            </div>
-            <div className="flex-1 py-3 pr-3 flex flex-col justify-between gap-1 min-w-0">
-                <Link
-                    href={`shipping/${item.variant.id}`}
-                    className="font-semibold text-gray-900 text-theme-body-sm line-clamp-2 hover:underline leading-snug"
-                >
-                    {item.variant.variant_name}
-                </Link>
-                <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className="text-theme-caption text-gray-500">Qty: {item.quantity}</span>
-                    <span className="text-theme-caption text-gray-400">·</span>
-                    <span className="text-theme-caption font-semibold text-gray-800">₹{formatCurrency(Number(item.price))}</span>
-                    <ItemStatusBadge status={item.order_status} />
-                    {item.return_request && <ReturnBadge returnRequest={item.return_request} />}
-                </div>
-                {item.order_status === OrderStatusEnum.DELIVERED && !item.return_request && (
-                    <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        className="self-start mt-1 text-theme-caption px-3 py-1 border border-gray-300 rounded-full hover:bg-gray-50 font-medium text-gray-700 transition-colors"
-                    >
-                        {ORDER_CARD_TEXT.WRITE_REVIEW}
-                    </motion.button>
-                )}
-            </div>
+function OrderItemRow({
+  item,
+  highlighted,
+}: {
+  item: OrderItemType;
+  highlighted: boolean;
+}) {
+  return (
+    <div
+      className={`flex gap-3 rounded-xl overflow-hidden border transition-colors shadow-sm ${highlighted ? "border-blue-200 bg-blue-50/30" : "border-gray-200 bg-white"}`}
+    >
+      <div className="w-20 sm:w-24 bg-gray-50 flex-shrink-0 flex items-center justify-center p-2">
+        <Image
+          src={
+            item.variant.images[0]?.image_url ||
+            "https://placehold.co/150x150/f9fafb/333?text=Product"
+          }
+          alt={item.variant.variant_name}
+          width={80}
+          height={80}
+          className="w-full h-auto object-contain mix-blend-multiply"
+        />
+      </div>
+      <div className="flex-1 py-3 pr-3 flex flex-col justify-between gap-1 min-w-0">
+        <Link
+          href={`shipping/${item.variant.id}`}
+          className="font-semibold text-gray-900 text-theme-body-sm line-clamp-2 hover:underline leading-snug"
+        >
+          {item.variant.variant_name}
+        </Link>
+        <div className="flex flex-wrap items-center gap-2 mt-1">
+          <span className="text-theme-caption text-gray-500">
+            Qty: {item.quantity}
+          </span>
+          <span className="text-theme-caption text-gray-400">·</span>
+          <span className="text-theme-caption font-semibold text-gray-800">
+            ₹{formatCurrency(Number(item.price))}
+          </span>
+          <ItemStatusBadge status={item.order_status} />
+          {item.return_request && (
+            <ReturnBadge returnRequest={item.return_request} />
+          )}
         </div>
-    );
-}
-
-function AddressDropdown({ address, isMobile }: { address: AddressPayload; isMobile: boolean }) {
-    const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-        };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, []);
-
-    const block = (
-        <div className="text-theme-caption sm:text-theme-body-sm text-gray-700 space-y-0.5">
-            <p className="font-semibold text-gray-900">{address.name}</p>
-            {address.address_line_1 && <p>{address.address_line_1}</p>}
-            {address.address_line_2 && <p>{address.address_line_2}</p>}
-            <p>{[address.city, address.state, address.postal_code].filter(Boolean).join(', ')}</p>
-            <p>{address.country}</p>
-        </div>
-    );
-
-    if (isMobile) {
-        return (
-            <div>
-                <button
-                    className="flex items-center justify-between w-full text-blue-500 hover:text-blue-700 text-theme-body-sm font-medium focus:outline-none"
-                    onClick={() => setOpen((p) => !p)}
-                >
-                    <span className="truncate max-w-[80%]">{address.name || ORDER_CARD_TEXT.NA}</span>
-                    <motion.span animate={{ rotate: open ? 180 : 0 }} className="text-theme-tiny ml-1">▼</motion.span>
-                </button>
-                <AnimatePresence>
-                    {open && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden mt-2 bg-gray-50 border border-gray-100 rounded-lg p-3"
-                        >
-                            {block}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-        );
-    }
-
-    return (
-        <div className="relative" ref={ref}>
-            <button
-                className="flex items-center gap-1 text-blue-500 hover:text-blue-700 text-theme-body-sm font-medium focus:outline-none"
-                onClick={() => setOpen((p) => !p)}
+        {item.order_status === OrderStatusEnum.DELIVERED &&
+          !item.return_request && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              className="self-start mt-1 text-theme-caption px-3 py-1 border border-gray-300 rounded-full hover:bg-gray-50 font-medium text-gray-700 transition-colors"
             >
-                {address.name || ORDER_CARD_TEXT.NA}
-                <span className="text-theme-tiny">▼</span>
-            </button>
-            <AnimatePresence>
-                {open && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 shadow-lg rounded-xl p-4 z-50"
-                    >
-                        {block}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+              {ORDER_CARD_TEXT.WRITE_REVIEW}
+            </motion.button>
+          )}
+      </div>
+    </div>
+  );
+}
+
+function AddressDropdown({
+  address,
+  isMobile,
+}: {
+  address: AddressPayload;
+  isMobile: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const block = (
+    <div className="text-theme-caption sm:text-theme-body-sm text-gray-700 space-y-0.5">
+      <p className="font-semibold text-gray-900">{address.name}</p>
+      {address.address_line_1 && <p>{address.address_line_1}</p>}
+      <p>
+        {[address.city, address.state, address.postal_code]
+          .filter(Boolean)
+          .join(", ")}
+      </p>
+      <p>{address.country}</p>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <div>
+        <button
+          className="flex items-center justify-between w-full text-blue-500 hover:text-blue-700 text-theme-body-sm font-medium focus:outline-none"
+          onClick={() => setOpen((p) => !p)}
+        >
+          <span className="truncate max-w-[80%]">
+            {address.name || ORDER_CARD_TEXT.NA}
+          </span>
+          <motion.span
+            animate={{ rotate: open ? 180 : 0 }}
+            className="text-theme-tiny ml-1"
+          >
+            ▼
+          </motion.span>
+        </button>
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden mt-2 bg-gray-50 border border-gray-100 rounded-lg p-3"
+            >
+              {block}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     );
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        className="flex items-center gap-1 text-blue-500 hover:text-blue-700 text-theme-body-sm font-medium focus:outline-none"
+        onClick={() => setOpen((p) => !p)}
+      >
+        {address.name || ORDER_CARD_TEXT.NA}
+        <span className="text-theme-tiny">▼</span>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 shadow-lg rounded-xl p-4 z-50"
+          >
+            {block}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 export const OrderCard = ({
-    order,
-    activeStatus,
+  order,
+  activeStatus,
 }: {
-    order: OrderType;
-    activeStatus: OrderStatus | 'returns' | null;
+  order: OrderType;
+  activeStatus: OrderStatus | "returns" | null;
 }) => {
-    const isMobile = useMediaQuery({ maxWidth: 640 });
+  const isMobile = useMediaQuery({ maxWidth: 640 });
 
-    const matchingItems =
-        activeStatus === null
-            ? []
-            : activeStatus === 'returns'
-                ? order.items.filter((i) => i.return_request !== null)
-                : order.items.filter((i) => i.order_status === activeStatus);
+  const matchingItems =
+    activeStatus === null
+      ? []
+      : activeStatus === "returns"
+        ? order.items.filter((i) => i.return_request !== null)
+        : order.items.filter((i) => i.order_status === activeStatus);
 
-    const allMatch = matchingItems.length === order.items.length;
+  const allMatch = matchingItems.length === order.items.length;
 
-    const isHighlighted = (item: OrderItemType): boolean => {
-        if (activeStatus === null || allMatch) return false;
-        if (activeStatus === 'returns') return item.return_request !== null;
-        return item.order_status === activeStatus;
-    };
+  const isHighlighted = (item: OrderItemType): boolean => {
+    if (activeStatus === null || allMatch) return false;
+    if (activeStatus === "returns") return item.return_request !== null;
+    return item.order_status === activeStatus;
+  };
 
-    const showBanner = !isMobile && activeStatus !== null && matchingItems.length > 0 && !allMatch;
+  const showBanner =
+    !isMobile && activeStatus !== null && matchingItems.length > 0 && !allMatch;
 
-    if (isMobile) {
-        return (
-            <motion.div className="w-full flex flex-col border border-gray-200 shadow-sm rounded-xl p-4 gap-4 bg-white">
-                <div className="flex justify-between items-start border-b border-gray-100 pb-3">
-                    <p className="text-theme-caption text-gray-400">
-                        {ORDER_CARD_TEXT.ORDERED} {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </p>
-                    <div className="text-right">
-                        <p className="text-theme-caption text-gray-400 mb-0.5">{ORDER_CARD_TEXT.TOTAL}</p>
-                        <p className="text-theme-body-sm font-bold text-gray-900">₹{formatCurrency(Number(order.total_amount))}</p>
-                    </div>
-                </div>
-
-                <div className="border-b border-gray-100 pb-3">
-                    <p className="text-theme-caption text-gray-400 mb-1">{ORDER_CARD_TEXT.SHIP_TO}</p>
-                    {order.address && <AddressDropdown address={order.address} isMobile={true} />}
-                </div>
-
-                <div className="flex flex-col gap-3">
-                    {order.items.map((item, index) => (
-                        <OrderItemRow key={item.id ?? index} item={item} highlighted={false} />
-                    ))}
-                </div>
-
-                <div className="flex justify-between items-center pt-1">
-                    <Link href={`orders/${order.id}`} className="text-theme-caption font-medium text-blue-500 hover:underline">
-                        {ORDER_CARD_TEXT.VIEW_DETAILS}
-                    </Link>
-                    {order.shipping?.tracking_url && (
-                        <a href={order.shipping.tracking_url} target="_blank" rel="noopener noreferrer"
-                            className="text-theme-caption font-medium text-gray-500 hover:text-gray-800 flex items-center gap-1">
-                            <Truck size={12} /> {ORDER_CARD_TEXT.TRACK}
-                        </a>
-                    )}
-                </div>
-            </motion.div>
-        );
-    }
-
+  if (isMobile) {
     return (
-        <motion.div className="w-full border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
-            <header className="flex justify-between items-center px-5 py-3.5 bg-gray-50 border-b border-gray-200">
-                <div className="flex gap-6 items-center">
-                    <div>
-                        <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.ORDER_PLACED}</p>
-                        <p className="text-theme-body-sm text-gray-700">
-                            {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </p>
-                    </div>
-                    <div>
-                        <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.TOTAL}</p>
-                        <p className="text-theme-body-sm font-semibold text-gray-800">₹{formatCurrency(Number(order.total_amount))}</p>
-                    </div>
-                    {order.address && (
-                        <div>
-                            <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.SHIP_TO}</p>
-                            <AddressDropdown address={order.address} isMobile={false} />
-                        </div>
-                    )}
-                    {order.payment && (
-                        <div>
-                            <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{ORDER_CARD_TEXT.PAYMENT}</p>
-                            <p className="text-theme-body-sm text-gray-700 flex items-center gap-1.5">
-                                {order.payment.payment_method}
-                                <span className={`text-theme-tiny font-semibold px-1.5 py-0.5 rounded-full ${order.payment.payment_status === 'completed' ? 'bg-emerald-50 text-emerald-700'
-                                    : order.payment.payment_status === 'refunded' ? 'bg-blue-50 text-blue-700'
-                                        : 'bg-amber-50 text-amber-700'
-                                    }`}>
-                                    {order.payment.payment_status}
-                                </span>
-                            </p>
-                        </div>
-                    )}
-                </div>
-                <div className="text-right flex flex-col gap-1">
-                    <p className="text-theme-tiny text-gray-400 font-mono">#{order.id.split('-')[0].toUpperCase()}</p>
-                    <div className="flex items-center gap-3 text-theme-body-sm">
-                        <Link href={`orders/${order.id}`} className="text-blue-500 hover:underline font-medium">
-                            {ORDER_CARD_TEXT.VIEW_DETAILS_HEADER}
-                        </Link>
-                        {order.shipping?.tracking_url && (
-                            <a href={order.shipping.tracking_url} target="_blank" rel="noopener noreferrer"
-                                className="text-gray-500 hover:text-gray-800 flex items-center gap-1 font-medium">
-                                <Truck size={13} /> {ORDER_CARD_TEXT.TRACK}
-                            </a>
-                        )}
-                    </div>
-                </div>
-            </header>
+      <motion.div className="w-full flex flex-col border border-gray-200 shadow-sm rounded-xl p-4 gap-4 bg-white">
+        <div className="flex justify-between items-start border-b border-gray-100 pb-3">
+          <p className="text-theme-caption text-gray-400">
+            {ORDER_CARD_TEXT.ORDERED}{" "}
+            {new Date(order.created_at).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
+          </p>
+          <div className="text-right">
+            <p className="text-theme-caption text-gray-400 mb-0.5">
+              {ORDER_CARD_TEXT.TOTAL}
+            </p>
+            <p className="text-theme-body-sm font-bold text-gray-900">
+              ₹{formatCurrency(Number(order.total_amount))}
+            </p>
+          </div>
+        </div>
 
-            {showBanner && (
-                <div className="px-5 py-2 bg-blue-50 border-b border-blue-100 text-theme-caption text-blue-700 font-medium flex items-center gap-2">
-                    <Package size={13} />
-                    {matchingItems.length} {ORDER_CARD_TEXT.MATCH_FILTER_1} {order.items.length} {ORDER_CARD_TEXT.MATCH_FILTER_2}
-                </div>
-            )}
+        <div className="border-b border-gray-100 pb-3">
+          <p className="text-theme-caption text-gray-400 mb-1">
+            {ORDER_CARD_TEXT.SHIP_TO}
+          </p>
+          {order.address && (
+            <AddressDropdown address={order.address} isMobile={true} />
+          )}
+        </div>
 
-            <div className="p-5 flex flex-col gap-3">
-                {order.items.map((item, index) => (
-                    <OrderItemRow key={item.id ?? index} item={item} highlighted={isHighlighted(item)} />
-                ))}
-            </div>
-        </motion.div>
+        <div className="flex flex-col gap-3">
+          {order.items.map((item, index) => (
+            <OrderItemRow
+              key={item.id ?? index}
+              item={item}
+              highlighted={false}
+            />
+          ))}
+        </div>
+
+        <div className="flex justify-between items-center pt-1">
+          <Link
+            href={`orders/${order.id}`}
+            className="text-theme-caption font-medium text-blue-500 hover:underline"
+          >
+            {ORDER_CARD_TEXT.VIEW_DETAILS}
+          </Link>
+          {order.shipping?.tracking_url && (
+            <a
+              href={order.shipping.tracking_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-theme-caption font-medium text-gray-500 hover:text-gray-800 flex items-center gap-1"
+            >
+              <Truck size={12} /> {ORDER_CARD_TEXT.TRACK}
+            </a>
+          )}
+        </div>
+      </motion.div>
     );
+  }
+
+  return (
+    <motion.div className="w-full border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
+      <header className="flex justify-between items-center px-5 py-3.5 bg-gray-50 border-b border-gray-200">
+        <div className="flex gap-6 items-center">
+          <div>
+            <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+              {ORDER_CARD_TEXT.ORDER_PLACED}
+            </p>
+            <p className="text-theme-body-sm text-gray-700">
+              {new Date(order.created_at).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+          <div>
+            <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+              {ORDER_CARD_TEXT.TOTAL}
+            </p>
+            <p className="text-theme-body-sm font-semibold text-gray-800">
+              ₹{formatCurrency(Number(order.total_amount))}
+            </p>
+          </div>
+          {order.address && (
+            <div>
+              <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+                {ORDER_CARD_TEXT.SHIP_TO}
+              </p>
+              <AddressDropdown address={order.address} isMobile={false} />
+            </div>
+          )}
+          {order.payment && (
+            <div>
+              <p className="text-theme-tiny font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+                {ORDER_CARD_TEXT.PAYMENT}
+              </p>
+              <p className="text-theme-body-sm text-gray-700 flex items-center gap-1.5">
+                {order.payment.payment_method}
+                <span
+                  className={`text-theme-tiny font-semibold px-1.5 py-0.5 rounded-full ${
+                    order.payment.payment_status === "completed"
+                      ? "bg-emerald-50 text-emerald-700"
+                      : order.payment.payment_status === "refunded"
+                        ? "bg-blue-50 text-blue-700"
+                        : "bg-amber-50 text-amber-700"
+                  }`}
+                >
+                  {order.payment.payment_status}
+                </span>
+              </p>
+            </div>
+          )}
+        </div>
+        <div className="text-right flex flex-col gap-1">
+          <p className="text-theme-tiny text-gray-400 font-mono">
+            #{order.id.split("-")[0].toUpperCase()}
+          </p>
+          <div className="flex items-center gap-3 text-theme-body-sm">
+            <Link
+              href={`orders/${order.id}`}
+              className="text-blue-500 hover:underline font-medium"
+            >
+              {ORDER_CARD_TEXT.VIEW_DETAILS_HEADER}
+            </Link>
+            {order.shipping?.tracking_url && (
+              <a
+                href={order.shipping.tracking_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-500 hover:text-gray-800 flex items-center gap-1 font-medium"
+              >
+                <Truck size={13} /> {ORDER_CARD_TEXT.TRACK}
+              </a>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {showBanner && (
+        <div className="px-5 py-2 bg-blue-50 border-b border-blue-100 text-theme-caption text-blue-700 font-medium flex items-center gap-2">
+          <Package size={13} />
+          {matchingItems.length} {ORDER_CARD_TEXT.MATCH_FILTER_1}{" "}
+          {order.items.length} {ORDER_CARD_TEXT.MATCH_FILTER_2}
+        </div>
+      )}
+
+      <div className="p-5 flex flex-col gap-3">
+        {order.items.map((item, index) => (
+          <OrderItemRow
+            key={item.id ?? index}
+            item={item}
+            highlighted={isHighlighted(item)}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
 };

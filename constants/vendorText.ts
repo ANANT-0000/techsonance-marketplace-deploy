@@ -67,7 +67,7 @@ export const VENDOR_PROFILE_TEXT = {
     FONT_FAMILY: "Font Family",
     CREATED: "Created: ",
     UPDATED: "Updated: ",
-  }
+  },
 };
 
 export const BUSINESS_PROFILE_TEXT = {
@@ -91,7 +91,8 @@ export const BUSINESS_PROFILE_TEXT = {
 
 export const COMPANY_IDENTITY_TEXT = {
   TITLE: "Company Identity",
-  SUBTITLE: "Configure how your company appears on invoices, warranty cards and all generated documents.",
+  SUBTITLE:
+    "Configure how your company appears on invoices, warranty cards and all generated documents.",
   TABS: {
     BRANDING: {
       LABEL: "Branding",
@@ -166,7 +167,7 @@ export const CATEGORY_MANAGER_TEXT = {
     NO_DATA: "No categories found. Create your first one to get started!",
     BTN_EDIT: "Edit",
     BTN_DELETE: "Delete",
-  }
+  },
 };
 
 export const FINANCIAL_COMPLIANCE_TEXT = {
@@ -194,28 +195,29 @@ export const PLAN_SELECTION_TEXT = {
     SUBTITLE_SUFFIX: "-day free trial. No credit card required.",
     FOOTER_PREFIX: "You won't be charged during your ",
     FOOTER_SUFFIX: "-day trial. Cancel anytime.",
-  }
+  },
 };
 
 export enum BadgeVariant {
   INFO = "info",
   SUCCESS = "success",
-  WARNING = "warning"
+  WARNING = "warning",
 }
 
 export const TRIAL_BANNER_TEXT = {
   GRACE_PERIOD: "Your trial expired. You have a 3-day grace period remaining.",
   ENDED: "Your trial has ended.",
-  ENDS_IN: (days: number) => `Your free trial ends in ${days} day${days !== 1 ? 's' : ''}.`,
+  ENDS_IN: (days: number) =>
+    `Your free trial ends in ${days} day${days !== 1 ? "s" : ""}.`,
   UPGRADE_RESTORE: "Upgrade to restore access",
   UPGRADE_NOW: "Upgrade now",
-  DISMISS: "Dismiss banner"
+  DISMISS: "Dismiss banner",
 };
 
 export enum BannerUrgency {
   INFO = "info",
   WARNING = "warning",
-  DANGER = "danger"
+  DANGER = "danger",
 }
 
 export enum AlertSeverity {
@@ -246,7 +248,7 @@ export const DOC_UPLOAD_TEXT = {
   ACTIONS: {
     REMOVE_FILE: "Remove file",
     UPLOAD_HINT: "Click to upload — PDF, JPG, PNG (max 10MB)",
-  }
+  },
 };
 
 export const COUPON_CARD_TEXT = {
@@ -274,7 +276,7 @@ export const COUPON_CARD_TEXT = {
     TOTAL: " total",
     USED: " used",
     EDIT_RULES: "Edit Rules",
-  }
+  },
 };
 
 export const COUPON_MODEL_TEXT = {
@@ -300,7 +302,7 @@ export const COUPON_MODEL_TEXT = {
     EDIT: "Edit Coupon",
     NEW: "New Coupon",
     EDIT_DESC: "Update the promo code details below.",
-    NEW_DESC: "Fill in the details to create a new promo code."
+    NEW_DESC: "Fill in the details to create a new promo code.",
   },
   BASIC_INFO: {
     CODE: "Coupon Code",
@@ -310,14 +312,14 @@ export const COUPON_MODEL_TEXT = {
     TYPE: "Discount Type",
     VALUE: "Value",
     VALID_FROM: "Valid From",
-    VALID_TO: "Valid To"
+    VALID_TO: "Valid To",
   },
   DISCOUNT_TYPES: {
     PERCENTAGE: "Percentage (%)",
     FIXED: "Fixed Amount (₹)",
     TIERED: "Tiered Discount",
     SHIPPING: "Free Shipping",
-    BOGO: "Buy 1 Get 1"
+    BOGO: "Buy 1 Get 1",
   },
   ADVANCED: {
     TITLE: "Advanced Limits (Optional)",
@@ -331,7 +333,7 @@ export const COUPON_MODEL_TEXT = {
     ACTIVE: "Active",
     PRODUCTS: "Applicable Products (Optional)",
     PRODUCTS_SELECT: "— Select a product to add —",
-    NO_PRODUCTS: "No products selected — coupon applies to entire cart."
+    NO_PRODUCTS: "No products selected — coupon applies to entire cart.",
   },
   RULES: {
     TITLE: "Promotion Rules",
@@ -346,7 +348,8 @@ export const COUPON_MODEL_TEXT = {
     MIN_QTY_PH: "e.g. 3",
     SEGMENT: "Segment ID",
     SEGMENT_PH: "UUID of customer segment",
-    FIRST_ORDER_HINT: "Applies only to a customer's first order — no extra config needed.",
+    FIRST_ORDER_HINT:
+      "Applies only to a customer's first order — no extra config needed.",
     PRODUCT_ID: "Required product",
     PRODUCT_ID_PH: "— Select a product —",
     DAYS_AGO: "Registered within (days)",
@@ -356,8 +359,8 @@ export const COUPON_MODEL_TEXT = {
     MAX_USES_PH: "e.g. 2",
     FOOTER_SAVING: "Saving…",
     FOOTER_UPDATE: "Update Coupon",
-    FOOTER_CREATE: "Create Coupon"
-  }
+    FOOTER_CREATE: "Create Coupon",
+  },
 };
 
 export const PROMO_CONFIG_TEXT = {
@@ -422,15 +425,19 @@ export const PROMO_CONFIG_TEXT = {
     NO_CAP: "Leave blank for no cap.",
     MUST_BUY: "Customer must buy this many items.",
     GIVEN_FREE: "Items given free or discounted.",
-    FREE_VARIANT_DESC: "The product variant the customer receives for free (or at discount).",
+    FREE_VARIANT_DESC:
+      "The product variant the customer receives for free (or at discount).",
     GIVE_FREE: "Set 100 to give items completely free.",
-    BOGO_QTY: "Typically 1 for \"Buy 1 Get 1\" — adjust for variants.",
+    BOGO_QTY: 'Typically 1 for "Buy 1 Get 1" — adjust for variants.',
     FREE_VARIANT_BOGO: "Which variant does the customer get for free?",
     DEFAULT_100: "Default 100 = fully free.",
-    MAX_SHIPPING_HINT: "Maximum shipping cost that will be waived. Leave blank to cover any amount.",
+    MAX_SHIPPING_HINT:
+      "Maximum shipping cost that will be waived. Leave blank to cover any amount.",
     CARRIERS_HINT: "Comma-separated. Leave blank to apply to all carriers.",
-    TIER_HINT: "Each tier applies when the cart value meets the minimum threshold.",
-    BUNDLE_VARIANTS_HINT: "Select all variants that must be in the cart together.",
+    TIER_HINT:
+      "Each tier applies when the cart value meets the minimum threshold.",
+    BUNDLE_VARIANTS_HINT:
+      "Select all variants that must be in the cart together.",
     BUNDLE_PRICE_HINT: "Final price when all bundle items are in cart.",
   },
   ACTIONS: {
@@ -461,7 +468,7 @@ export const PROMO_CONFIG_TEXT = {
     BUNDLE_AMT: "Amount off bundle",
     REQUIRE_ALL_YES: "Yes — all selected variants must be in cart",
     REQUIRE_ALL_NO: "No — discount triggers with any subset",
-  }
+  },
 };
 
 export const PRODUCT_FORM_TEXT = {
@@ -477,7 +484,7 @@ export const PRODUCT_FORM_TEXT = {
       headerDesc: "Update the details below to modify the product.",
       draftButton: "Save Draft",
       submitButton: "Update Product",
-    }
+    },
   },
   FILE_UPLOAD_LABELS: [
     {
@@ -513,12 +520,12 @@ export const PRODUCT_FORM_TEXT = {
     ATTRIBUTES: "Product Attributes",
     PRICING: "Pricing & Inventory",
     MEDIA: "Media & Assets",
-    CATEGORY_TAX: "Product Category & Taxation (GST)"
+    CATEGORY_TAX: "Product Category & Taxation (GST)",
   },
   ACTIONS: {
     ADD_FEATURE: "Add Feature",
     ADD_ATTRIBUTE: "Add Attribute",
-    BACK: "Back"
+    BACK: "Back",
   },
   LABELS: {
     FEAT_TITLE: "Feature Title",
@@ -533,14 +540,14 @@ export const PRODUCT_FORM_TEXT = {
     TAX_RATE: "Tax Rate",
     SELECT_TAX: "Select Tax Rate",
     WAREHOUSE: "Warehouse",
-    SELECT_WAREHOUSE: "Select Warehouse"
+    SELECT_WAREHOUSE: "Select Warehouse",
   },
   MEDIA_GUIDE: {
     TITLE: "Image Guidelines:",
     DESC: "For optimal performance and visual consistency, please upload high-resolution images under 10MB. Keep the main product centered with a clean background.",
     BROWSE: "Click to browse files",
-    LIMITS: "PNG, JPG, MP4 up to 10MB"
-  }
+    LIMITS: "PNG, JPG, MP4 up to 10MB",
+  },
 };
 
 export const PRODUCT_VARIANT_FORM_TEXT = {
@@ -550,7 +557,7 @@ export const PRODUCT_VARIANT_FORM_TEXT = {
     },
     UPDATE: {
       TITLE: "Edit Product Variant",
-    }
+    },
   },
   FILE_UPLOAD_LABELS: [
     {
@@ -565,7 +572,7 @@ export const PRODUCT_VARIANT_FORM_TEXT = {
   SECTIONS: {
     DETAILS: "Variant Details",
     PRICING: "Pricing & Inventory",
-    MEDIA: "Variant Images"
+    MEDIA: "Variant Images",
   },
   LABELS: {
     NAME: "Variant Name",
@@ -576,7 +583,7 @@ export const PRODUCT_VARIANT_FORM_TEXT = {
     ATTR_VAL: "Value",
     ATTR_VAL_PH: "e.g. Large",
     WAREHOUSE: "Warehouse",
-    SELECT_WAREHOUSE: "Select warehouse"
+    SELECT_WAREHOUSE: "Select warehouse",
   },
   ACTIONS: {
     BACK: "Back",
@@ -585,11 +592,11 @@ export const PRODUCT_VARIANT_FORM_TEXT = {
     CANCEL: "Cancel",
     SAVING: "Saving…",
     UPDATE: "Update Variant",
-    SAVE: "Save Variant"
+    SAVE: "Save Variant",
   },
   MEDIA_GUIDE: {
-    LIMITS: "PNG, JPG, MP4 up to 10MB"
-  }
+    LIMITS: "PNG, JPG, MP4 up to 10MB",
+  },
 };
 
 export const ANALYSIS_BOARD_TEXT = {
@@ -623,14 +630,14 @@ export const ANALYSIS_BOARD_TEXT = {
     TOTAL_TOP: "Total (top ",
     ORDERS_OVER: "Orders over ",
     DAYS: " days",
-    TOTAL_LOWER: "total"
+    TOTAL_LOWER: "total",
   },
   TABLES: {
     CATEGORY: "Category",
     SHARE: "Share",
     TOTAL: "Total",
     DERIVED_INSIGHTS: "Derived Insights",
-  }
+  },
 };
 
 export const BRANDING_TAB_TEXT = {
@@ -824,12 +831,13 @@ export const BRANDING_TAB_TEXT = {
     CARD_STYLE_HINT: "Aesthetic styling of cards",
     STANDARD_CARD: "Standard Flat Bordered",
     GLASSMORPHIC_CARD: "Glassmorphic Blur",
-    HOMEPAGE_DESC: "Toggle which modular sections are active on your home page, and order them to design your custom landing page.",
+    HOMEPAGE_DESC:
+      "Toggle which modular sections are active on your home page, and order them to design your custom landing page.",
     ACTIVE_POS: "Active (Pos: ",
     INACTIVE: "Inactive",
     MOVE_UP: "Move Up",
     MOVE_DOWN: "Move Down",
-  }
+  },
 };
 
 export const CAMPAIGN_FORM_TEXT = {
@@ -844,7 +852,8 @@ export const CAMPAIGN_FORM_TEXT = {
     EDIT: "Edit Campaign",
     EDIT_DESC: "Update promotion settings. Changes do not affect past orders.",
     CREATE: "Create Campaign",
-    CREATE_DESC: "Define a promotion with discount logic, schedule, rules, and targets.",
+    CREATE_DESC:
+      "Define a promotion with discount logic, schedule, rules, and targets.",
     DESC: "Configure your promotion details, rules, and scheduling.",
   },
   BASIC_INFO: {
@@ -856,7 +865,8 @@ export const CAMPAIGN_FORM_TEXT = {
     INTERNAL_NOTE_LBL: "Internal Note",
     INTERNAL_NOTE_PH: "Internal team notes (not visible to customers)",
     PRIORITY: "Priority",
-    PRIORITY_HINT: "Higher number = applied first when multiple promos are active.",
+    PRIORITY_HINT:
+      "Higher number = applied first when multiple promos are active.",
     AUTO_APPLY: "Auto-apply",
     AUTO_APPLY_HINT: "(no coupon code needed)",
     EXCLUSIVE: "Exclusive",
@@ -875,14 +885,15 @@ export const CAMPAIGN_FORM_TEXT = {
     VALID_TO_HINT: "Leave blank for no expiry.",
     GLOBAL_CAP: "Global Use Cap",
     GLOBAL_CAP_PH: "Leave blank = unlimited",
-    GLOBAL_CAP_HINT: "Total times this promo can be redeemed across all customers.",
+    GLOBAL_CAP_HINT:
+      "Total times this promo can be redeemed across all customers.",
   },
   FOOTER: {
     CANCEL: "Cancel",
     SAVING: "Saving…",
     UPDATE: "Update Campaign",
     CREATE: "Create Campaign",
-  }
+  },
 };
 
 export const DOCUMENT_CONFIG_TAB_TEXT = {
@@ -912,7 +923,8 @@ export const DOCUMENT_CONFIG_TAB_TEXT = {
   FOOTER: {
     TEXT_LABEL: "Footer Text",
     TEXT_HINT: "Printed at the bottom of every invoice page",
-    TEXT_PH: "Thank you for shopping with us. All disputes subject to Surat jurisdiction.",
+    TEXT_PH:
+      "Thank you for shopping with us. All disputes subject to Surat jurisdiction.",
     TERMS_LABEL: "Terms & Conditions",
     TERMS_HINT: "Printed on last page or as a section",
     TERMS_PH: "1. All sales are final unless otherwise specified…",
@@ -1004,7 +1016,7 @@ export const LEGAL_PROFILE_TAB_TEXT = {
     PHONE_PH: "+91 98765 43210",
     WEBSITE: "Website URL",
     WEBSITE_PH: "https://example.com",
-  }
+  },
 };
 
 export const SEQUENCE_RESET_SELECT_TEXT = {
@@ -1062,22 +1074,22 @@ export const SIGNATURE_UPLOAD_TEXT = {
 
 export const DELETE_BTN_TEXT = {
   ERR_AUTH: "Authentication not found! Try to Login Again!",
-  DELETE: "Delete"
+  DELETE: "Delete",
 };
 
 export const SAVE_BUTTON_TEXT = {
   SAVING: "Saving…",
   SAVED: "Saved",
-  SAVE_CHANGES: "Save Changes"
+  SAVE_CHANGES: "Save Changes",
 };
 
 export const VARIANT_IMG_GRID_TEXT = {
-  ALT_TEXT: "Variant Image"
+  ALT_TEXT: "Variant Image",
 };
 
 export const LOGO_UPLOAD_TEXT = {
   REPLACE: "Click to replace",
-  UPLOAD: "Upload image"
+  UPLOAD: "Upload image",
 };
 
 export const CUSTOMER_CARE_TEXT = {
@@ -1109,7 +1121,8 @@ export const BANNERS_TEXT = {
   UNTIL: "Until {date}",
   NO_EXPIRY: "No expiry",
   NO_BANNERS_TITLE: "No banners yet",
-  NO_BANNERS_DESC: "Create a banner and assign it to a storefront placement slot.",
+  NO_BANNERS_DESC:
+    "Create a banner and assign it to a storefront placement slot.",
   PLACEMENT_LABELS: {
     homepage_hero: "Homepage Hero",
     homepage_secondary: "Homepage Secondary",
@@ -1117,7 +1130,7 @@ export const BANNERS_TEXT = {
     product_page: "Product Page",
     cart_sidebar: "Cart Sidebar",
     checkout: "Checkout",
-  }
+  },
 };
 
 export const GST_TEXT = {
@@ -1143,7 +1156,7 @@ export const GST_TEXT = {
     STATUS: "Status",
     EFFECTIVE_DATE: "Effective Date",
     ACTIONS: "Actions",
-  }
+  },
 };
 
 export const FINANCES_TEXT = {
@@ -1176,7 +1189,7 @@ export const FINANCES_TEXT = {
     STATUS: "Status",
     DATE: "Date",
     ACTIONS: "Actions",
-  }
+  },
 };
 
 export const LOCATIONS_TEXT = {
@@ -1196,7 +1209,6 @@ export const LOCATIONS_TEXT = {
   FORM: {
     ADDRESS_TYPE: "Address Type",
     ADDRESS_LINE_1: "Address Line 1",
-    ADDRESS_LINE_2: "Address Line 2",
     CITY: "City",
     STREET: "Street",
     STATE: "State",
@@ -1214,12 +1226,13 @@ export const LOCATIONS_TEXT = {
       LINE_2: "Area, Street, Sector, Village",
     },
     DEFAULT_CHECKBOX: "Set as primary default address",
-  }
+  },
 };
 
 export const CHANGE_PASSWORD_TEXT = {
   TITLE: "Set a New Password",
-  SUBTITLE: "Choose a strong password to replace the temporary one and protect your vendor account.",
+  SUBTITLE:
+    "Choose a strong password to replace the temporary one and protect your vendor account.",
   CURRENT_PASSWORD: "Current Password",
   NEW_PASSWORD: "New Password",
   CONFIRM_PASSWORD: "Confirm Password",
@@ -1227,19 +1240,21 @@ export const CHANGE_PASSWORD_TEXT = {
   UPDATE_PASSWORD: "Update Password",
   SAVING: "Saving Password...",
   SUCCESS_TITLE: "Password Secured!",
-  SUCCESS_SUBTITLE: "Your password has been successfully updated and encrypted. Redirecting you to the dashboard...",
+  SUCCESS_SUBTITLE:
+    "Your password has been successfully updated and encrypted. Redirecting you to the dashboard...",
   ERRORS: {
     FILL_ALL: "Please fill in all fields.",
     LENGTH: "Password must be at least 8 characters long.",
     MISMATCH: "Passwords do not match.",
     NO_TOKEN: "Authentication token is missing. Please log in again.",
     UNEXPECTED: "An unexpected error occurred.",
-  }
+  },
 };
 
 export const COMPLIANCE_TEXT = {
   TITLE: "Compliance & Documents",
-  SUBTITLE: "All regulatory registrations and proof documents submitted during and after onboarding. Each record may have a linked certificate or proof file.",
+  SUBTITLE:
+    "All regulatory registrations and proof documents submitted during and after onboarding. Each record may have a linked certificate or proof file.",
   SEARCH_PLACEHOLDER: "Search by key or value…",
   ALL_STATUSES: "All statuses",
   STATUS_VERIFIED: "Verified",
@@ -1252,10 +1267,12 @@ export const COMPLIANCE_TEXT = {
   LOAD_ERROR: "Failed to load compliance records.",
   TRY_AGAIN: "Try again",
   NO_RECORDS_TITLE: "No compliance records yet",
-  NO_RECORDS_DESC: "Compliance fields such as GSTIN, PAN, and CIN are added during onboarding and will appear here.",
+  NO_RECORDS_DESC:
+    "Compliance fields such as GSTIN, PAN, and CIN are added during onboarding and will appear here.",
   NO_MATCHES_TITLE: "No records match your filters",
   CLEAR_FILTERS: "Clear all filters",
-  FOOTER_NOTE: "Records marked as Verified have been reviewed by the platform team. Contact support if you believe a rejection was made in error.",
+  FOOTER_NOTE:
+    "Records marked as Verified have been reviewed by the platform team. Contact support if you believe a rejection was made in error.",
   STATS: {
     TOTAL: "Total registrations",
     VERIFIED: "Verified",
@@ -1267,22 +1284,26 @@ export const COMPLIANCE_TEXT = {
     gstin: {
       label: "GST Registration",
       icon: "receipt-tax",
-      description: "Goods and Services Tax Identification Number — mandatory for invoicing",
+      description:
+        "Goods and Services Tax Identification Number — mandatory for invoicing",
     },
     pan: {
       label: "PAN",
       icon: "id-badge",
-      description: "Permanent Account Number — issued by the Income Tax Department of India",
+      description:
+        "Permanent Account Number — issued by the Income Tax Department of India",
     },
     cin: {
       label: "CIN",
       icon: "building-store",
-      description: "Corporate Identification Number — issued by the Ministry of Corporate Affairs",
+      description:
+        "Corporate Identification Number — issued by the Ministry of Corporate Affairs",
     },
     vat_number: {
       label: "VAT Number",
       icon: "world",
-      description: "Value Added Tax registration number for applicable jurisdictions",
+      description:
+        "Value Added Tax registration number for applicable jurisdictions",
     },
     ein: {
       label: "EIN",
@@ -1319,7 +1340,7 @@ export const COMPLIANCE_TEXT = {
     DROP_FILE: "Drop file or",
     BROWSE: "browse",
     FILE_LIMIT: "PDF, JPG, PNG, WEBP · max 10 MB",
-  }
+  },
 };
 
 export const PRODUCTS_LIST_TEXT = {
@@ -1343,7 +1364,7 @@ export const PRODUCTS_LIST_TEXT = {
     STOCK: "STOCK",
     PRICE: "PRICE",
     ACTION: "ACTION",
-  }
+  },
 };
 
 export const STOCK_MANAGER_TEXT = {
@@ -1410,8 +1431,10 @@ export const STOCK_MANAGER_TEXT = {
   CONFIRM: {
     PUBLISH_TITLE: "Publish Variant?",
     DEACTIVATE_TITLE: "Deactivate Variant?",
-    PUBLISH_MSG: (name: string) => `Are you sure you want to activate "${name}"? Turning this on will publish this variant to customers and make it available for purchase.`,
-    DEACTIVATE_MSG: (name: string) => `Are you sure you want to deactivate "${name}"? This will immediately hide the variant from customers.`,
+    PUBLISH_MSG: (name: string) =>
+      `Are you sure you want to activate "${name}"? Turning this on will publish this variant to customers and make it available for purchase.`,
+    DEACTIVATE_MSG: (name: string) =>
+      `Are you sure you want to deactivate "${name}"? This will immediately hide the variant from customers.`,
     PUBLISH_BTN: "Publish Variant",
     DEACTIVATE_BTN: "Deactivate",
   },
@@ -1770,7 +1793,8 @@ export const MARKETING_TEXT = {
   },
   FUNNEL: {
     TITLE: "Product Funnel Analytics",
-    SUBTITLE: "Identify which products are being abandoned at checkout to optimize pricing.",
+    SUBTITLE:
+      "Identify which products are being abandoned at checkout to optimize pricing.",
     HEADERS: {
       PRODUCT_VARIANT: "Product Variant",
       SKU: "SKU",
@@ -1812,8 +1836,10 @@ export const COUPONS_PAGE_TEXT = {
   },
   EMPTY: {
     TITLE: "No coupons found",
-    SEARCH_DESC: "No coupons match your search. Try a different code or description.",
-    DEFAULT_DESC: "You haven't created any promo codes yet. Start with your first one.",
+    SEARCH_DESC:
+      "No coupons match your search. Try a different code or description.",
+    DEFAULT_DESC:
+      "You haven't created any promo codes yet. Start with your first one.",
     CREATE_FIRST_BTN: "Create Your First Coupon",
   },
 };
@@ -1821,7 +1847,8 @@ export const COUPONS_PAGE_TEXT = {
 export const CAMPAIGNS_PAGE_TEXT = {
   HEADER: {
     TITLE: "Campaigns",
-    SUBTITLE: "Auto-applied promotions, tiered discounts, bundles, and BOGO deals.",
+    SUBTITLE:
+      "Auto-applied promotions, tiered discounts, bundles, and BOGO deals.",
     CREATE_BTN: "Create Campaign",
   },
   METRICS: {
@@ -1903,7 +1930,8 @@ export const BANNER_DETAILS_PAGE_TEXT = {
     CTR_LABEL: "Click-Through Rate (CTR)",
     CTR_DESC: "Percentage of users who saw the banner and clicked it.",
     CVR_LABEL: "Conversion Rate (CVR)",
-    CVR_DESC: "Percentage of users who clicked the banner and completed a purchase with the linked promotion.",
+    CVR_DESC:
+      "Percentage of users who clicked the banner and completed a purchase with the linked promotion.",
   },
   ACTIONS: {
     EDIT_DESIGN: "Edit Banner Design",
@@ -1929,9 +1957,11 @@ export const BANNER_FORM_TEXT = {
     PROMO_LABEL: "Linked Promotion",
     NO_PROMO: "No linked promotion",
     LOADING: "Loading…",
-    PROMO_HINT: "Clicking the banner CTA will activate this promotion for the customer.",
+    PROMO_HINT:
+      "Clicking the banner CTA will activate this promotion for the customer.",
     DISPLAY_ORDER: "Display Order",
-    DISPLAY_ORDER_HINT: "Lower number = shown first when multiple banners share the same placement.",
+    DISPLAY_ORDER_HINT:
+      "Lower number = shown first when multiple banners share the same placement.",
   },
   SCHEDULE: {
     TITLE: "Schedule",
@@ -1976,12 +2006,14 @@ export const BANNER_FORM_TEXT = {
 export const AUDIENCES_PAGE_TEXT = {
   TOASTS: {
     LOAD_ERR: "Failed to load audiences",
-    RECALC_SUCCESS: (count: number) => `Recalculated — ${count} members matched`,
+    RECALC_SUCCESS: (count: number) =>
+      `Recalculated — ${count} members matched`,
     RECALC_FAIL: "Recalculation failed",
   },
   HEADER: {
     TITLE: "Audiences",
-    SUBTITLE: "Group customers by behaviour. Use segments to target campaigns precisely.",
+    SUBTITLE:
+      "Group customers by behaviour. Use segments to target campaigns precisely.",
     CREATE_BTN: "Create Segment",
   },
   METRICS: {
@@ -2047,21 +2079,3 @@ export const WAREHOUSE_LOCATIONS_TEXT = {
     SAVE: "Save Address",
   },
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

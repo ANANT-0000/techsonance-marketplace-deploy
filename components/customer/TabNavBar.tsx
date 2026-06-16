@@ -31,13 +31,16 @@ export function TabNavBar() {
           if (link.title.toLowerCase() === "home") {
             isActive = path === "/";
           } else if (link.title.toLowerCase() === "profile") {
-            isActive = path.startsWith("/customer") && !path.startsWith("/customer/cart");
+            isActive =
+              path.startsWith("/customer") &&
+              !path.startsWith("/customer/cart");
           } else if (link.title.toLowerCase() === "cart") {
             isActive = path.startsWith("/customer/cart");
           } else if (link.title.toLowerCase() === "search") {
             isActive = path.startsWith("/store/search");
           } else if (link.title.toLowerCase() === "shop") {
-            isActive = path.startsWith("/store") && !path.startsWith("/store/search");
+            isActive =
+              path.startsWith("/store") && !path.startsWith("/store/search");
           } else {
             isActive = path === link.url;
           }
@@ -47,14 +50,14 @@ export function TabNavBar() {
               key={index}
               whileTap={{ scale: 0.9 }}
               initial={{
-                backgroundColor: "transparent",
+                backgroundColor: "rgba(0, 0, 0, 0)",
                 opacity: 0,
               }}
               animate={{
                 opacity: 1,
                 backgroundColor: isActive
                   ? "var(--theme-primary)"
-                  : "transparent",
+                  : "rgba(0, 0, 0, 0)",
                 color: isActive
                   ? "var(--theme-primary-foreground)"
                   : "var(--muted-foreground)",

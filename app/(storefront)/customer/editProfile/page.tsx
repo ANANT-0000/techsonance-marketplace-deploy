@@ -72,7 +72,7 @@ export default function EditProfilePage() {
 
   const handleCancel = () => {
     reset();
-    router.push(`/customer/${userId}`);
+    router.push(`/customer`);
   };
 
   return (

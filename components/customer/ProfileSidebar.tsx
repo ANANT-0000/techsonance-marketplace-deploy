@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
@@ -11,24 +12,30 @@ import Image from "next/image";
 
 export function ProfileSidebar() {
   const { user } = useAppSelector((state: RootState) => state.auth);
+  const {} = useAppSelector((state: RootState) => state);
   const router = useRouter();
   const dispatch = useAppDispatch();
   const currentPath = usePathname();
 
-  if (currentPath.includes("checkout")) return null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (currentPath && currentPath.includes("checkout")) return null;
 
   const handleNavigation = (linkPath: string) => {
     if (linkPath === "/logout") {
       dispatch(logOut());
       router.push("/");
-    } else if (linkPath === "/customer") {
-      router.push(`/customer`);
     } else {
-      router.push(`/customer${linkPath}`);
+      router.push(linkPath);
     }
   };
 
-  const isOnOverviewPage = currentPath === `/customer`;
+  const activePath = mounted ? currentPath : "";
+  const showUserProfile = mounted && user;
+  const isOnOverviewPage = mounted && activePath === `/customer`;
 
   const mobileLinks = ProfileSidebarLink.filter(
     (link) => link.path !== "/customer" && link.path !== "/logout",
@@ -36,55 +43,6 @@ export function ProfileSidebar() {
 
   return (
     <>
-      {/* Mobile View */}
-      {isOnOverviewPage && (
-        <div className="block lg:hidden w-full mb-6">
-          <motion.ul
-            className="grid grid-cols-2 gap-3 w-full"
-            initial="hidden"
-            animate="visible"
-            variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
-          >
-            {mobileLinks.map((link) => {
-              const targetPath = `/customer${link.path}`;
-              const isActive =
-                currentPath === targetPath || currentPath.startsWith(targetPath);
-
-              return (
-                <motion.li
-                  key={link.name}
-                  variants={{
-                    hidden: { opacity: 0, y: 10 },
-                    visible: { opacity: 1, y: 0 },
-                  }}
-                >
-                  <button
-                    onClick={() => handleNavigation(link.path)}
-                    className={`
-                                        w-full flex flex-col items-center justify-center gap-2 px-4 py-6
-                                        rounded-xl border text-theme-body-sm font-medium transition-all shadow-sm
-                                        ${
-                                          isActive
-                                            ? "border-theme-primary/50 bg-theme-primary/5 text-theme-primary"
-                                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
-                                        }
-                                    `}
-                  >
-                    <DynamicIcon
-                      name={link.icon as IconName}
-                      size={24}
-                      fallback={() => <span />}
-                      className={isActive ? "text-theme-primary" : "text-gray-500"}
-                    />
-                    <span>{link.name}</span>
-                  </button>
-                </motion.li>
-              );
-            })}
-          </motion.ul>
-        </div>
-      )}
-
       {/* Desktop View */}
       <aside className="hidden lg:block w-72 flex-shrink-0 px-6 py-4">
         <div className="flex items-center gap-3 mb-6 sm:hidden">
@@ -102,7 +60,7 @@ export function ProfileSidebar() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 flex flex-col items-center text-center gap-3"
         >
-          {user ? (
+          {showUserProfile ? (
             <>
               <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-100 shadow-sm relative">
                 <Image
@@ -146,9 +104,9 @@ export function ProfileSidebar() {
               link.path === "/customer" ? `/customer` : `/customer${link.path}`;
             const isActive =
               link.path !== "/logout" &&
-              (currentPath === targetPath ||
+              (activePath === targetPath ||
                 (link.path !== "/customer" &&
-                  currentPath.startsWith(targetPath)));
+                  activePath.startsWith(targetPath)));
             const isDanger = link.path === "/logout";
 
             return (
