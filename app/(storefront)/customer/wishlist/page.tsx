@@ -1,9 +1,10 @@
 "use client";
+
 import type { RootState } from "@/lib/store";
 import { ArrowLeft, Trash2, X, HeartCrack } from "lucide-react";
 import { AddToCart } from "@/components/customer/AddToCart";
 import { addToWishlist, removeFromWishlist } from "@/lib/features/Wishlist";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -14,7 +15,9 @@ import {
 import Link from "next/link";
 import { authToken } from "@/utils/authToken";
 import { formatCurrency } from "@/lib/utils";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
+import { motion } from "framer-motion";
+import { WISHLIST_PAGE_TEXT } from "@/constants/customerText";
 
 interface WishlistItemType {
   created_at: string;
@@ -116,22 +119,17 @@ export default function WishlistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] py-6 sm:py-12">
+    <div className="min-h-screen bg-background py-6 sm:py-12 text-left font-sans">
+      <Toaster />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6 sm:mb-8">
-          <button
-            onClick={() => router.back()}
-            className="p-2 sm:p-2.5 bg-white border border-gray-200 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-all shadow-sm"
-          >
-            <ArrowLeft size={20} />
-          </button>
           <div>
-            <h1 className="text-theme-h4 sm:text-theme-h3 font-extrabold text-gray-900 tracking-tight">
-              Your Wishlist
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              {WISHLIST_PAGE_TEXT.TITLE}
             </h1>
-            <p className="text-theme-body-sm font-medium text-gray-500 mt-1">
-              Review your saved items.
+            <p className="text-xs text-muted-foreground mt-1">
+              {WISHLIST_PAGE_TEXT.SUBTITLE}
             </p>
           </div>
         </div>
@@ -143,50 +141,54 @@ export default function WishlistPage() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 relative animate-pulse shadow-sm"
+                  className="bg-card border border-border rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 relative animate-pulse shadow-sm"
                 >
-                  <div className="shrink-0 w-24 h-24 sm:w-32 sm:h-32 bg-gray-100 rounded-xl" />
+                  <div className="shrink-0 w-24 h-24 sm:w-28 sm:h-28 bg-secondary/40 rounded-xl" />
                   <div className="flex-1 flex flex-col justify-between py-1 space-y-3">
                     <div className="space-y-2">
-                      <div className="h-6 bg-gray-200 rounded w-3/4" />
-                      <div className="h-5 bg-gray-200 rounded w-1/4" />
+                      <div className="h-6 bg-secondary rounded w-3/4" />
+                      <div className="h-5 bg-secondary rounded w-1/4" />
                     </div>
-                    <div className="h-11 bg-gray-200 rounded-xl w-full sm:w-40" />
+                    <div className="h-11 bg-secondary rounded-xl w-full sm:w-40" />
                   </div>
                 </div>
               ))}
             </div>
           ) : isEmpty ? (
-            <div className="flex flex-col items-center justify-center py-20 bg-white border border-gray-200 rounded-2xl shadow-sm">
-              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                <HeartCrack className="w-8 h-8 text-gray-400" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center justify-center text-center py-20 border border-dashed border-border rounded-2xl bg-card p-6"
+            >
+              <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-4">
+                <HeartCrack className="w-6 h-6 text-muted-foreground" />
               </div>
-              <h2 className="text-theme-h6 font-bold text-gray-900">
-                Your wishlist is empty
-              </h2>
-              <p className="text-theme-body-sm text-gray-500 mt-1 mb-6">
-                Looks like you haven't saved any items yet.
+              <p className="text-sm font-semibold text-foreground">
+                {WISHLIST_PAGE_TEXT.EMPTY_TITLE}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1.5 max-w-xs">
+                {WISHLIST_PAGE_TEXT.EMPTY_DESC}
               </p>
               <Link
                 href="/"
-                className="px-6 py-3 bg-[#0f172a] text-white text-theme-body-sm font-bold rounded-xl hover:bg-black transition-colors"
+                className="mt-6 bg-foreground text-background hover:bg-foreground/90 rounded-xl px-8 py-2.5 text-xs font-semibold transition-all shadow-sm active:scale-95 cursor-pointer block"
               >
-                Start Shopping
+                {WISHLIST_PAGE_TEXT.START_SHOPPING}
               </Link>
-            </div>
+            </motion.div>
           ) : (
             <div className="space-y-4">
               {wishlistItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 relative transition-all shadow-sm hover:shadow-md"
+                  className="bg-card border border-border rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 relative transition-all shadow-sm hover:shadow-md hover:border-primary/20"
                 >
                   {/* Mobile Remove Button (Absolute) */}
                   <button
                     onClick={() =>
                       deleteItemFromWishlist(item.productVariant.id)
                     }
-                    className="absolute top-3 right-3 sm:hidden p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    className="absolute top-3 right-3 sm:hidden p-1.5 text-muted-foreground hover:text-destructive hover:bg-secondary rounded-lg transition-colors cursor-pointer"
                   >
                     <X size={18} />
                   </button>
@@ -194,7 +196,7 @@ export default function WishlistPage() {
                   {/* Product Image */}
                   <Link
                     href={`/store/${item.productVariant.product_id}`}
-                    className="shrink-0 w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden block relative"
+                    className="shrink-0 w-24 h-24 sm:w-28 sm:h-28 bg-secondary/40 rounded-xl border border-border/50 overflow-hidden block relative"
                   >
                     <Image
                       src={
@@ -203,22 +205,22 @@ export default function WishlistPage() {
                       }
                       alt={item.productVariant.variant_name}
                       fill
-                      sizes="(max-width: 640px) 96px, 128px"
+                      sizes="(max-width: 640px) 96px, 112px"
                       loading="eager"
                       className="object-cover mix-blend-multiply"
                     />
                   </Link>
 
                   {/* Product Details & Actions */}
-                  <div className="flex-1 flex flex-col justify-between py-1">
+                  <div className="flex-1 flex flex-col justify-between py-1 min-w-0">
                     <div className="flex justify-between items-start gap-4 pr-6 sm:pr-0">
-                      <div>
+                      <div className="min-w-0">
                         <Link href={`/store/${item.productVariant.product_id}`}>
-                          <h3 className="font-bold text-gray-900 text-theme-body sm:text-theme-h6 line-clamp-2 leading-snug hover:text-indigo-600 transition-colors">
+                          <h3 className="font-bold text-foreground text-xs sm:text-sm line-clamp-2 leading-snug hover:text-blue-600 transition-colors">
                             {item.productVariant.variant_name}
                           </h3>
                         </Link>
-                        <p className="font-extrabold text-gray-900 text-theme-h6 sm:text-theme-h5 mt-1.5">
+                        <p className="font-bold text-foreground text-xs sm:text-sm mt-1.5">
                           ₹{formatCurrency(Number(item.productVariant.price))}
                         </p>
                       </div>
@@ -228,21 +230,19 @@ export default function WishlistPage() {
                         onClick={() =>
                           deleteItemFromWishlist(item.productVariant.id)
                         }
-                        className="hidden sm:flex items-center gap-1.5 text-theme-body-sm font-bold text-red-500 hover:text-red-600 transition-colors shrink-0"
+                        className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-destructive hover:text-destructive/80 transition-colors shrink-0 cursor-pointer"
                       >
                         <Trash2 size={16} />
-                        Remove
+                        {WISHLIST_PAGE_TEXT.REMOVE}
                       </button>
                     </div>
 
-                    <div className="mt-4 sm:mt-0 pt-4 sm:pt-0">
-                      {/* AddToCart component needs to handle its own button styling, 
-                                                passing standard width constraint to fit nicely */}
+                    <div className="mt-2 sm:mt-2 pt-2 sm:pt-0">
                       <div className="w-full sm:w-40">
                         <AddToCart
                           productVariantId={item.productVariant.id}
                           productVariant={item.productVariant as any}
-                          styles="w-full h-11 text-theme-body-sm font-bold rounded-xl"
+                          styles="w-full h-10 rounded-full bg-theme-primary border border-gray-200 hover:bg-theme-secondary text-theme-primary-foreground transition-colors cursor-pointer "
                         />
                       </div>
                     </div>

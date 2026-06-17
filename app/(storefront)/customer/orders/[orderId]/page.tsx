@@ -14,7 +14,7 @@ import {
   CreditCard,
   MapPin,
 } from "lucide-react";
-import { useSearchParams, useRouter, useParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchOrderDetails } from "@/utils/customerApiClient";
 import { OrderStatus } from "@/utils/Types";
@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ORDER_DETAILS_TEXT } from "@/constants/customerText";
 
 interface GstInvoice {
   cgst_amount: string;
@@ -42,10 +43,11 @@ interface GstInvoice {
   total_tax: string;
   updated_at: string; // ISO 8601 date string
 }
-// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface OrderImage {
   image_url: string;
 }
+
 interface ProductVariant {
   id: string;
   variant_name: string;
@@ -53,6 +55,7 @@ interface ProductVariant {
   images: OrderImage[];
   product_id: string;
 }
+
 interface ReturnRequest {
   id: string;
   status: string;
@@ -60,6 +63,7 @@ interface ReturnRequest {
   tracking_id: string | null;
   type: string;
 }
+
 interface OrderItem {
   id: string;
   quantity: number;
@@ -68,15 +72,16 @@ interface OrderItem {
   variant: ProductVariant;
   return_request: ReturnRequest | null;
 }
+
 interface Address {
   name: string;
   address_line_1: string;
-
   city: string;
   state: string;
   postal_code: string;
   country: string;
 }
+
 interface Payment {
   id: string;
   payment_method: string;
@@ -84,12 +89,14 @@ interface Payment {
   transaction_ref: string;
   amount: string;
 }
+
 interface Invoice {
   company_id: string;
   order_id: string;
   invoice_url: string;
   invoice_number?: string;
 }
+
 interface OrderDetailType {
   id: string;
   user_id: string;
@@ -127,12 +134,12 @@ function VerticalTimeline({
 
   if (isCancelled) {
     return (
-      <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-100 rounded-xl">
-        <XCircle className="text-red-500 mt-0.5 shrink-0" size={20} />
+      <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-left">
+        <XCircle className="text-destructive mt-0.5 shrink-0" size={20} />
         <div>
-          <p className="font-bold text-red-900">Order Cancelled</p>
-          <p className="text-theme-body-sm text-red-700 mt-1">
-            This order was cancelled and will not be delivered.
+          <p className="font-bold text-destructive">{ORDER_DETAILS_TEXT.ORDER_CANCELLED}</p>
+          <p className="text-xs text-destructive/80 mt-1 leading-relaxed">
+            {ORDER_DETAILS_TEXT.ORDER_CANCELLED_DESC}
           </p>
         </div>
       </div>
@@ -140,9 +147,9 @@ function VerticalTimeline({
   }
 
   return (
-    <div className="relative pl-6 space-y-8 py-2">
+    <div className="relative pl-6 space-y-8 py-2 text-left">
       {/* The vertical tracking line */}
-      <div className="absolute left-[11px] top-3 bottom-4 w-0.5 bg-gray-100 z-0"></div>
+      <div className="absolute left-[11px] top-3 bottom-4 w-0.5 bg-border z-0"></div>
 
       {TIMELINE_STEPS.map((step, index) => {
         const isCompleted = currentIndex >= index;
@@ -152,22 +159,21 @@ function VerticalTimeline({
           <div key={step.key} className="relative z-10 flex gap-4 items-start">
             {/* Dot */}
             <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 outline outline-4 outline-white transition-colors ${isCompleted ? "bg-blue-600" : "bg-gray-200"}`}
+              className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 outline outline-4 outline-background transition-colors ${isCompleted ? "bg-primary" : "bg-muted"}`}
             >
               <div
-                className={`w-2 h-2 rounded-full ${isCompleted ? "bg-white" : "bg-gray-400"}`}
+                className={`w-2 h-2 rounded-full ${isCompleted ? "bg-background" : "bg-muted-foreground"}`}
               ></div>
             </div>
             {/* Content */}
             <div className="flex flex-col">
               <span
-                className={`font-bold ${isCurrent ? "text-gray-900" : isCompleted ? "text-gray-700" : "text-gray-400"}`}
+                className={`text-xs font-bold ${isCurrent ? "text-foreground" : isCompleted ? "text-foreground/80" : "text-muted-foreground"}`}
               >
                 {step.label}
               </span>
               {isCompleted && (
-                <span className="text-theme-caption text-gray-500 mt-0.5">
-                  {/* Mocking times for the UI feel; would map to actual timestamps if available */}
+                <span className="text-[10px] text-muted-foreground mt-0.5 font-medium">
                   {new Date(date).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -178,9 +184,9 @@ function VerticalTimeline({
               {step.key === "shipped" && isCurrent && (
                 <Badge
                   variant="secondary"
-                  className="w-fit mt-2 bg-blue-50 text-blue-700 border-blue-200 font-bold uppercase tracking-wider text-theme-tiny"
+                  className="w-fit mt-2 bg-secondary text-foreground border border-border font-bold uppercase tracking-wider text-[9px]"
                 >
-                  In Transit
+                  {ORDER_DETAILS_TEXT.IN_TRANSIT}
                 </Badge>
               )}
             </div>
@@ -194,22 +200,33 @@ function VerticalTimeline({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function OrderDetailsPage() {
   const { orderId } = useParams<{ orderId: string }>();
-  // const orderId =
   const { downloadInvoice, isGenerating } = useInvoiceDownload();
   const [order, setOrder] = useState<OrderDetailType | null>(null);
   const router = useRouter();
   const token = authToken();
 
   useEffect(() => {
+    let isMounted = true;
     if (!orderId || !token) return;
     fetchOrderDetails(orderId, token)
-      .then((data) => setOrder(data.data))
-      .catch((err) => toast.error("Error fetching order details:"));
+      .then((data) => {
+        if (isMounted) {
+          setOrder(data.data);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          toast.error("Error fetching order details:");
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
   }, [orderId, token]);
+
   const handleCancelItem = (id: string) =>
     router.push(`/customer/orders/${orderId}/cancel/${id}`);
 
-  // --- Derived Logic ---
   // Calculate if all items share the exact same status
   const allItemsSameStatus =
     order?.items && order.items.length > 0
@@ -230,34 +247,60 @@ export default function OrderDetailsPage() {
     ) ?? 0;
   const totalAmount = itemsTotal;
 
-  if (!order) return null; // Or a loading skeleton
+  if (!order) {
+    return (
+      <div className="min-h-screen pb-12 font-sans rounded-2xl bg-background animate-pulse px-4 md:px-0 lg:px-8 py-4 md:py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="space-y-2">
+            <div className="h-4 w-32 bg-secondary rounded" />
+            <div className="h-6 w-64 bg-secondary rounded" />
+          </div>
+          <div className="flex gap-3">
+            <div className="h-10 w-36 bg-secondary rounded-lg" />
+            <div className="h-10 w-36 bg-secondary rounded-lg" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            <div className="h-72 bg-secondary rounded-2xl" />
+            <div className="h-44 bg-secondary rounded-2xl" />
+          </div>
+          <div className="lg:col-span-8 flex flex-col gap-6">
+            <div className="h-96 bg-secondary rounded-2xl" />
+            <div className="h-60 bg-secondary rounded-2xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen pb-12 font-sans rounded-2xl bg-gray-50/30">
+    <div className="min-h-screen pb-12 font-sans rounded-2xl bg-background text-foreground text-left">
       <Toaster />
       <div className="mx-auto lg:px-8 py-4 md:py-8">
         {/* ── Desktop Breadcrumb / Header ── */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 px-4 md:px-0">
           <div>
-            <div className="hidden md:flex items-center gap-2 text-theme-body-sm text-muted-foreground mb-2">
+            <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground mb-2">
               <Link
                 href="/customer/orders"
-                className="hover:text-black transition-colors"
+                className="hover:text-foreground hover:underline transition-all"
               >
-                Orders
+                {ORDER_DETAILS_TEXT.BREADCRUMB_ORDERS}
               </Link>
-              <span className="text-black">
-                / {order.id.split("-")[0].toUpperCase()}
+              <span>/</span>
+              <span className="text-foreground font-semibold">
+                {order.id.split("-")[0].toUpperCase()}
               </span>
             </div>
-            <p className="text-theme-body-sm text-muted-foreground mt-1 hidden md:block">
-              Placed on{" "}
+            <p className="text-xs text-muted-foreground mt-1 hidden md:block">
+              {ORDER_DETAILS_TEXT.PLACED_ON_PREFIX}
               {new Date(order.created_at).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
                 year: "numeric",
               })}{" "}
-              • {order.items.length} Items
+              • {order.items.length} {ORDER_DETAILS_TEXT.ITEMS_COUNT_SUFFIX}
             </p>
           </div>
 
@@ -267,19 +310,19 @@ export default function OrderDetailsPage() {
               variant="outline"
               onClick={() => downloadInvoice(order.id, token!)}
               disabled={isGenerating}
-              className="bg-white"
+              className="bg-card border-border rounded-xl shadow-sm text-xs font-semibold cursor-pointer active:scale-95 transition-all"
             >
               <Download size={16} className="mr-2" />
-              {isGenerating ? "Loading..." : "Download Invoice"}
+              {isGenerating ? ORDER_DETAILS_TEXT.BTN_INVOICE_LOADING : ORDER_DETAILS_TEXT.BTN_DOWNLOAD_INVOICE}
             </Button>
             {order.shipping?.tracking_url && (
-              <Button className="bg-black text-white hover:bg-gray-800" asChild>
+              <Button className="rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer text-xs font-semibold shadow-sm active:scale-95" asChild>
                 <a
                   href={order.shipping.tracking_url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Truck size={16} className="mr-2" /> Track Package
+                  <Truck size={16} className="mr-2" /> {ORDER_DETAILS_TEXT.BTN_TRACK_PACKAGE}
                 </a>
               </Button>
             )}
@@ -290,13 +333,13 @@ export default function OrderDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 px-4 md:px-0">
           {/* ── LEFT COLUMN (Status & Address) ── */}
           <div className="lg:col-span-4 flex flex-col gap-6 order-1 lg:order-1">
-            {/* Unified Status Tracker (Only shows if all items have same status) */}
+            {/* Unified Status Tracker */}
             {unifiedStatus && (
-              <Card className="shadow-sm rounded-2xl overflow-hidden">
-                <CardHeader className="bg-gray-50/50 pb-4 border-b border-border">
-                  <CardTitle className="text-theme-h6">Order Status</CardTitle>
+              <Card className="shadow-sm rounded-2xl border-border bg-card overflow-hidden">
+                <CardHeader className="pb-4 border-b border-border bg-transparent">
+                  <CardTitle className="text-sm font-bold text-foreground">{ORDER_DETAILS_TEXT.ORDER_STATUS}</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-2 md:pt-6">
+                <CardContent className="pt-6">
                   <VerticalTimeline
                     currentStatus={unifiedStatus}
                     date={order.created_at}
@@ -305,11 +348,11 @@ export default function OrderDetailsPage() {
               </Card>
             )}
 
-            {/* Mobile Order Actions (Only shows on mobile, right under status) */}
+            {/* Mobile Order Actions */}
             <div className="flex md:hidden gap-3 w-full">
               {order.shipping?.tracking_url && (
                 <Button
-                  className="flex-1 bg-black text-white hover:bg-gray-800 h-12 rounded-xl"
+                  className="flex-1 bg-foreground text-background hover:bg-foreground/90 h-12 rounded-xl text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
                   asChild
                 >
                   <a
@@ -317,37 +360,36 @@ export default function OrderDetailsPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Truck size={16} className="mr-2" /> Track
+                    <Truck size={16} className="mr-2" /> {ORDER_DETAILS_TEXT.BTN_TRACK_SHORT}
                   </a>
                 </Button>
               )}
               <Button
                 variant="outline"
-                className="flex-1 bg-white h-12 rounded-xl"
+                className="flex-1 bg-card border-border h-12 rounded-xl text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
                 onClick={() => downloadInvoice(order.id, token!)}
                 disabled={isGenerating}
               >
                 <Download size={16} className="mr-2" />
-                Invoice
+                {ORDER_DETAILS_TEXT.BTN_INVOICE_SHORT}
               </Button>
             </div>
 
             {/* Shipping Address */}
-            <Card className="shadow-sm rounded-2xl">
+            <Card className="shadow-sm rounded-2xl border-border bg-card">
               <CardHeader className="pb-3">
-                <CardTitle className="text-theme-h6 flex items-center gap-2">
-                  Shipping Address
+                <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
+                  {ORDER_DETAILS_TEXT.SHIPPING_ADDRESS}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-start gap-3">
-                  <MapPin className="text-blue-600 mt-1 shrink-0" size={20} />
-                  <div className="text-theme-body-sm text-gray-600 leading-relaxed">
-                    <p className="font-bold text-gray-900 mb-1">
+                  <MapPin className="text-muted-foreground mt-1 shrink-0" size={20} />
+                  <div className="text-xs text-muted-foreground leading-relaxed">
+                    <p className="font-bold text-foreground mb-1">
                       {order.address.name}
                     </p>
                     <p>{order.address.address_line_1}</p>
-
                     <p>
                       {order.address.city}, {order.address.state}{" "}
                       {order.address.postal_code}
@@ -360,18 +402,18 @@ export default function OrderDetailsPage() {
           </div>
 
           {/* ── RIGHT COLUMN (Items & Payment) ── */}
-          <div className="lg:col-span-8 flex flex-col gap-3 order-2 lg:order-2">
+          <div className="lg:col-span-8 flex flex-col gap-6 order-2 lg:order-2">
             {/* Items Card */}
-            <Card className="shadow-sm rounded-2xl overflow-hidden px-2 py-2 ">
-              <CardHeader className="bg-gray-50/50 flex flex-row justify-between items-center ">
-                <CardTitle className="text-theme-h6">
-                  Items In This Order
+            <Card className="shadow-sm rounded-2xl border-border bg-card overflow-hidden">
+              <CardHeader className="pb-4 border-b border-border bg-transparent flex flex-row justify-between items-center gap-3">
+                <CardTitle className="text-sm font-bold text-foreground">
+                  {ORDER_DETAILS_TEXT.ITEMS_IN_ORDER}
                 </CardTitle>
                 <Badge
                   variant="secondary"
-                  className="rounded-full bg-blue-50 text-blue-700 font-semibold border-blue-100 border-b"
+                  className="rounded-full bg-secondary text-foreground font-bold border border-border text-[9px] py-0.5 px-2.5"
                 >
-                  {order.items.length} Items
+                  {order.items.length} {ORDER_DETAILS_TEXT.ITEMS_COUNT_SUFFIX}
                 </Badge>
               </CardHeader>
 
@@ -386,10 +428,10 @@ export default function OrderDetailsPage() {
                   return (
                     <div
                       key={item.id}
-                      className={`p-2 md:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 ${index !== order.items.length - 1 ? "border-b border-border" : ""}`}
+                      className={`p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 text-left ${index !== order.items.length - 1 ? "border-b border-border" : ""}`}
                     >
                       {/* Image */}
-                      <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 rounded-xl flex-shrink-0 flex items-center justify-center p-3 border border-border/50">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 bg-secondary/40 rounded-xl flex-shrink-0 flex items-center justify-center p-3 border border-border/50">
                         <img
                           src={
                             item.variant.images?.[0]?.image_url ||
@@ -401,23 +443,22 @@ export default function OrderDetailsPage() {
                       </div>
 
                       {/* Details */}
-                      <div className="flex-1 flex flex-col justify-between">
+                      <div className="flex-1 flex flex-col justify-between min-w-0">
                         <div>
                           <div className="flex justify-between items-start gap-4">
-                            <h3 className="font-bold text-gray-900 text-theme-body md:text-theme-h6 line-clamp-2">
+                            <h3 className="font-bold text-foreground text-xs sm:text-sm line-clamp-2 leading-snug">
                               {item.variant.variant_name}
                             </h3>
-                            <span className="font-bold text-gray-900 whitespace-nowrap">
+                            <span className="font-bold text-foreground text-xs sm:text-sm whitespace-nowrap ml-2">
                               ₹{formatCurrency(Number(item.price))}
                             </span>
                           </div>
 
-                          {/* Fallback item status if they don't match globally */}
                           {!unifiedStatus && (
                             <div className="mt-2">
                               <Badge
                                 variant="outline"
-                                className="capitalize text-theme-caption"
+                                className="capitalize text-[9px] border-border bg-secondary/30 text-foreground font-bold tracking-wide"
                               >
                                 {status}
                               </Badge>
@@ -428,20 +469,20 @@ export default function OrderDetailsPage() {
                         <div className="flex flex-wrap items-center gap-3 mt-4">
                           <Badge
                             variant="secondary"
-                            className="rounded-md font-medium text-theme-caption bg-gray-100 px-2 py-1"
+                            className="rounded-md font-semibold text-[10px] bg-secondary text-muted-foreground border border-border/60 px-2 py-0.5"
                           >
-                            Qty: {item.quantity}
+                            {ORDER_DETAILS_TEXT.QTY_LABEL}
+                            {item.quantity}
                           </Badge>
 
-                          {/* Item-Level Cancel Button (Only shows if cancellable) */}
                           {isCancellable && (
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleCancelItem(item.id)}
-                              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 h-7 text-theme-caption rounded-md"
+                              className="text-destructive border border-destructive/25 hover:bg-destructive/10 h-7 text-[10px] font-bold px-3 rounded-lg active:scale-95 transition-all cursor-pointer"
                             >
-                              Cancel Item
+                              {ORDER_DETAILS_TEXT.BTN_CANCEL_ITEM}
                             </Button>
                           )}
                           {isReturnable && (
@@ -453,9 +494,9 @@ export default function OrderDetailsPage() {
                                   `/customer/support/return/${item.id}`,
                                 )
                               }
-                              className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 h-7 text-theme-caption rounded-md"
+                              className="text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 h-7 text-[10px] font-bold px-3 rounded-lg active:scale-95 transition-all cursor-pointer"
                             >
-                              Return/Replace Item
+                              {ORDER_DETAILS_TEXT.BTN_RETURN_ITEM}
                             </Button>
                           )}
                         </div>
@@ -467,52 +508,53 @@ export default function OrderDetailsPage() {
             </Card>
 
             {/* Payment Summary Card */}
-            <Card className="shadow-sm rounded-2xl overflow-hidden py-2.5">
-              <CardHeader className="bg-gray-50/50   border-b border-border">
-                <CardTitle className="text-theme-h6">Payment Summary</CardTitle>
+            <Card className="shadow-sm rounded-2xl border-border bg-card overflow-hidden">
+              <CardHeader className="pb-4 border-b border-border bg-transparent">
+                <CardTitle className="text-sm font-bold text-foreground">{ORDER_DETAILS_TEXT.PAYMENT_SUMMARY}</CardTitle>
               </CardHeader>
-              <CardContent className="">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
                   {/* Left: Payment Method */}
-                  <div className="bg-blue-50/50 rounded-lg px-3 py-2.5 border border-blue-100/50 flex flex-col justify-center">
+                  <div className="bg-secondary/40 rounded-2xl p-4 border border-border/80 flex flex-col justify-center">
                     <div className="flex items-center gap-3 mb-2">
-                      <CreditCard className="text-blue-600" size={24} />
-                      <span className="font-bold text-gray-900">
+                      <CreditCard className="text-muted-foreground" size={20} />
+                      <span className="font-bold text-foreground text-sm">
                         {order.payment.payment_method}
                       </span>
                     </div>
-                    <p className="text-theme-body-sm text-gray-600 mb-4">
-                      Status:{" "}
-                      <span className="font-semibold capitalize text-gray-900">
+                    <p className="text-xs text-muted-foreground mb-4">
+                      {ORDER_DETAILS_TEXT.LABEL_STATUS}
+                      <span className="font-semibold capitalize text-foreground">
                         {order.payment.payment_status}
                       </span>
                     </p>
                     <Badge
                       variant="outline"
-                      className="w-fit bg-white text-theme-tiny text-gray-500 border-gray-200 font-mono"
+                      className="w-fit bg-card text-[10px] text-muted-foreground border-border font-mono py-0.5 px-2 rounded-md font-bold"
                     >
-                      Ref: {order.payment.transaction_ref.slice(0, 10)}
+                      {ORDER_DETAILS_TEXT.LABEL_REF}
+                      {order.payment.transaction_ref.slice(0, 10)}
                     </Badge>
                   </div>
 
                   {/* Right: Line Items */}
-                  <div className="space-y-3 text-theme-body-sm text-gray-600 flex flex-col justify-center">
+                  <div className="space-y-3 text-xs text-muted-foreground flex flex-col justify-center">
                     <div className="flex justify-between">
-                      <span>Subtotal ({order.items.length} items)</span>
-                      <span className="font-medium text-gray-900">
+                      <span>{ORDER_DETAILS_TEXT.LABEL_SUBTOTAL} ({order.items.length} items)</span>
+                      <span className="font-medium text-foreground">
                         ₹{formatCurrency(itemsTotal)}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Shipping & Handling</span>
-                      <span className="font-bold text-blue-600 uppercase tracking-wider text-theme-caption mt-0.5">
-                        Free
+                    <div className="flex justify-between items-center">
+                      <span>{ORDER_DETAILS_TEXT.LABEL_SHIPPING}</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-success/15 text-success border border-success/10">
+                        {ORDER_DETAILS_TEXT.LABEL_FREE}
                       </span>
                     </div>
                     {order.gstInvoice && (
                       <div className="flex justify-between">
-                        <span>Estimated Tax</span>
-                        <span className="font-medium text-gray-900">
+                        <span>{ORDER_DETAILS_TEXT.LABEL_TAX}</span>
+                        <span className="font-medium text-foreground">
                           ₹{formatCurrency(Number(order.gstInvoice?.total_tax))}
                         </span>
                       </div>
@@ -521,10 +563,10 @@ export default function OrderDetailsPage() {
                     <Separator className="my-2" />
 
                     <div className="flex justify-between items-center pt-1">
-                      <span className="font-bold text-gray-900 text-theme-body">
-                        Order Total
+                      <span className="font-bold text-foreground text-sm">
+                        {ORDER_DETAILS_TEXT.LABEL_TOTAL}
                       </span>
-                      <span className="font-black text-theme-h5 text-gray-900">
+                      <span className="font-black text-sm sm:text-base text-foreground">
                         ₹{formatCurrency(totalAmount)}
                       </span>
                     </div>

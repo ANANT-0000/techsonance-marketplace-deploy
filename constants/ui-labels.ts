@@ -27,6 +27,12 @@ export const UILabels = {
     THOUGHTS__FOUNDER: "Thoughts & Founder",
     TRUST__SOCIAL_PROOF_SECTION: "Trust & Social Proof Section",
     URGENT_PROMO__COUNTDOWN_TIMER: "Urgent Promo & Countdown Timer",
+    // Navbar sections
+    NAVBAR_LOGO: "Logo & Brand Identity",
+    NAVBAR_BEHAVIOR: "Navbar Behavior",
+    NAVBAR_SEARCH_BAR: "Search Bar",
+    NAVBAR_UTILITIES: "Utility Icons (Account / Wishlist / Cart)",
+    NAVBAR_NAVIGATION_ITEMS: "Navigation Items (L1 Links)",
   },
   FIELDS: {
     ACTION_BUTTON_LINK_URL: "Action Button Link (URL)",
@@ -127,18 +133,37 @@ export const UILabels = {
     VIDEO_HERO_DESCRIPTION: "Video Hero Description",
     VIDEO_HERO_EYEBROW__TAG: "Video Hero Eyebrow / Tag",
     VIDEO_HERO_TITLE: "Video Hero Title",
+    ADD_NAV_ITEM: "Add Nav Item",
+    NAV_LOGO_SRC: "Logo Image URL",
+    NAV_LOGO_ALT: "Logo Alt Text",
+    NAV_LOGO_HREF: "Logo Link (href)",
+    NAV_LOGO_ALIGNMENT: "Logo Alignment",
+    NAV_POSITION: "Navbar Scroll Behavior",
+    NAV_SHOW_SHADOW: "Show Shadow",
+    NAV_SHOW_BORDER: "Show Bottom Border",
+    NAV_SEARCH_VISIBLE: "Show Search Bar",
+    NAV_SEARCH_PLACEHOLDER: "Search Placeholder Text",
+    NAV_SEARCH_ENDPOINT: "Search Route / Endpoint",
+    NAV_SHOW_ACCOUNT: "Show Account Icon",
+    NAV_SHOW_WISHLIST: "Show Wishlist Icon",
+    NAV_SHOW_CART: "Show Cart Icon",
+    NAV_ITEM_LABEL: "Nav Item Label",
+    NAV_ITEM_HREF: "Nav Item URL",
+    NAV_ITEM_HAS_MEGA: "Has Mega-Menu Dropdown",
   },
 };
 
-export const STATUS_CONFIG: Partial<Record<
-  OrderStatus,
-  {
-    label: string;
-    className: string;
-    icon: React.ComponentType<any>;
-    dot: string;
-  }
->> = {
+export const STATUS_CONFIG: Partial<
+  Record<
+    OrderStatus,
+    {
+      label: string;
+      className: string;
+      icon: React.ComponentType<any>;
+      dot: string;
+    }
+  >
+> = {
   [OrderStatusEnum.PENDING]: {
     label: "Pending",
     className: "bg-amber-50 text-amber-700 border border-amber-200",

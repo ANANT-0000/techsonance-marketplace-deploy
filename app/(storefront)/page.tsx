@@ -10,7 +10,7 @@ import { ScarcityBlock } from "@/components/customer/homepage/ScarcityBlock";
 import { TestimonialSlider } from "@/components/customer/homepage/TestimonialSlider";
 import { CuratedDiscovery } from "@/components/customer/homepage/CuratedDiscovery";
 import AxiosAPI from "@/lib/axios";
-import { useStoreFrontCmsData } from "@/hooks/useStoreFrontCmsData";
+
 import { CmsDataKey, LayoutSection } from "@/constants/cms";
 
 import {

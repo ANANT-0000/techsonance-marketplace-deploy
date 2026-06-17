@@ -99,16 +99,20 @@ export const ProductReview = ({ productId }: { productId: string }) => {
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
     useEffect(() => {
+        let isMounted = true;
         const getReviews = async () => {
             setIsLoading(true);
             try {
                 const res = await fetchReviews(productId);
-                if (res?.data) setReviews(res.data);
+                if (isMounted && res?.data) setReviews(res.data);
             } finally {
-                setIsLoading(false);
+                if (isMounted) setIsLoading(false);
             }
         };
         getReviews();
+        return () => {
+            isMounted = false;
+        };
     }, [productId]);
 
     // ── Derived stats ────────────────────────────────────────────────────────

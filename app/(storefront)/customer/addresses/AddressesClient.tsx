@@ -18,6 +18,7 @@ import {
   ActionType,
   ConfirmationModal,
 } from "@/components/common/ConfirmationModal";
+import { ADDRESSES_PAGE_TEXT } from "@/constants/customerText";
 
 // [Reducer code remains 100% UNTOUCHED as requested]
 interface State {
@@ -142,11 +143,10 @@ export default function AddressesClient() {
     dispatch({
       type: AddressActionType.SET_CONFIRM_MODAL,
       payload: {
-        title: "Delete Address?",
-        message:
-          "This action cannot be undone. Are you sure you want to delete this address?",
+        title: ADDRESSES_PAGE_TEXT.DELETE_CONFIRM_TITLE,
+        message: ADDRESSES_PAGE_TEXT.DELETE_CONFIRM_DESC,
         actionType: "danger",
-        confirmText: "Yes, Delete",
+        confirmText: ADDRESSES_PAGE_TEXT.DELETE_CONFIRM_YES,
         onConfirm: async () => {
           dispatch({ type: AddressActionType.SET_PROCESSING, payload: true });
           await fetchDeleteUserAddress(userId, id, token);
@@ -181,11 +181,11 @@ export default function AddressesClient() {
     <section className="w-full max-w-[1200px] mx-auto py-4 md:py-8 lg:px-8 px-4 pb-24 font-sans">
       {/* Desktop Header */}
       <div className="hidden sm:block mb-8">
-        <h1 className="text-theme-h3 font-extrabold text-foreground tracking-tight">
-          Saved Addresses
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+          {ADDRESSES_PAGE_TEXT.TITLE}
         </h1>
-        <p className="text-theme-body text-muted-foreground mt-2">
-          Manage your shipping and billing locations for faster checkout.
+        <p className="text-xs text-muted-foreground mt-1">
+          {ADDRESSES_PAGE_TEXT.DESC}
         </p>
       </div>
 
@@ -210,16 +210,16 @@ export default function AddressesClient() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             onClick={openAdd}
-            className="flex flex-col items-center justify-center h-full min-h-[260px] rounded-2xl border-2 border-dashed border-theme-primary hover:border-theme-secondary bg-gray-50/50 hover:bg-gray-100/80 transition-colors text-center p-6 group cursor-pointer"
+            className="flex flex-col items-center justify-center h-full min-h-[260px] rounded-2xl border border-dashed border-border hover:bg-secondary/20 hover:border-primary/20 transition-all text-center p-6 group cursor-pointer"
           >
-            <div className="w-14 h-14 rounded-full bg-theme-primary/5 text-theme-primary hover:bg-theme-secondary/50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <div className="w-14 h-14 rounded-full bg-secondary text-theme-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <MapPinPlus size={24} strokeWidth={2} />
             </div>
-            <h3 className="font-bold text-foreground text-theme-h6">
-              Add New Address
+            <h3 className="font-bold text-foreground text-sm">
+              {ADDRESSES_PAGE_TEXT.ADD_NEW_TITLE}
             </h3>
-            <p className="text-muted-foreground text-theme-body-sm mt-1">
-              Add a new shipping destination
+            <p className="text-muted-foreground text-xs mt-1.5">
+              {ADDRESSES_PAGE_TEXT.ADD_NEW_DESC}
             </p>
           </motion.button>
         </AnimatePresence>
@@ -251,7 +251,7 @@ export default function AddressesClient() {
             payload: false,
           })
         }
-        cancelText="Cancel"
+        cancelText={ADDRESSES_PAGE_TEXT.CANCEL}
         actionType="danger"
         confirmText={state.confirmModalConfig.confirmText}
         isLoading={state.isProcessing}

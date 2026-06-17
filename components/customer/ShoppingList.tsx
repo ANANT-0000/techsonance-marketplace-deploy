@@ -13,7 +13,7 @@ import { ProductSkeleton } from "../common/ProductSkeleton";
 import { SearchBar } from "./SearchBar";
 import { Product, Category } from "@/utils/Types";
 
-import { fetchProductVendorProducts, SortBy } from "@/utils/commonAPiClient";
+import { fetchProducts, SortBy } from "@/utils/commonAPiClient";
 import { SHOPPING_LIST_TEXT } from "@/constants/customerText";
 import { PageLoader } from "./PageLoader";
 
@@ -162,10 +162,10 @@ export function ShoppingList({ styles }: ShoppingListProps) {
   useEffect(() => {
     let cancelled = false;
 
-    const fetchProducts = async () => {
+    const loadProducts = async () => {
       dispatch({ type: ActionType.SET_LOADING, payload: true });
       try {
-        const response = await fetchProductVendorProducts({
+        const response = await fetchProducts({
           search: search.replace("...", "") || undefined,
           category_id: categoryId || undefined,
           min_price: minPrice > 0 ? minPrice : undefined,
@@ -217,7 +217,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
       }
     };
 
-    fetchProducts();
+    loadProducts();
     return () => {
       cancelled = true;
     };

@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import { BRAND_LOGO, ProfileSidebarLink } from "@/constants";
 import { DASHBOARD_TEXT } from "@/constants/customerText";
 import { useAppDispatch } from "@/hooks/reduxHooks";
@@ -25,6 +26,17 @@ export function MobileSideDrawer({
   const dispatch = useAppDispatch();
   const currentPath = usePathname();
   const { themeData } = useThemeData();
+
+  React.useEffect(() => {
+    if (isOpen) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isOpen]);
+
   const logoUrl = themeData.logo_url
     ? themeData.logo_url || themeData.logo_dark_url
     : BRAND_LOGO;
@@ -42,7 +54,12 @@ export function MobileSideDrawer({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex">
+        <motion.div
+          className="fixed inset-0 z-50 flex"
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
           {/* Backdrop overlay */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -153,7 +170,7 @@ export function MobileSideDrawer({
               })}
             </nav>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

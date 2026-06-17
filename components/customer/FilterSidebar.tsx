@@ -135,9 +135,13 @@ export function FilterSidebar({ categories, filters, onFiltersChange, sortBy, on
 
     // Prevent body scroll when bottom sheet is open
     useEffect(() => {
-        if (isOpen) document.body.style.overflow = 'hidden';
-        else document.body.style.overflow = 'unset';
-        return () => { document.body.style.overflow = 'unset'; };
+        if (isOpen) {
+            const originalStyle = window.getComputedStyle(document.body).overflow;
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = originalStyle;
+            };
+        }
     }, [isOpen]);
 
     const handleClearAll = () => {

@@ -184,9 +184,8 @@ function DateRangePicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
           size="sm"
-          className="h-9 gap-2 text-theme-body-sm font-normal"
+          className="h-9 gap-2 text-theme-body-sm font-normal border border-border"
         >
           <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="hidden sm:inline">
@@ -272,7 +271,7 @@ function MetricCard({
   trend,
 }: MetricCardProps) {
   return (
-    <Card className="relative overflow-hidden transition-shadow hover:shadow-md">
+    <Card className="relative  border border-border overflow-hidden transition-shadow hover:shadow-md">
       <CardContent className="pt-5 pb-4 px-5">
         <div className="flex items-start justify-between mb-3">
           <p className="text-theme-caption font-medium text-muted-foreground uppercase tracking-wide leading-none">
@@ -287,7 +286,9 @@ function MetricCard({
         <p className="text-theme-h4 font-semibold tracking-tight text-foreground leading-none mb-1.5">
           {value}
         </p>
-        {sub && <p className="text-theme-caption text-muted-foreground">{sub}</p>}
+        {sub && (
+          <p className="text-theme-caption text-muted-foreground">{sub}</p>
+        )}
         {trend && (
           <div
             className={cn(
@@ -567,7 +568,7 @@ function DerivedInsights({
       : "0";
 
   return (
-    <Card>
+    <Card className="border border-border">
       <CardHeader className="pb-2">
         <CardTitle className="text-theme-body font-medium flex items-center gap-2">
           <BarChart3 className="h-4 w-4 text-muted-foreground" />
@@ -656,7 +657,7 @@ function DonutChart({
   const innerR = Math.floor(size * 0.26);
 
   return (
-    <div ref={wrapRef} className="relative w-full" style={{ height: size }}>
+    <div ref={wrapRef} className="relative w-full " style={{ height: size }}>
       {/* Center label — absolutely positioned, never affects SVG layout */}
       <div
         className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10"
@@ -725,7 +726,9 @@ function CategoryTable({ data }: { data: CategoryPerformance[] }) {
                   style={{ background: COLORS[i % COLORS.length] }}
                 />
 
-                <span className="text-theme-body-sm capitalize truncate">{cat.name}</span>
+                <span className="text-theme-body-sm capitalize truncate">
+                  {cat.name}
+                </span>
               </div>
               <span className="text-theme-body-sm font-semibold text-right tabular-nums">
                 {fmtINR(cat.value)}
@@ -832,7 +835,9 @@ export default function AnalysisBoard() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 h-64 text-muted-foreground">
         <AlertCircle className="h-8 w-8 text-muted-foreground/50" />
-        <p className="text-theme-body-sm">Failed to load analytics. Please try again.</p>
+        <p className="text-theme-body-sm">
+          Failed to load analytics. Please try again.
+        </p>
         <Button variant="outline" size="sm" onClick={fetchAnalytics}>
           <RefreshCw className="mr-2 h-3.5 w-3.5" /> Retry
         </Button>
@@ -855,7 +860,7 @@ export default function AnalysisBoard() {
     summary.totalOrders > 0 ? summary.grossRevenue / summary.totalOrders : 0;
 
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6  mb-4">
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -880,16 +885,15 @@ export default function AnalysisBoard() {
             size="sm"
             onClick={fetchAnalytics}
             disabled={loading}
-            className="h-9 px-3"
+            className="h-9 px-3 border border-border"
           >
             <RefreshCw
               className={cn("h-3.5 w-3.5", loading && "animate-spin")}
             />
           </Button>
           <Button
-            variant="outline"
             size="sm"
-            className="h-9 gap-1.5"
+            className="h-9 gap-1.5 border border-border"
             disabled={isPdfExporting}
             onClick={async () => {
               if (!token) return;
@@ -966,7 +970,7 @@ export default function AnalysisBoard() {
 
         {/* ── Revenue trend + P&L ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-2 border border-border">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-theme-body font-medium">
@@ -1081,7 +1085,7 @@ export default function AnalysisBoard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-theme-body font-medium">
                 Profit &amp; Loss
@@ -1096,7 +1100,7 @@ export default function AnalysisBoard() {
         {/* ── Top SKUs + Category donut + Category table ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Top SKUs */}
-          <Card>
+          <Card className="border border-border">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-theme-body font-medium">
@@ -1123,7 +1127,7 @@ export default function AnalysisBoard() {
 
           {/* Donut chart */}
 
-          <Card>
+          <Card className="border border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-theme-body font-medium">
                 Revenue by Category
@@ -1156,7 +1160,7 @@ export default function AnalysisBoard() {
           </Card>
 
           {/* Category breakdown table */}
-          <Card>
+          <Card className="border border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-theme-body font-medium">
                 Category Breakdown

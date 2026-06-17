@@ -115,6 +115,14 @@ export const AddressModal = ({
 
   // ─── Effects (logic unchanged) ───────────────────────────────────────────
   useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
+  useEffect(() => {
     if (operation !== AddressOperationEnum.EDIT) {
       setValue("state", "");
       setValue("city", "");
@@ -187,7 +195,12 @@ export const AddressModal = ({
 
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
-    <div className="fixed bottom-10 sm:bottom-0 inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
+    <motion.div
+      className="fixed bottom-10 sm:bottom-0 inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -325,6 +338,6 @@ export const AddressModal = ({
           </div>
         </form>
       </motion.div>
-    </div>
+    </motion.div>
   );
 };

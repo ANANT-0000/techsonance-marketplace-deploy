@@ -79,17 +79,16 @@ export default function ReduxProviders({
   children: React.ReactNode;
 }) {
   const storeRef = useRef<AppStore | null>(null);
-  const hasFetched = useRef(false);
-  // 1. Initialize the store ONLY (No side effects here!)
+  // 1. Initialize the store and hydrate auth synchronously BEFORE first render
+  // so ProtectedRoute never sees isAuthenticated=false on initial mount.
   if (!storeRef.current) {
     storeRef.current = store();
+    storeRef.current.dispatch(hydrateAuth());
   }
 
-  // 2. Hydrate local data safely after the component mounts on the client
+  // 2. Load cart/wishlist after mount (client-side only)
   useEffect(() => {
-    if (!hasFetched.current && storeRef.current) {
-      hasFetched.current = true;
-      storeRef.current.dispatch(hydrateAuth());
+    if (storeRef.current) {
       storeRef.current.dispatch(loadCart());
       storeRef.current.dispatch(loadWishlist());
     }

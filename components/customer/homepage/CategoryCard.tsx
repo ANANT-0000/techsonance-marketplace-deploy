@@ -1,4 +1,4 @@
-
+import { CATEGORY_CART_TEXT } from "@/constants";
 import { useImageColors } from "@/hooks/useImageColors";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -11,12 +11,6 @@ export function CategoryCard({
   cat: { title: string; url: string };
   idx: number;
 }) {
-  const sizes = [
-    "aspect-[3/4]",
-    "aspect-[3/4]",
-    "aspect-[3/4]",
-    "aspect-[3/4]",
-  ];
   const { bg: bgColor } = useImageColors(cat.url);
   return (
     <Link
@@ -25,7 +19,7 @@ export function CategoryCard({
     >
       <div
         style={{ background: bgColor }}
-        className={`relative ${sizes[idx % 4]} shadow-md border border-gray-200/50 w-full overflow-hidden rounded-2xl transition-colors duration-500`}
+        className={`relative aspect-3/4 p-2   shadow-md border border-gray-200/50  overflow-hidden rounded-2xl transition-colors duration-500 h-[20vh]`}
       >
         {cat.url && (
           <Image
@@ -45,7 +39,7 @@ export function CategoryCard({
           {cat.title}
         </h3>
         <p className="text-theme-xxs text-gray-400 mt-0.5 flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
-          Shop now <ChevronRight size={10} />
+          {CATEGORY_CART_TEXT.SHOP_NOW} <ChevronRight size={10} />
         </p>
       </div>
     </Link>

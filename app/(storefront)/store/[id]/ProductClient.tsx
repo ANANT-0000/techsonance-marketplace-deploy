@@ -116,7 +116,7 @@ const StarRow = ({ rating, size = 14 }: { rating: number; size?: number }) => (
   </span>
 );
 
-type Tab = "description" | "specs" | "reviews";
+type Tab = "description" | "specs";
 
 // ─── Reducer ──────────────────────────────────────────────────────────────────
 interface State {
@@ -271,7 +271,6 @@ export default function ProductClient({ id }: { id: string }) {
         });
       } catch (error) {
         dispatch({ type: ActionType.SET_PAGE_LOADING, payload: false });
-        console.error("Error fetching product:", error);
       } finally {
         dispatch({ type: ActionType.SET_LOADING, payload: false });
         dispatch({ type: ActionType.SET_PAGE_LOADING, payload: false });
@@ -324,6 +323,9 @@ export default function ProductClient({ id }: { id: string }) {
         activeImage: variant.images[0]?.image_url,
       },
     });
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const basePrice = Number(state.activeVariant?.price) || 0;
@@ -584,7 +586,6 @@ export default function ProductClient({ id }: { id: string }) {
                 </>
               </div>
               <div className="hidden lg:block relative flex-1 rounded-3xl overflow-hidden transition-colors duration-500">
-                /* Desktop main image */
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={state.activeImage}
@@ -621,12 +622,16 @@ export default function ProductClient({ id }: { id: string }) {
               </span>
               {totalReviews > 0 && (
                 <button
-                  onClick={() =>
-                    dispatch({
-                      type: ActionType.SET_ACTIVE_TAB,
-                      payload: "reviews",
-                    })
-                  }
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      const el = document.getElementById(
+                        "customer-reviews-section",
+                      );
+                      if (el) {
+                        el.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }
+                  }}
                   className="flex items-center gap-1.5 text-theme-body-sm text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   <StarRow rating={avgRating} />
@@ -867,17 +872,13 @@ export default function ProductClient({ id }: { id: string }) {
       </section>
 
       {/* ── Tabbed Details Section ──────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 lg:mt-10 pb-24 lg:pb-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 lg:mt-10 pb-8 lg:pb-12">
         {/* Tab navigation */}
         <div className="flex border-b border-gray-200 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {(
             [
               { key: "description", label: "Product Description" },
               { key: "specs", label: "Technical Specifications" },
-              {
-                key: "reviews",
-                label: `Customer Reviews${totalReviews > 0 ? ` (${totalReviews})` : ""}`,
-              },
             ] as { key: Tab; label: string }[]
           ).map((tab) => (
             <button
@@ -955,22 +956,31 @@ export default function ProductClient({ id }: { id: string }) {
                   No specifications available.
                 </p>
               ))}
-
-            {state.activeTab === "reviews" && state.product?.id && (
-              <ProductReview productId={state.product.id} />
-            )}
           </motion.div>
         </AnimatePresence>
       </section>
 
+      {/* ── Customer Reviews Section ─────────────────────────────────── */}
+      {state.product?.id && (
+        <section
+          id="customer-reviews-section"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 lg:mt-12 pb-24 lg:pb-16 border-t border-gray-100 pt-8 text-left"
+        >
+          <h2 className="text-theme-body font-bold text-gray-900 mb-6 uppercase tracking-wider">
+            Customer Reviews
+          </h2>
+          <ProductReview productId={state.product.id} />
+        </section>
+      )}
+
       {/* ── Mobile: Sticky bottom CTA ──────────────────────────────── */}
       {state.activeVariant && (
-        <div className="block lg:hidden fixed bottom-8 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-xl px-4 py-3">
+        <div className="block lg:hidden fixed bottom-[calc(48px+env(safe-area-inset-bottom))] left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-xl px-4 py-3">
           <div className="flex gap-3 max-w-lg mx-auto h-12">
             <AddToCart
               productVariantId={state.activeVariant.id}
               productVariant={state.activeVariant}
-              styles="flex-1 h-12 rounded-2xl border-2 border-gray-900 bg-white text-gray-900 font-bold text-theme-body-sm transition-all"
+              styles="flex-1 h-12 rounded-2xl border-2 border-theme-primary bg-theme-primary text-theme-primary-foreground font-bold text-theme-body-sm transition-all"
             />
             {inStock ? (
               <BuyBtn

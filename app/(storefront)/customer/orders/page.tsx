@@ -7,7 +7,6 @@ import { useState } from "react";
 import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
 import { useRouter } from "next/navigation";
 import { useMediaQuery } from "react-responsive";
-import { ChevronLeft } from "lucide-react";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { OrdersList } from "@/components/customer/OrderList";
 
@@ -21,7 +20,6 @@ interface OrdersPageProps {
 export default function OrdersPage({ uiText }: OrdersPageProps) {
   const { user } = useAppSelector((state: RootState) => state.auth);
   const userId = user && "id" in user ? user.id : null;
-  const router = useRouter();
   const isMobile = useMediaQuery({ maxWidth: 640 });
   const [orderStatus, setOrderStatus] = useState<
     OrderStatus | "returns" | null
@@ -47,27 +45,27 @@ export default function OrdersPage({ uiText }: OrdersPageProps) {
   const myOrdersTitle = uiText?.myOrders ?? UiText.CUSTOMER_ORDERS.MY_ORDERS;
 
   return (
-    <>
-      <div className="flex items-center gap-3 my-4">
-        <h1 className="font-bold text-theme-h5 text-gray-900">
+    <div className="container mx-auto px-4 py-4 md:py-8 lg:px-8 font-sans text-left">
+      <div className="flex items-center gap-3 mb-6 sm:mb-8">
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
           {myOrdersTitle}
         </h1>
       </div>
 
-      <section className="w-full lg:px-4 px-2 min-h-[60vh]">
+      <section className="w-full min-h-[60vh]">
         {/* Desktop tabs — hidden on mobile (< sm = 640px) */}
-        <div className="hidden sm:flex relative border-b border-gray-200 mb-6 gap-1 overflow-x-auto">
+        <div className="hidden sm:flex relative border-b border-border mb-6 gap-2 overflow-x-auto">
           {ordersStatusMap.map((status) => {
             const isActive = orderStatus === status;
             return (
               <motion.button
                 key={status}
                 animate={{
-                  color: isActive ? "#1D4ED8" : "#6B7280",
-                  borderColor: isActive ? "#1D4ED8" : "rgba(29, 78, 216, 0)",
+                  color: isActive ? "var(--theme-primary)" : "var(--muted-foreground)",
+                  borderColor: isActive ? "var(--theme-primary)" : "rgba(0, 0, 0, 0)",
                 }}
                 transition={{ duration: 0.2 }}
-                className="relative lg:px-6 lg:py-2.5 px-4 py-2 font-medium transition-colors focus:outline-none border-b-2 -mb-px text-theme-body-sm whitespace-nowrap"
+                className="relative lg:px-6 lg:py-3 px-4 py-2 font-bold transition-all focus:outline-none border-b-2 -mb-px text-xs whitespace-nowrap cursor-pointer hover:text-foreground"
                 onClick={() => setOrderStatus(status)}
               >
                 {statusLabels[status] || status}
@@ -82,6 +80,6 @@ export default function OrdersPage({ uiText }: OrdersPageProps) {
           setStatus={setOrderStatus}
         />
       </section>
-    </>
+    </div>
   );
 }

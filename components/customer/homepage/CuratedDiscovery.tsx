@@ -24,7 +24,7 @@ export interface CuratedDiscoveryProps {
 
 const getProducts = async (type: CuratedType) => {
   try {
-    const res = await fetchHomepageProducts(5);
+    const res = await fetchHomepageProducts(4);
     return res.data;
   } catch (error) {
     return [];
@@ -87,7 +87,7 @@ export function CuratedDiscovery({
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <span className="inline-flex items-center gap-1 text-theme-tiny font-bold tracking-[0.25em] text-purple-600 uppercase mb-2">
+            <span className="inline-flex items-center gap-1 text-theme-tiny font-bold tracking-[0.25em] text-theme-primary uppercase mb-2">
               <Sparkles size={12} /> {CURATED_DISCOVERY_TEXT.LIVE_CURATION}
             </span>
             <h2 className="text-theme-h3 font-serif tracking-tight text-gray-900 leading-tight">
@@ -122,7 +122,7 @@ export function CuratedDiscovery({
         {/* Scrollable Products List Container */}
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto scrollbar-none snap-x snap-mandatory pb-4 pr-4"
+          className="flex gap-6 overflow-x-auto scrollbar-none snap-x snap-mandatory pb-4 pr-4 items-stretch"
           style={{ scrollSnapType: "x mandatory" }}
         >
           {loading ? (
@@ -131,10 +131,12 @@ export function CuratedDiscovery({
             ))
           ) : products.length === 0 ? (
             <div className="w-full text-center py-12 text-slate-450 bg-white border border-dashed border-slate-200 rounded-3xl">
-              <p className="text-theme-body-sm">{CURATED_DISCOVERY_TEXT.NO_ITEMS}</p>
+              <p className="text-theme-body-sm">
+                {CURATED_DISCOVERY_TEXT.NO_ITEMS}
+              </p>
               <Link
                 href="/store"
-                className="text-theme-caption text-purple-600 font-bold hover:underline mt-2 inline-block"
+                className="text-theme-caption text-theme-primary font-bold hover:underline mt-2 inline-block"
               >
                 {CURATED_DISCOVERY_TEXT.VIEW_ALL}
               </Link>
@@ -146,10 +148,7 @@ export function CuratedDiscovery({
               let p_idx = 1;
               p_idx = p_idx + 1;
               return (
-                <div
-                  key={idx}
-                  className="min-w-[240px] sm:min-w-[280px] max-w-[280px] snap-start h-full"
-                >
+                <div key={idx} className=" snap-start h-full">
                   <ul className="list-none p-0 m-0 h-full">
                     <ProductCard product={p} idx={p_idx} />
                   </ul>

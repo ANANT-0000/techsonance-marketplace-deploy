@@ -26,6 +26,9 @@ import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import AxiosAPI from "@/lib/axios";
 import { formatCurrency } from "@/lib/utils";
+import { SUPPORT_PAGE_TEXT } from "@/constants/customerText";
+import { motion } from "framer-motion";
+import { ReturnStatus } from "@/utils/Types";
 
 export enum FormActionType {
   SET = "SET",
@@ -42,6 +45,66 @@ export enum UIActionType {
   RESET_FAQ_VOTES = "RESET_FAQ_VOTES",
 }
 
+export enum TicketThreadActionType {
+  SET_COMMENTS = "SET_COMMENTS",
+  SET_LOADING = "SET_LOADING",
+  SET_COMMENT_TEXT = "SET_COMMENT_TEXT",
+  SET_SUBMITTING_COMMENT = "SET_SUBMITTING_COMMENT",
+  SET_RATING = "SET_RATING",
+  SET_NPS_SCORE = "SET_NPS_SCORE",
+  SET_FEEDBACK_COMMENT = "SET_FEEDBACK_COMMENT",
+  SET_SUBMITTING_RATING = "SET_SUBMITTING_RATING",
+  SET_RATING_SUBMITTED = "SET_RATING_SUBMITTED",
+}
+
+interface TicketThreadState {
+  comments: any[];
+  loading: boolean;
+  commentText: string;
+  submittingComment: boolean;
+  rating: number;
+  npsScore: number | null;
+  feedbackComment: string;
+  submittingRating: boolean;
+  ratingSubmitted: boolean;
+}
+
+type TicketThreadAction =
+  | { type: TicketThreadActionType.SET_COMMENTS; payload: any[] }
+  | { type: TicketThreadActionType.SET_LOADING; payload: boolean }
+  | { type: TicketThreadActionType.SET_COMMENT_TEXT; payload: string }
+  | { type: TicketThreadActionType.SET_SUBMITTING_COMMENT; payload: boolean }
+  | { type: TicketThreadActionType.SET_RATING; payload: number }
+  | { type: TicketThreadActionType.SET_NPS_SCORE; payload: number | null }
+  | { type: TicketThreadActionType.SET_FEEDBACK_COMMENT; payload: string }
+  | { type: TicketThreadActionType.SET_SUBMITTING_RATING; payload: boolean }
+  | { type: TicketThreadActionType.SET_RATING_SUBMITTED; payload: boolean };
+
+const ticketThreadReducer = (state: TicketThreadState, action: TicketThreadAction): TicketThreadState => {
+  switch (action.type) {
+    case TicketThreadActionType.SET_COMMENTS:
+      return { ...state, comments: action.payload };
+    case TicketThreadActionType.SET_LOADING:
+      return { ...state, loading: action.payload };
+    case TicketThreadActionType.SET_COMMENT_TEXT:
+      return { ...state, commentText: action.payload };
+    case TicketThreadActionType.SET_SUBMITTING_COMMENT:
+      return { ...state, submittingComment: action.payload };
+    case TicketThreadActionType.SET_RATING:
+      return { ...state, rating: action.payload };
+    case TicketThreadActionType.SET_NPS_SCORE:
+      return { ...state, npsScore: action.payload };
+    case TicketThreadActionType.SET_FEEDBACK_COMMENT:
+      return { ...state, feedbackComment: action.payload };
+    case TicketThreadActionType.SET_SUBMITTING_RATING:
+      return { ...state, submittingRating: action.payload };
+    case TicketThreadActionType.SET_RATING_SUBMITTED:
+      return { ...state, ratingSubmitted: action.payload };
+    default:
+      return state;
+  }
+};
+
 interface TicketThreadProps {
   ticketId: string;
   userId: string;
@@ -49,17 +112,17 @@ interface TicketThreadProps {
 }
 
 function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
-  const [comments, setComments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [commentText, setCommentText] = useState("");
-  const [submittingComment, setSubmittingComment] = useState(false);
-
-  // Feedback fields
-  const [rating, setRating] = useState(0);
-  const [npsScore, setNpsScore] = useState<number | null>(null);
-  const [feedbackComment, setFeedbackComment] = useState("");
-  const [submittingRating, setSubmittingRating] = useState(false);
-  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [state, dispatch] = useReducer(ticketThreadReducer, {
+    comments: [],
+    loading: true,
+    commentText: "",
+    submittingComment: false,
+    rating: 0,
+    npsScore: null,
+    feedbackComment: "",
+    submittingRating: false,
+    ratingSubmitted: false,
+  });
 
   useEffect(() => {
     fetchComments();
@@ -68,15 +131,15 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
 
   const fetchComments = async () => {
     try {
-      setLoading(true);
+      dispatch({ type: TicketThreadActionType.SET_LOADING, payload: true });
       const res = await AxiosAPI.get(`/v1/tickets/${ticketId}/comments`);
       if (res.data) {
-        setComments(res.data);
+        dispatch({ type: TicketThreadActionType.SET_COMMENTS, payload: res.data });
       }
     } catch (err) {
       void 0;
     } finally {
-      setLoading(false);
+      dispatch({ type: TicketThreadActionType.SET_LOADING, payload: false });
     }
   };
 
@@ -84,24 +147,24 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
     try {
       const rated = localStorage.getItem(`tn_rated_ticket_${ticketId}`);
       if (rated) {
-        setRatingSubmitted(true);
+        dispatch({ type: TicketThreadActionType.SET_RATING_SUBMITTED, payload: true });
       }
     } catch {}
   };
 
   const handlePostComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim()) return;
+    if (!state.commentText.trim()) return;
 
     try {
-      setSubmittingComment(true);
+      dispatch({ type: TicketThreadActionType.SET_SUBMITTING_COMMENT, payload: true });
       const res = await AxiosAPI.post(`/v1/tickets/${ticketId}/comments`, {
         userId,
-        commentText: commentText.trim(),
+        commentText: state.commentText.trim(),
         isInternal: false,
       });
       if (res.data) {
-        setCommentText("");
+        dispatch({ type: TicketThreadActionType.SET_COMMENT_TEXT, payload: "" });
         toast.success("Comment sent");
         fetchComments();
       }
@@ -109,28 +172,28 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
       void 0;
       toast.error("Failed to send comment");
     } finally {
-      setSubmittingComment(false);
+      dispatch({ type: TicketThreadActionType.SET_SUBMITTING_COMMENT, payload: false });
     }
   };
 
   const handleSubmitRating = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (rating === 0) {
+    if (state.rating === 0) {
       toast.error("Please select a satisfaction rating");
       return;
     }
 
     try {
-      setSubmittingRating(true);
+      dispatch({ type: TicketThreadActionType.SET_SUBMITTING_RATING, payload: true });
       const res = await AxiosAPI.post(`/v1/tickets/${ticketId}/rating`, {
         userId,
-        satisfactionRating: rating,
+        satisfactionRating: state.rating,
         resolved: true,
-        resolutionComment: feedbackComment,
-        npsScore: npsScore !== null ? npsScore : undefined,
+        resolutionComment: state.feedbackComment,
+        npsScore: state.npsScore !== null ? state.npsScore : undefined,
       });
       if (res.data) {
-        setRatingSubmitted(true);
+        dispatch({ type: TicketThreadActionType.SET_RATING_SUBMITTED, payload: true });
         try {
           localStorage.setItem(`tn_rated_ticket_${ticketId}`, "true");
         } catch {}
@@ -140,7 +203,7 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
       void 0;
       toast.error("Failed to submit feedback");
     } finally {
-      setSubmittingRating(false);
+      dispatch({ type: TicketThreadActionType.SET_SUBMITTING_RATING, payload: false });
     }
   };
 
@@ -149,24 +212,24 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
     ticketStatus.toLowerCase() === "closed";
 
   return (
-    <div className="mt-4 pt-4 border-t border-gray-150 space-y-6">
+    <div className="mt-4 pt-4 border-t border-border space-y-6">
       {/* Comments/Replies list */}
       <div>
-        <h4 className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-3">
-          Conversation History
+        <h4 className="text-theme-caption font-bold text-muted-foreground uppercase tracking-wider mb-3">
+          {SUPPORT_PAGE_TEXT.TICKET_THREAD_CONVERSATION_TITLE}
         </h4>
 
-        {loading ? (
+        {state.loading ? (
           <div className="flex items-center justify-center py-6">
-            <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+            <Loader2 className="w-5 h-5 text-primary animate-spin" />
           </div>
-        ) : comments.length === 0 ? (
-          <p className="text-theme-caption text-gray-450 italic py-2">
-            No updates or comments yet.
+        ) : state.comments.length === 0 ? (
+          <p className="text-theme-caption text-muted-foreground italic py-2">
+            {SUPPORT_PAGE_TEXT.TICKET_THREAD_NO_COMMENTS}
           </p>
         ) : (
           <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-            {comments.map((comment) => {
+            {state.comments.map((comment) => {
               const isSupport =
                 comment.user_role === "admin" || comment.user_role === "vendor";
               return (
@@ -174,15 +237,15 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
                   key={comment.id}
                   className={`flex flex-col max-w-[85%] rounded-2xl px-4 py-2.5 text-theme-caption ${
                     isSupport
-                      ? "bg-blue-50 text-blue-905 self-start border border-blue-100 mr-auto"
-                      : "bg-gray-100 text-gray-800 self-end ml-auto"
+                      ? "bg-secondary text-foreground self-start border border-border mr-auto"
+                      : "bg-muted text-foreground self-end ml-auto"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-4 mb-1">
                     <span className="font-bold">
-                      {isSupport ? "Support Agent" : "You"}
+                      {isSupport ? SUPPORT_PAGE_TEXT.TICKET_THREAD_AGENT : SUPPORT_PAGE_TEXT.TICKET_THREAD_YOU}
                     </span>
-                    <span className="text-theme-tiny text-gray-405 font-medium">
+                    <span className="text-theme-tiny text-muted-foreground font-medium">
                       {new Date(comment.created_at).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -204,21 +267,21 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
         <form onSubmit={handlePostComment} className="flex gap-2">
           <textarea
             rows={1}
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 text-theme-caption px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none resize-none transition-all font-medium text-gray-700"
+            value={state.commentText}
+            onChange={(e) => dispatch({ type: TicketThreadActionType.SET_COMMENT_TEXT, payload: e.target.value })}
+            placeholder={SUPPORT_PAGE_TEXT.TICKET_THREAD_COMMENT_PLACEHOLDER}
+            className="flex-1 text-theme-caption px-4 py-2.5 bg-background border border-border rounded-xl focus:bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none transition-all font-medium text-foreground"
           />
 
           <button
             type="submit"
-            disabled={submittingComment || !commentText.trim()}
-            className="bg-blue-600 hover:bg-blue-750 text-white font-bold text-theme-caption px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center shrink-0 disabled:bg-gray-205 disabled:text-gray-400"
+            disabled={state.submittingComment || !state.commentText.trim()}
+            className="bg-foreground hover:bg-foreground/90 text-background font-bold text-theme-caption px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center shrink-0 disabled:bg-muted disabled:text-muted-foreground cursor-pointer"
           >
-            {submittingComment ? (
+            {state.submittingComment ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              "Send"
+              SUPPORT_PAGE_TEXT.TICKET_THREAD_COMMENT_SEND
             )}
           </button>
         </form>
@@ -226,31 +289,30 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
 
       {/* Satisfaction / NPS Rating Section */}
       {isResolvedOrClosed && (
-        <div className="pt-4 border-t border-gray-100">
-          {ratingSubmitted ? (
-            <div className="bg-emerald-50 border border-emerald-150 p-4 rounded-xl flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
+        <div className="pt-4 border-t border-border">
+          {state.ratingSubmitted ? (
+            <div className="bg-success/10 border border-success/20 p-4 rounded-xl flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-success shrink-0" />
               <div>
-                <p className="text-theme-caption font-bold text-emerald-800">
-                  Feedback Submitted
+                <p className="text-theme-caption font-bold text-success">
+                  {SUPPORT_PAGE_TEXT.TICKET_THREAD_FEEDBACK_SUCCESS_TITLE}
                 </p>
-                <p className="text-theme-xxs text-emerald-700">
-                  Thank you for rating your experience! Your feedback helps us
-                  improve our service.
+                <p className="text-theme-xxs text-success/90">
+                  {SUPPORT_PAGE_TEXT.TICKET_THREAD_FEEDBACK_SUCCESS_DESC}
                 </p>
               </div>
             </div>
           ) : (
             <form
               onSubmit={handleSubmitRating}
-              className="bg-gray-50 border border-gray-150 p-4 sm:p-5 rounded-2xl space-y-4"
+              className="bg-card border border-border p-4 sm:p-5 rounded-2xl space-y-4"
             >
               <div>
-                <h4 className="text-theme-caption font-bold text-gray-900 mb-1">
-                  Rate Ticket Resolution
+                <h4 className="text-theme-caption font-bold text-foreground mb-1">
+                  {SUPPORT_PAGE_TEXT.TICKET_THREAD_FEEDBACK_TITLE}
                 </h4>
-                <p className="text-theme-xxs text-gray-500">
-                  How satisfied are you with the support you received?
+                <p className="text-theme-xxs text-muted-foreground">
+                  {SUPPORT_PAGE_TEXT.TICKET_THREAD_FEEDBACK_DESC}
                 </p>
               </div>
 
@@ -260,11 +322,11 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
                   <button
                     key={star}
                     type="button"
-                    onClick={() => setRating(star)}
-                    className="focus:outline-none transition-transform active:scale-95"
+                    onClick={() => dispatch({ type: TicketThreadActionType.SET_RATING, payload: star })}
+                    className="focus:outline-none transition-transform active:scale-95 cursor-pointer"
                   >
                     <svg
-                      className={`w-6 h-6 ${star <= rating ? "text-amber-400 fill-amber-400" : "text-gray-305"}`}
+                      className={`w-6 h-6 ${star <= state.rating ? "text-amber-400 fill-amber-400" : "text-muted-foreground/30"}`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -282,54 +344,54 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
 
               {/* NPS Score 0-10 */}
               <div>
-                <label className="block text-theme-tiny font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  How likely are you to recommend us to a friend? (NPS Survey)
+                <label className="block text-theme-tiny font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                  {SUPPORT_PAGE_TEXT.TICKET_THREAD_NPS_TITLE}
                 </label>
                 <div className="flex flex-wrap gap-1">
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                     <button
                       key={num}
                       type="button"
-                      onClick={() => setNpsScore(num)}
-                      className={`w-7 h-7 rounded-lg text-theme-caption font-bold transition-all border ${
-                        npsScore === num
-                          ? "bg-blue-600 text-white border-blue-650 shadow-sm"
-                          : "bg-white text-gray-750 border-gray-200 hover:bg-gray-100"
+                      onClick={() => dispatch({ type: TicketThreadActionType.SET_NPS_SCORE, payload: num })}
+                      className={`w-7 h-7 rounded-lg text-theme-caption font-bold transition-all border cursor-pointer ${
+                        state.npsScore === num
+                          ? "bg-foreground text-background border-border shadow-sm"
+                          : "bg-background text-foreground border-border hover:bg-secondary"
                       }`}
                     >
                       {num}
                     </button>
                   ))}
                 </div>
-                <div className="flex justify-between text-[9px] text-gray-400 font-medium px-1 mt-1">
-                  <span>Not Likely</span>
-                  <span>Extremely Likely</span>
+                <div className="flex justify-between text-[9px] text-muted-foreground font-medium px-1 mt-1">
+                  <span>{SUPPORT_PAGE_TEXT.TICKET_THREAD_NPS_LOW}</span>
+                  <span>{SUPPORT_PAGE_TEXT.TICKET_THREAD_NPS_HIGH}</span>
                 </div>
               </div>
 
               {/* Text Comments */}
               <div>
-                <label className="block text-theme-tiny font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                  Resolution Comments / Suggestions
+                <label className="block text-theme-tiny font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                  {SUPPORT_PAGE_TEXT.TICKET_THREAD_FEEDBACK_COMMENT_LABEL}
                 </label>
                 <textarea
                   rows={2}
-                  value={feedbackComment}
-                  onChange={(e) => setFeedbackComment(e.target.value)}
-                  placeholder="Tell us what went well or what we can do better..."
-                  className="w-full text-theme-caption px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none resize-none transition-all text-gray-700"
+                  value={state.feedbackComment}
+                  onChange={(e) => dispatch({ type: TicketThreadActionType.SET_FEEDBACK_COMMENT, payload: e.target.value })}
+                  placeholder={SUPPORT_PAGE_TEXT.TICKET_THREAD_FEEDBACK_COMMENT_PLACEHOLDER}
+                  className="w-full text-theme-caption px-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none transition-all text-foreground"
                 />
               </div>
 
               <button
                 type="submit"
-                disabled={submittingRating || rating === 0}
-                className="w-full bg-blue-600 hover:bg-blue-750 text-white font-bold text-theme-caption py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:bg-gray-205 disabled:text-gray-400"
+                disabled={state.submittingRating || state.rating === 0}
+                className="w-full bg-foreground hover:bg-foreground/90 text-background font-bold text-theme-caption py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:bg-muted disabled:text-muted-foreground cursor-pointer"
               >
-                {submittingRating && (
+                {state.submittingRating && (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 )}
-                Submit Feedback
+                {SUPPORT_PAGE_TEXT.TICKET_THREAD_FEEDBACK_SUBMIT}
               </button>
             </form>
           )}
@@ -398,67 +460,67 @@ const renderReturnTimeline = (returnReq: any) => {
   const type = returnReq.type.toLowerCase(); // return, replacement, refund
 
   const steps = [
-    { key: "pending", label: "Requested", desc: "Awaiting approval" },
-    { key: "approved", label: "Approved", desc: "Return request accepted" },
+    { key: "pending", label: SUPPORT_PAGE_TEXT.TIMELINE_REQUESTED, desc: SUPPORT_PAGE_TEXT.TIMELINE_REQUESTED_DESC },
+    { key: "approved", label: SUPPORT_PAGE_TEXT.TIMELINE_APPROVED, desc: SUPPORT_PAGE_TEXT.TIMELINE_APPROVED_DESC },
     ...(type !== "refund"
       ? [
-          { key: "in_transit", label: "In Transit", desc: "Item shipped back" },
-          { key: "delivered", label: "Inspected", desc: "QC check complete" },
+          { key: "in_transit", label: SUPPORT_PAGE_TEXT.TIMELINE_IN_TRANSIT, desc: SUPPORT_PAGE_TEXT.TIMELINE_IN_TRANSIT_DESC },
+          { key: "delivered", label: SUPPORT_PAGE_TEXT.TIMELINE_INSPECTED, desc: SUPPORT_PAGE_TEXT.TIMELINE_INSPECTED_DESC },
         ]
       : []),
     {
       key: "completed",
-      label: "Completed",
-      desc: type === "refund" ? "Refund processed" : "Process finished",
+      label: SUPPORT_PAGE_TEXT.TIMELINE_COMPLETED,
+      desc: type === "refund" ? SUPPORT_PAGE_TEXT.TIMELINE_COMPLETED_DESC_REFUND : SUPPORT_PAGE_TEXT.TIMELINE_COMPLETED_DESC_DEFAULT,
     },
   ];
 
   // Determine current index active
   let activeIndex = 0;
-  if (status === "approved") activeIndex = 1;
-  else if (status === "in_transit") activeIndex = 2;
+  if (status === ReturnStatus.APPROVED) activeIndex = 1;
+  else if (status === ReturnStatus.SHIPPED || status === "in_transit") activeIndex = 2;
   else if (
-    status === "delivered" ||
+    status === ReturnStatus.DELIVERED ||
     status === "qc_passed" ||
-    status === "qc_failed"
+    status === ReturnStatus.QC_FAILED
   )
     activeIndex = type === "refund" ? 1 : 3;
   else if (status === "completed") activeIndex = type === "refund" ? 2 : 4;
-  else if (status === "rejected") activeIndex = 1; // Rejected shows red at step 2
+  else if (status === ReturnStatus.REJECTED) activeIndex = 1; // Rejected shows red at step 2
 
   return (
-    <div className="mt-6 border-t border-gray-100 pt-6">
-      <h4 className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-4">
-        Request Progress Tracker
+    <div className="mt-6 border-t border-border pt-6">
+      <h4 className="text-theme-caption font-bold text-muted-foreground uppercase tracking-wider mb-4">
+        {SUPPORT_PAGE_TEXT.RETURNS_TRACKING_SECTION_TITLE}
       </h4>
       <div className="relative flex flex-col md:flex-row justify-between gap-6 md:gap-2">
         {/* Connecting line */}
-        <div className="absolute left-[15px] md:left-0 top-[20px] md:top-[15px] h-[calc(100%-40px)] md:h-0.5 w-0.5 md:w-full bg-gray-200 -z-10" />
+        <div className="absolute left-[15px] md:left-0 top-[20px] md:top-[15px] h-[calc(100%-40px)] md:h-0.5 w-0.5 md:w-full bg-border -z-10" />
 
         {steps.map((step, idx) => {
-          const isCompleted = idx <= activeIndex && status !== "rejected";
-          const isCurrent = idx === activeIndex && status !== "rejected";
-          const isRejectedStep = idx === 1 && status === "rejected";
-          const isQcFailedStep = idx === 3 && status === "qc_failed";
+          const isCompleted = idx <= activeIndex && status !== ReturnStatus.REJECTED;
+          const isCurrent = idx === activeIndex && status !== ReturnStatus.REJECTED;
+          const isRejectedStep = idx === 1 && status === ReturnStatus.REJECTED;
+          const isQcFailedStep = idx === 3 && status === ReturnStatus.QC_FAILED;
 
-          let icon = <Clock className="w-4 h-4 text-gray-400" />;
-          let circleColor = "bg-white border-gray-200 text-gray-400";
+          let icon = <Clock className="w-4 h-4 text-muted-foreground" />;
+          let circleColor = "bg-card border-border text-muted-foreground";
 
           if (isCompleted) {
-            icon = <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600" />;
-            circleColor = "bg-emerald-50 border-emerald-300 text-emerald-600";
+            icon = <CheckCircle2 className="w-4.5 h-4.5 text-success" />;
+            circleColor = "bg-success/10 border-success/20 text-success";
           } else if (isCurrent) {
             icon = (
-              <RefreshCw className="w-4.5 h-4.5 text-blue-600 animate-spin" />
+              <RefreshCw className="w-4.5 h-4.5 text-primary animate-spin" />
             );
 
-            circleColor = "bg-blue-50 border-blue-300 text-blue-600";
+            circleColor = "bg-primary/10 border-primary/20 text-primary";
           } else if (isRejectedStep) {
-            icon = <X className="w-4.5 h-4.5 text-red-600" />;
-            circleColor = "bg-red-50 border-red-350 text-red-650";
+            icon = <X className="w-4.5 h-4.5 text-destructive" />;
+            circleColor = "bg-destructive/10 border-destructive/20 text-destructive";
           } else if (isQcFailedStep && idx === 3) {
-            icon = <AlertTriangle className="w-4.5 h-4.5 text-amber-600" />;
-            circleColor = "bg-amber-50 border-amber-350 text-amber-650";
+            icon = <AlertTriangle className="w-4.5 h-4.5 text-warning" />;
+            circleColor = "bg-warning/10 border-warning/20 text-warning";
           }
 
           return (
@@ -473,15 +535,15 @@ const renderReturnTimeline = (returnReq: any) => {
               </div>
               <div className="flex flex-col md:items-center">
                 <span
-                  className={`text-theme-body-sm font-bold ${isCompleted || isCurrent ? "text-gray-900" : "text-gray-450"}`}
+                  className={`text-theme-body-sm font-bold ${isCompleted || isCurrent ? "text-foreground" : "text-muted-foreground"}`}
                 >
                   {isRejectedStep
-                    ? "Rejected"
+                    ? SUPPORT_PAGE_TEXT.TIMELINE_REJECTED
                     : isQcFailedStep
-                      ? "QC Failed"
+                      ? SUPPORT_PAGE_TEXT.TIMELINE_QC_FAILED
                       : step.label}
                 </span>
-                <span className="text-theme-caption text-gray-500 font-medium mt-0.5">
+                <span className="text-theme-caption text-muted-foreground font-medium mt-0.5">
                   {step.desc}
                 </span>
               </div>
@@ -492,16 +554,16 @@ const renderReturnTimeline = (returnReq: any) => {
 
       {/* Support Notes */}
       {(returnReq.store_owner_note || returnReq.customer_note) && (
-        <div className="mt-6 p-4 bg-gray-50 rounded-xl space-y-2 border border-gray-150">
+        <div className="mt-6 p-4 bg-muted/50 rounded-xl space-y-2 border border-border">
           {returnReq.customer_note && (
-            <p className="text-theme-caption text-gray-600">
-              <strong className="text-gray-800">Your Note:</strong>{" "}
+            <p className="text-theme-caption text-muted-foreground">
+              <strong className="text-foreground">{SUPPORT_PAGE_TEXT.RETURNS_CUSTOMER_NOTE}</strong>{" "}
               {returnReq.customer_note}
             </p>
           )}
           {returnReq.store_owner_note && (
-            <p className="text-theme-caption text-gray-700">
-              <strong className="text-gray-900">Store Reply:</strong>{" "}
+            <p className="text-theme-caption text-muted-foreground">
+              <strong className="text-foreground">{SUPPORT_PAGE_TEXT.RETURNS_STORE_REPLY}</strong>{" "}
               {returnReq.store_owner_note}
             </p>
           )}
@@ -897,20 +959,20 @@ export default function HelpCenterPage() {
   // Render return request timeline tracking progress
 
   return (
-    <div className="min-h-screen  py-6 sm:py-10">
+    <div className="min-h-screen bg-background py-6 sm:py-10 text-left font-sans">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Help Center Header */}
         <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
-          <h1 className="text-theme-h3 sm:text-theme-h2 font-extrabold text-gray-900 tracking-tight mb-4">
-            Support & Help Center
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground mb-3">
+            {SUPPORT_PAGE_TEXT.TITLE}
           </h1>
-          <p className="text-theme-body-sm font-medium text-gray-500">
-            Submit inquiry tickets, track returns, and browse common answers.
+          <p className="text-xs text-muted-foreground mt-1">
+            {SUPPORT_PAGE_TEXT.SUBTITLE}
           </p>
         </div>
 
         {/* Custom Tab Selector */}
-        <div className="flex border-b border-gray-200 mb-8 overflow-x-auto gap-2">
+        <div className="flex border-b border-border mb-8 overflow-x-auto gap-2">
           <button
             onClick={() =>
               uiDispatch({
@@ -919,13 +981,13 @@ export default function HelpCenterPage() {
                 value: "faq",
               })
             }
-            className={`px-5 py-3 font-bold text-theme-body-sm border-b-2 transition-all shrink-0 ${
+            className={`px-5 py-3 font-bold text-xs border-b-2 transition-all shrink-0 cursor-pointer ${
               uiState.activeTab === "faq"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-900"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            FAQs & New Ticket
+            {SUPPORT_PAGE_TEXT.TAB_FAQ}
           </button>
           <button
             onClick={() => {
@@ -936,15 +998,15 @@ export default function HelpCenterPage() {
               });
               fetchTickets();
             }}
-            className={`px-5 py-3 font-bold text-theme-body-sm border-b-2 transition-all shrink-0 flex items-center gap-2 ${
+            className={`px-5 py-3 font-bold text-xs border-b-2 transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
               uiState.activeTab === "tickets"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-900"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            My Support Tickets
+            {SUPPORT_PAGE_TEXT.TAB_TICKETS}
             {dataState.tickets.length > 0 && (
-              <span className="px-2 py-0.5 text-theme-tiny font-extrabold bg-blue-50 text-blue-600 rounded-full">
+              <span className="px-2 py-0.5 text-[10px] font-extrabold bg-secondary text-foreground rounded-full border border-border">
                 {dataState.tickets.length}
               </span>
             )}
@@ -958,15 +1020,15 @@ export default function HelpCenterPage() {
               });
               fetchReturns();
             }}
-            className={`px-5 py-3 font-bold text-theme-body-sm border-b-2 transition-all shrink-0 flex items-center gap-2 ${
+            className={`px-5 py-3 font-bold text-xs border-b-2 transition-all shrink-0 flex items-center gap-2 cursor-pointer ${
               uiState.activeTab === "returns"
-                ? "border-blue-650 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-900"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            Track Returns & Replacements
+            {SUPPORT_PAGE_TEXT.TAB_RETURNS}
             {dataState.returnsList.length > 0 && (
-              <span className="px-2 py-0.5 text-theme-tiny font-extrabold bg-blue-50 text-blue-600 rounded-full">
+              <span className="px-2 py-0.5 text-[10px] font-extrabold bg-secondary text-foreground rounded-full border border-border">
                 {dataState.returnsList.length}
               </span>
             )}
@@ -979,30 +1041,30 @@ export default function HelpCenterPage() {
             {/* Left Col: FAQs & Returns CTA */}
             <div className="lg:col-span-7 xl:col-span-8 space-y-8">
               {/* Returns Entry Point Call-To-Action */}
-              <div className="bg-blue-600 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md shadow-blue-600/10">
-                <div className="text-white text-center sm:text-left">
-                  <h3 className="text-theme-h6 font-extrabold mb-1">
-                    Need to return or replace an item?
+              <div className="bg-gradient-to-r from-theme-primary to-theme-secondary text-white rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
+                <div className="text-center sm:text-left">
+                  <h3 className="text-sm sm:text-base font-bold mb-1">
+                    {SUPPORT_PAGE_TEXT.RETURN_CTA_TITLE}
                   </h3>
-                  <p className="text-blue-100 text-theme-caption font-semibold">
-                    Initiate a return request for any delivered orders directly.
+                  <p className="text-white/80 text-xs font-semibold">
+                    {SUPPORT_PAGE_TEXT.RETURN_CTA_DESC}
                   </p>
                 </div>
                 <Link
                   href="/customer/orders"
-                  className="w-full sm:w-auto bg-white text-blue-600 px-6 py-3 rounded-xl font-bold text-theme-body-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm"
+                  className="w-full sm:w-auto bg-background text-foreground hover:bg-secondary transition-all px-6 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shrink-0 shadow-sm active:scale-95"
                 >
-                  <PackageSearch className="w-4.5 h-4.5" /> Start Return
+                  <PackageSearch className="w-4.5 h-4.5" /> {SUPPORT_PAGE_TEXT.RETURN_CTA_ACTION}
                 </Link>
               </div>
 
               {/* FAQs */}
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-theme-h6 font-extrabold text-gray-900">
-                    Frequently Asked Questions
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                  <h2 className="text-sm sm:text-base font-bold text-foreground">
+                    {SUPPORT_PAGE_TEXT.FAQ_SECTION_TITLE}
                   </h2>
-                  <div className="w-64">
+                  <div className="w-full sm:w-64">
                     <div className="relative">
                       <input
                         value={uiState.searchQuery}
@@ -1013,34 +1075,34 @@ export default function HelpCenterPage() {
                             value: e.target.value,
                           })
                         }
-                        placeholder="Search FAQs"
-                        className="w-full text-theme-body-sm px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                        placeholder={SUPPORT_PAGE_TEXT.FAQ_SEARCH_PLACEHOLDER}
+                        className="w-full text-xs px-4 py-2 bg-background border border-border rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
                       />
 
-                      <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
+                      <Search className="absolute right-3 top-2.5 w-4 h-4 text-muted-foreground" />
                     </div>
                   </div>
                 </div>
                 <div className="space-y-3">
                   {dataState.loadingHelpArticles ? (
                     <div className="flex flex-col items-center justify-center py-12">
-                      <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-2" />
-                      <p className="text-theme-caption text-gray-500">Loading FAQs...</p>
+                      <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
+                      <p className="text-xs text-muted-foreground">Loading FAQs...</p>
                     </div>
                   ) : FAQS_FILTERED.length === 0 ? (
-                    <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl bg-gray-50/30">
-                      <p className="text-theme-caption text-gray-500 font-semibold">
-                        No matches found
+                    <div className="text-center py-12 border border-dashed border-border rounded-2xl bg-secondary/20">
+                      <p className="text-xs text-muted-foreground font-semibold">
+                        {SUPPORT_PAGE_TEXT.FAQ_NO_MATCHES}
                       </p>
-                      <p className="text-theme-xxs text-gray-450 mt-1">
-                        Try a different search query or submit a ticket below.
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        {SUPPORT_PAGE_TEXT.FAQ_NO_MATCHES_DESC}
                       </p>
                     </div>
                   ) : (
                     FAQS_FILTERED.map((faq, idx) => (
                       <div
                         key={faq.id}
-                        className="bg-white border border-gray-200 rounded-xl overflow-hidden transition-all shadow-sm"
+                        className="bg-card border border-border rounded-xl overflow-hidden transition-all shadow-sm"
                       >
                         <button
                           onClick={() =>
@@ -1050,23 +1112,23 @@ export default function HelpCenterPage() {
                               value: uiState.openFaqIndex === idx ? null : idx,
                             })
                           }
-                          className="w-full flex items-center justify-between p-4 sm:p-5 text-left focus:outline-none"
+                          className="w-full flex items-center justify-between p-4 sm:p-5 text-left focus:outline-none cursor-pointer"
                         >
-                          <span className="font-bold text-gray-905 text-theme-body-sm sm:text-theme-body">
+                          <span className="font-bold text-foreground text-xs sm:text-sm">
                             {faq.title}
                           </span>
                           <ChevronDown
-                            className={`w-5 h-5 text-gray-400 transition-transform ${uiState.openFaqIndex === idx ? "rotate-180" : ""}`}
+                            className={`w-5 h-5 text-muted-foreground transition-transform ${uiState.openFaqIndex === idx ? "rotate-180" : ""}`}
                           />
                         </button>
                         {uiState.openFaqIndex === idx && (
-                          <div className="px-5 pb-5 text-gray-500 text-theme-body-sm border-t border-gray-50 pt-3 leading-relaxed">
+                          <div className="px-5 pb-5 text-muted-foreground text-xs border-t border-border pt-3 leading-relaxed">
                             <div className="mb-3 whitespace-pre-wrap">
                               {faq.content}
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="text-theme-caption text-gray-500">
-                                Was this helpful?
+                              <span className="text-[10px] text-muted-foreground">
+                                {SUPPORT_PAGE_TEXT.FAQ_HELPFUL_PROMPT}
                               </span>
                               <button
                                 onClick={async () => {
@@ -1089,11 +1151,11 @@ export default function HelpCenterPage() {
                                       { isHelpful: true },
                                     );
                                   } catch {}
-                                  toast.success("Thanks for the feedback");
+                                  toast.success(SUPPORT_PAGE_TEXT.FAQ_FEEDBACK_THANKS);
                                 }}
-                                className={`px-2 py-1 rounded-md text-theme-caption font-semibold ${uiState.faqVotes[faq.id] === "up" ? "bg-emerald-50 text-emerald-700" : "bg-gray-50 text-gray-700"}`}
+                                className={`px-2 py-1 rounded-md text-[10px] font-semibold cursor-pointer ${uiState.faqVotes[faq.id] === "up" ? "bg-emerald-100 text-emerald-800" : "bg-secondary text-foreground"}`}
                               >
-                                👍 Helpful
+                                {SUPPORT_PAGE_TEXT.FAQ_HELPFUL_YES}
                               </button>
                               <button
                                 onClick={async () => {
@@ -1116,13 +1178,13 @@ export default function HelpCenterPage() {
                                       { isHelpful: false },
                                     );
                                   } catch {}
-                                  toast("Thanks — we will improve", {
+                                  toast(SUPPORT_PAGE_TEXT.FAQ_FEEDBACK_IMPROVE, {
                                     icon: "ℹ️",
                                   });
                                 }}
-                                className={`px-2 py-1 rounded-md text-theme-caption font-semibold ${uiState.faqVotes[faq.id] === "down" ? "bg-rose-50 text-rose-700" : "bg-gray-50 text-gray-700"}`}
+                                className={`px-2 py-1 rounded-md text-[10px] font-semibold cursor-pointer ${uiState.faqVotes[faq.id] === "down" ? "bg-destructive/10 text-destructive" : "bg-secondary text-foreground"}`}
                               >
-                                👎 Not helpful
+                                {SUPPORT_PAGE_TEXT.FAQ_HELPFUL_NO}
                               </button>
                             </div>
                           </div>
@@ -1136,24 +1198,24 @@ export default function HelpCenterPage() {
 
             {/* Right Col: Create Ticket Form */}
             <div className="lg:col-span-5 xl:col-span-4">
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8">
-                <h2 className="text-theme-h6 font-bold text-gray-900 mb-1">
-                  Create Support Ticket
+              <div className="bg-card border border-border rounded-2xl shadow-sm p-6 sm:p-8 font-sans">
+                <h2 className="text-theme-h6 font-bold text-foreground mb-1">
+                  {SUPPORT_PAGE_TEXT.TICKET_FORM_TITLE}
                 </h2>
-                <p className="text-theme-caption text-gray-500 mb-6">
-                  Describe your issue and we'll reply as soon as possible.
+                <p className="text-theme-caption text-muted-foreground mb-6">
+                  {SUPPORT_PAGE_TEXT.TICKET_FORM_DESC}
                 </p>
 
                 {!isAuthenticated ? (
-                  <div className="border border-dashed border-gray-250 rounded-xl p-6 text-center">
-                    <p className="text-theme-body-sm text-gray-500 mb-4">
-                      Please log in to submit support tickets.
+                  <div className="border border-dashed border-border rounded-xl p-6 text-center">
+                    <p className="text-theme-body-sm text-muted-foreground mb-4">
+                      {SUPPORT_PAGE_TEXT.TICKET_AUTH_PROMPT}
                     </p>
                     <Link
                       href="/auth/customerLogin"
-                      className="w-full inline-block text-center bg-[#0f172a] text-white font-bold py-3 rounded-xl hover:bg-black transition-colors shadow-sm text-theme-body-sm"
+                      className="w-full inline-block text-center bg-foreground text-background font-bold py-3 rounded-xl hover:bg-foreground/90 transition-all shadow-sm text-theme-body-sm cursor-pointer"
                     >
-                      Login to Support
+                      {SUPPORT_PAGE_TEXT.TICKET_AUTH_BUTTON}
                     </Link>
                   </div>
                 ) : (
@@ -1318,14 +1380,14 @@ export default function HelpCenterPage() {
                               : "Upload Screenshot"}
                           </label>
                         ) : (
-                          <div className="flex items-center gap-2 bg-blue-50 border border-blue-150 px-3 py-1.5 rounded-xl text-theme-caption font-semibold text-blue-700">
+                          <div className="flex items-center gap-2 bg-secondary border border-border px-3 py-1.5 rounded-xl text-theme-caption font-semibold text-foreground">
                             <span className="truncate max-w-[150px]">
                               {formState.selectedFile?.name || "attachment.png"}
                             </span>
                             <button
                               type="button"
                               onClick={handleRemoveFile}
-                              className="text-blue-550 hover:text-blue-900 ml-1.5 focus:outline-none"
+                              className="text-muted-foreground hover:text-foreground ml-1.5 focus:outline-none cursor-pointer"
                             >
                               <X size={14} />
                             </button>
@@ -1333,7 +1395,7 @@ export default function HelpCenterPage() {
                         )}
 
                         {formState.uploadingFile && (
-                          <Loader2 className="w-4.5 h-4.5 text-blue-600 animate-spin" />
+                          <Loader2 className="w-4.5 h-4.5 text-primary animate-spin" />
                         )}
                       </div>
                     </div>
@@ -1343,26 +1405,26 @@ export default function HelpCenterPage() {
                       disabled={
                         formState.submitLoading || formState.uploadingFile
                       }
-                      className="w-full bg-[#0f172a] text-white font-bold py-3 rounded-xl hover:bg-black transition-colors shadow-sm disabled:bg-gray-450 flex items-center justify-center gap-2 text-theme-body-sm mt-2"
+                      className="w-full bg-foreground hover:bg-foreground/90 text-background font-bold py-3 rounded-xl transition-all shadow-sm disabled:bg-muted disabled:text-muted-foreground flex items-center justify-center gap-2 text-theme-body-sm mt-2 cursor-pointer"
                     >
                       {formState.submitLoading && (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       )}
-                      Submit Ticket
+                      {formState.submitLoading ? SUPPORT_PAGE_TEXT.TICKET_FORM_SUBMITTING : SUPPORT_PAGE_TEXT.TICKET_FORM_SUBMIT}
                     </button>
                   </form>
                 )}
 
-                <div className="mt-6 pt-6 border-t border-gray-100 flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                    <Headphones className="w-5 h-5 text-blue-600" />
+                <div className="mt-6 pt-6 border-t border-border flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center shrink-0 border border-border">
+                    <Headphones className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-theme-body-sm font-bold text-gray-900">
-                      Need faster help?
+                    <p className="text-theme-body-sm font-bold text-foreground font-sans">
+                      {SUPPORT_PAGE_TEXT.TICKET_FAST_HELP_TITLE}
                     </p>
-                    <p className="text-theme-caption font-medium text-gray-500">
-                      Live chat available 24/7
+                    <p className="text-theme-caption font-medium text-muted-foreground font-sans">
+                      {SUPPORT_PAGE_TEXT.TICKET_FAST_HELP_DESC}
                     </p>
                   </div>
                 </div>
@@ -1373,42 +1435,46 @@ export default function HelpCenterPage() {
 
         {/* Tab content 2: Support Tickets list */}
         {uiState.activeTab === "tickets" && (
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8">
-            <h2 className="text-theme-h5 font-bold text-gray-900 mb-6">
-              Your Support Tickets
+          <div className="bg-card border border-border rounded-2xl shadow-sm p-6 sm:p-8 font-sans">
+            <h2 className="text-theme-h5 font-bold text-foreground mb-6">
+              {SUPPORT_PAGE_TEXT.TICKET_LIST_TITLE}
             </h2>
 
             {!isAuthenticated ? (
               <div className="text-center py-12">
-                <Headphones className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-800 font-bold mb-1">
-                  Sign in to view support tickets
+                <Headphones className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-foreground font-bold mb-1">
+                  {SUPPORT_PAGE_TEXT.TICKET_AUTH_LIST_PROMPT}
                 </p>
-                <p className="text-theme-caption text-gray-500 mb-6">
-                  Access tickets submitted to resolve account or purchase
-                  issues.
+                <p className="text-theme-caption text-muted-foreground mb-6">
+                  {SUPPORT_PAGE_TEXT.TICKET_AUTH_LIST_DESC}
                 </p>
                 <Link
                   href="/auth/customerLogin"
-                  className="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl text-theme-body-sm hover:bg-blue-750 transition-colors shadow-sm"
+                  className="bg-foreground hover:bg-foreground/90 text-background font-bold px-6 py-2.5 rounded-xl text-theme-body-sm transition-colors shadow-sm cursor-pointer"
                 >
-                  Sign In
+                  {SUPPORT_PAGE_TEXT.TICKET_AUTH_LIST_BUTTON}
                 </Link>
               </div>
             ) : dataState.loadingTickets ? (
               <div className="text-center py-16 flex flex-col items-center justify-center">
-                <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
-                <p className="text-theme-body-sm text-gray-500">Loading tickets...</p>
+                <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" />
+                <p className="text-theme-body-sm text-muted-foreground">{SUPPORT_PAGE_TEXT.TICKET_LIST_LOADING}</p>
               </div>
             ) : dataState.tickets.length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl">
-                <Headphones className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-805 font-bold mb-1">
-                  No support tickets created yet
-                </p>
-                <p className="text-theme-caption text-gray-500 mb-4">
-                  Have an issue? Create a support ticket in the FAQs & New
-                  Ticket tab.
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center text-center py-20 border border-dashed border-border rounded-2xl bg-card p-6"
+              >
+                <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-4 border border-border">
+                  <Headphones className="w-6 h-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground mb-1">
+                  {SUPPORT_PAGE_TEXT.TICKET_LIST_EMPTY}
+                </h3>
+                <p className="text-xs text-muted-foreground max-w-sm mb-6">
+                  {SUPPORT_PAGE_TEXT.TICKET_LIST_EMPTY_DESC}
                 </p>
                 <button
                   onClick={() =>
@@ -1418,11 +1484,11 @@ export default function HelpCenterPage() {
                       value: "faq",
                     })
                   }
-                  className="bg-blue-50 text-blue-650 hover:bg-blue-100 font-bold px-5 py-2.5 rounded-xl text-theme-caption transition-colors"
+                  className="bg-foreground hover:bg-foreground/90 text-background text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
                 >
-                  Create Ticket
+                  {SUPPORT_PAGE_TEXT.TICKET_LIST_EMPTY_ACTION}
                 </button>
-              </div>
+              </motion.div>
             ) : (
               <div className="space-y-4">
                 {dataState.tickets.map((ticket) => {
@@ -1430,7 +1496,7 @@ export default function HelpCenterPage() {
                   return (
                     <div
                       key={ticket.id}
-                      className="border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all hover:border-gray-300"
+                      className="border border-border bg-card rounded-xl overflow-hidden shadow-sm transition-all hover:border-border/80"
                     >
                       {/* Ticket Row Bar */}
                       <div
@@ -1441,18 +1507,18 @@ export default function HelpCenterPage() {
                             value: isExpanded ? null : ticket.id,
                           })
                         }
-                        className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-5 gap-3 cursor-pointer hover:bg-gray-50/50"
+                        className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-5 gap-3 cursor-pointer hover:bg-secondary/50"
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-3">
-                            <span className="text-theme-body-sm font-bold text-gray-900 capitalize">
+                            <span className="text-theme-body-sm font-bold text-foreground capitalize">
                               {ticket.category || "General"}
                             </span>
-                            <span className="text-theme-caption text-gray-400 font-medium">
+                            <span className="text-theme-caption text-muted-foreground font-medium">
                               #{ticket.id.slice(0, 8)}
                             </span>
                           </div>
-                          <p className="text-theme-body-sm font-semibold text-gray-700 line-clamp-1">
+                          <p className="text-theme-body-sm font-semibold text-muted-foreground line-clamp-1">
                             {ticket.subject}
                           </p>
                         </div>
@@ -1462,7 +1528,7 @@ export default function HelpCenterPage() {
                           >
                             {ticket.status}
                           </span>
-                          <span className="text-theme-caption text-gray-450 shrink-0 font-medium">
+                          <span className="text-theme-caption text-muted-foreground shrink-0 font-medium">
                             {formatDate(ticket.created_at)}
                           </span>
                         </div>
@@ -1470,54 +1536,54 @@ export default function HelpCenterPage() {
 
                       {/* Ticket Details Expanded */}
                       {isExpanded && (
-                        <div className="bg-gray-50/50 border-t border-gray-150 p-5 space-y-4 text-theme-body-sm">
+                        <div className="bg-secondary/20 border-t border-border p-5 space-y-4 text-theme-body-sm">
                           <div>
-                            <h4 className="text-theme-caption font-bold text-gray-400 uppercase tracking-wider mb-1">
-                              Description
+                            <h4 className="text-theme-caption font-bold text-muted-foreground uppercase tracking-wider mb-1">
+                              {SUPPORT_PAGE_TEXT.TICKET_EXPAND_DESC_TITLE}
                             </h4>
-                            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                            <p className="text-foreground whitespace-pre-wrap leading-relaxed">
                               {ticket.description}
                             </p>
                           </div>
 
                           {/* Order / Attachment References */}
                           {(ticket.order_id || ticket.attachment_url) && (
-                            <div className="flex flex-wrap gap-4 pt-3 border-t border-gray-100">
+                            <div className="flex flex-wrap gap-4 pt-3 border-t border-border">
                               {ticket.order_id && (
-                                <div className="flex items-center gap-2 bg-white px-3 py-2 border rounded-xl text-theme-caption font-semibold text-gray-750">
+                                <div className="flex items-center gap-2 bg-card px-3 py-2 border border-border rounded-xl text-theme-caption font-semibold text-foreground">
                                   <LinkIcon
                                     size={14}
-                                    className="text-gray-400"
+                                    className="text-muted-foreground"
                                   />
 
                                   <span>
-                                    Linked Order ID: #
+                                    {SUPPORT_PAGE_TEXT.TICKET_EXPAND_LINKED_ORDER}
                                     {ticket.order_id.slice(0, 8)}
                                   </span>
                                   <Link
                                     href={`/customer/orders/${ticket.order_id}`}
-                                    className="text-blue-600 hover:text-blue-750 font-bold ml-1.5 flex items-center gap-0.5"
+                                    className="text-primary hover:text-primary/80 font-bold ml-1.5 flex items-center gap-0.5"
                                   >
-                                    View Order <ArrowRight size={12} />
+                                    {SUPPORT_PAGE_TEXT.TICKET_EXPAND_VIEW_ORDER} <ArrowRight size={12} />
                                   </Link>
                                 </div>
                               )}
 
                               {ticket.attachment_url && (
-                                <div className="flex items-center gap-2 bg-white px-3 py-2 border rounded-xl text-theme-caption font-semibold text-gray-750">
+                                <div className="flex items-center gap-2 bg-card px-3 py-2 border border-border rounded-xl text-theme-caption font-semibold text-foreground">
                                   <FileText
                                     size={14}
-                                    className="text-gray-400"
+                                    className="text-muted-foreground"
                                   />
 
-                                  <span>Attachment Preview:</span>
+                                  <span>{SUPPORT_PAGE_TEXT.TICKET_EXPAND_ATTACHMENT_PREVIEW}</span>
                                   <a
                                     href={ticket.attachment_url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-blue-600 hover:text-blue-750 font-bold ml-1"
+                                    className="text-primary hover:text-primary/80 font-bold ml-1"
                                   >
-                                    Open Image
+                                    {SUPPORT_PAGE_TEXT.TICKET_EXPAND_ATTACHMENT_OPEN}
                                   </a>
                                 </div>
                               )}
@@ -1526,7 +1592,7 @@ export default function HelpCenterPage() {
 
                           {/* Quick thumbnail of attachment */}
                           {ticket.attachment_url && (
-                            <div className="mt-2 w-32 h-32 rounded-xl border border-gray-200 overflow-hidden bg-white p-1">
+                            <div className="mt-2 w-32 h-32 rounded-xl border border-border overflow-hidden bg-card p-1">
                               <img
                                 src={ticket.attachment_url}
                                 alt="Support attachment"
@@ -1549,56 +1615,58 @@ export default function HelpCenterPage() {
               </div>
             )}
           </div>
-        )}
-
-        {/* Tab content 3: Returns list tracker */}
+        )}            {/* Tab content 3: Returns list tracker */}
         {uiState.activeTab === "returns" && (
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8">
-            <h2 className="text-theme-h5 font-bold text-gray-900 mb-6">
-              Returns & Replacements Status Tracker
+          <div className="bg-card border border-border rounded-2xl shadow-sm p-6 sm:p-8 font-sans">
+            <h2 className="text-theme-h5 font-bold text-foreground mb-6">
+              {SUPPORT_PAGE_TEXT.RETURNS_LIST_TITLE}
             </h2>
 
             {!isAuthenticated ? (
               <div className="text-center py-12">
-                <PackageSearch className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-808 font-bold mb-1">
-                  Sign in to track return requests
+                <PackageSearch className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-foreground font-bold mb-1">
+                  {SUPPORT_PAGE_TEXT.RETURNS_AUTH_PROMPT}
                 </p>
-                <p className="text-theme-caption text-gray-500 mb-6">
-                  Access tracking and review timelines for your raised returns
-                  or replacements.
+                <p className="text-theme-caption text-muted-foreground mb-6">
+                  {SUPPORT_PAGE_TEXT.RETURNS_AUTH_DESC}
                 </p>
                 <Link
                   href="/auth/customerLogin"
-                  className="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-xl text-theme-body-sm hover:bg-blue-750 transition-colors shadow-sm"
+                  className="bg-foreground hover:bg-foreground/90 text-background font-bold px-6 py-2.5 rounded-xl text-theme-body-sm transition-colors shadow-sm cursor-pointer"
                 >
-                  Sign In
+                  {SUPPORT_PAGE_TEXT.RETURNS_AUTH_BUTTON}
                 </Link>
               </div>
             ) : dataState.loadingReturns ? (
               <div className="text-center py-16 flex flex-col items-center justify-center">
-                <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
-                <p className="text-theme-body-sm text-gray-500">
-                  Loading returns history...
+                <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" />
+                <p className="text-theme-body-sm text-muted-foreground">
+                  {SUPPORT_PAGE_TEXT.RETURNS_LIST_LOADING}
                 </p>
               </div>
             ) : dataState.returnsList.length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl">
-                <PackageSearch className="w-12 h-12 text-gray-450 mx-auto mb-4" />
-                <p className="text-gray-805 font-bold mb-1">
-                  No return requests found
-                </p>
-                <p className="text-theme-caption text-gray-500 mb-6">
-                  You can request returns or replacements directly from your
-                  Order History.
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center text-center py-20 border border-dashed border-border rounded-2xl bg-card p-6"
+              >
+                <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-4 border border-border">
+                  <PackageSearch className="w-6 h-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground mb-1">
+                  {SUPPORT_PAGE_TEXT.RETURNS_LIST_EMPTY}
+                </h3>
+                <p className="text-xs text-muted-foreground max-w-sm mb-6">
+                  {SUPPORT_PAGE_TEXT.RETURNS_LIST_EMPTY_DESC}
                 </p>
                 <Link
                   href="/customer/orders"
-                  className="bg-blue-50 text-blue-650 hover:bg-blue-100 font-bold px-5 py-2.5 rounded-xl text-theme-caption transition-colors"
+                  className="bg-foreground hover:bg-foreground/90 text-background text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center cursor-pointer"
                 >
-                  Go to Orders
+                  {SUPPORT_PAGE_TEXT.RETURNS_LIST_EMPTY_ACTION}
                 </Link>
-              </div>
+              </motion.div>
             ) : (
               <div className="space-y-8">
                 {dataState.returnsList.map((returnReq) => {
@@ -1614,32 +1682,32 @@ export default function HelpCenterPage() {
                   return (
                     <div
                       key={returnReq.id}
-                      className="border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:border-gray-300"
+                      className="border border-border bg-card rounded-2xl p-5 sm:p-6 shadow-sm transition-all hover:border-border/80"
                     >
                       {/* Return Header summary */}
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-4 mb-4 gap-3">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border pb-4 mb-4 gap-3">
                         <div>
                           <div className="flex items-center gap-3">
-                            <span className="text-theme-body-sm font-extrabold text-blue-650 uppercase tracking-wide">
+                            <span className="text-theme-body-sm font-extrabold text-primary uppercase tracking-wide">
                               {typeLabel}
                             </span>
-                            <span className="text-theme-caption text-gray-450 font-medium">
+                            <span className="text-theme-caption text-muted-foreground font-medium">
                               #{returnReq.id.slice(0, 8)}
                             </span>
                           </div>
-                          <p className="text-theme-caption text-gray-500 font-semibold mt-0.5">
-                            Submitted on {formatDate(returnReq.created_at)}
+                          <p className="text-theme-caption text-muted-foreground font-semibold mt-0.5">
+                            {SUPPORT_PAGE_TEXT.RETURNS_SUBMITTED_ON} {formatDate(returnReq.created_at)}
                           </p>
                         </div>
-                        <span className="text-theme-caption font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-md capitalize">
-                          Reason: {returnReq.reason}
+                        <span className="text-theme-caption font-bold text-foreground bg-secondary px-3 py-1 rounded-md capitalize">
+                          {SUPPORT_PAGE_TEXT.RETURNS_REASON_LABEL} {returnReq.reason}
                         </span>
                       </div>
 
                       {/* Product details info if loaded */}
                       {variant && (
                         <div className="flex gap-4 items-center mb-6">
-                          <div className="w-16 h-16 bg-gray-50 rounded-xl border border-gray-150 p-1 overflow-hidden flex items-center justify-center shrink-0">
+                          <div className="w-16 h-16 bg-secondary rounded-xl border border-border p-1 overflow-hidden flex items-center justify-center shrink-0">
                             <img
                               src={
                                 primaryImage ||
@@ -1650,10 +1718,10 @@ export default function HelpCenterPage() {
                             />
                           </div>
                           <div className="min-w-0">
-                            <h4 className="font-bold text-gray-900 text-theme-body-sm sm:text-theme-body truncate">
+                            <h4 className="font-bold text-foreground text-theme-body-sm sm:text-theme-body truncate">
                               {variant.variant_name}
                             </h4>
-                            <p className="font-extrabold text-gray-705 text-theme-caption sm:text-theme-body-sm mt-0.5">
+                            <p className="font-extrabold text-muted-foreground text-theme-caption sm:text-theme-body-sm mt-0.5">
                               ₹{formatCurrency(Number(variant.price))}
                             </p>
                           </div>
@@ -1668,54 +1736,54 @@ export default function HelpCenterPage() {
                         returnReq.outbound_tracking_number ||
                         returnReq.return_tracking_number ||
                         returnReq.tracking_id) && (
-                        <div className="mt-6 p-4 bg-blue-50/50 border border-blue-100 rounded-2xl space-y-3">
-                          <h5 className="text-theme-caption font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                        <div className="mt-6 p-4 bg-secondary border border-border rounded-2xl space-y-3">
+                          <h5 className="text-theme-caption font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                             <LinkIcon className="w-3.5 h-3.5" />
-                            Shipping & Tracking Details
+                            {SUPPORT_PAGE_TEXT.RETURNS_TRACKING_SECTION_TITLE}
                           </h5>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-theme-caption">
                             {returnReq.outbound_tracking_number && (
                               <div>
-                                <span className="text-theme-tiny text-gray-500 font-bold uppercase tracking-wider block">
-                                  Outbound Tracking #
+                                <span className="text-theme-tiny text-muted-foreground font-bold uppercase tracking-wider block">
+                                  {SUPPORT_PAGE_TEXT.RETURNS_OUTBOUND_TRACKING}
                                 </span>
-                                <span className="font-semibold text-gray-800">
+                                <span className="font-semibold text-foreground">
                                   {returnReq.outbound_tracking_number}
                                 </span>
                               </div>
                             )}
                             {returnReq.return_tracking_number && (
                               <div>
-                                <span className="text-theme-tiny text-gray-500 font-bold uppercase tracking-wider block">
-                                  Return Tracking #
+                                <span className="text-theme-tiny text-muted-foreground font-bold uppercase tracking-wider block">
+                                  {SUPPORT_PAGE_TEXT.RETURNS_RETURN_TRACKING}
                                 </span>
-                                <span className="font-semibold text-gray-805">
+                                <span className="font-semibold text-foreground">
                                   {returnReq.return_tracking_number}
                                 </span>
                               </div>
                             )}
                             {returnReq.tracking_id && (
                               <div>
-                                <span className="text-theme-tiny text-gray-500 font-bold uppercase tracking-wider block">
-                                  Carrier Tracking Ref
+                                <span className="text-theme-tiny text-muted-foreground font-bold uppercase tracking-wider block">
+                                  {SUPPORT_PAGE_TEXT.RETURNS_CARRIER_REF}
                                 </span>
-                                <span className="font-semibold text-gray-805">
+                                <span className="font-semibold text-foreground">
                                   {returnReq.tracking_id}
                                 </span>
                               </div>
                             )}
                             {returnReq.return_label_url && (
                               <div>
-                                <span className="text-theme-tiny text-gray-500 font-bold uppercase tracking-wider block">
-                                  Return Shipping Label
+                                <span className="text-theme-tiny text-muted-foreground font-bold uppercase tracking-wider block">
+                                  {SUPPORT_PAGE_TEXT.RETURNS_SHIPPING_LABEL}
                                 </span>
                                 <a
                                   href={returnReq.return_label_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-750 font-bold underline flex items-center gap-1 mt-0.5"
+                                  className="text-primary hover:text-primary/80 font-bold underline flex items-center gap-1 mt-0.5"
                                 >
-                                  Download Label &rarr;
+                                  {SUPPORT_PAGE_TEXT.RETURNS_DOWNLOAD_LABEL}
                                 </a>
                               </div>
                             )}

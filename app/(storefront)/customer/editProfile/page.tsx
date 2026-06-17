@@ -2,42 +2,11 @@
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeftCircle, AlertCircle, ChevronLeft } from "lucide-react";
+import { AlertCircle, ChevronLeft } from "lucide-react";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { profileEditSchema, ProfileEditData } from "@/utils/validation";
-
-export const PROFILE_EDIT_FIELDS = [
-  {
-    id: "profile_picture",
-    label: "Profile Picture URL",
-    type: "text",
-    placeholder: "https://example.com/photo.jpg",
-  },
-  {
-    id: "first_name",
-    label: "First Name",
-    type: "text",
-    placeholder: "Enter your first name",
-  },
-  {
-    id: "last_name",
-    label: "Last Name",
-    type: "text",
-    placeholder: "Enter your last name",
-  },
-  {
-    id: "email",
-    label: "Email",
-    type: "email",
-    placeholder: "Enter your email",
-  },
-  {
-    id: "phone",
-    label: "Phone Number",
-    type: "text",
-    placeholder: "Enter your phone number",
-  },
-] as const;
+import { EDIT_PROFILE_TEXT } from "@/constants/customerText";
+import { PROFILE_EDIT_FIELDS } from "@/constants";
 
 export default function EditProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -77,67 +46,84 @@ export default function EditProfilePage() {
 
   return (
     <div className="container mx-auto p-4 max-w-2xl">
+      {/* Mobile Header */}
       <div className="flex items-center gap-3 my-4 sm:hidden">
         <button
           onClick={() => router.back()}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-          aria-label="Go back"
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+          aria-label={EDIT_PROFILE_TEXT.GO_BACK_ARIA}
         >
           <ChevronLeft size={20} />
         </button>
-        <h1 className="font-bold text-theme-h5 text-gray-900">Edit Profile</h1>
+        <h1 className="font-bold text-base text-foreground tracking-tight">
+          {EDIT_PROFILE_TEXT.TITLE}
+        </h1>
       </div>
 
-      <form
-        className="lg:ml-10 pt-1 space-y-5"
-        onSubmit={handleSubmit(onSubmit)}
-        noValidate
-      >
-        {PROFILE_EDIT_FIELDS.map((field) => (
-          <div key={field.id} className="flex flex-col gap-1.5">
-            <label
-              htmlFor={field.id}
-              className="text-theme-body-sm font-semibold text-gray-700"
-            >
-              {field.label}
-            </label>
-            <input
-              id={field.id}
-              type={field.type}
-              placeholder={field.placeholder}
-              {...register(field.id as keyof ProfileEditData)}
-              className={`w-full border rounded-lg shadow-sm sm:text-theme-body-sm p-2.5 transition-all outline-none focus:ring-2 ${
-                errors[field.id as keyof ProfileEditData]
-                  ? "border-red-400 focus:ring-red-100"
-                  : "border-gray-300 focus:ring-blue-100 focus:border-blue-500"
-              }`}
-            />
-            {errors[field.id as keyof ProfileEditData] && (
-              <p className="text-red-500 text-theme-caption flex items-center gap-1 font-medium mt-1">
-                <AlertCircle size={12} />
-                {errors[field.id as keyof ProfileEditData]?.message}
-              </p>
-            )}
-          </div>
-        ))}
+      {/* Desktop Header */}
+      <div className="hidden sm:block mb-6 font-sans">
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+          {EDIT_PROFILE_TEXT.TITLE}
+        </h1>
+        <p className="text-xs text-muted-foreground mt-1">
+          {EDIT_PROFILE_TEXT.SUBTITLE}
+        </p>
+      </div>
 
-        <div className="flex gap-4 pt-4">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-6 py-2.5 bg-blue-600 text-white text-theme-body-sm font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
-          >
-            {isSubmitting ? "Saving..." : "Save Changes"}
-          </button>
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="px-6 py-2.5 bg-gray-100 text-gray-700 text-theme-body-sm font-bold rounded-xl hover:bg-gray-200 transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+      <div className="bg-card border border-border shadow-sm rounded-2xl p-6 sm:p-8 font-sans">
+        <form
+          className="space-y-5"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+        >
+          {PROFILE_EDIT_FIELDS.map((field) => (
+            <div key={field.id} className="flex flex-col gap-1.5 text-left">
+              <label
+                htmlFor={field.id}
+                className="text-xs font-semibold text-foreground"
+              >
+                {field.label}
+              </label>
+              <input
+                id={field.id}
+                type={field.type}
+                placeholder={field.placeholder}
+                {...register(field.id as keyof ProfileEditData)}
+                className={`w-full border rounded-xl shadow-sm text-xs p-3 transition-all outline-none bg-background focus:ring-2 ${
+                  errors[field.id as keyof ProfileEditData]
+                    ? "border-destructive focus:ring-destructive/20 text-foreground"
+                    : "border-border focus:ring-primary/20 focus:border-primary text-foreground"
+                }`}
+              />
+              {errors[field.id as keyof ProfileEditData] && (
+                <p className="text-destructive text-[10px] flex items-center gap-1 font-medium mt-1">
+                  <AlertCircle size={12} />
+                  {errors[field.id as keyof ProfileEditData]?.message}
+                </p>
+              )}
+            </div>
+          ))}
+
+          <div className="flex gap-4 pt-4">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 bg-foreground text-background text-xs font-bold rounded-xl hover:bg-foreground/90 transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+            >
+              {isSubmitting
+                ? EDIT_PROFILE_TEXT.SAVING
+                : EDIT_PROFILE_TEXT.SAVE_CHANGES}
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="px-6 py-2.5 bg-secondary text-foreground text-xs font-bold rounded-xl hover:bg-secondary/80 transition-all cursor-pointer"
+            >
+              {EDIT_PROFILE_TEXT.CANCEL}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

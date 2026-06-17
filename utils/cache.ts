@@ -1,10 +1,11 @@
 import { ENV_DEVELOPMENT } from "@/constants";
 
-const LANG_KEY = 'techsonance_locale';
+const LANG_KEY = "techsonance_locale";
 const LARGE_DATA_THRESHOLD = 15360; // 15KB
 
-export const cacheData = (key: string, data: any, ttlMs: number = 300000) => { // 5 minutes
-  if (typeof window === 'undefined') return;
+export const cacheData = (key: string, data: any, ttlMs: number = 300000) => {
+  // 5 minutes
+  if (typeof window === "undefined") return;
 
   // Dev condition: If env is dev, do not cache
   if (process.env.NODE_ENV === ENV_DEVELOPMENT) {
@@ -18,18 +19,16 @@ export const cacheData = (key: string, data: any, ttlMs: number = 300000) => { /
 
   try {
     const serialized = JSON.stringify(item);
-    
+
     // Cache large data slowly (deferred to requestIdleCallback or setTimeout)
     if (serialized.length > LARGE_DATA_THRESHOLD) {
       const saveToCache = () => {
         try {
           localStorage.setItem(key, serialized);
-        } catch (e) {
-          console.warn('Failed to write large data to cache:', e);
-        }
+        } catch (e) {}
       };
 
-      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      if (typeof window !== "undefined" && "requestIdleCallback" in window) {
         window.requestIdleCallback(() => saveToCache(), { timeout: 2000 });
       } else {
         setTimeout(saveToCache, 500);
@@ -37,13 +36,11 @@ export const cacheData = (key: string, data: any, ttlMs: number = 300000) => { /
     } else {
       localStorage.setItem(key, serialized);
     }
-  } catch (err) {
-    console.error('Failed to serialize cache data for key:', key, err);
-  }
+  } catch (err) {}
 };
 
 export const getCachedData = (key: string) => {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
 
   // Dev condition: If env is dev, do not use caching
   if (process.env.NODE_ENV === ENV_DEVELOPMENT) {
@@ -65,26 +62,28 @@ export const getCachedData = (key: string) => {
 };
 
 export const dispatchLocaleChange = (newLang: string) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(LANG_KEY, newLang);
-  window.dispatchEvent(new CustomEvent('techsonance_locale_change', { detail: newLang }));
+  window.dispatchEvent(
+    new CustomEvent("techsonance_locale_change", { detail: newLang }),
+  );
 };
 
 export const subscribeLocaleChange = (callback: (lang: string) => void) => {
-  if (typeof window === 'undefined') return () => {};
+  if (typeof window === "undefined") return () => {};
   const handleCustom = (e: Event) => {
     const customEvent = e as CustomEvent;
-    callback(customEvent.detail || 'en');
+    callback(customEvent.detail || "en");
   };
   const handleStorage = (e: StorageEvent) => {
     if (e.key === LANG_KEY) {
-      callback(e.newValue || 'en');
+      callback(e.newValue || "en");
     }
   };
-  window.addEventListener('techsonance_locale_change', handleCustom);
-  window.addEventListener('storage', handleStorage);
+  window.addEventListener("techsonance_locale_change", handleCustom);
+  window.addEventListener("storage", handleStorage);
   return () => {
-    window.removeEventListener('techsonance_locale_change', handleCustom);
-    window.removeEventListener('storage', handleStorage);
+    window.removeEventListener("techsonance_locale_change", handleCustom);
+    window.removeEventListener("storage", handleStorage);
   };
 };

@@ -76,7 +76,7 @@ export interface ProductsResponse {
   limit: number;
   totalPages: number;
 }
-export const fetchProductVendorProducts = async (
+export const fetchProducts = async (
   params: ProductQueryParams = {},
 ): Promise<ProductsResponse> => {
   const companyDomain = await getCompanyDomain();
@@ -95,7 +95,7 @@ export const fetchProductVendorProducts = async (
     searchParams.set("limit", String(params.limit));
 
   const qs = searchParams.toString();
-  const url = `${BASE_API_URL}/v1/products/vendor-products${qs ? `?${qs}` : ""}`;
+  const url = `${BASE_API_URL}/v1/products/all${qs ? `?${qs}` : ""}`;
 
   try {
     const response = await fetch(url, {

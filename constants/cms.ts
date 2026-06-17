@@ -60,6 +60,22 @@ export enum CmsDataKey {
   CURATED_PRODUCT_IDS = "curated_product_ids",
   CURATED_BG_COLOR = "curated_bg_color",
 
+  // Navbar CMS keys
+  NAV_LOGO_SRC = "nav_logo_src",
+  NAV_LOGO_ALT = "nav_logo_alt",
+  NAV_LOGO_HREF = "nav_logo_href",
+  NAV_LOGO_ALIGNMENT = "nav_logo_alignment",
+  NAV_POSITION = "nav_position",
+  NAV_SHOW_SHADOW = "nav_show_shadow",
+  NAV_SHOW_BORDER = "nav_show_border",
+  NAV_SEARCH_VISIBLE = "nav_search_visible",
+  NAV_SEARCH_PLACEHOLDER = "nav_search_placeholder",
+  NAV_SEARCH_ENDPOINT = "nav_search_endpoint",
+  NAV_SHOW_ACCOUNT = "nav_show_account",
+  NAV_SHOW_WISHLIST = "nav_show_wishlist",
+  NAV_SHOW_CART = "nav_show_cart",
+  NAV_ITEMS = "nav_items",
+
   PROMO_TIMER_TITLE = "promo_timer_title",
   PROMO_EXPIRES_AT = "promo_expires_at",
   PROMO_ALERT_TEXT = "promo_alert_text",

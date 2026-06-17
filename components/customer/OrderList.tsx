@@ -6,7 +6,8 @@ import { authToken } from "@/utils/authToken";
 import AxiosAPI from "@/lib/axios";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
-import { Truck, CheckCircle2, Package, RotateCcw, XCircle } from "lucide-react";
+import { Truck, CheckCircle2, Package, XCircle } from "lucide-react";
+import { motion } from "framer-motion";
 
 export enum OrderActionType {
   FETCH_SUCCESS = "FETCH_SUCCESS",
@@ -20,9 +21,8 @@ export enum OrderActionType {
 // shadcn/ui imports
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Separator } from "../ui/separator";
 import { ORDER_LIST_TEXT } from "@/constants/customerText";
@@ -45,7 +45,6 @@ export interface ReturnRequest {
 export interface AddressPayload {
   name: string;
   address_line_1: string;
-
   city: string;
   state: string;
   postal_code: string;
@@ -60,7 +59,7 @@ export interface PaymentType {
 }
 
 export interface OrderItemAPIResponse {
-  id?: string; // Appending id if available from the backend item row
+  id?: string;
   order_status: OrderStatus;
   quantity: number;
   price: string;
@@ -81,7 +80,7 @@ type OrderState = {
   isLoading: boolean;
   limit: number;
   offset: number;
-  dateFilter: "all" | "last30"; // Simple from-to representation for the UI pills
+  dateFilter: "all" | "last30";
 };
 
 type OrderAction =
@@ -128,7 +127,7 @@ function ItemStatusBadge({ status }: { status: string }) {
     return (
       <Badge
         variant="outline"
-        className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 text-theme-tiny uppercase font-bold tracking-wider"
+        className="bg-success/10 text-success border-success/20 gap-1 text-tiny uppercase font-bold tracking-wider"
       >
         <CheckCircle2 size={10} />
         {ORDER_LIST_TEXT.DELIVERED}
@@ -138,7 +137,7 @@ function ItemStatusBadge({ status }: { status: string }) {
     return (
       <Badge
         variant="outline"
-        className="bg-blue-50 text-blue-700 border-blue-200 gap-1 text-theme-tiny uppercase font-bold tracking-wider"
+        className="bg-primary/10 text-primary border-primary/20 gap-1 text-tiny uppercase font-bold tracking-wider"
       >
         <Truck size={10} />
         {status}
@@ -148,7 +147,7 @@ function ItemStatusBadge({ status }: { status: string }) {
     return (
       <Badge
         variant="outline"
-        className="bg-orange-50 text-orange-700 border-orange-200 gap-1 text-theme-tiny uppercase font-bold tracking-wider"
+        className="bg-warning/10 text-warning border-warning/20 gap-1 text-tiny uppercase font-bold tracking-wider"
       >
         <Package size={10} />
         {status}
@@ -158,7 +157,7 @@ function ItemStatusBadge({ status }: { status: string }) {
     return (
       <Badge
         variant="outline"
-        className="bg-destructive/10 text-destructive border-destructive/20 gap-1 text-theme-tiny uppercase font-bold tracking-wider"
+        className="bg-destructive/10 text-destructive border-destructive/20 gap-1 text-tiny uppercase font-bold tracking-wider"
       >
         <XCircle size={10} />
         Cancelled
@@ -167,7 +166,7 @@ function ItemStatusBadge({ status }: { status: string }) {
   return (
     <Badge
       variant="secondary"
-      className="gap-1 text-theme-tiny uppercase font-bold tracking-wider"
+      className="gap-1 text-tiny uppercase font-bold tracking-wider"
     >
       {status}
     </Badge>
@@ -193,37 +192,36 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
   );
 
   const totalPrice = Number(item.price) * Number(item.quantity);
-
   const isDelivered = item.order_status.toLowerCase() === "delivered";
 
   return (
-    <Card className="group overflow-hidden rounded-3xl border bg-card shadow-sm transition-all duration-300 hover:shadow-md">
+    <Card className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20 text-left">
       {/* ================= DESKTOP ================= */}
       <div className="hidden md:block">
         <div className="px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-10">
               <div>
-                <p className="text-theme-xxs font-semibold uppercase tracking-wider text-muted-foreground">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   {ORDER_LIST_TEXT.ORDER_ID}
                 </p>
-                <p className="mt-1 font-bold">
+                <p className="mt-1 font-bold text-foreground">
                   #{item.order.id.split("-")[0].toUpperCase()}
                 </p>
               </div>
 
               <div>
-                <p className="text-theme-xxs font-semibold uppercase tracking-wider text-muted-foreground">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   {ORDER_LIST_TEXT.PLACED_ON}
                 </p>
-                <p className="mt-1">{formattedDate}</p>
+                <p className="mt-1 text-foreground">{formattedDate}</p>
               </div>
 
               <div>
-                <p className="text-theme-xxs font-semibold uppercase tracking-wider text-muted-foreground">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   {ORDER_LIST_TEXT.TOTAL_AMOUNT}
                 </p>
-                <p className="mt-1 font-bold text-primary">
+                <p className="mt-1 font-bold text-foreground">
                   ₹{formatCurrency(Number(item.order.total_amount))}
                 </p>
               </div>
@@ -233,15 +231,15 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
           </div>
         </div>
 
-        <Separator />
+        <Separator className="bg-border" />
 
         <CardContent className="p-6">
-          <div className="flex gap-5">
+          <div className="flex gap-6">
             <Link
               href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
               className="shrink-0"
             >
-              <div className="w-28 h-28 rounded-2xl border bg-muted/30 p-3">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl border border-border/50 bg-secondary/40 p-3 transition-transform duration-300 group-hover:scale-[1.02]">
                 <Image
                   src={
                     item.variant.images?.[0]?.image_url ||
@@ -250,21 +248,21 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                   alt={item.variant.variant_name}
                   width={120}
                   height={120}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain mix-blend-multiply"
                 />
               </div>
             </Link>
 
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
               <Link
                 href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
               >
-                <h3 className="md:text-theme-h6 text-theme-body font-bold line-clamp-2">
+                <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-snug tracking-tight hover:text-blue-600 transition-colors">
                   {item.variant.variant_name}
                 </h3>
               </Link>
 
-              <div className="mt-3 flex items-center gap-2 text-theme-body-sm text-muted-foreground">
+              <div className="mt-2.5 flex items-center gap-2 text-xs text-muted-foreground">
                 <span>
                   {ORDER_LIST_TEXT.QTY} {item.quantity}
                 </span>
@@ -274,14 +272,14 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
                 </span>
               </div>
 
-              <p className="mt-2 text-theme-body-sm text-muted-foreground">
+              <p className="mt-1.5 text-xs text-muted-foreground">
                 {ORDER_LIST_TEXT.ORDERED_ON} {formattedDate}{" "}
                 {ORDER_LIST_TEXT.AT} {formattedTime}
               </p>
             </div>
 
             <div className="w-[180px] flex flex-col gap-2 justify-center">
-              <Button variant="outline" asChild className=" rounded-xl">
+              <Button variant="outline" asChild className="rounded-xl border border-border bg-transparent hover:bg-secondary text-xs font-semibold text-foreground transition-all w-full cursor-pointer">
                 <Link href={`/customer/orders/${item.order.id}`}>
                   {ORDER_LIST_TEXT.VIEW_DETAILS}
                 </Link>
@@ -289,14 +287,14 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
               {isDelivered ? (
                 <Link
                   href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
-                  className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex items-center justify-center"
+                  className="w-full py-2.5 rounded-xl bg-foreground hover:bg-foreground/90 text-background text-xs font-bold transition-all shadow-sm active:scale-95 text-center flex items-center justify-center"
                 >
                   {ORDER_LIST_TEXT.BUY_AGAIN}
                 </Link>
               ) : (
                 <Link
                   href={`/customer/orders/${item.order.id}`}
-                  className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex  items-center justify-center"
+                  className="w-full py-2.5 rounded-xl bg-foreground hover:bg-foreground/90 text-background text-xs font-bold transition-all shadow-sm active:scale-95 text-center flex items-center justify-center"
                 >
                   {ORDER_LIST_TEXT.TRACK_ORDER}
                 </Link>
@@ -307,13 +305,11 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
       </div>
 
       {/* ================= MOBILE ================= */}
-
       <div className="md:hidden p-4">
         {/* Header */}
-
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-theme-body-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {ORDER_LIST_TEXT.ORDER} #
               {item.order.id.split("-")[0].toUpperCase()}
             </p>
@@ -323,13 +319,12 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
         </div>
 
         {/* Product Row */}
-
         <div className="flex gap-3">
           <Link
             href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
             className="shrink-0"
           >
-            <div className="w-20 h-20 rounded-xl border bg-muted/30 p-2">
+            <div className="w-20 h-20 rounded-xl border border-border/50 bg-secondary/40 p-2">
               <Image
                 src={
                   item.variant.images?.[0]?.image_url ||
@@ -347,25 +342,24 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
             <Link
               href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
             >
-              <h3 className="font-bold text-theme-body leading-tight line-clamp-2">
+              <h3 className="font-bold text-xs text-foreground leading-snug line-clamp-2">
                 {item.variant.variant_name}
               </h3>
             </Link>
 
-            <p className="mt-1 text-theme-caption text-muted-foreground">
+            <p className="mt-1 text-[10px] text-muted-foreground">
               {formattedDate}, {formattedTime}
             </p>
 
-            <p className="mt-2 text-theme-h5 font-bold">
+            <p className="mt-2 text-sm font-extrabold text-foreground">
               ₹{formatCurrency(totalPrice)}
             </p>
           </div>
         </div>
 
         {/* Actions */}
-
         <div className="grid grid-cols-2 gap-2 mt-4">
-          <Button variant="outline" asChild className=" rounded-xl">
+          <Button variant="outline" asChild className="rounded-xl border border-border bg-transparent hover:bg-secondary text-xs font-semibold text-foreground transition-all cursor-pointer">
             <Link href={`/customer/orders/${item.order.id}`}>
               {ORDER_LIST_TEXT.VIEW_DETAILS}
             </Link>
@@ -373,14 +367,14 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
           {isDelivered ? (
             <Link
               href={`/store?productId=${item.variant.product_id}&variantId=${item.variant.id}`}
-              className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex items-center justify-center"
+              className="py-1.5 rounded-xl bg-foreground hover:bg-foreground/90 text-background text-xs font-bold transition-all shadow-sm active:scale-95 text-center flex items-center justify-center"
             >
               {ORDER_LIST_TEXT.BUY_AGAIN}
             </Link>
           ) : (
             <Link
               href={`/customer/orders/${item.order.id}`}
-              className="py-1.5 rounded-xl bg-black hover:bg-black/90 text-white flex  items-center justify-center"
+              className="py-1.5 rounded-xl bg-foreground hover:bg-foreground/90 text-background text-xs font-bold transition-all shadow-sm active:scale-95 text-center flex items-center justify-center"
             >
               {ORDER_LIST_TEXT.TRACK_ORDER}
             </Link>
@@ -390,6 +384,7 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
     </Card>
   );
 };
+
 // --- MAIN LIST COMPONENT ---
 export function OrdersList({
   customerId,
@@ -423,7 +418,6 @@ export function OrdersList({
       if (state.offset === 0) dispatch({ type: OrderActionType.FETCH_START });
 
       try {
-        // Pass domain or date filters as needed to match your backend signature
         const dateQuery =
           state.dateFilter === "last30" ? `&date=last30days` : "";
         const response = await AxiosAPI.get(
@@ -457,7 +451,7 @@ export function OrdersList({
   }, [status]);
 
   return (
-    <div className="w-full flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-6 text-left">
       {/* Filter Pills Header */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
         <Button
@@ -466,7 +460,7 @@ export function OrdersList({
               ? "default"
               : "secondary"
           }
-          className={`rounded-full h-8 text-theme-caption font-semibold px-4 shrink-0 ${status === null && state.dateFilter === "all" ? "bg-black text-white hover:bg-gray-800" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+          className={`rounded-full h-8 text-[11px] font-semibold px-4 shrink-0 cursor-pointer ${status === null && state.dateFilter === "all" ? "bg-foreground text-background hover:bg-foreground/90 shadow-sm" : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"}`}
           onClick={() => {
             setStatus(null);
             dispatch({ type: OrderActionType.SET_DATE_FILTER, payload: "all" });
@@ -476,7 +470,7 @@ export function OrdersList({
         </Button>
         <Button
           variant={state.dateFilter === "last30" ? "default" : "secondary"}
-          className={`rounded-full h-8 text-theme-caption font-semibold px-4 shrink-0 ${state.dateFilter === "last30" ? "bg-black text-white hover:bg-gray-800" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+          className={`rounded-full h-8 text-[11px] font-semibold px-4 shrink-0 cursor-pointer ${state.dateFilter === "last30" ? "bg-foreground text-background hover:bg-foreground/90 shadow-sm" : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"}`}
           onClick={() => {
             setStatus(null);
             dispatch({
@@ -491,7 +485,7 @@ export function OrdersList({
           variant={
             status === OrderStatusEnum.DELIVERED ? "default" : "secondary"
           }
-          className={`rounded-full h-8 text-theme-caption font-semibold px-4 shrink-0 ${status === OrderStatusEnum.DELIVERED ? "bg-black text-white hover:bg-gray-800" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+          className={`rounded-full h-8 text-[11px] font-semibold px-4 shrink-0 cursor-pointer ${status === OrderStatusEnum.DELIVERED ? "bg-foreground text-background hover:bg-foreground/90 shadow-sm" : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"}`}
           onClick={() => setStatus(OrderStatusEnum.DELIVERED)}
         >
           {ORDER_LIST_TEXT.DELIVERED}
@@ -504,12 +498,11 @@ export function OrdersList({
           {[1, 2, 3].map((i) => (
             <Skeleton
               key={i}
-              className="w-full h-48 md:h-56 rounded-2xl bg-gray-100"
+              className="w-full h-48 md:h-56 rounded-2xl bg-secondary/50"
             />
           ))}
         </div>
       ) : (
-        // Added pb-24 here specifically to ensure it clears the mobile TabNavBar!
         <div className="space-y-4 w-full pb-24 md:pb-8">
           {state.items.map((item, index) => (
             <OrderItemCard
@@ -519,24 +512,29 @@ export function OrdersList({
           ))}
 
           {state.items.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3 border border-dashed border-border rounded-2xl bg-gray-50/50">
-              <Package size={40} className="text-gray-300" />
-              <p className="text-theme-body-sm font-medium text-gray-500">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center justify-center text-center py-20 border border-dashed border-border rounded-2xl bg-card p-6"
+            >
+              <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-4">
+                <Package size={20} className="text-muted-foreground" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">
                 {ORDER_LIST_TEXT.NO_ORDER_ITEMS}
               </p>
-            </div>
+              <p className="text-xs text-muted-foreground mt-1.5 max-w-xs">
+                Your order history will appear here once you make a purchase.
+              </p>
+            </motion.div>
           )}
 
-          {/* Load More Button 
-           Logic changed: Now shows if the current items fetched is equal to or greater than the limit,
-           meaning there is likely another page to fetch. 
-          */}
+          {/* Load More Button */}
           {state.items.length >= state.limit && (
             <div className="flex justify-center mt-6 pt-4">
               <Button
                 onClick={() => dispatch({ type: OrderActionType.LOAD_MORE })}
-                variant="secondary"
-                className="w-full md:w-auto px-8 h-12 md:h-10 rounded-full bg-blue-50/50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 font-semibold border border-blue-100/50 shadow-sm"
+                className="w-full md:w-auto px-8 h-10 rounded-xl bg-secondary text-foreground hover:bg-secondary/80 font-semibold border border-border shadow-sm transition-all active:scale-95 cursor-pointer text-xs"
                 disabled={state.isLoading}
               >
                 {state.isLoading

@@ -1,105 +1,160 @@
 "use client";
-import { useEffect, useReducer, useState } from "react";
+
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMediaQuery } from "react-responsive";
-import { BRAND_LOGO } from "@/constants/common";
 import {
-  Bell,
   Heart,
   ShoppingBag,
   User,
-  Search,
-  Menu,
   ChevronDown,
-  ShoppingCart,
-  MapPin,
-  HelpCircle,
   LogOut,
   LogIn,
+  MapPin,
+  HelpCircle,
+  ShoppingCart,
+  ChevronRight,
 } from "lucide-react";
-import { toggleCartSidebar } from "@/lib/features/CartSidebar";
-import { motion } from "motion/react";
+import { SearchBar } from "@/components/customer/SearchBar";
+import { motion, AnimatePresence } from "motion/react";
 import { RootState } from "@/lib/store";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { useNavbarData } from "@/hooks/useNavbarData";
 import { useThemeData } from "@/hooks/useThemeData";
 import { openLoginModal, logOut } from "@/lib/features/auth/authSlice";
-import { SearchBar } from "./SearchBar";
-import { BackButton } from "../ui/back-button";
-import { SearchTrigger } from "./SearchOverlay";
-import { toggleMenu } from "@/lib/features/menuBar";
+import { toggleCartSidebar } from "@/lib/features/CartSidebar";
+import { PROFILE_SIDEBAR_TEXT } from "@/constants/customerText";
+import { BRAND_LOGO } from "@/constants/common";
+import {
+  LogoAlignmentEnum,
+  NavbarPositionEnum,
+  ColumnTypeEnum,
+  CMS_L1_NAV_PAYLOAD,
+  CMS_L2_MEGA_PAYLOAD,
+  L1NavbarPayload,
+  L2MegaMenuPayload,
+} from "@/constants/storefront";
 
-export enum NavActionType {
-  TOGGLE_SEARCH = "TOGGLE_SEARCH",
-  SET_SEARCH_QUERY = "SET_SEARCH_QUERY",
-}
-
-type NavState = {
-  isSearchOpen: boolean;
-  searchQuery: string;
-};
-type NavAction =
-  | { type: NavActionType.TOGGLE_SEARCH; payload: boolean }
-  | { type: NavActionType.SET_SEARCH_QUERY; payload: string };
-
-const navReducer = (state: NavState, action: NavAction): NavState => {
-  switch (action.type) {
-    case NavActionType.TOGGLE_SEARCH:
-      return { ...state, isSearchOpen: action.payload };
-    case NavActionType.SET_SEARCH_QUERY:
-      return { ...state, searchQuery: action.payload };
-    default:
-      return state;
-  }
+// UI Text Constants (strictly preventing hardcoded keys/texts in component logic)
+const NAVBAR_UI_TEXT = {
+  MY_ORDERS: PROFILE_SIDEBAR_TEXT.LINKS.ORDERS,
+  MY_CART: PROFILE_SIDEBAR_TEXT.LINKS.CART,
+  MY_ADDRESSES: PROFILE_SIDEBAR_TEXT.LINKS.ADDRESSES,
+  SUPPORT: PROFILE_SIDEBAR_TEXT.LINKS.SUPPORT,
+  LOGOUT: PROFILE_SIDEBAR_TEXT.LINKS.LOGOUT,
+  SIGN_IN: "Sign In",
+  WISH_ARIA_LABEL: "Wishlist page link",
+  CART_ARIA_LABEL: "Toggle cart sidebar",
+  PROFILE_ARIA_LABEL: "User profile dropdown",
+  LOGO_ALT: "Store Brand Logo",
 };
 
 export function Navbar({
-  styles,
-  menuLinks: propMenuLinks,
+  styles = "",
 }: {
   styles?: string;
   menuLinks?: { [key: string]: string | null }[];
 }) {
-  const { menuLinks: dynamicLinks } = useNavbarData();
+  const path = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const { themeData } = useThemeData();
-  const menuLinks = propMenuLinks || dynamicLinks;
 
+  // Redux States
   const { items } = useAppSelector((state: RootState) => state.cart);
   const { wishItems } = useAppSelector((state: RootState) => state.wishlist);
   const { user } = useAppSelector((state: RootState) => state.auth);
-  const { isMenuOpen } = useAppSelector((state: RootState) => state.menu);
-  const dispatch = useAppDispatch();
 
-  const wishlistCount = wishItems.length; // Simplified since array length implies count
-  const path = usePathname();
-  const router = useRouter();
-  const isDashboard = path ? path.includes("/customer") : false;
-  const isHome = path === "/" ? (isDashboard ? false : true) : false;
-  const logoUrl = themeData.logo_url
-    ? themeData.logo_url || themeData.logo_dark_url
-    : BRAND_LOGO;
+  const wishlistCount = wishItems.length;
 
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const onOpenDrawer = () => {
-    dispatch(toggleMenu());
-  };
+  // Layer 1 config - loaded synchronously for instant render
+  const [l1Config] = useState<L1NavbarPayload>(CMS_L1_NAV_PAYLOAD);
+
+  // Layer 2 config - deferred post-mount/hydration to keep First Contentful Paint fast
+  const [l2Config, setL2Config] = useState<L2MegaMenuPayload | null>(null);
+
+  // Isolated interactive states
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Defer Layer 2 hydration until after window/homepage mount
   useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (!(event.target as HTMLElement).closest(".user-dropdown-container")) {
-        setIsDropdownOpen(false);
+    const hydrateL2 = () => {
+      setL2Config(CMS_L2_MEGA_PAYLOAD);
+    };
+
+    if (typeof window !== "undefined") {
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(() => hydrateL2());
+      } else {
+        const timer = setTimeout(hydrateL2, 150);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
+
+  // Escape listener to close menus
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveMenuId(null);
+        setIsProfileOpen(false);
       }
     };
-    if (isDropdownOpen) {
-      document.addEventListener("click", handleOutsideClick);
-    }
-    return () => {
-      document.removeEventListener("click", handleOutsideClick);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Click outside listener for profile dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target as Node)
+      ) {
+        setIsProfileOpen(false);
+      }
     };
-  }, [isDropdownOpen]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Hide header in Admin, Vendor, or Checkout contexts
+  if (
+    path &&
+    (path.startsWith("/admin") ||
+      path.startsWith("/vendor") ||
+      path.includes("checkout"))
+  ) {
+    return null;
+  }
+
+  // Jitter-free Menu Hover Management
+  const handleMouseEnter = (itemId: string, hasMegaMenu: boolean) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    if (hasMegaMenu) {
+      setActiveMenuId(itemId);
+    } else {
+      setActiveMenuId(null);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActiveMenuId(null);
+    }, 150);
+  };
+
+  const handleBackdropClick = () => {
+    setActiveMenuId(null);
+  };
 
   const handleOrdersClick = () => {
-    setIsDropdownOpen(false);
+    setIsProfileOpen(false);
     if (!user?.id) {
       dispatch(openLoginModal("/customer/orders"));
     } else {
@@ -108,7 +163,7 @@ export function Navbar({
   };
 
   const handleCartClick = () => {
-    setIsDropdownOpen(false);
+    setIsProfileOpen(false);
     if (!user?.id) {
       dispatch(openLoginModal("/customer/cart"));
     } else {
@@ -117,7 +172,7 @@ export function Navbar({
   };
 
   const handleAddressesClick = () => {
-    setIsDropdownOpen(false);
+    setIsProfileOpen(false);
     if (!user?.id) {
       dispatch(openLoginModal("/customer/addresses"));
     } else {
@@ -126,7 +181,7 @@ export function Navbar({
   };
 
   const handleSupportClick = () => {
-    setIsDropdownOpen(false);
+    setIsProfileOpen(false);
     if (user?.id) {
       router.push("/customer/support");
     } else {
@@ -135,7 +190,7 @@ export function Navbar({
   };
 
   const handleAuthClick = () => {
-    setIsDropdownOpen(false);
+    setIsProfileOpen(false);
     if (user?.id) {
       dispatch(logOut());
       router.push("/");
@@ -144,217 +199,338 @@ export function Navbar({
     }
   };
 
-  if (
-    path && (
-      path.startsWith("/admin") ||
-      path.startsWith("/vendor") ||
-      path.includes("checkout")
-    )
-  ) {
-    return null;
-  }
+  // Brand Logo URL Resolver
+  const logoUrl =
+    l1Config.logo.src ||
+    themeData.logo_url ||
+    themeData.logo_dark_url ||
+    BRAND_LOGO;
 
-  const navPosCls =
-    themeData.navbar_position === "sticky" ? "sticky top-0 z-50" : "relative";
-  const logoAlignCls =
-    themeData.logo_alignment === "center"
-      ? "order-2 flex-1 flex justify-center"
-      : "order-1 flex-1";
-  const linksAlignCls =
-    themeData.logo_alignment === "center"
-      ? "order-1 flex-1 justify-start"
-      : "order-2 flex-1 justify-center";
-  const actionsAlignCls = "order-3 flex-1 flex justify-end";
+  const isSticky = l1Config.navbar.position === NavbarPositionEnum.STICKY;
+  const isLogoLeft = l1Config.logo.alignment === LogoAlignmentEnum.LEFT;
 
   return (
-    <>
-      {/* Mobile/Tablet Navbar */}
+    <header
+      className={`hidden lg:block w-full z-50 ${isSticky ? "sticky top-0" : "relative"}`}
+    >
       <nav
-        className={`flex justify-between items-center px-4 py-1.5 bg-navbar text-navbar-foreground border-b border-gray-200 shadow-sm storefront-nav ${navPosCls} ${styles} xl:hidden`}
+        className={`bg-navbar text-navbar-foreground flex items-center justify-between xl:px-16 lg:px-8 py-3.5 storefront-nav w-full ${styles} ${
+          l1Config.navbar.showShadow ? "shadow-md" : "shadow-sm"
+        } ${l1Config.navbar.showBottomBorder ? "border-b border-border" : ""}`}
       >
-        {isHome && <BackButton />}
-        {isDashboard && (
-          <button
-            onClick={onOpenDrawer}
-            className="p-1.5 hover:bg-navbar-foreground/10 rounded-lg active:scale-95 transition-all text-current cursor-pointer animate-fade-in"
-            aria-label="Open navigation menu"
-          >
-            <Menu size={20} />
-          </button>
+        {/* LOGO (LEFT POSITION) */}
+        {isLogoLeft && (
+          <div className="flex-shrink-0 flex items-center">
+            <Link href={l1Config.logo.href}>
+              <img
+                src={logoUrl}
+                alt={l1Config.logo.alt || NAVBAR_UI_TEXT.LOGO_ALT}
+                className="h-10 object-contain rounded-2xl font-black"
+              />
+            </Link>
+          </div>
         )}
-        <Link href="/">
-          <img
-            src={logoUrl}
-            alt="brand logo"
-            className="h-8 object-contain rounded-2xl"
-          />
-        </Link>
-        <button className="p-2 -mr-2 text-current hover:bg-black/5 rounded-md transition-colors relative">
-          <Bell strokeWidth={1.5} size={22} />
-        </button>
-      </nav>
 
-      {/* Desktop Navbar */}
-      <nav
-        className={`bg-navbar text-navbar-foreground flex justify-between items-center xl:px-16 lg:px-8 md:px-4 py-1 border-b border-gray-200 shadow-sm storefront-nav ${navPosCls} ${styles} hidden xl:flex`}
-      >
-        <div className={logoAlignCls}>
-          <Link href="/">
-            <img
-              src={logoUrl}
-              alt="brand logo"
-              className="h-14 font-black object-contain rounded-2xl"
-            />
-          </Link>
-        </div>
-
+        {/* PRIMARY L1 NAVIGATION LINKS */}
         <ul
-          className={`flex space-x-8 md:text-theme-body-sm lg:text-theme-body-sm font-medium items-center ${linksAlignCls}`}
+          className={`flex items-center space-x-7 text-sm font-medium ${
+            isLogoLeft ? "ml-8 mr-auto" : "flex-1 justify-start"
+          }`}
+          onMouseLeave={handleMouseLeave}
         >
-          {menuLinks.map((item, idx) => {
-            let label: string;
-            let href: string;
-
-            if ("label" in item && "href" in item) {
-              label = String(item.label || "");
-              href = String(item.href || "#");
-            } else {
-              label = Object.keys(item)[0] || "";
-              href = String(Object.values(item)[0] || "#");
-            }
-
-            const isActive = path === href;
+          {l1Config.navigationItems.map((item) => {
+            const isActive = path === item.href;
+            const hasMega = item.hasMegaMenu;
 
             return (
-              <li key={`nav-${label}-${idx}`} className="relative py-1">
+              <li
+                key={item.id}
+                className="relative py-2"
+                onMouseEnter={() => handleMouseEnter(item.id, hasMega)}
+              >
                 <Link
-                  href={href || "#"}
-                  className={`relative z-10 transition-colors duration-200 ${isActive ? "text-current font-bold" : "text-navbar-foreground/70 hover:text-navbar-foreground"}`}
+                  href={item.href}
+                  className={`relative z-10 transition-colors duration-200 text-sm font-semibold flex items-center gap-1 ${
+                    isActive
+                      ? "text-theme-primary"
+                      : "text-navbar-foreground/80 hover:text-theme-primary"
+                  }`}
                 >
-                  {label}
+                  <span>{item.label}</span>
+                  {hasMega && (
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform duration-200 ${
+                        activeMenuId === item.id
+                          ? "rotate-180 text-theme-primary"
+                          : ""
+                      }`}
+                    />
+                  )}
                 </Link>
+
+                {/* Nav link bottom active line */}
                 {isActive && (
                   <motion.div
-                    layoutId="nav-underline"
-                    className="absolute -bottom-1 left-0 right-0 h-[2px] bg-current z-0"
+                    layoutId="nav-underline-desktop"
+                    className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-theme-primary rounded-full"
                   />
                 )}
+
+                {/* DYNAMIC L2 MEGA MENU (RENDERED LAZILY ON HOVER) */}
+                <AnimatePresence>
+                  {hasMega &&
+                    activeMenuId === item.id &&
+                    l2Config?.[item.id] && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 15 }}
+                        transition={{ duration: 0.22, ease: "easeOut" }}
+                        className="absolute left-1/2 -translate-x-[24%] top-full mt-2 w-[880px] bg-white border border-slate-100 rounded-3xl shadow-2xl z-50 p-7 text-slate-800"
+                      >
+                        <div className="grid grid-cols-4 gap-7 items-stretch">
+                          {l2Config[item.id].map((col, cIdx) => {
+                            const isSubcat =
+                              col.type === ColumnTypeEnum.SUBCATEGORIES;
+                            const isBrands = col.type === ColumnTypeEnum.BRANDS;
+                            const isPromo =
+                              col.type === ColumnTypeEnum.PROMOTION;
+
+                            return (
+                              <div
+                                key={`col-${cIdx}`}
+                                className="flex flex-col"
+                              >
+                                {/* Column Heading */}
+                                <h3 className="text-xs font-bold tracking-wider text-slate-400 uppercase mb-3.5 pb-1.5 border-b border-slate-50">
+                                  {col.title}
+                                </h3>
+
+                                {/* Subcategories and Brands Links rendering */}
+                                {(isSubcat || isBrands) && col.items && (
+                                  <ul className="flex flex-col gap-2.5 list-none p-0 m-0">
+                                    {col.items.map((subLink, lIdx) => (
+                                      <li key={`sub-${lIdx}`}>
+                                        <Link
+                                          href={subLink.href}
+                                          className="text-sm font-medium text-slate-700 hover:text-theme-primary transition-colors flex items-center gap-2 group"
+                                        >
+                                          {isSubcat && subLink.iconUrl && (
+                                            <img
+                                              src={subLink.iconUrl}
+                                              alt={subLink.label}
+                                              className="w-5 h-5 object-contain group-hover:scale-105 transition-transform"
+                                            />
+                                          )}
+                                          <span>{subLink.label}</span>
+                                        </Link>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+
+                                {/* Promotional Cards rendering */}
+                                {isPromo && col.promotion && (
+                                  <div className="bg-slate-50/60 p-3.5 rounded-2xl flex flex-col h-full border border-slate-100/50">
+                                    <img
+                                      src={col.promotion.imageUrl}
+                                      alt={col.promotion.title}
+                                      className="w-full h-28 object-cover rounded-xl mb-3 shadow-xs"
+                                    />
+                                    <h4 className="text-sm font-bold text-slate-900 mb-1 leading-snug">
+                                      {col.promotion.title}
+                                    </h4>
+                                    <p className="text-xs text-slate-500 mb-3.5 line-clamp-2 leading-relaxed">
+                                      {col.promotion.subtitle}
+                                    </p>
+                                    <Link
+                                      href={col.promotion.ctaHref}
+                                      className="text-xs font-bold text-theme-primary hover:text-theme-primary/85 flex items-center gap-1 mt-auto"
+                                    >
+                                      <span>{col.promotion.ctaText}</span>
+                                      <ChevronRight size={13} />
+                                    </Link>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                </AnimatePresence>
               </li>
             );
           })}
         </ul>
 
-        <div className={actionsAlignCls}>
-          {path === "/customerRegister" || path === "/customerLogin" ? null : (
-            <div className="flex gap-5 items-center">
-              <div className="relative flex items-center">
-                <SearchTrigger />
-              </div>
+        {/* LOGO (CENTER POSITION) */}
+        {!isLogoLeft && (
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
+            <Link href={l1Config.logo.href}>
+              <img
+                src={logoUrl}
+                alt={l1Config.logo.alt || NAVBAR_UI_TEXT.LOGO_ALT}
+                className="h-10 object-contain rounded-2xl font-black"
+              />
+            </Link>
+          </div>
+        )}
 
-              {user && (
-                <Link
-                  href={"/customer/wishlist"}
-                  className="relative p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors"
-                >
-                  {wishlistCount > 0 && (
-                    <span className="absolute top-0 right-0 text-theme-tiny font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4 h-4 flex items-center justify-center border-2 border-navbar">
-                      {wishlistCount}
-                    </span>
-                  )}
-                  <Heart
-                    size={20}
-                    strokeWidth={1.5}
-                    color="currentColor"
-                    fill={wishlistCount > 0 ? "currentColor" : "none"}
-                  />
-                </Link>
-              )}
+        {/* SEARCH BAR */}
+        {l1Config.searchBar.isVisible && (
+          <div className="flex-1 max-w-[440px] mx-6">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onSearch={(q) => {
+                if (q.trim()) {
+                  router.push(
+                    `${l1Config.searchBar.searchEndpoint}?q=${encodeURIComponent(q.trim())}`,
+                  );
+                }
+              }}
+              placeholder={l1Config.searchBar.placeholder}
+            />
+          </div>
+        )}
 
+        {/* UTILITY ICONS & USER DROPDOWN (RIGHT) */}
+        <div className="flex items-center gap-5 flex-shrink-0">
+          {/* Account/Profile Dropdown */}
+          {l1Config.utilities.showAccount && (
+            <div className="relative" ref={profileRef}>
               <button
-                onClick={() => dispatch(toggleCartSidebar("open"))}
-                className="relative p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors"
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors flex items-center gap-0.5 cursor-pointer"
+                aria-label={NAVBAR_UI_TEXT.PROFILE_ARIA_LABEL}
+                aria-expanded={isProfileOpen}
               >
-                {items.length > 0 && (
-                  <span className="absolute top-0 right-0 text-theme-tiny font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4 h-4 flex items-center justify-center border-2 border-navbar">
-                    {items.length}
-                  </span>
-                )}
-                <ShoppingBag size={20} strokeWidth={1.5} />
+                <User size={19} strokeWidth={1.7} />
+                <ChevronDown
+                  size={13}
+                  className={`transition-transform duration-200 ${
+                    isProfileOpen ? "rotate-180" : ""
+                  }`}
+                />
               </button>
 
-              <div className="relative user-dropdown-container">
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="p-2 text-navbar-foreground/75 hover:bg-black/5 rounded-full transition-colors cursor-pointer border-none bg-transparent flex items-center gap-0.5"
-                  aria-label="User profile and menu"
-                >
-                  <User size={20} strokeWidth={1.5} />
-                  <ChevronDown
-                    size={14}
-                    className={`transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2.5 z-[100] text-slate-700 min-w-[200px] flex flex-col gap-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
+              <AnimatePresence>
+                {isProfileOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2.5 z-[100] text-slate-700 min-w-[200px] flex flex-col gap-0.5"
+                  >
                     <button
                       onClick={handleOrdersClick}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-theme-body-sm hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left font-semibold cursor-pointer border-none bg-transparent"
+                      className="w-full flex items-center gap-3 px-4.5 py-2.5 text-sm font-semibold text-slate-750 hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left border-none bg-transparent cursor-pointer"
                     >
                       <ShoppingBag size={16} strokeWidth={1.5} />
-                      <span>My Orders</span>
+                      <span>{NAVBAR_UI_TEXT.MY_ORDERS}</span>
                     </button>
                     <button
                       onClick={handleCartClick}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-theme-body-sm hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left font-semibold cursor-pointer border-none bg-transparent"
+                      className="w-full flex items-center gap-3 px-4.5 py-2.5 text-sm font-semibold text-slate-750 hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left border-none bg-transparent cursor-pointer"
                     >
                       <ShoppingCart size={16} strokeWidth={1.5} />
-                      <span>My Cart</span>
+                      <span>{NAVBAR_UI_TEXT.MY_CART}</span>
                     </button>
                     <button
                       onClick={handleAddressesClick}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-theme-body-sm hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left font-semibold cursor-pointer border-none bg-transparent"
+                      className="w-full flex items-center gap-3 px-4.5 py-2.5 text-sm font-semibold text-slate-750 hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left border-none bg-transparent cursor-pointer"
                     >
                       <MapPin size={16} strokeWidth={1.5} />
-                      <span>My Addresses</span>
+                      <span>{NAVBAR_UI_TEXT.MY_ADDRESSES}</span>
                     </button>
                     <button
                       onClick={handleSupportClick}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-theme-body-sm hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left font-semibold cursor-pointer border-none bg-transparent"
+                      className="w-full flex items-center gap-3 px-4.5 py-2.5 text-sm font-semibold text-slate-750 hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left border-none bg-transparent cursor-pointer"
                     >
-                      <HelpCircle size={16} strokeWidth={1.5} />
-                      <span>Support</span>
+                      <HelpCircle size={24} strokeWidth={1.5} />
+                      <span>{NAVBAR_UI_TEXT.SUPPORT}</span>
                     </button>
                     <div className="border-t border-slate-100 my-1"></div>
                     <button
                       onClick={handleAuthClick}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-theme-body-sm hover:bg-theme-primary/5 hover:text-theme-primary transition-colors text-left font-bold cursor-pointer border-none bg-transparent"
+                      className="w-full flex items-center gap-3 px-4.5 py-2.5 text-sm font-bold hover:bg-theme-primary/5 transition-colors text-left border-none bg-transparent cursor-pointer"
                     >
                       {user?.id ? (
                         <>
                           <LogOut
-                            size={16}
+                            size={24}
                             strokeWidth={1.5}
                             className="text-red-500"
                           />
-                          <span className="text-red-500 hover:text-red-600">
-                            Log Out
+                          <span className="text-red-500">
+                            {NAVBAR_UI_TEXT.LOGOUT}
                           </span>
                         </>
                       ) : (
                         <>
-                          <LogIn size={16} strokeWidth={1.5} />
-                          <span>Sign In</span>
+                          <LogIn
+                            size={24}
+                            strokeWidth={1.5}
+                            className="text-theme-primary"
+                          />
+                          <span className="text-theme-primary">
+                            {NAVBAR_UI_TEXT.SIGN_IN}
+                          </span>
                         </>
                       )}
                     </button>
-                  </div>
+                  </motion.div>
                 )}
-              </div>
+              </AnimatePresence>
             </div>
+          )}
+
+          {/* Wishlist Link */}
+          {l1Config.utilities.showWishlist && user && (
+            <Link
+              href="/customer/wishlist"
+              className="relative p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors"
+              aria-label={NAVBAR_UI_TEXT.WISH_ARIA_LABEL}
+            >
+              <Heart size={24} strokeWidth={1.7} />
+            </Link>
+          )}
+
+          {/* Shopping Cart Sidebar Toggle */}
+          {l1Config.utilities.showCart && (
+            <button
+              onClick={() => dispatch(toggleCartSidebar("open"))}
+              className="relative p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
+              aria-label={NAVBAR_UI_TEXT.CART_ARIA_LABEL}
+            >
+              {items.length > 0 && (
+                <span className="absolute top-0 right-0 text-tiny font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4.5 h-4.5 flex items-center justify-center border-2 border-navbar">
+                  {items.length}
+                </span>
+              )}
+              <ShoppingBag size={24} strokeWidth={1.7} />
+            </button>
           )}
         </div>
       </nav>
-    </>
+
+      {/* Dimming overlay for menu backdrop */}
+      <AnimatePresence>
+        {activeMenuId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={handleBackdropClick}
+            className="fixed inset-0 top-[72px] bg-black/40 backdrop-blur-xs z-40 cursor-default pointer-events-auto"
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+    </header>
   );
 }

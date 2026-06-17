@@ -13,6 +13,7 @@ import {
   CustomerTicketStatus,
   CustomerTicketPriority,
 } from "@/utils/Types";
+import { CAMPAIGN_ANALYTICS_TEXT } from "./vendorText";
 
 //used
 export const VendorDocumentTypes: {
@@ -80,6 +81,32 @@ export const VENDOR_NAV_LINKS: NavLinkType[] = [
   },
   { Settings: "settings", icon: "settings", divider: true },
 ];
+export const FUNNEL_STEPS = [
+  {
+    key: "viewed",
+    label: CAMPAIGN_ANALYTICS_TEXT.FUNNEL.VIEWED,
+    icon: "eye",
+    color: "bg-blue-50 text-blue-600 border-blue-200",
+  },
+  {
+    key: "clicked",
+    label: CAMPAIGN_ANALYTICS_TEXT.FUNNEL.CLICKED,
+    icon: "mouse-pointer",
+    color: "bg-purple-50 text-purple-600 border-purple-200",
+  },
+  {
+    key: "applied",
+    label: CAMPAIGN_ANALYTICS_TEXT.FUNNEL.APPLIED,
+    icon: "shopping-cart",
+    color: "bg-amber-50 text-amber-600 border-amber-200",
+  },
+  {
+    key: "redeemed",
+    label: CAMPAIGN_ANALYTICS_TEXT.FUNNEL.REDEEMED,
+    icon: "check-circle",
+    color: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  },
+] as const;
 
 // Define reusable types
 interface SidebarLink {

@@ -11,6 +11,7 @@ interface SearchBarProps {
   onSearch: (value: string) => void;
   onClose?: () => void;
   placeholder?: string;
+  autoFocus?: boolean;
 }
 
 export function SearchBar({
@@ -19,6 +20,7 @@ export function SearchBar({
   onSearch,
   onClose,
   placeholder = SEARCH_BAR_TEXT.PLACEHOLDER,
+  autoFocus = false,
 }: SearchBarProps) {
   const [suggestions, setSuggestions] = useState<
     { id: string; name: string }[]
@@ -134,7 +136,7 @@ export function SearchBar({
             setIsFocused(true);
             if (suggestions.length > 0) setShowSuggestions(true);
           }}
-          autoFocus // Automatically focus input when component mounts
+          autoFocus={autoFocus} // Automatically focus input when component mounts
           placeholder={placeholder}
           className="flex-1 text-theme-body-sm text-gray-800 placeholder:text-gray-400 outline-none bg-transparent min-w-0"
         />

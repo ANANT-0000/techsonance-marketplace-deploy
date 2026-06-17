@@ -14,6 +14,16 @@ export function CustomerLoginModal() {
   const router = useRouter();
   const { isLoginModalOpen } = useAppSelector((state: RootState) => state.auth);
 
+  React.useEffect(() => {
+    if (isLoginModalOpen) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isLoginModalOpen]);
+
   const handleClose = () => {
     dispatch(closeLoginModal());
     if (

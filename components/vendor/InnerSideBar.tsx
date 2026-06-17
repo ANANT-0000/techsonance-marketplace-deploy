@@ -55,14 +55,21 @@ export const InnerSideBar = ({
       `}
             >
                 <div className="sticky top-0 z-10 flex items-center justify-end bg-white border-b border-gray-100 px-3 py-3 w-full">
-                    {isClosed && (
-                        <span className="mr-auto text-theme-caption font-semibold uppercase tracking-widest text-gray-400 truncate">
-                            {selectedMenu}
-                        </span>
-                    )}
+                    <motion.span
+                        initial={false}
+                        animate={{
+                            opacity: isClosed ? 1 : 0,
+                            width: isClosed ? "auto" : 0,
+                            marginRight: isClosed ? "auto" : 0,
+                        }}
+                        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                        className="text-theme-caption font-semibold uppercase tracking-widest text-gray-400 truncate overflow-hidden whitespace-nowrap"
+                    >
+                        {selectedMenu}
+                    </motion.span>
                     <button
                         onClick={() => setIsClosed((v) => !v)}
-                        className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors ml-auto"
                         aria-label={expanded ? INNER_SIDEBAR_TEXT.ARIA_COLLAPSE : INNER_SIDEBAR_TEXT.ARIA_EXPAND}
                     >
                         <DynamicIcon name={!expanded ? "panel-left-open" : "panel-left-close"} size={24} />
@@ -78,10 +85,19 @@ export const InnerSideBar = ({
                         <div key={section.menu}>
                             {section.sections.map((group) => (
                                 <div key={group.section} className="mb-1">
-                                    {expanded && group.section && (
-                                        <p className="px-4 pt-2 pb-1 text-theme-body font-medium text-gray-400 truncate mb-2">
+                                    {group.section && (
+                                        <motion.p
+                                            initial={false}
+                                            animate={{
+                                                opacity: expanded ? 1 : 0,
+                                                height: expanded ? "auto" : 0,
+                                                marginBottom: expanded ? 8 : 0,
+                                            }}
+                                            transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                                            className="px-4 pt-2 pb-1 text-theme-body font-medium text-gray-400 truncate overflow-hidden"
+                                        >
                                             {group.section}
-                                        </p>
+                                        </motion.p>
                                     )}
                                     <ul>
                                         {group.list?.map((item) => {
@@ -94,13 +110,13 @@ export const InnerSideBar = ({
                                                         href={item.path ?? "#"}
                                                         title={expanded ? item.title : undefined}
                                                         className={`
-                            group relative flex items-center gap-3 mx-2 px-2.5 py-2 rounded-lg
-                            text-theme-body-sm font-medium transition-all duration-150
-                            ${isActive
+                                                            group relative flex items-center mx-2 px-2.5 py-2 rounded-lg
+                                                            text-theme-body-sm font-medium transition-all duration-150
+                                                            ${isActive
                                                                 ? "bg-blue-50 text-blue-600"
                                                                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                                                             }
-                          `}
+                                                          `}
                                                     >
                                                         {/* Active indicator bar */}
                                                         {isActive && (
@@ -112,11 +128,18 @@ export const InnerSideBar = ({
                                                         </span>
 
                                                         {/* Label — hidden when collapsed */}
-                                                        {expanded && (
-                                                            <span className="text-wrap transition-opacity duration-200 ease-in-out">
-                                                                {item.title}
-                                                            </span>
-                                                        )}
+                                                        <motion.span
+                                                            initial={false}
+                                                            animate={{
+                                                                width: expanded ? "auto" : 0,
+                                                                opacity: expanded ? 1 : 0,
+                                                                marginLeft: expanded ? 12 : 0,
+                                                            }}
+                                                            transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                                                            className="text-wrap overflow-hidden whitespace-nowrap text-theme-body-sm font-medium"
+                                                        >
+                                                            {item.title}
+                                                        </motion.span>
 
                                                         {/* Tooltip on hover when collapsed */}
                                                         {!expanded && (

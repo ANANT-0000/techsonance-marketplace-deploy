@@ -112,6 +112,17 @@ export function CartSidebar() {
         return () => window.removeEventListener('keydown', handleKey);
     }, [isCartOpen, dispatch]);
 
+    // Lock body scroll when sidebar is open on desktop
+    useEffect(() => {
+        if (isCartOpen && !isMobile) {
+            const originalStyle = window.getComputedStyle(document.body).overflow;
+            document.body.style.overflow = "hidden";
+            return () => {
+                document.body.style.overflow = originalStyle;
+            };
+        }
+    }, [isCartOpen, isMobile]);
+
     // ── Computed values ───────────────────────────────────────────────────────
     const subtotal = itemList.reduce((sum, item) => {
         const price = Number(item.productVariant?.price ?? 0);

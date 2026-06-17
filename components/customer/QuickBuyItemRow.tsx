@@ -41,14 +41,15 @@ export function QuickBuyItemRow({
         <p className="text-theme-caption font-semibold text-gray-800 line-clamp-2 leading-snug">
           {variant.variant_name}
         </p>
-        <p className="text-theme-caption text-blue-600 font-bold mt-0.5">
-          ₹{formatCurrency(Number(variant.price))} {QUICK_BUY_ITEM_ROW_TEXT.EACH}
+        <p className="text-theme-caption text-theme-primary-foreground font-bold mt-0.5">
+          ₹{formatCurrency(Number(variant.price))}{" "}
+          {QUICK_BUY_ITEM_ROW_TEXT.EACH}
         </p>
       </div>
 
       {/* Quantity control + line total */}
       <div className="flex flex-col items-end gap-1 shrink-0">
-        <div className="flex items-center bg-blue-600 rounded-lg overflow-hidden h-7">
+        <div className="flex items-center bg-theme-primary rounded-lg overflow-hidden h-7">
           <button
             onClick={() => onQtyChange(Math.max(1, qty - 1))}
             className="px-2 h-full text-white hover:bg-black/10 transition-colors flex items-center active:bg-black/20"
@@ -79,7 +80,9 @@ export function QuickBuyItemRow({
         </p>
 
         {qty >= maxStock && (
-          <p className="text-[9px] text-amber-500 font-medium">{QUICK_BUY_ITEM_ROW_TEXT.MAX_STOCK}</p>
+          <p className="text-[9px] text-amber-500 font-medium">
+            {QUICK_BUY_ITEM_ROW_TEXT.MAX_STOCK}
+          </p>
         )}
       </div>
     </motion.div>

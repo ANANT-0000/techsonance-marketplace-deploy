@@ -126,7 +126,14 @@ const loadCartFromLocalOrServer = async (): Promise<
         }
 
         // Sync local changes to server (if any)
-        if (localItems.length > 0) {
+        // Skip if localItems already have a cartId — they came from a prior server
+        // sync and are already in sync. Pushing them back would cause no-ops at
+        // best, or quantity drift if the race between two concurrent loadCart()
+        // calls writes stale data back to the server.
+        const localItemsHaveCartId = localItems.some(
+          (item) => item.cartId && item.cartId !== "",
+        );
+        if (localItems.length > 0 && !localItemsHaveCartId) {
           const syncPromises = localItems.map(async (localItem) => {
             const dbMatch = dbItems.find(
               (item: any) =>
@@ -300,16 +307,20 @@ export const syncCartAfterLogin = createAsyncThunk(
           (item: any) => item.product_variant_id === guestItem.productVariantId,
         );
         if (dbMatch) {
-          // Sum the quantities
-          const newQuantity = guestItem.quantity + dbMatch.quantity;
-          await fetchAddToCart(
-            guestItem.productVariantId,
-            newQuantity,
-            payload.userId,
-            payload.token,
-          );
+          // Item already exists on server. Do NOT sum quantities — that causes
+          // doubling when localStorage already mirrors the server state.
+          // Only update if the guest quantity differs from the server quantity.
+          if (guestItem.quantity !== dbMatch.quantity) {
+            await fetchAddToCart(
+              guestItem.productVariantId,
+              guestItem.quantity,
+              payload.userId,
+              payload.token,
+            );
+          }
+          // else: quantities already match — nothing to do
         } else {
-          // Add new item
+          // Item is new (guest-only), add it to the server
           await fetchAddToCart(
             guestItem.productVariantId,
             guestItem.quantity,
@@ -349,12 +360,20 @@ const CartSlice = createSlice({
       if (!state.cartId && action.payload.cartId) {
         state.cartId = action.payload.cartId;
       }
+
       const existingItem = state.items.find(
         (item) => item.productVariantId === action.payload.productVariantId,
       );
+
       if (existingItem) {
         existingItem.quantity =
           action.payload.quantity ?? existingItem.quantity + 1;
+        if (action.payload.cartItemId) {
+          existingItem.cartItemId = action.payload.cartItemId;
+        }
+        if (action.payload.cartId) {
+          existingItem.cartId = action.payload.cartId;
+        }
       } else {
         state.items.push({
           cartId: action.payload.cartId || state.cartId || "",

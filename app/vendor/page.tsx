@@ -44,6 +44,8 @@ import {
 } from "@/components/common/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UiText } from "@/constants/ui-text";
+import { useAppDispatch } from "@/hooks/reduxHooks";
+import { stopPageLoading } from "@/lib/features/pageLoading";
 
 interface OrderAddressType {
   name: string;
@@ -338,7 +340,11 @@ export function dashboardReducer(
 }
 
 export default function DashboardPage() {
-  const [state, dispatch] = useReducer(dashboardReducer, initialDashboardState);
+  const [state, reducerDispatch] = useReducer(
+    dashboardReducer,
+    initialDashboardState,
+  );
+  const dispatch = useAppDispatch();
   const {
     recentOrders,
     loadingRecentOrders,
@@ -365,11 +371,14 @@ export default function DashboardPage() {
 
   const setCurrentPage = (page: number | ((prev: number) => number)) => {
     const nextPage = typeof page === "function" ? page(currentPage) : page;
-    dispatch({ type: DashboardActionType.SET_CURRENT_PAGE, payload: nextPage });
+    reducerDispatch({
+      type: DashboardActionType.SET_CURRENT_PAGE,
+      payload: nextPage,
+    });
   };
 
   const loadData = async (token: string) => {
-    dispatch({
+    reducerDispatch({
       type: DashboardActionType.SET_LOADING_RECENT_ORDERS,
       payload: true,
     });
@@ -380,33 +389,41 @@ export default function DashboardPage() {
       OrderStatusEnum.PROCESSING,
     )
       .then((res) => {
-        dispatch({
+        reducerDispatch({
           type: DashboardActionType.SET_RECENT_ORDERS,
           payload: {
             orders: res.data.orders,
             totalPages: Math.ceil(res.data.totalCount / itemsPerPage),
           },
         });
-        dispatch({
+        reducerDispatch({
           type: DashboardActionType.SET_LOADING_RECENT_ORDERS,
           payload: false,
         });
       })
-      .catch(() => {
-        dispatch({
+      .catch((err) => {
+        console.error("Failed to load recent orders:", err);
+        reducerDispatch({
+          type: DashboardActionType.SET_LOADING_RECENT_ORDERS,
+          payload: false,
+        });
+        reducerDispatch({
           type: DashboardActionType.SET_LOADING_RECENT_ORDERS,
           payload: false,
         });
       });
 
-    dispatch({ type: DashboardActionType.SET_LOADING_METRICS, payload: true });
+    reducerDispatch({
+      type: DashboardActionType.SET_LOADING_METRICS,
+      payload: true,
+    });
     Promise.all([
       fetchVendorPendingOrders(token),
       fetchVendorActiveProducts(token),
       fetchLowStockAlerts(token),
     ])
       .then(([pending, active, stock]) => {
-        dispatch({
+        reducerDispatch({
           type: DashboardActionType.SET_METRICS,
           payload: {
             pendingOrders: pending.data?.length || 0,
@@ -414,54 +431,61 @@ export default function DashboardPage() {
             lowStock: stock.data?.length || 0,
           },
         });
-        dispatch({
+        reducerDispatch({
           type: DashboardActionType.SET_LOADING_METRICS,
           payload: false,
         });
       })
       .catch(() => {
-        dispatch({
+        dispatch(stopPageLoading());
+        reducerDispatch({
           type: DashboardActionType.SET_LOADING_METRICS,
           payload: false,
         });
       });
 
-    dispatch({ type: DashboardActionType.SET_LOADING_CHART, payload: true });
+    reducerDispatch({
+      type: DashboardActionType.SET_LOADING_CHART,
+      payload: true,
+    });
     fetchRevenueAnalytics(token, 30)
       .then((res) => {
-        dispatch({
+        reducerDispatch({
           type: DashboardActionType.SET_REVENUE_ANALYTICS,
           payload: {
             chartData: res.data?.chartData || [],
             totalRevenue: res.data?.totalRevenue || 0,
           },
         });
-        dispatch({
+        reducerDispatch({
           type: DashboardActionType.SET_LOADING_CHART,
           payload: false,
         });
       })
       .catch(() => {
-        dispatch({
+        reducerDispatch({
           type: DashboardActionType.SET_LOADING_CHART,
           payload: false,
         });
       });
 
-    dispatch({ type: DashboardActionType.SET_LOADING_PRODUCTS, payload: true });
+    reducerDispatch({
+      type: DashboardActionType.SET_LOADING_PRODUCTS,
+      payload: true,
+    });
     fetchTopProducts(token)
       .then((res) => {
-        dispatch({
+        reducerDispatch({
           type: DashboardActionType.SET_TOP_PRODUCTS,
           payload: res.data || [],
         });
-        dispatch({
+        reducerDispatch({
           type: DashboardActionType.SET_LOADING_PRODUCTS,
           payload: false,
         });
       })
       .catch(() => {
-        dispatch({
+        reducerDispatch({
           type: DashboardActionType.SET_LOADING_PRODUCTS,
           payload: false,
         });
@@ -470,16 +494,18 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!token) {
-      redirect("/auth/vendorLogin");
+      router.replace("/auth/vendorLogin");
+      return;
     }
+    dispatch(stopPageLoading());
     loadData(token);
-  }, [currentPage]);
+  }, [token, currentPage]);
 
   const handleOrderFilter = async (orderStatus: OrderStatusType) => {
     if (token) {
       await fetchVendorOrderList(offset, itemsPerPage, token, orderStatus)
         .then((res) => {
-          dispatch({
+          reducerDispatch({
             type: DashboardActionType.SET_RECENT_ORDERS,
             payload: {
               orders: res.data.orders,
@@ -487,19 +513,25 @@ export default function DashboardPage() {
             },
           });
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.error("Failed to load metrics:", err);
+          reducerDispatch({
+            type: DashboardActionType.SET_LOADING_METRICS,
+            payload: false,
+          });
+        });
     }
   };
 
   const toggleOrderSelection = (orderId: string) => {
-    dispatch({
+    reducerDispatch({
       type: DashboardActionType.TOGGLE_ORDER_SELECTION,
       payload: orderId,
     });
   };
 
   const toggleAllOrders = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({
+    reducerDispatch({
       type: DashboardActionType.TOGGLE_ALL_ORDERS,
       payload: e.target.checked,
     });
@@ -507,7 +539,10 @@ export default function DashboardPage() {
 
   const handleBulkDownload = async () => {
     if (selectedOrders.length === 0) return;
-    dispatch({ type: DashboardActionType.SET_IS_DOWNLOADING, payload: true });
+    reducerDispatch({
+      type: DashboardActionType.SET_IS_DOWNLOADING,
+      payload: true,
+    });
 
     try {
       const res = await fetchBulkInvoiceUrls(selectedOrders, token as string);
@@ -535,11 +570,14 @@ export default function DashboardPage() {
         }
       }
 
-      dispatch({ type: DashboardActionType.SET_SELECTED_ORDERS, payload: [] });
+      reducerDispatch({
+        type: DashboardActionType.SET_SELECTED_ORDERS,
+        payload: [],
+      });
     } catch {
       alert(UiText.DASHBOARD.INVOICES_FAILED);
     } finally {
-      dispatch({
+      reducerDispatch({
         type: DashboardActionType.SET_IS_DOWNLOADING,
         payload: false,
       });
@@ -548,7 +586,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <main className="px-2">
+      <main className="px-2 overflow-y-scroll h-screen">
         <span id="analytics-report-container">
           {isLoadingMetrics ? (
             <MetricsSkeleton

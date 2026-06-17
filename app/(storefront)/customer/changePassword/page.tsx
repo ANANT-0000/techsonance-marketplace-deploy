@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  ChevronLeftCircle,
   AlertCircle,
   ChevronLeft,
   EyeOff,
@@ -14,6 +13,7 @@ import {
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { changePasswordSchema, ChangePasswordData } from "@/utils/validation";
 import { useState } from "react";
+import { CHANGE_PASSWORD_TEXT, EDIT_PROFILE_TEXT } from "@/constants/customerText";
 
 export default function PasswordForm() {
   const { user } = useAppSelector((state) => state.auth);
@@ -45,87 +45,109 @@ export default function PasswordForm() {
   };
 
   return (
-    <>
+    <div className="container mx-auto p-4 max-w-2xl font-sans">
       <div className="flex items-center gap-3 my-4 sm:hidden">
         <button
           onClick={() => router.back()}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-          aria-label="Go back"
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+          aria-label={CHANGE_PASSWORD_TEXT.GO_BACK_ARIA}
         >
           <ChevronLeft size={20} />
         </button>
-        <h1 className="font-bold text-theme-h5 text-gray-900">Change Password</h1>
+        <h1 className="font-bold text-base text-foreground tracking-tight">{CHANGE_PASSWORD_TEXT.TITLE}</h1>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
-        <div className="p-6 border-b border-gray-100 flex items-center gap-3">
-          <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+      
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden mb-6">
+        <div className="p-6 border-b border-border flex items-center gap-3 text-left">
+          <div className="p-2.5 bg-secondary text-theme-primary rounded-xl">
             <Key size={20} />
           </div>
           <div>
-            <h2 className="text-theme-h6 font-bold text-gray-800">Change Password</h2>
-            <p className="text-theme-body-sm text-gray-500">
-              Ensure your account is using a long, random password to stay
-              secure.
+            <h2 className="text-sm font-bold text-foreground">{CHANGE_PASSWORD_TEXT.TITLE}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {CHANGE_PASSWORD_TEXT.SUBTITLE}
             </p>
           </div>
         </div>
+        
         <div className="p-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-left">
             <div>
-              <label className="block text-theme-body-sm font-medium text-gray-700 mb-1.5">
-                Current Password
+              <label className="block text-xs font-semibold text-foreground mb-1.5">
+                {CHANGE_PASSWORD_TEXT.CURRENT_PASSWORD}
               </label>
               <input
                 type="password"
-                className="w-full rounded-xl border border-gray-300 py-2.5 px-4 text-theme-body-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                placeholder="Enter current password"
+                className={`w-full rounded-xl border bg-background py-2.5 px-4 text-xs transition-all outline-none focus:ring-2 ${
+                  errors.current_password
+                    ? "border-destructive focus:ring-destructive/20 text-foreground"
+                    : "border-border focus:ring-primary/20 focus:border-primary text-foreground"
+                }`}
+                placeholder={CHANGE_PASSWORD_TEXT.CURRENT_PASSWORD_PLACEHOLDER}
                 {...register("current_password")}
               />
               {errors.current_password && (
-                <p className="text-red-500 text-theme-body-sm">
+                <p className="text-destructive text-[10px] mt-1 flex items-center gap-1 font-medium">
+                  <AlertCircle size={12} />
                   {errors.current_password.message}
                 </p>
               )}
             </div>
+            
             <div>
-              <label className="block text-theme-body-sm font-medium text-gray-700 mb-1.5">
-                New Password
+              <label className="block text-xs font-semibold text-foreground mb-1.5">
+                {CHANGE_PASSWORD_TEXT.NEW_PASSWORD}
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="w-full rounded-xl border border-gray-300 py-2.5 pl-4 pr-10 text-theme-body-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  placeholder="Enter new password"
+                  className={`w-full rounded-xl border bg-background py-2.5 pl-4 pr-10 text-xs transition-all outline-none focus:ring-2 ${
+                    errors.new_password
+                      ? "border-destructive focus:ring-destructive/20 text-foreground"
+                      : "border-border focus:ring-primary/20 focus:border-primary text-foreground"
+                  }`}
+                  placeholder={CHANGE_PASSWORD_TEXT.NEW_PASSWORD_PLACEHOLDER}
                   {...register("new_password")}
                 />
-                {errors.new_password && (
-                  <p className="text-red-500 text-theme-body-sm">
-                    {errors.new_password.message}
-                  </p>
-                )}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              <p className="text-theme-caption text-gray-500 mt-1.5">
-                Must be at least 8 characters long.
-              </p>
+              {errors.new_password ? (
+                <p className="text-destructive text-[10px] mt-1 flex items-center gap-1 font-medium">
+                  <AlertCircle size={12} />
+                  {errors.new_password.message}
+                </p>
+              ) : (
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  {CHANGE_PASSWORD_TEXT.PASSWORD_LENGTH_HINT}
+                </p>
+              )}
             </div>
-            <div className="pt-2">
+            
+            <div className="pt-2 flex gap-4">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-theme-body-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+                disabled={isSubmitting}
+                className="bg-foreground hover:bg-foreground/90 text-background font-semibold text-xs px-5 py-2.5 rounded-xl transition-all active:scale-95 shadow-sm cursor-pointer disabled:opacity-50"
               >
-                Update Password
+                {CHANGE_PASSWORD_TEXT.UPDATE_BUTTON}
+              </button>
+              <button
+                type="button"
+                onClick={onCancel}
+                className="bg-secondary hover:bg-secondary/80 text-foreground font-semibold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer"
+              >
+                {EDIT_PROFILE_TEXT.CANCEL}
               </button>
             </div>
           </form>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -20,7 +20,9 @@ export const BRAND_HIGHLIGHT_DEFAULT = {
     { value: "4.9★", label: "Avg. Rating" },
   ],
 };
-
+export const CATEGORY_CART_TEXT = {
+  SHOP_NOW: "Shop now",
+};
 export const NEWSLETTER_DEFAULT = {
   eyebrow: "Stay Connected",
   success_text: "You're in. Welcome to the inner circle.",
@@ -188,3 +190,151 @@ export const COLOR_WHITE = "#ffffff";
 export const COLOR_WHITE_MUTED = "rgba(255,255,255,0.7)";
 export const COLOR_SLATE_MUTED = "rgba(15,23,42,0.7)";
 export const COLOR_SLATE_DARK = "#0f172a";
+
+export enum LogoAlignmentEnum {
+  LEFT = "LEFT",
+  CENTER = "CENTER"
+}
+
+export enum NavbarPositionEnum {
+  STICKY = "STICKY",
+  RELATIVE = "RELATIVE"
+}
+
+export enum ColumnTypeEnum {
+  SUBCATEGORIES = "SUBCATEGORIES",
+  BRANDS = "BRANDS",
+  PROMOTION = "PROMOTION"
+}
+
+export interface NavPromoBlock {
+  imageUrl: string;
+  title: string;
+  subtitle: string;
+  ctaText: string;
+  ctaHref: string;
+}
+
+export interface NavLinkItem {
+  label: string;
+  href: string;
+  iconUrl?: string;
+}
+
+export interface NavMegaColumn {
+  type: ColumnTypeEnum;
+  title: string;
+  items?: NavLinkItem[];
+  promotion?: NavPromoBlock;
+}
+
+export interface L1NavItem {
+  id: string;
+  label: string;
+  href: string;
+  hasMegaMenu: boolean;
+}
+
+export interface L1NavbarPayload {
+  logo: {
+    src: string;
+    alt: string;
+    href: string;
+    alignment: LogoAlignmentEnum;
+  };
+  navbar: {
+    position: NavbarPositionEnum;
+    showBottomBorder: boolean;
+    showShadow: boolean;
+  };
+  searchBar: {
+    isVisible: boolean;
+    placeholder: string;
+    searchEndpoint: string;
+  };
+  utilities: {
+    showAccount: boolean;
+    showWishlist: boolean;
+    showCart: boolean;
+  };
+  navigationItems: L1NavItem[];
+}
+
+export type L2MegaMenuPayload = Record<string, NavMegaColumn[]>;
+
+export const CMS_L1_NAV_PAYLOAD: L1NavbarPayload = {
+  logo: {
+    src: "/assets/e-commerce_brand_logo.png",
+    alt: "Techsonance Store logo",
+    href: "/",
+    alignment: LogoAlignmentEnum.LEFT,
+  },
+  navbar: {
+    position: NavbarPositionEnum.STICKY,
+    showBottomBorder: true,
+    showShadow: true,
+  },
+  searchBar: {
+    isVisible: true,
+    placeholder: "Search for premium audio, weartech & accessories...",
+    searchEndpoint: "/store/search",
+  },
+  utilities: {
+    showAccount: true,
+    showWishlist: true,
+    showCart: true,
+  },
+  navigationItems: [
+    { id: "shop-all", label: "Shop All", href: "/store", hasMegaMenu: false },
+    { id: "categories", label: "Categories", href: "/store?type=categories", hasMegaMenu: true },
+    { id: "new-arrivals", label: "New Launches", href: "/store?filter=new", hasMegaMenu: false },
+    { id: "support", label: "Help & Support", href: "/contact", hasMegaMenu: false },
+  ],
+};
+
+export const CMS_L2_MEGA_PAYLOAD: L2MegaMenuPayload = {
+  categories: [
+    {
+      type: ColumnTypeEnum.SUBCATEGORIES,
+      title: "Shop By Audio",
+      items: [
+        { label: "True Wireless Earbuds", href: "/store?category=earbuds", iconUrl: "/assets/TWS_icon.png" },
+        { label: "Neckbands", href: "/store?category=neckbands", iconUrl: "/assets/neckband_icon.png" },
+        { label: "Headphones", href: "/store?category=headphones", iconUrl: "/assets/headphones_icon.png" },
+        { label: "Soundbars", href: "/store?category=soundbars", iconUrl: "/assets/soundbar_icon.png" },
+      ],
+    },
+    {
+      type: ColumnTypeEnum.SUBCATEGORIES,
+      title: "Weartech & Devices",
+      items: [
+        { label: "Smart Watches", href: "/store?category=watches", iconUrl: "/assets/watch_icon.png" },
+        { label: "Power Banks", href: "/store?category=powerbanks" },
+        { label: "Projectors", href: "/store?category=projectors" },
+        { label: "Limited Edition", href: "/store?category=limited" },
+      ],
+    },
+    {
+      type: ColumnTypeEnum.BRANDS,
+      title: "Top Featured Brands",
+      items: [
+        { label: "Apple", href: "/store?brand=apple" },
+        { label: "boAt", href: "/store?brand=boat" },
+        { label: "Sony", href: "/store?brand=sony" },
+        { label: "Sennheiser", href: "/store?brand=sennheiser" },
+      ],
+    },
+    {
+      type: ColumnTypeEnum.PROMOTION,
+      title: "Featured Launch",
+      promotion: {
+        imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop",
+        title: "Acoustic Pro Series X",
+        subtitle: "Immersive sound. 40h battery. Hybrid ANC.",
+        ctaText: "Shop Now",
+        ctaHref: "/store/acoustic-pro-series-x",
+      },
+    },
+  ],
+};
+

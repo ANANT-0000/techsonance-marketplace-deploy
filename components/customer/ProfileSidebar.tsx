@@ -12,7 +12,6 @@ import Image from "next/image";
 
 export function ProfileSidebar() {
   const { user } = useAppSelector((state: RootState) => state.auth);
-  const {} = useAppSelector((state: RootState) => state);
   const router = useRouter();
   const dispatch = useAppDispatch();
   const currentPath = usePathname();
@@ -23,6 +22,12 @@ export function ProfileSidebar() {
   }, []);
 
   if (currentPath && currentPath.includes("checkout")) return null;
+
+  const hasUserSession = typeof window !== "undefined" && !!window.localStorage.getItem("isAuthenticated");
+
+  // Hide sidebar for guests — only show once mounted to avoid SSR/hydration flicker.
+  // Do not hide if there's an active session but the redux store is still hydrating.
+  if (mounted && !user && !hasUserSession) return null;
 
   const handleNavigation = (linkPath: string) => {
     if (linkPath === "/logout") {

@@ -3,13 +3,45 @@ import { BusinessStructure, categoryOptions, COUNTRY_CODES } from "./common";
 import { VendorRegisterSchema } from "@/utils/validation";
 import { FieldConfig, FieldType } from "@/utils/Types";
 import { TAX_PROFILE_FORM_TEXT, TAX_RATES_FORM_TEXT } from "./vendorText";
+import { EDIT_PROFILE_TEXT } from "./customerText";
 export const STEPS = [
   { id: 0, label: "Organization", icon: Building2 },
   { id: 1, label: "Domain", icon: Globe2 },
   { id: 2, label: "Compliance", icon: ShieldCheck },
   { id: 3, label: "Documents", icon: FileArchive },
 ];
-
+export const PROFILE_EDIT_FIELDS = [
+  {
+    id: "profile_picture",
+    label: EDIT_PROFILE_TEXT.FIELDS.AVATAR,
+    type: "text",
+    placeholder: EDIT_PROFILE_TEXT.PLACEHOLDERS.AVATAR,
+  },
+  {
+    id: "first_name",
+    label: EDIT_PROFILE_TEXT.FIELDS.FIRST_NAME,
+    type: "text",
+    placeholder: EDIT_PROFILE_TEXT.PLACEHOLDERS.FIRST_NAME,
+  },
+  {
+    id: "last_name",
+    label: EDIT_PROFILE_TEXT.FIELDS.LAST_NAME,
+    type: "text",
+    placeholder: EDIT_PROFILE_TEXT.PLACEHOLDERS.LAST_NAME,
+  },
+  {
+    id: "email",
+    label: EDIT_PROFILE_TEXT.FIELDS.EMAIL,
+    type: "email",
+    placeholder: EDIT_PROFILE_TEXT.PLACEHOLDERS.EMAIL,
+  },
+  {
+    id: "phone",
+    label: EDIT_PROFILE_TEXT.FIELDS.PHONE,
+    type: "text",
+    placeholder: EDIT_PROFILE_TEXT.PLACEHOLDERS.PHONE,
+  },
+] as const;
 // Fields validated per step by react-hook-form
 export const STEP_RHF_FIELDS: Record<number, (keyof VendorRegisterSchema)[]> = {
   0: [

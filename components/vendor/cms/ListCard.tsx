@@ -12,7 +12,7 @@ export function ListCard({
       <button
         type="button"
         onClick={onRemove}
-        className="absolute right-3 top-3 text-red-400 hover:text-red-600 p-1"
+        className="absolute right-3 top-3 text-red-400 hover:text-red-650 p-1"
       >
         <Trash2 size={14} />
       </button>

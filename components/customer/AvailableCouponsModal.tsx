@@ -21,6 +21,16 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
 
     useEffect(() => {
         if (isOpen) {
+            const originalStyle = window.getComputedStyle(document.body).overflow;
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = originalStyle;
+            };
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (isOpen) {
             const fetchAvailableCoupons = async () => {
                 setIsLoading(true);
                 try {
@@ -48,8 +58,8 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
     };
 
     return (
-        <div className="w-full h-full fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
-            <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 flex flex-col max-h-[90vh] sm:max-h-[85vh]">
+        <div className="w-full h-full fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 sm:p-6">
+            <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[80vh] sm:max-h-[85vh]">
                 
                 {/* Header (Sticky) */}
                 <div className="p-4 sm:p-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">

@@ -15,6 +15,9 @@ export const UiText = {
   CLOUDINARY_ATTACHED: "✓ Cloudinary Image Attached",
   SIZE_LIMIT_ERROR: "File size must be under 5MB.",
   UPLOAD_FAILED: "Upload failed. Try again.",
+  REMOVE_IMAGE: "Remove",
+  AUTO_SAVED: "✓ Auto-saved",
+  DELETE_FAILED: "Old image removal from cloud failed (non-critical).",
   FILTER_TAGS: "Filter tags…",
   LOADING_PRODUCTS: "Loading products from your store…",
   NO_MATCHING_TAGS: "No matching tags. Try a different search.",
@@ -40,6 +43,8 @@ export const UiText = {
   NO_HOTSPOTS:
     "No hotspots added. Press Add Hotspot or click the image above to place interactive tags.",
   NO_LINKS: "No links yet. Click Add Link.",
+  LINK: "Link",
+
   NO_POLICIES: "No policies match your search.",
   NO_POLICIES_FOUND: "No policies found. Create your first one.",
   LOADING_POLICIES: "Loading policies...",

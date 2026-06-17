@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useReducer } from "react";
 import {
   Key,
   ShieldCheck,
@@ -11,8 +11,6 @@ import {
   LogOut,
   AlertTriangle,
   Trash2,
-  EyeOff,
-  Eye,
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
@@ -22,12 +20,12 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { OtpVerificationModal } from "@/components/common/OtpVerificationModal";
 import AxiosAPI from "@/lib/axios";
-import { getCompanyDomain } from "@/lib/get-domain";
 import { logOut } from "@/lib/features/auth/authSlice";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
+import { SETTINGS_PAGE_TEXT } from "@/constants/customerText";
 
-// Dummy Session Data
+// Session Data
 const activeSessions = [
   {
     id: 1,
@@ -58,230 +56,273 @@ const activeSessions = [
   },
 ];
 
+export enum SettingsActionType {
+  SET_2FA_ENABLED = "SET_2FA_ENABLED",
+  SET_CONFIRM_MODAL_OPEN = "SET_CONFIRM_MODAL_OPEN",
+  SET_CONFIRM_MODAL_CONFIG = "SET_CONFIRM_MODAL_CONFIG",
+  SET_PROCESSING = "SET_PROCESSING",
+  SET_OTP_MODAL_OPEN = "SET_OTP_MODAL_OPEN",
+  SET_OTP_ACTION_TARGET = "SET_OTP_ACTION_TARGET",
+}
+
+interface SettingsState {
+  is2FAEnabled: boolean;
+  isConfirmModalOpen: boolean;
+  confirmModalConfig: any;
+  isProcessing: boolean;
+  isOtpModalOpen: boolean;
+  otpActionTarget: "deactivate" | "delete";
+}
+
+type SettingsAction =
+  | { type: SettingsActionType.SET_2FA_ENABLED; payload: boolean }
+  | { type: SettingsActionType.SET_CONFIRM_MODAL_OPEN; payload: boolean }
+  | { type: SettingsActionType.SET_CONFIRM_MODAL_CONFIG; payload: any }
+  | { type: SettingsActionType.SET_PROCESSING; payload: boolean }
+  | { type: SettingsActionType.SET_OTP_MODAL_OPEN; payload: boolean }
+  | { type: SettingsActionType.SET_OTP_ACTION_TARGET; payload: "deactivate" | "delete" };
+
+const settingsReducer = (state: SettingsState, action: SettingsAction): SettingsState => {
+  switch (action.type) {
+    case SettingsActionType.SET_2FA_ENABLED:
+      return { ...state, is2FAEnabled: action.payload };
+    case SettingsActionType.SET_CONFIRM_MODAL_OPEN:
+      return { ...state, isConfirmModalOpen: action.payload };
+    case SettingsActionType.SET_CONFIRM_MODAL_CONFIG:
+      return { ...state, confirmModalConfig: action.payload };
+    case SettingsActionType.SET_PROCESSING:
+      return { ...state, isProcessing: action.payload };
+    case SettingsActionType.SET_OTP_MODAL_OPEN:
+      return { ...state, isOtpModalOpen: action.payload };
+    case SettingsActionType.SET_OTP_ACTION_TARGET:
+      return { ...state, otpActionTarget: action.payload };
+    default:
+      return state;
+  }
+};
+
 export default function SecuritySettingsPage() {
   const { user } = useAppSelector((state: RootState) => state.auth);
-  const [is2FAEnabled, setIs2FAEnabled] = useState(true);
+  const [state, dispatchSettings] = useReducer(settingsReducer, {
+    is2FAEnabled: true,
+    isConfirmModalOpen: false,
+    confirmModalConfig: {},
+    isProcessing: false,
+    isOtpModalOpen: false,
+    otpActionTarget: "deactivate",
+  });
+
   const dispatch = useAppDispatch();
   const router = useRouter();
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalConfig, setModalConfig] = useState<any>({});
-  const [isProcessing, setIsProcessing] = useState(false);
-  // Confirmation Modal State
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [confirmModalConfig, setConfirmModalConfig] = useState<any>({});
-
-  // OTP Modal State
-  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
-  const [otpActionTarget, setOtpActionTarget] = useState<
-    "deactivate" | "delete"
-  >("deactivate");
-  // --- Actions ---
 
   const handleDeactivateClick = () => {
-    setConfirmModalConfig({
-      title: "Deactivate Account?",
-      message:
-        "Your profile, orders, and data will be hidden. You can reactivate your account at any time by logging back in. We will send a verification code to your email to confirm this action.",
-      actionType: "suspend",
-      confirmText: "Send Verification Code",
-      onConfirm: async () => {
-        setIsProcessing(true);
-        const res = await AxiosAPI.post(`/v1/users/${user?.id}/deactivate`);
+    dispatchSettings({
+      type: SettingsActionType.SET_CONFIRM_MODAL_CONFIG,
+      payload: {
+        title: SETTINGS_PAGE_TEXT.DEACTIVATE_CONFIRM_TITLE,
+        message: SETTINGS_PAGE_TEXT.DEACTIVATE_CONFIRM_MSG,
+        actionType: "suspend",
+        confirmText: SETTINGS_PAGE_TEXT.DEACTIVATE_CONFIRM_ACTION,
+        onConfirm: async () => {
+          dispatchSettings({ type: SettingsActionType.SET_PROCESSING, payload: true });
+          await AxiosAPI.post(`/v1/users/${user?.id}/deactivate`);
+          dispatchSettings({ type: SettingsActionType.SET_PROCESSING, payload: false });
+          dispatchSettings({ type: SettingsActionType.SET_CONFIRM_MODAL_OPEN, payload: false });
 
-        setIsProcessing(false);
-        setIsConfirmModalOpen(false);
-
-        // 2. Open OTP Modal
-        setOtpActionTarget("deactivate");
-        setIsOtpModalOpen(true);
+          // Open OTP Modal
+          dispatchSettings({ type: SettingsActionType.SET_OTP_ACTION_TARGET, payload: "deactivate" });
+          dispatchSettings({ type: SettingsActionType.SET_OTP_MODAL_OPEN, payload: true });
+        },
       },
     });
-    setIsConfirmModalOpen(true);
+    dispatchSettings({ type: SettingsActionType.SET_CONFIRM_MODAL_OPEN, payload: true });
   };
 
-  // --- Phase 2: Verify OTP and Execute Action ---
   const handleVerifyOtp = async (otpCode: string) => {
-    setIsProcessing(true);
+    dispatchSettings({ type: SettingsActionType.SET_PROCESSING, payload: true });
     try {
       const res = await AxiosAPI.patch(
         `/v1/users/${user?.id}/deactivate/confirm`,
         { otp: otpCode },
       );
-      if (res.data.status == 200) {
+      if (res.data.status === 200) {
         dispatch(logOut());
         router.push("/");
-        setIsOtpModalOpen(false);
+        dispatchSettings({ type: SettingsActionType.SET_OTP_MODAL_OPEN, payload: false });
       } else {
-        toast.error("Invalid OTP");
+        toast.error(SETTINGS_PAGE_TEXT.INVALID_OTP);
         setTimeout(() => {
-          setIsOtpModalOpen(false);
+          dispatchSettings({ type: SettingsActionType.SET_OTP_MODAL_OPEN, payload: false });
         }, 2000);
       }
     } catch (error) {
-      toast.error("Invalid OTP");
+      toast.error(SETTINGS_PAGE_TEXT.INVALID_OTP);
       setTimeout(() => {
-        setIsOtpModalOpen(false);
+        dispatchSettings({ type: SettingsActionType.SET_OTP_MODAL_OPEN, payload: false });
       }, 2000);
     } finally {
-      setIsProcessing(false);
+      dispatchSettings({ type: SettingsActionType.SET_PROCESSING, payload: false });
     }
   };
 
   const handleResendOtp = async () => {
-    const res = await AxiosAPI.post(`/v1/users/${user?.id}/deactivate`);
+    await AxiosAPI.post(`/v1/users/${user?.id}/deactivate`);
   };
 
   const handleDeleteClick = () => {
-    setConfirmModalConfig({
-      title: "Permanently Delete Account?",
-      message:
-        "Warning: This action is irreversible. All your data, order history, and preferences will be permanently erased.",
-      actionType: "danger",
-      confirmText: "Delete Forever",
-      onConfirm: async () => {
-        setIsProcessing(true);
-        // Simulate API call
-        await new Promise((res) => setTimeout(res, 1500));
-        setIsProcessing(false);
-        setIsConfirmModalOpen(false);
-        // Redirect to logout/home
+    dispatchSettings({
+      type: SettingsActionType.SET_CONFIRM_MODAL_CONFIG,
+      payload: {
+        title: SETTINGS_PAGE_TEXT.DELETE_CONFIRM_TITLE,
+        message: SETTINGS_PAGE_TEXT.DELETE_CONFIRM_MSG,
+        actionType: "danger",
+        confirmText: SETTINGS_PAGE_TEXT.DELETE_CONFIRM_ACTION,
+        onConfirm: async () => {
+          dispatchSettings({ type: SettingsActionType.SET_PROCESSING, payload: true });
+          await new Promise((res) => setTimeout(res, 1500));
+          dispatchSettings({ type: SettingsActionType.SET_PROCESSING, payload: false });
+          dispatchSettings({ type: SettingsActionType.SET_CONFIRM_MODAL_OPEN, payload: false });
+        },
       },
     });
-    setIsConfirmModalOpen(true);
+    dispatchSettings({ type: SettingsActionType.SET_CONFIRM_MODAL_OPEN, payload: true });
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto pb-12">
+    <div className="w-full max-w-4xl mx-auto pb-12 font-sans text-left px-4 lg:px-8">
       <Toaster />
+      
+      {/* Mobile Header */}
       <div className="flex items-start gap-3 my-4 sm:hidden shrink-0">
         <button
           onClick={() => router.back()}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
           aria-label="Go back"
         >
           <ChevronLeft size={20} />
         </button>
         <div className="flex flex-col gap-0 shrink">
-          <h1 className="font-bold text-theme-h5 text-gray-900">Login & Security</h1>
-          <p className="text-theme-body-sm text-gray-500 text-wrap">
-            Manage your password, active sessions, and secure your account.
+          <h1 className="font-bold text-base text-foreground tracking-tight">{SETTINGS_PAGE_TEXT.TITLE}</h1>
+          <p className="text-xs text-muted-foreground text-wrap">
+            {SETTINGS_PAGE_TEXT.SUBTITLE}
           </p>
         </div>
       </div>
-      {/* Header */}
-      <div className="mb-8 hidden lg:block">
-        <h1 className="text-theme-h4 font-bold text-gray-900">Login & Security</h1>
-        <p className="text-theme-body-sm text-gray-500 mt-1">
-          Manage your password, active sessions, and secure your account.
+
+      {/* Desktop Header */}
+      <div className="mb-8 hidden sm:block">
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{SETTINGS_PAGE_TEXT.TITLE}</h1>
+        <p className="text-xs text-muted-foreground mt-1">
+          {SETTINGS_PAGE_TEXT.SUBTITLE}
         </p>
       </div>
+
       {/* --- SECTION 1: Password Management --- */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
-        <div className="p-6 border-b border-gray-100 flex items-center gap-3 justify-between">
-          <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden mb-6">
+        <div className="p-6 border-b border-border flex items-center gap-4 justify-between">
+          <div className="p-2.5 bg-secondary text-primary rounded-xl shrink-0">
             <Key size={20} />
           </div>
-          <div className="flex-1">
-            <h2 className="text-theme-h6 font-bold text-gray-800">Change Password</h2>
-            <p className="text-theme-body-sm text-gray-500">
-              Ensure your account is using a long, random password to stay
-              secure.
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xs sm:text-sm font-bold text-foreground">{SETTINGS_PAGE_TEXT.CHANGE_PASSWORD_TITLE}</h2>
+            <p className="text-xs text-muted-foreground truncate mt-0.5">
+              {SETTINGS_PAGE_TEXT.CHANGE_PASSWORD_DESC}
             </p>
           </div>
           <Link
             href={`/customer/${user?.id}/changePassword`}
-            className="text-blue-600 hover:text-blue-700 font-medium text-theme-body-sm transition-colors flex items-center gap-1"
+            className="text-primary hover:text-primary/80 font-bold text-xs transition-all flex items-center gap-1 shrink-0"
           >
-            Change <ChevronRight size={16} />
+            {SETTINGS_PAGE_TEXT.CHANGE_PASSWORD_ACTION} <ChevronRight size={16} />
           </Link>
         </div>
       </div>
+
       {/* --- SECTION 2: Two-Factor Authentication --- */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden mb-6 font-sans">
         <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div
-              className={`p-2 rounded-xl ${is2FAEnabled ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-500"}`}
+              className={`p-2.5 rounded-xl shrink-0 ${state.is2FAEnabled ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-secondary text-muted-foreground"}`}
             >
               <ShieldCheck size={20} />
             </div>
             <div>
-              <h2 className="text-theme-h6 font-bold text-gray-800">
-                Two-Step Verification (2FA)
+              <h2 className="text-xs sm:text-sm font-bold text-foreground">
+                {SETTINGS_PAGE_TEXT.TWO_FA_TITLE}
               </h2>
-              <p className="text-theme-body-sm text-gray-500 mt-0.5">
-                Add an extra layer of security to your account.
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {SETTINGS_PAGE_TEXT.TWO_FA_DESC}
               </p>
             </div>
           </div>
           <div>
-            {is2FAEnabled ? (
+            {state.is2FAEnabled ? (
               <button
-                onClick={() => setIs2FAEnabled(false)}
-                className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold text-theme-body-sm px-5 py-2.5 rounded-xl transition-colors"
+                onClick={() => dispatchSettings({ type: SettingsActionType.SET_2FA_ENABLED, payload: false })}
+                className="border border-border bg-transparent text-foreground hover:bg-secondary font-semibold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-sm"
               >
-                Manage 2FA
+                {SETTINGS_PAGE_TEXT.TWO_FA_MANAGE}
               </button>
             ) : (
               <button
-                onClick={() => setIs2FAEnabled(true)}
-                className="bg-gray-900 hover:bg-gray-800 text-white font-semibold text-theme-body-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+                onClick={() => dispatchSettings({ type: SettingsActionType.SET_2FA_ENABLED, payload: true })}
+                className="bg-foreground hover:bg-foreground/90 text-background font-semibold text-xs px-5 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
               >
-                Enable 2FA
+                {SETTINGS_PAGE_TEXT.TWO_FA_ENABLE}
               </button>
             )}
           </div>
         </div>
-        {is2FAEnabled && (
-          <div className="bg-emerald-50/50 border-t border-emerald-100 p-4 px-6 flex items-center gap-2 text-theme-body-sm text-emerald-800">
-            <ShieldCheck size={16} className="text-emerald-600" />
-            Two-step verification is currently active using your Authenticator
-            App.
+        {state.is2FAEnabled && (
+          <div className="bg-emerald-50/20 border-t border-emerald-500/10 p-4 px-6 flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400">
+            <ShieldCheck size={16} className="text-emerald-500 shrink-0" />
+            <span>{SETTINGS_PAGE_TEXT.TWO_FA_ACTIVE}</span>
           </div>
         )}
       </div>
+
       {/* --- SECTION 3: Active Sessions (Login History) --- */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-50 text-purple-600 rounded-xl">
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden mb-6 font-sans">
+        <div className="p-6 border-b border-border flex justify-between items-center gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-2.5 bg-secondary text-primary rounded-xl shrink-0">
               <History size={20} />
             </div>
             <div>
-              <h2 className="text-theme-h6 font-bold text-gray-800">
-                Where You're Logged In
+              <h2 className="text-xs sm:text-sm font-bold text-foreground">
+                {SETTINGS_PAGE_TEXT.SESSIONS_TITLE}
               </h2>
-              <p className="text-theme-body-sm text-gray-500">
-                We'll alert you if anyone logs into your account from a new
-                device.
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {SETTINGS_PAGE_TEXT.SESSIONS_DESC}
               </p>
             </div>
           </div>
-          <button className="hidden sm:flex text-theme-body-sm font-semibold text-blue-600 hover:text-blue-700 items-center gap-1.5">
-            <LogOut size={16} /> Log out all devices
+          <button className="hidden sm:flex text-xs font-bold text-primary hover:text-primary/80 items-center gap-1.5 cursor-pointer">
+            <LogOut size={16} /> {SETTINGS_PAGE_TEXT.LOGOUT_ALL_DEVICES}
           </button>
         </div>
-        <div className="divide-y divide-gray-100">
+        
+        <div className="divide-y divide-border">
           {activeSessions.map((session) => (
             <div
               key={session.id}
-              className="p-6 flex items-start justify-between hover:bg-gray-50/50 transition-colors"
+              className="p-6 flex items-start justify-between gap-4 hover:bg-secondary/20 transition-all"
             >
               <div className="flex items-start gap-4">
-                <div className="mt-1 text-gray-400">
+                <div className="mt-1 text-muted-foreground/80 shrink-0">
                   <session.icon size={24} />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800 text-theme-body-sm flex items-center gap-2">
+                  <p className="font-bold text-foreground text-xs sm:text-sm flex items-center gap-2 flex-wrap">
                     {session.device}
                     {session.isCurrent && (
-                      <span className="bg-emerald-100 text-emerald-700 text-theme-tiny uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
-                        This Device
+                      <span className="bg-emerald-100 text-emerald-700 text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border border-emerald-200">
+                        {SETTINGS_PAGE_TEXT.THIS_DEVICE}
                       </span>
                     )}
                   </p>
-                  <div className="flex items-center gap-3 mt-1 text-theme-caption text-gray-500">
+                  <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <MapPin size={12} /> {session.location}
                     </span>
@@ -291,86 +332,87 @@ export default function SecuritySettingsPage() {
                 </div>
               </div>
               {!session.isCurrent && (
-                <button className="text-theme-body-sm font-medium text-gray-500 hover:text-red-600 transition-colors">
-                  Log out
+                <button className="text-xs font-semibold text-muted-foreground hover:text-destructive transition-colors cursor-pointer">
+                  {SETTINGS_PAGE_TEXT.LOGOUT_DEVICE}
                 </button>
               )}
             </div>
           ))}
         </div>
-        <div className="p-4 bg-gray-50 border-t border-gray-100 sm:hidden">
-          <button className="w-full justify-center flex text-theme-body-sm font-semibold text-blue-600 hover:text-blue-700 items-center gap-1.5">
-            <LogOut size={16} /> Log out all devices
+        
+        <div className="p-4 bg-secondary/30 border-t border-border sm:hidden flex justify-center">
+          <button className="w-full justify-center flex text-xs font-bold text-primary hover:text-primary/80 items-center gap-1.5 cursor-pointer">
+            <LogOut size={16} /> {SETTINGS_PAGE_TEXT.LOGOUT_ALL_DEVICES}
           </button>
         </div>
       </div>
+
       {/* --- SECTION 4: Danger Zone --- */}
-      <div className="bg-white rounded-2xl border border-red-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-red-100 bg-red-50/30">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-100 text-red-600 rounded-xl">
+      <div className="bg-card rounded-2xl border border-destructive/20 shadow-sm overflow-hidden font-sans">
+        <div className="p-6 border-b border-destructive/15 bg-destructive/10">
+          <div className="flex items-center gap-4">
+            <div className="p-2.5 bg-destructive/20 text-destructive rounded-xl shrink-0 border border-destructive/10">
               <AlertTriangle size={20} />
             </div>
             <div>
-              <h2 className="text-theme-h6 font-bold text-red-800">Danger Zone</h2>
-              <p className="text-theme-body-sm text-red-600/80">
-                Account deactivation and deletion settings.
+              <h2 className="text-xs sm:text-sm font-bold text-destructive">{SETTINGS_PAGE_TEXT.DANGER_ZONE_TITLE}</h2>
+              <p className="text-xs text-destructive/80 mt-0.5">
+                {SETTINGS_PAGE_TEXT.DANGER_ZONE_DESC}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100">
+        <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border">
           <div>
-            <h3 className="font-semibold text-gray-800">Deactivate Account</h3>
-            <p className="text-theme-body-sm text-gray-500 mt-0.5 max-w-md">
-              Temporarily hide your profile and data. You can recover your
-              account by logging in again.
+            <h3 className="font-bold text-foreground text-xs sm:text-sm">{SETTINGS_PAGE_TEXT.DEACTIVATE_TITLE}</h3>
+            <p className="text-xs text-muted-foreground mt-1.5 max-w-md leading-relaxed">
+              {SETTINGS_PAGE_TEXT.DEACTIVATE_DESC}
             </p>
           </div>
           <button
             onClick={handleDeactivateClick}
-            className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold text-theme-body-sm px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap cursor-pointer"
+            className="border border-border text-foreground hover:bg-secondary/60 font-semibold text-xs px-5 py-2.5 rounded-xl transition-all whitespace-nowrap cursor-pointer"
           >
-            Deactivate Account
+            {SETTINGS_PAGE_TEXT.DEACTIVATE_ACTION}
           </button>
         </div>
 
         <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h3 className="font-semibold text-gray-800">Delete Account</h3>
-            <p className="text-theme-body-sm text-gray-500 mt-0.5 max-w-md">
-              Permanently delete your account and all associated data. This
-              cannot be undone.
+            <h3 className="font-bold text-foreground text-xs sm:text-sm">{SETTINGS_PAGE_TEXT.DELETE_TITLE}</h3>
+            <p className="text-xs text-muted-foreground mt-1.5 max-w-md leading-relaxed">
+              {SETTINGS_PAGE_TEXT.DELETE_DESC}
             </p>
           </div>
           <button
             onClick={handleDeleteClick}
-            className="bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-theme-body-sm px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2 whitespace-nowrap cursor-pointer"
+            className="bg-destructive/10 hover:bg-destructive/20 border border-destructive/20 text-destructive font-semibold text-xs px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer active:scale-95"
           >
-            <Trash2 size={16} /> Delete Account
+            <Trash2 size={16} /> {SETTINGS_PAGE_TEXT.DELETE_ACTION}
           </button>
         </div>
       </div>
+
       <ConfirmationModal
-        isOpen={isConfirmModalOpen}
-        onClose={() => setIsConfirmModalOpen(false)}
-        onConfirm={confirmModalConfig.onConfirm}
-        title={confirmModalConfig.title}
-        message={confirmModalConfig.message}
-        actionType={confirmModalConfig.actionType}
-        confirmText={confirmModalConfig.confirmText}
-        isLoading={isProcessing}
+        isOpen={state.isConfirmModalOpen}
+        onClose={() => dispatchSettings({ type: SettingsActionType.SET_CONFIRM_MODAL_OPEN, payload: false })}
+        onConfirm={state.confirmModalConfig.onConfirm}
+        title={state.confirmModalConfig.title}
+        message={state.confirmModalConfig.message}
+        actionType={state.confirmModalConfig.actionType}
+        confirmText={state.confirmModalConfig.confirmText}
+        isLoading={state.isProcessing}
       />
-      {/* Phase 2: OTP Entry Modal */}
+      
       <OtpVerificationModal
-        isOpen={isOtpModalOpen}
-        onClose={() => !isProcessing && setIsOtpModalOpen(false)}
+        isOpen={state.isOtpModalOpen}
+        onClose={() => !state.isProcessing && dispatchSettings({ type: SettingsActionType.SET_OTP_MODAL_OPEN, payload: false })}
         onVerify={handleVerifyOtp}
         onResend={handleResendOtp}
         emailMasked={user?.email || ""}
-        isLoading={isProcessing}
-        actionType={otpActionTarget}
+        isLoading={state.isProcessing}
+        actionType={state.otpActionTarget}
       />
     </div>
   );

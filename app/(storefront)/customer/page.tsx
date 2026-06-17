@@ -30,7 +30,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { useAppSelector, useAppDispatch } from "@/hooks/reduxHooks";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useReducer } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { logOut, openLoginModal } from "@/lib/features/auth/authSlice";
 
@@ -38,9 +38,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AxiosAPI from "@/lib/axios";
 import { DASHBOARD_TEXT } from "@/constants/customerText";
-import { useThemeData } from "@/hooks/useThemeData";
-import { BRAND_LOGO } from "@/constants/common";
-import { ProfileSidebar } from "@/components/customer/ProfileSidebar";
+
 import {
   ProfileSidebarLink,
   IS_AUTHENTICATED_KEY,
@@ -1265,6 +1263,47 @@ export function CustomerDashboardContent({
 
 // ─── Main Route Export ─────────────────────────────────────────────────────────
 
+export enum DashboardActionType {
+  SET_IS_CLIENT_MOUNTED = "SET_IS_CLIENT_MOUNTED",
+  SET_DASHBOARD_DATA = "SET_DASHBOARD_DATA",
+  SET_LOADING = "SET_LOADING",
+  SET_ERROR = "SET_ERROR",
+}
+
+interface DashboardState {
+  isClientMounted: boolean;
+  dashboardData: CustomerDashboardPayloadDTO | null;
+  loading: boolean;
+  error: string | null;
+}
+
+type DashboardAction =
+  | { type: DashboardActionType.SET_IS_CLIENT_MOUNTED; payload: boolean }
+  | {
+      type: DashboardActionType.SET_DASHBOARD_DATA;
+      payload: CustomerDashboardPayloadDTO | null;
+    }
+  | { type: DashboardActionType.SET_LOADING; payload: boolean }
+  | { type: DashboardActionType.SET_ERROR; payload: string | null };
+
+const dashboardReducer = (
+  state: DashboardState,
+  action: DashboardAction,
+): DashboardState => {
+  switch (action.type) {
+    case DashboardActionType.SET_IS_CLIENT_MOUNTED:
+      return { ...state, isClientMounted: action.payload };
+    case DashboardActionType.SET_DASHBOARD_DATA:
+      return { ...state, dashboardData: action.payload };
+    case DashboardActionType.SET_LOADING:
+      return { ...state, loading: action.payload };
+    case DashboardActionType.SET_ERROR:
+      return { ...state, error: action.payload };
+    default:
+      return state;
+  }
+};
+
 export default function UserProfilePage() {
   const { user } = useAppSelector((state) => state.auth);
   const { wishItems } = useAppSelector(
@@ -1272,18 +1311,22 @@ export default function UserProfilePage() {
   );
 
   const dispatch = useAppDispatch();
-  const [isClientMounted, setIsClientMounted] = useState(false);
-  const [dashboardData, setDashboardData] =
-    useState<CustomerDashboardPayloadDTO | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [state, dispatchDashboard] = useReducer(dashboardReducer, {
+    isClientMounted: false,
+    dashboardData: null,
+    loading: true,
+    error: null,
+  });
 
   useEffect(() => {
-    setIsClientMounted(true);
+    dispatchDashboard({
+      type: DashboardActionType.SET_IS_CLIENT_MOUNTED,
+      payload: true,
+    });
   }, []);
 
   useEffect(() => {
-    if (!isClientMounted) return;
+    if (!state.isClientMounted) return;
 
     // Check localStorage directly to prevent false modal trigger during Redux hydration
     const isAuthRaw = localStorage.getItem(IS_AUTHENTICATED_KEY);
@@ -1293,64 +1336,76 @@ export default function UserProfilePage() {
     if (!parsedAuth?.isAuthenticated || !serializedUser) {
       dispatch(openLoginModal(null));
     }
-  }, [isClientMounted, user, dispatch]);
+  }, [state.isClientMounted, user, dispatch]);
 
   const fetchData = async () => {
     if (!user) return;
-    setLoading(true);
-    setError(null);
+    dispatchDashboard({ type: DashboardActionType.SET_LOADING, payload: true });
+    dispatchDashboard({ type: DashboardActionType.SET_ERROR, payload: null });
     try {
       const response = await AxiosAPI.get(`/v1/customers/dashboard/${user.id}`);
       const res = response.data;
-      console.log(res, "res");
+
       if (res.status === 200 || res.success) {
-        setDashboardData(res.data);
+        dispatchDashboard({
+          type: DashboardActionType.SET_DASHBOARD_DATA,
+          payload: res.data,
+        });
       } else {
         throw new Error(res.message || "Failed to load dashboard data");
       }
     } catch (err: any) {
-      setError(err.message || "Failed to load dashboard data");
+      dispatchDashboard({
+        type: DashboardActionType.SET_ERROR,
+        payload: err.message || "Failed to load dashboard data",
+      });
       // Fallback
-      setDashboardData({
-        profile: {
-          id: user.id || "",
-          firstName: user.first_name || "Guest",
-          lastName: user.last_name || "",
-          email: user.email || "",
-          phoneNumber: user.phone_number,
-          avatarUrl:
-            "profile_picture_url" in user && user.profile_picture_url
-              ? (user.profile_picture_url as string)
-              : null,
-          memberSinceDate:
-            "created_at" in user && user.created_at
-              ? new Date(user.created_at).toISOString()
-              : new Date("2026-06-01").toISOString(),
-          verification: {
-            isVerified: true,
+      dispatchDashboard({
+        type: DashboardActionType.SET_DASHBOARD_DATA,
+        payload: {
+          profile: {
+            id: user.id || "",
+            firstName: user.first_name || "Guest",
+            lastName: user.last_name || "",
+            email: user.email || "",
+            phoneNumber: user.phone_number,
+            avatarUrl:
+              "profile_picture_url" in user && user.profile_picture_url
+                ? (user.profile_picture_url as string)
+                : null,
+            memberSinceDate:
+              "created_at" in user && user.created_at
+                ? new Date(user.created_at).toISOString()
+                : new Date("2026-06-01").toISOString(),
+            verification: {
+              isVerified: true,
+            },
           },
-        },
-        stats: {
-          totalOrders: 0,
-          wishlistCount: wishItems.length || 0,
-          reviewsCount: 0,
-        },
-        addressesInfo: {
-          hasDefaultAddress: false,
-          defaultAddress: null,
-        },
-        securityStatus: {
-          passwordLastUpdated: new Date().toISOString(),
-          mfaEnabled: false,
-        },
-        notificationsPreferences: {
-          emailAlertsEnabled: true,
-          pushAlertsEnabled: true,
-          smsAlertsEnabled: false,
+          stats: {
+            totalOrders: 0,
+            wishlistCount: wishItems.length || 0,
+            reviewsCount: 0,
+          },
+          addressesInfo: {
+            hasDefaultAddress: false,
+            defaultAddress: null,
+          },
+          securityStatus: {
+            passwordLastUpdated: new Date().toISOString(),
+            mfaEnabled: false,
+          },
+          notificationsPreferences: {
+            emailAlertsEnabled: true,
+            pushAlertsEnabled: true,
+            smsAlertsEnabled: false,
+          },
         },
       });
     } finally {
-      setLoading(false);
+      dispatchDashboard({
+        type: DashboardActionType.SET_LOADING,
+        payload: false,
+      });
     }
   };
 
@@ -1358,13 +1413,13 @@ export default function UserProfilePage() {
     fetchData();
   }, [user]);
 
-  if (!user || !dashboardData) return null;
+  if (!user || !state.dashboardData) return null;
 
   return (
     <CustomerDashboardContent
-      data={dashboardData}
-      isLoading={loading}
-      error={error}
+      data={state.dashboardData}
+      isLoading={state.loading}
+      error={state.error}
       onRetry={fetchData}
     />
   );
