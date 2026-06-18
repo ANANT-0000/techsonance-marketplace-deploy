@@ -2,17 +2,28 @@
 import { useState, useEffect, useCallback } from "react";
 import AxiosAPI from "@/lib/axios";
 import { NAV_LINKS } from "@/constants/customer";
-import { getCachedData, cacheData, subscribeLocaleChange } from "@/utils/cache";
+
 import { LANG_KEY, NAVBAR_CACHE_KEY } from "@/constants";
 import {
   CMS_L1_NAV_PAYLOAD,
   CMS_L2_MEGA_PAYLOAD,
-  ColumnTypeEnum,
   L1NavbarPayload,
   L2MegaMenuPayload,
   LogoAlignmentEnum,
   NavbarPositionEnum,
 } from "@/constants/storefront";
+import {
+  ColType,
+  NavItemDisplayType,
+} from "@/components/vendor/cms/CmsNavbarTab";
+import { UiText } from "@/constants/ui-text";
+import {
+  getCachedData,
+  cacheData,
+  subscribeLocaleChange,
+  clearCachedData,
+  subscribeNavbarChange,
+} from "@/utils/cache";
 
 // ─── Response shape returned by GET /v1/navbar ───────────────────────────────
 interface NavbarApiSettings {
@@ -32,16 +43,17 @@ interface NavbarApiSettings {
 }
 
 interface NavItemMetaApi {
-  display_type?: "category_listing" | "dynamic_subcategories" | "product_ranges";
+  display_type?: NavItemDisplayType;
   show_category_icons?: boolean;
   parent_category_id?: string;
-  col_type?: "subcategories" | "brands" | "promotion";
+  col_type?: ColType;
   col_title?: string;
   promo_image_url?: string;
   promo_title?: string;
   promo_subtitle?: string;
   promo_cta_href?: string;
   icon_url?: string;
+  product_ids?: string[];
 }
 
 interface NavItemApi {
@@ -96,8 +108,10 @@ function transformApiResponse(data: NavbarApiResponse): {
     },
     searchBar: {
       isVisible: s.search_visible ?? true,
-      placeholder: s.search_placeholder || CMS_L1_NAV_PAYLOAD.searchBar.placeholder,
-      searchEndpoint: s.search_endpoint || CMS_L1_NAV_PAYLOAD.searchBar.searchEndpoint,
+      placeholder:
+        s.search_placeholder || CMS_L1_NAV_PAYLOAD.searchBar.placeholder,
+      searchEndpoint:
+        s.search_endpoint || CMS_L1_NAV_PAYLOAD.searchBar.searchEndpoint,
     },
     utilities: {
       showAccount: s.show_account ?? true,
@@ -120,21 +134,23 @@ function transformApiResponse(data: NavbarApiResponse): {
     l2[item.id] = item.megaMenuColumns.map((col) => {
       const m = col.meta;
       const colType =
-        m.col_type?.toLowerCase() === "brands"
-          ? ColumnTypeEnum.BRANDS
-          : m.col_type?.toLowerCase() === "promotion"
-          ? ColumnTypeEnum.PROMOTION
-          : ColumnTypeEnum.SUBCATEGORIES;
+        m.col_type?.toLowerCase() === ColType.BRANDS
+          ? ColType.BRANDS
+          : m.col_type?.toLowerCase() === ColType.PROMOTION
+            ? ColType.PROMOTION
+            : m.col_type?.toLowerCase() === ColType.PRODUCTS
+              ? ColType.PRODUCTS
+              : ColType.SUBCATEGORIES;
 
-      if (colType === ColumnTypeEnum.PROMOTION) {
+      if (colType === ColType.PROMOTION) {
         return {
-          type: ColumnTypeEnum.PROMOTION,
+          type: ColType.PROMOTION,
           title: m.col_title || col.label,
           promotion: {
             imageUrl: m.promo_image_url || "",
             title: m.promo_title || col.label,
             subtitle: m.promo_subtitle || "",
-            ctaText: "Shop Now",
+            ctaText: UiText.SHOP_NOW,
             ctaHref: m.promo_cta_href || "/store",
           },
         };
@@ -155,7 +171,8 @@ function transformApiResponse(data: NavbarApiResponse): {
 export function useNavbarData() {
   const [lang, setLang] = useState<string>("en");
   const [l1Config, setL1Config] = useState<L1NavbarPayload>(CMS_L1_NAV_PAYLOAD);
-  const [l2Config, setL2Config] = useState<L2MegaMenuPayload>(CMS_L2_MEGA_PAYLOAD);
+  const [l2Config, setL2Config] =
+    useState<L2MegaMenuPayload>(CMS_L2_MEGA_PAYLOAD);
   const [menuLinks, setMenuLinks] = useState<any[]>(NAV_LINKS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -171,40 +188,51 @@ export function useNavbarData() {
     return unsubscribe;
   }, []);
 
-  const fetchNavbar = useCallback(async (currentLang: string) => {
-    setIsLoading(true);
-    const cacheKey = `${NAVBAR_CACHE_KEY}_relational_${currentLang}`;
-    const cached = getCachedData(cacheKey);
-    if (cached) {
-      setL1Config(cached.l1);
-      setL2Config(cached.l2);
-      setNavbarConfig(cached.raw);
-      setMenuLinks(cached.l1.navigationItems);
-      setIsLoading(false);
-      return;
-    }
+  const fetchNavbar = useCallback(
+    async (currentLang: string, forceRefresh = false) => {
+      setIsLoading(true);
+      const cacheKey = `${NAVBAR_CACHE_KEY}_relational_${currentLang}`;
 
-    try {
-      const res = await AxiosAPI.get(`/v1/navbar`);
-      const data: NavbarApiResponse = res.data?.data ?? res.data;
-
-      if (data?.navigationItems) {
-        const { l1, l2 } = transformApiResponse(data);
-        setL1Config(l1);
-        setL2Config(l2);
-        setNavbarConfig(data);
-        setMenuLinks(l1.navigationItems);
-        cacheData(cacheKey, { l1, l2, raw: data });
+      if (!forceRefresh) {
+        const cached = getCachedData(cacheKey);
+        if (cached) {
+          setL1Config(cached.l1);
+          setL2Config(cached.l2);
+          setNavbarConfig(cached.raw);
+          setMenuLinks(cached.l1.navigationItems);
+          setIsLoading(false);
+          return;
+        }
+      } else {
+        clearCachedData(cacheKey);
       }
-    } catch {
-      // On fetch failure keep defaults already set in state
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+
+      try {
+        const res = await AxiosAPI.get(`/v1/navbar`);
+        const data: NavbarApiResponse = res.data?.data ?? res.data;
+
+        if (data?.navigationItems) {
+          const { l1, l2 } = transformApiResponse(data);
+          setL1Config(l1);
+          setL2Config(l2);
+          setNavbarConfig(data);
+          setMenuLinks(l1.navigationItems);
+          cacheData(cacheKey, { l1, l2, raw: data });
+        }
+      } catch {
+        // On fetch failure keep defaults already set in state
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
-    fetchNavbar(lang);
+    const unsubscribe = subscribeNavbarChange(() => {
+      fetchNavbar(lang, true);
+    });
+    return unsubscribe;
   }, [lang, fetchNavbar]);
 
   // Return everything the existing Navbar.tsx + any other consumers expect

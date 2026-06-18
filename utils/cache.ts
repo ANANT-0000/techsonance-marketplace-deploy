@@ -87,3 +87,23 @@ export const subscribeLocaleChange = (callback: (lang: string) => void) => {
     window.removeEventListener("storage", handleStorage);
   };
 };
+const NAVBAR_CHANGE_EVENT = "techsonance_navbar_change";
+
+export const clearCachedData = (key: string) => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(key);
+  } catch {}
+};
+
+export const dispatchNavbarChange = () => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(NAVBAR_CHANGE_EVENT));
+};
+
+export const subscribeNavbarChange = (callback: () => void) => {
+  if (typeof window === "undefined") return () => {};
+  const handler = () => callback();
+  window.addEventListener(NAVBAR_CHANGE_EVENT, handler);
+  return () => window.removeEventListener(NAVBAR_CHANGE_EVENT, handler);
+};

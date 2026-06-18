@@ -1,3 +1,5 @@
+import { ColType } from "@/components/vendor/cms/CmsNavbarTab";
+
 export const DEFAULT_STORE_NAME = "Marketplace Store";
 export const DEFAULT_FAVICON_PATH = "/favicon.ico";
 export const STORE_SUFFIX = " Store";
@@ -201,14 +203,8 @@ export enum NavbarPositionEnum {
   RELATIVE = "relative",
 }
 
-export enum ColumnType {
-  SUBCATEGORIES = "subcategories",
-  BRANDS = "brands",
-  PROMOTION = "promotion",
-}
-
 /** @deprecated Use ColumnType */
-export const ColumnTypeEnum = ColumnType;
+export const ColumnTypeEnum = ColType;
 
 export interface NavPromoBlock {
   imageUrl: string;
@@ -225,7 +221,7 @@ export interface NavLinkItem {
 }
 
 export interface NavMegaColumn {
-  type: ColumnType;
+  type: ColType;
   title: string;
   items?: NavLinkItem[];
   promotion?: NavPromoBlock;

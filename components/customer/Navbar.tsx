@@ -36,6 +36,7 @@ import {
 } from "@/constants/storefront";
 
 import { useNavbarData } from "@/hooks/useNavbarData";
+import { ColType } from "../vendor/cms/CmsNavbarTab";
 
 // UI Text Constants (strictly preventing hardcoded keys/texts in component logic)
 const NAVBAR_UI_TEXT = {
@@ -376,12 +377,10 @@ export function Navbar({
                           }}
                         >
                           {columns!.map((col, cIdx) => {
-                            const isSubcat =
-                              col.type === ColumnTypeEnum.SUBCATEGORIES;
-                            const isBrands = col.type === ColumnTypeEnum.BRANDS;
-                            const isPromo =
-                              col.type === ColumnTypeEnum.PROMOTION;
-
+                            const isSubcat = col.type === ColType.SUBCATEGORIES;
+                            const isBrands = col.type === ColType.BRANDS;
+                            const isPromo = col.type === ColType.PROMOTION;
+                            const isProducts = col.type === ColType.PRODUCTS;
                             const colKey = `${item.id}-${cIdx}`;
                             const isExpanded = expandedColumns.has(colKey);
                             const allItems = col.items || [];
@@ -402,11 +401,11 @@ export function Navbar({
                                     col.title ? "border-b border-slate-100" : ""
                                   }`}
                                 >
-                                  {col.title || "\u00a0"}
+                                  {col.title || "\u00a0"} 323
                                 </h3>
 
                                 {/* Subcategories and Brands Links rendering */}
-                                {(isSubcat || isBrands) &&
+                                {(isSubcat || isBrands || isProducts) &&
                                   allItems.length > 0 && (
                                     <ul
                                       className={`flex flex-col gap-3 items-start list-none p-0 m-0 w-full ${

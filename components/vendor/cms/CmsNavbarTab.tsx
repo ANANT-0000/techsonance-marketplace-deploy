@@ -30,9 +30,10 @@ import {
   UpsertNavMenuPayload,
   CreateNavItemPayload,
   NavItemMetaPayload,
+  fetchVendorActiveProducts,
 } from "@/utils/vendorApiClient";
 import { authToken } from "@/utils/authToken";
-import { ColumnType } from "@/constants";
+import { dispatchNavbarChange } from "@/utils/cache";
 
 // ─── Local Types ─────────────────────────────────────────────────────────────
 export enum NavItemType {
@@ -66,6 +67,7 @@ export enum ColType {
   SUBCATEGORIES = "subcategories",
   BRANDS = "brands",
   PROMOTION = "promotion",
+  PRODUCTS = "products",
 }
 interface L2Column {
   id: string;
@@ -73,6 +75,8 @@ interface L2Column {
   href: string;
   sort_order: number;
   meta: NavItemMetaPayload;
+  category_id?: string | null;
+  item_type?: NavItemType;
 }
 
 interface L1Item {
@@ -114,8 +118,8 @@ const COL_TYPE_OPTIONS = [
   { value: ColType.SUBCATEGORIES, label: "Subcategory Links" },
   { value: ColType.BRANDS, label: "Brand Links" },
   { value: ColType.PROMOTION, label: "Promotion Banner" },
+  { value: ColType.PRODUCTS, label: "Manual Product Picks" },
 ];
-
 const DISPLAY_TYPE_OPTIONS = [
   {
     value: NavItemDisplayType.CATEGORY_LISTING,
@@ -187,6 +191,7 @@ function SaveBtn({
 function L2ColumnEditor({
   col,
   categories,
+  products,
   menuId,
   token,
   onSaved,
@@ -194,6 +199,7 @@ function L2ColumnEditor({
 }: {
   col: L2Column;
   categories: { id: string; name: string }[];
+  products: { id: string; name: string }[];
   menuId: string;
   token: string;
   onSaved: (updated: L2Column) => void;
@@ -202,6 +208,7 @@ function L2ColumnEditor({
   const [draft, setDraft] = useState<L2Column>(col);
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const patch = (field: keyof L2Column, val: any) =>
     setDraft((p) => ({ ...p, [field]: val }));
@@ -210,6 +217,7 @@ function L2ColumnEditor({
 
   const save = async () => {
     setSaving(true);
+    setError(null);
     const res = await updateNavbarItem(
       col.id,
       {
@@ -217,11 +225,19 @@ function L2ColumnEditor({
         href: draft.href,
         sort_order: draft.sort_order,
         meta: draft.meta,
+        category_id: draft.category_id || undefined,
+        item_type: draft.category_id
+          ? NavItemType.CATEGORY
+          : NavItemType.CUSTOM_LINK,
       },
       token,
     );
     setSaving(false);
-    if (res?.success !== false) onSaved({ ...draft, id: col.id });
+    if (res?.success === false) {
+      setError(res?.message || "Failed to save column.");
+      return;
+    }
+    onSaved({ ...draft, id: col.id });
   };
 
   const remove = async () => {
@@ -230,18 +246,19 @@ function L2ColumnEditor({
     onDeleted(col.id);
   };
 
-  const isPromo = draft.meta.col_type === ColumnType.PROMOTION;
+  const isPromo = draft.meta.col_type === ColType.PROMOTION;
+  const isSubcat = draft.meta.col_type === ColType.SUBCATEGORIES;
+  const isProducts = draft.meta.col_type === ColType.PRODUCTS;
 
   return (
     <div className="border border-gray-100 rounded-xl bg-gray-50 overflow-hidden">
-      {/* Header row */}
       <div className="flex items-center gap-2 px-3 py-2">
         <GripVertical className="w-4 h-4 text-gray-300 shrink-0" />
         <span className="flex-1 text-xs font-semibold text-gray-700 truncate">
           {draft.label || "Unnamed Column"}
         </span>
         <span className="text-[10px] bg-purple-100 text-purple-600 font-bold px-2 py-0.5 rounded-full uppercase">
-          {draft.meta.col_type || ColumnType.SUBCATEGORIES}
+          {draft.meta.col_type || ColType.SUBCATEGORIES}
         </span>
         <button
           onClick={() => setOpen((o) => !o)}
@@ -271,11 +288,72 @@ function L2ColumnEditor({
             />
             <SelectField
               label="Column Type"
-              value={draft.meta.col_type || ColumnType.SUBCATEGORIES}
+              value={draft.meta.col_type || ColType.SUBCATEGORIES}
               onChange={(v: string) => patchMeta("col_type", v)}
               options={COL_TYPE_OPTIONS}
             />
           </div>
+
+          {isSubcat && (
+            <SelectField
+              label="Linked Category (auto-fills its subcategories as links)"
+              value={draft.category_id || ""}
+              onChange={(v: string) => {
+                const cat = categories.find((c) => c.id === v);
+                setDraft((p) => ({
+                  ...p,
+                  category_id: v || null,
+                  label:
+                    !p.label ||
+                    p.label === "Unnamed Column" ||
+                    p.label === "New Column"
+                      ? cat?.name || p.label
+                      : p.label,
+                }));
+              }}
+              options={[
+                { value: "", label: "— No category (manual links) —" },
+                ...categories.map((c) => ({ value: c.id, label: c.name })),
+              ]}
+            />
+          )}
+
+          {isProducts && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-600">
+                Products in this column
+              </label>
+              <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100 bg-white">
+                {products.length === 0 && (
+                  <p className="text-xs text-gray-400 px-3 py-3">
+                    No active products found for this store.
+                  </p>
+                )}
+                {products.map((p) => {
+                  const checked = (draft.meta.product_ids || []).includes(p.id);
+                  return (
+                    <label
+                      key={p.id}
+                      className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 cursor-pointer hover:bg-gray-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => {
+                          const current = draft.meta.product_ids || [];
+                          const next = e.target.checked
+                            ? [...current, p.id]
+                            : current.filter((id) => id !== p.id);
+                          patchMeta("product_ids", next);
+                        }}
+                      />
+                      <span className="truncate">{p.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {isPromo ? (
             <>
@@ -305,14 +383,16 @@ function L2ColumnEditor({
                 textarea
               />
             </>
-          ) : (
+          ) : !isProducts ? (
             <InputField
               label="Section Link (href)"
               value={draft.href}
               onChange={(v: string) => patch("href", v)}
               mono
             />
-          )}
+          ) : null}
+
+          {error && <p className="text-xs font-medium text-red-500">{error}</p>}
 
           <div className="flex justify-end">
             <SaveBtn onClick={save} saving={saving} label="Save Column" />
@@ -322,12 +402,11 @@ function L2ColumnEditor({
     </div>
   );
 }
-
 // ─── L1 Item Editor ───────────────────────────────────────────────────────────
-
 function L1ItemEditor({
   item,
   categories,
+  products,
   menuId,
   token,
   onSaved,
@@ -335,6 +414,7 @@ function L1ItemEditor({
 }: {
   item: L1Item;
   categories: { id: string; name: string }[];
+  products: { id: string; name: string }[];
   menuId: string;
   token: string;
   onSaved: (updated: L1Item) => void;
@@ -344,6 +424,7 @@ function L1ItemEditor({
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState(false);
   const [addingCol, setAddingCol] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const patch = (field: keyof L1Item, val: any) =>
     setDraft((p) => ({ ...p, [field]: val }));
@@ -352,6 +433,7 @@ function L1ItemEditor({
 
   const save = async () => {
     setSaving(true);
+    setError(null);
     const res = await updateNavbarItem(
       item.id,
       {
@@ -366,9 +448,44 @@ function L1ItemEditor({
       token,
     );
     setSaving(false);
-    if (res?.success !== false) onSaved({ ...draft, id: item.id });
+    if (res?.success === false) {
+      setError(res?.message || "Failed to save link.");
+      return;
+    }
+    onSaved({ ...draft, id: item.id });
+    dispatchNavbarChange();
   };
 
+  const addColumn = async () => {
+    setAddingCol(true);
+    setError(null);
+    const newCol: CreateNavItemPayload = {
+      menu_id: menuId,
+      parent_id: item.id,
+      label: "New Column",
+      href: "/store",
+      item_type: NavItemType.CUSTOM_LINK,
+      has_mega_menu: false,
+      sort_order: draft.megaMenuColumns.length,
+      meta: { col_type: ColType.SUBCATEGORIES, col_title: "New Column" },
+    };
+    const res = await createNavbarItem(newCol, token);
+    setAddingCol(false);
+
+    if (res?.success === false) {
+      setError(res?.message || "Failed to add column.");
+      return;
+    }
+    const newColData = res?.data?.data || res?.data;
+    if (newColData?.id) {
+      setDraft((p) => ({
+        ...p,
+        megaMenuColumns: [...p.megaMenuColumns, newColData as L2Column],
+      }));
+    } else {
+      setError("Column was not created — please retry.");
+    }
+  };
   const remove = async () => {
     if (
       !confirm(
@@ -378,30 +495,6 @@ function L1ItemEditor({
       return;
     await deleteNavbarItem(item.id, token);
     onDeleted(item.id);
-  };
-
-  const addColumn = async () => {
-    setAddingCol(true);
-    const newCol: CreateNavItemPayload = {
-      menu_id: menuId,
-      parent_id: item.id,
-      label: "New Column",
-      href: "/store",
-      item_type: NavItemType.CUSTOM_LINK,
-      has_mega_menu: false,
-      sort_order: draft.megaMenuColumns.length,
-      meta: { col_type: ColumnType.SUBCATEGORIES, col_title: "New Column" },
-    };
-    const res = await createNavbarItem(newCol, token);
-    setAddingCol(false);
-
-    const newColData = res?.data?.data || res?.data;
-    if (newColData && newColData.id) {
-      setDraft((p) => ({
-        ...p,
-        megaMenuColumns: [...p.megaMenuColumns, newColData as L2Column],
-      }));
-    }
   };
 
   const onColSaved = (updated: L2Column) =>
@@ -495,7 +588,10 @@ function L1ItemEditor({
               <div className="mt-3 pt-3 border-t border-indigo-100">
                 <SelectField
                   label="Mega Menu Display Mode"
-                  value={draft.meta.display_type || "CATEGORY_LISTING"}
+                  value={
+                    draft.meta.display_type ||
+                    NavItemDisplayType.CATEGORY_LISTING
+                  }
                   onChange={(v: string) => patchMeta("display_type", v as any)}
                   options={DISPLAY_TYPE_OPTIONS}
                 />
@@ -567,6 +663,7 @@ function L1ItemEditor({
                   token={token}
                   onSaved={onColSaved}
                   onDeleted={onColDeleted}
+                  products={products}
                 />
               ))}
             </div>
@@ -587,7 +684,7 @@ export function CmsNavbarTab() {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
     [],
   );
-
+  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   // Scalar settings draft (separate from item tree so saves are isolated)
   const [settings, setSettings] = useState<UpsertNavMenuPayload>({});
   const [savingSettings, setSavingSettings] = useState(false);
@@ -600,9 +697,12 @@ export function CmsNavbarTab() {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      const [navRes, catRes] = await Promise.all([
+      const [navRes, catRes, prodRes] = await Promise.all([
         AxiosAPI.get("/v1/navbar").catch(() => null),
         AxiosAPI.get("/v1/categories?limit=200").catch(() => null),
+        token
+          ? fetchVendorActiveProducts(token).catch(() => null)
+          : Promise.resolve(null),
       ]);
 
       if (navRes?.data) {
@@ -612,8 +712,11 @@ export function CmsNavbarTab() {
         setItems(d.navigationItems ?? []);
       }
       if (catRes?.data) {
-        const list = catRes.data?.data ?? catRes.data ?? [];
-        setCategories(list);
+        setCategories(catRes.data?.data ?? catRes.data ?? []);
+      }
+      if (prodRes?.data) {
+        const list = (prodRes.data?.data ?? prodRes.data ?? []) as any[];
+        setProducts(list.map((p) => ({ id: p.id, name: p.name })));
       }
       setLoading(false);
     };
@@ -630,6 +733,7 @@ export function CmsNavbarTab() {
     setSavingSettings(true);
     await upsertNavbarMenu(settings, token);
     setSavingSettings(false);
+    dispatchNavbarChange();
   };
   const makeAutoSave = async (newUrl: string) => {
     if (!token) return;
@@ -673,11 +777,8 @@ export function CmsNavbarTab() {
         ))}
       </div>
     );
-  }
-
-  // ─── Empty state (no menu_id yet) ──────────────────────────────────────────
+  } // ─── Empty state (no menu_id yet) ──────────────────────────────────────────
   const menuId = data?.menu_id;
-
   return (
     <div className="space-y-6">
       {/* ── 1. Logo & Branding ──────────────────────────────────────────────── */}
@@ -852,6 +953,7 @@ export function CmsNavbarTab() {
               token={token!}
               onSaved={onItemSaved}
               onDeleted={onItemDeleted}
+              products={products}
             />
           ))}
         </div>

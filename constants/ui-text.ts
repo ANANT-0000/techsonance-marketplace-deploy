@@ -44,7 +44,7 @@ export const UiText = {
     "No hotspots added. Press Add Hotspot or click the image above to place interactive tags.",
   NO_LINKS: "No links yet. Click Add Link.",
   LINK: "Link",
-
+  SHOP_NOW: "Shop Now",
   NO_POLICIES: "No policies match your search.",
   NO_POLICIES_FOUND: "No policies found. Create your first one.",
   LOADING_POLICIES: "Loading policies...",

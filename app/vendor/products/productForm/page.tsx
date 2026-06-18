@@ -66,7 +66,7 @@ export default function ProductFormPage() {
     getTaxSlabsOptions(token, setTaxSlabsOptions);
   }, [token]);
   return (
-    <main className="min-h-screen  py-8 w-full ">
+    <main className="min-h-screen overflow-y-scroll py-8 w-full ">
       <div className=" mx-auto">
         <ProductForm
           categoryOptions={categoryOptions}

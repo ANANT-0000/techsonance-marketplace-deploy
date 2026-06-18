@@ -1,11 +1,5 @@
 "use server";
-import {
-  BASE_API_URL,
-  ColumnType,
-  ColumnTypeEnum,
-  LogoAlignmentEnum,
-  NavbarPositionEnum,
-} from "@/constants";
+import { BASE_API_URL } from "@/constants";
 import { revalidatePath } from "next/cache";
 import { getCompanyDomain } from "@/lib/get-domain";
 import {
@@ -17,6 +11,7 @@ import {
   ReturnStatus,
 } from "./Types";
 import {
+  ColType,
   NavItemDisplayType,
   NavItemType,
   NavMenuLogoAlignment,
@@ -2182,15 +2177,15 @@ export interface NavItemMetaPayload {
   display_type?: NavItemDisplayType;
   show_category_icons?: boolean;
   parent_category_id?: string;
-  col_type?: ColumnType;
+  col_type?: ColType;
   col_title?: string;
   promo_image_url?: string;
   promo_title?: string;
   promo_subtitle?: string;
   promo_cta_href?: string;
   icon_url?: string;
+  product_ids?: string[];
 }
-
 export interface CreateNavItemPayload {
   menu_id: string;
   parent_id?: string;
@@ -2210,14 +2205,13 @@ export const fetchNavbarConfig = async () => {
     const res = await fetch(`${BASE_API_URL}/v1/navbar`, {
       method: "GET",
       headers: { "company-domain": companyDomain },
-      next: { revalidate: 60 },
+      next: { revalidate: 60, tags: ["navbar"] },
     });
     return await res.json();
   } catch {
     return null;
   }
 };
-
 /** PUT /v1/navbar/menu — upsert scalar navbar settings */
 export const upsertNavbarMenu = async (
   payload: UpsertNavMenuPayload,

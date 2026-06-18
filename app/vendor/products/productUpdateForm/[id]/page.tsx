@@ -20,6 +20,7 @@ import {
 import { authToken } from "@/utils/authToken";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAppSelector } from "@/hooks/reduxHooks";
 interface Attribute {
   name: string;
   value: string; // could be string[] if multiple values
@@ -97,9 +98,11 @@ const getExitingProduct = async (
   id
     ? await fetchVendorOneProducts(id, token)
         .then((res) => {
+          console.log(res.data, "res.data");
           setGetExitingProduct(res.data);
         })
         .catch((error) => {
+          console.log(error, "error");
           setGetExitingProduct(null);
         })
     : null;
@@ -130,7 +133,6 @@ const getTaxSlabsOptions = async (token: string, setTaxSlabsOptions: any) => {
     })
     .catch((error) => {});
 };
-import { useAppSelector } from "@/hooks/reduxHooks";
 
 export default function ProductUpdateFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -152,6 +154,7 @@ export default function ProductUpdateFormPage() {
     redirect("/auth/vendorLogin");
   }
   useEffect(() => {
+    console.log("get product");
     getExitingProduct(setGetExitingProduct, id, token);
     getCategoryOptions(setCategoryOptions, token);
     getWarehouseOptions(setWarehouseOptions, token);
@@ -182,8 +185,9 @@ export default function ProductUpdateFormPage() {
 
           // Fixed: Images array is at the root level, not inside 'product'
           productMedia:
-            exitingProduct?.images?.filter((img) => img?.imgType === ProductImageType.MAIN) ||
-            [],
+            exitingProduct?.images?.filter(
+              (img) => img?.imgType === ProductImageType.MAIN,
+            ) || [],
           featureMedia:
             exitingProduct?.images?.filter(
               (img) => img?.imgType === ProductImageType.GALLERY,
@@ -201,7 +205,7 @@ export default function ProductUpdateFormPage() {
       : {};
 
   return (
-    <main className="min-h-screen  py-8 w-full">
+    <main className="min-h-screen  overflow-y-scroll py-8 w-full">
       <div className=" mx-auto">
         <ProductForm
           categoryOptions={categoryOptions}
