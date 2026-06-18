@@ -122,7 +122,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
 
   // ── Derive all "controlled" state directly from URL ───────────────────────
   const search = searchParams.get("search") ?? "";
-  const categoryId = searchParams.get("category_id") ?? "";
+  const category = searchParams.get("category") ?? "";
   const minPrice = Number(searchParams.get("min_price") ?? 0);
   const maxPrice = Number(searchParams.get("max_price") ?? 50000);
   const sortBy = (searchParams.get("sort_by") as SortBy) ?? "newest";
@@ -131,7 +131,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
   const filters: FilterState = {
     minPrice,
     maxPrice,
-    selectedCategories: categoryId ? [categoryId] : [],
+    selectedCategories: category ? [category] : [],
   };
 
   // ── Local UI-only state ───────────────────────────────────────────────────
@@ -167,7 +167,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
       try {
         const response = await fetchProducts({
           search: search.replace("...", "") || undefined,
-          category_id: categoryId || undefined,
+          category: category || undefined,
           min_price: minPrice > 0 ? minPrice : undefined,
           max_price: maxPrice < 50000 ? maxPrice : undefined,
           sort_by: sortBy,
@@ -245,7 +245,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
 
   const handleFiltersChange = (newFilters: FilterState) => {
     pushParams({
-      category_id: newFilters.selectedCategories[0] ?? null,
+      category: newFilters.selectedCategories[0] ?? null,
       min_price: newFilters.minPrice > 0 ? newFilters.minPrice : null,
       max_price: newFilters.maxPrice < 50000 ? newFilters.maxPrice : null,
       page: 1,
@@ -400,7 +400,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
                 </motion.div>
               ) : (
                 <motion.ul
-                  key={`products-${page}-${search}-${sortBy}-${categoryId}`}
+                  key={`products-${page}-${search}-${sortBy}-${category}`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}

@@ -1,5 +1,11 @@
 "use server";
-import { BASE_API_URL } from "@/constants";
+import {
+  BASE_API_URL,
+  ColumnType,
+  ColumnTypeEnum,
+  LogoAlignmentEnum,
+  NavbarPositionEnum,
+} from "@/constants";
 import { revalidatePath } from "next/cache";
 import { getCompanyDomain } from "@/lib/get-domain";
 import {
@@ -10,6 +16,12 @@ import {
   OrderStatus,
   ReturnStatus,
 } from "./Types";
+import {
+  NavItemDisplayType,
+  NavItemType,
+  NavMenuLogoAlignment,
+  NavMenuPosition,
+} from "@/components/vendor/cms/CmsNavbarTab";
 // ==========================================
 // CATEGORY API ENDPOINTS
 // ==========================================
@@ -36,7 +48,11 @@ export const fetchVendorsProductsCategory = async (token: string) => {
   }
 };
 export const createVendorProductCategory = async (
-  categoryData: { name: string; description?: string },
+  categoryData: {
+    name: string;
+    description?: string;
+    parent_id?: string | null;
+  },
   token: string,
 ) => {
   try {
@@ -61,7 +77,11 @@ export const createVendorProductCategory = async (
 };
 export const updateVendorProductCategory = async (
   categoryId: string,
-  categoryData: { name: string; description?: string },
+  categoryData: {
+    name: string;
+    description?: string;
+    parent_id?: string | null;
+  },
   token: string,
 ) => {
   try {
@@ -89,21 +109,27 @@ export const deleteVendorProductCategory = async (
   token: string,
 ) => {
   try {
+    const companyDomain = await getCompanyDomain();
     const response = await fetch(
       `${BASE_API_URL}/v1/categories/${categoryId}`,
       {
         method: "DELETE",
         headers: {
-          // Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
+          "company-domain": companyDomain,
         },
       },
     );
     if (response.status !== 200) {
+      return {
+        status: response.status,
+        message: "Failed to delete product category",
+      };
     }
     revalidatePath("/vendor/products/categories");
     return await response.json();
   } catch (error) {
-    throw error;
+    return { status: 500, message: "Error deleting product category" };
   }
 };
 // ==========================================
@@ -194,13 +220,13 @@ export const fetchVendorProducts = async (
   limit: number,
   status: string | null,
   search: string | null,
-  categoryId: string | null,
+  category: string | null,
   token: string,
 ) => {
   try {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(
-      `${BASE_API_URL}/v1/products/all?offset=${offset}&limit=${limit}&search=${search ?? null}&category_id=${categoryId ?? null}&status=${status ?? null}`,
+      `${BASE_API_URL}/v1/products/all?offset=${offset}&limit=${limit}&search=${search ?? null}&category=${category ?? null}&status=${status ?? null}`,
       {
         method: "GET",
         // cache: 'force-cache',
@@ -2129,5 +2155,176 @@ export const fetchUpdateTaxSlab = async (
     return await response.json();
   } catch (error) {
     return { data: {}, message: "Error updating tax slab" };
+  }
+};
+
+// ==========================================
+// NAVBAR API ENDPOINTS
+// ==========================================
+
+export interface UpsertNavMenuPayload {
+  logo_src?: string;
+  logo_alt?: string;
+  logo_href?: string;
+  logo_alignment?: NavMenuLogoAlignment;
+  position?: NavMenuPosition;
+  show_shadow?: boolean;
+  show_border?: boolean;
+  search_visible?: boolean;
+  search_placeholder?: string;
+  search_endpoint?: string;
+  show_account?: boolean;
+  show_wishlist?: boolean;
+  show_cart?: boolean;
+}
+
+export interface NavItemMetaPayload {
+  display_type?: NavItemDisplayType;
+  show_category_icons?: boolean;
+  parent_category_id?: string;
+  col_type?: ColumnType;
+  col_title?: string;
+  promo_image_url?: string;
+  promo_title?: string;
+  promo_subtitle?: string;
+  promo_cta_href?: string;
+  icon_url?: string;
+}
+
+export interface CreateNavItemPayload {
+  menu_id: string;
+  parent_id?: string;
+  label: string;
+  href: string;
+  item_type: NavItemType;
+  category_id?: string;
+  has_mega_menu: boolean;
+  sort_order?: number;
+  meta?: NavItemMetaPayload;
+}
+
+/** GET /v1/navbar — public storefront fetch */
+export const fetchNavbarConfig = async () => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const res = await fetch(`${BASE_API_URL}/v1/navbar`, {
+      method: "GET",
+      headers: { "company-domain": companyDomain },
+      next: { revalidate: 60 },
+    });
+    return await res.json();
+  } catch {
+    return null;
+  }
+};
+
+/** PUT /v1/navbar/menu — upsert scalar navbar settings */
+export const upsertNavbarMenu = async (
+  payload: UpsertNavMenuPayload,
+  token: string,
+) => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const res = await fetch(`${BASE_API_URL}/v1/navbar/menu`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "company-domain": companyDomain,
+      },
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/vendor/cms");
+    return await res.json();
+  } catch {
+    return { success: false, message: "Error saving navbar settings" };
+  }
+};
+
+/** POST /v1/navbar/items — create an L1 or L2 nav item */
+export const createNavbarItem = async (
+  payload: CreateNavItemPayload,
+  token: string,
+) => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const res = await fetch(`${BASE_API_URL}/v1/navbar/items`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "company-domain": companyDomain,
+      },
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/vendor/cms");
+    return await res.json();
+  } catch {
+    return { success: false, message: "Error creating nav item" };
+  }
+};
+
+/** PATCH /v1/navbar/items/:id — partial update */
+export const updateNavbarItem = async (
+  id: string,
+  payload: Partial<CreateNavItemPayload>,
+  token: string,
+) => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const res = await fetch(`${BASE_API_URL}/v1/navbar/items/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "company-domain": companyDomain,
+      },
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/vendor/cms");
+    return await res.json();
+  } catch {
+    return { success: false, message: "Error updating nav item" };
+  }
+};
+
+/** DELETE /v1/navbar/items/:id */
+export const deleteNavbarItem = async (id: string, token: string) => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const res = await fetch(`${BASE_API_URL}/v1/navbar/items/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "company-domain": companyDomain,
+      },
+    });
+    revalidatePath("/vendor/cms");
+    return await res.json();
+  } catch {
+    return { success: false, message: "Error deleting nav item" };
+  }
+};
+
+/** PUT /v1/navbar/items/reorder — bulk sort_order update */
+export const reorderNavbarItems = async (
+  items: { id: string; sort_order: number }[],
+  token: string,
+) => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const res = await fetch(`${BASE_API_URL}/v1/navbar/items/reorder`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "company-domain": companyDomain,
+      },
+      body: JSON.stringify({ items }),
+    });
+    revalidatePath("/vendor/cms");
+    return await res.json();
+  } catch {
+    return { success: false, message: "Error reordering nav items" };
   }
 };

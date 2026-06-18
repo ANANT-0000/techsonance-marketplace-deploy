@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 interface ShoppingPageProps {
   searchParams: Promise<{
     search?: string;
-    category_id?: string;
+    category?: string;
     min_price?: string;
     max_price?: string;
     sort_by?: string;
@@ -33,7 +33,7 @@ export async function generateMetadata({
 }: ShoppingPageProps): Promise<Metadata> {
   const params = await searchParams;
   const search = params?.search ?? "";
-  const categoryId = params?.category_id ?? "";
+  const categoryId = params?.category ?? "";
 
   let title =
     "Shop High-Quality Tech, Electronics & Hardware | Techsonance Store";

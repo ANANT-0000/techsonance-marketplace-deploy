@@ -150,6 +150,15 @@ export const UILabels = {
     NAV_ITEM_LABEL: "Nav Item Label",
     NAV_ITEM_HREF: "Nav Item URL",
     NAV_ITEM_HAS_MEGA: "Has Mega-Menu Dropdown",
+    ASSOCIATED_CATEGORY: "Associated Category",
+    LINK_TYPE: "Link Type",
+    MEGA_MENU_DISPLAY_SOURCE: "Mega Menu Display Source",
+    PARENT_CATEGORY_SOURCE: "Parent Category (Source)",
+    HIERARCHICAL_DEPTH: "Hierarchical Depth",
+    PROMOTION_TITLE: "Promotion Title",
+    PROMOTION_SUBTITLE: "Promotion Subtitle",
+    PROMOTION_LINK_TARGET_URL: "Promotion Link Target URL",
+    PROMOTION_BANNER_IMAGE: "Promotion Banner Image",
   },
 };
 

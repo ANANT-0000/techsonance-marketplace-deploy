@@ -61,7 +61,7 @@ export type SortBy =
   | "discount";
 export interface ProductQueryParams {
   search?: string;
-  category_id?: string;
+  category?: string;
   min_price?: number;
   max_price?: number;
   sort_by?: SortBy;
@@ -83,7 +83,7 @@ export const fetchProducts = async (
 
   const searchParams = new URLSearchParams();
   if (params.search) searchParams.set("search", params.search);
-  if (params.category_id) searchParams.set("category_id", params.category_id);
+  if (params.category) searchParams.set("category", params.category);
   if (params.min_price !== undefined)
     searchParams.set("min_price", String(params.min_price));
   if (params.max_price !== undefined)
@@ -134,7 +134,7 @@ export const fetchProductProducts = async (
 
   const searchParams = new URLSearchParams();
   if (params.search) searchParams.set("search", params.search);
-  if (params.category_id) searchParams.set("category_id", params.category_id);
+  if (params.category) searchParams.set("category", params.category);
   if (params.min_price !== undefined)
     searchParams.set("min_price", String(params.min_price));
   if (params.max_price !== undefined)

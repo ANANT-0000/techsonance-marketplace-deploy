@@ -20,6 +20,7 @@ import {
   HeroBgStyle,
 } from "@/components/customer/homepage/InteractiveHero";
 import { CmsDataKey } from "@/constants/cms";
+import { NAVBAR_CACHE_KEY } from "@/constants";
 import { UILabels } from "@/constants/ui-labels";
 import { UiText } from "@/constants/ui-text";
 import {
@@ -35,11 +36,12 @@ import {
 } from "@/components/vendor/cms";
 import { CmsHomeTab } from "@/components/vendor/cms/CmsHomeTab";
 import { toDatetimeLocal } from "@/lib/utils";
-import { CmsNavbarTab } from "@/components/vendor/cms/CmsNavbarTab";
+
 import { CmsFooterTab } from "@/components/vendor/cms/CmsFooterTab";
 import { CmsStoreTab } from "@/components/vendor/cms/CmsStoreTab";
 import { CmsAboutTab } from "@/components/vendor/cms/CmsAboutTab";
 import { CmsContactTab } from "@/components/vendor/cms/CmsContactTab";
+import { CmsNavbarTab } from "@/components/vendor/cms/CmsNavbarTab";
 
 export enum PageType {
   HOME = "home",
@@ -231,6 +233,11 @@ export default function CmsManagementPage({
     await AxiosAPI.post("/v1/cms", payload);
     localStorage.removeItem(`techsonance_cms_${page}_${lang}`);
     localStorage.removeItem(`techsonance_cms_${page}`);
+    // Clear storefront navbar cache so changes reflect immediately
+    if (page === PageType.NAVBAR) {
+      localStorage.removeItem(`${NAVBAR_CACHE_KEY}_${lang}`);
+      localStorage.removeItem(NAVBAR_CACHE_KEY);
+    }
   };
 
   // Factory: creates an onAutoSave callback bound to a specific flat CMS data key.
@@ -242,7 +249,7 @@ export default function CmsManagementPage({
       await saveDataNow({ key, val: newUrl });
     };
 
-  const save = async (e: React.FormEvent) => {
+  const save = async (e: React.SubmitEvent) => {
     e.preventDefault();
     dispatch({ type: CmsActionType.SAVE_START });
     try {
@@ -275,7 +282,7 @@ export default function CmsManagementPage({
     });
   };
 
-  const updateItem = (key: string, id: any, field: string, val: string) => {
+  const updateItem = (key: string, id: any, field: string, val: any) => {
     const nextArr = (data[key] || []).map((i: any) =>
       i.id === id ? { ...i, [field]: val } : i,
     );
@@ -341,7 +348,8 @@ export default function CmsManagementPage({
           </p>
         </div>
         <button
-          onClick={save}
+          type="submit"
+          onSubmit={save}
           disabled={saving || loading}
           className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-theme-body-sm px-6 py-2.5 rounded-xl shadow disabled:opacity-50"
         >
@@ -373,7 +381,7 @@ export default function CmsManagementPage({
             ))}
           </div>
         </div>
-        {page !== PageType.THEME && (
+        {page !== PageType.THEME && page !== PageType.NAVBAR && (
           <div>
             <p className="text-theme-caption font-bold text-gray-400 uppercase mb-2">
               {labels.LANGUAGE}
@@ -419,6 +427,13 @@ export default function CmsManagementPage({
         <div className="space-y-6">
           <BrandingTab />
         </div>
+      ) : page === PageType.NAVBAR ? (
+        /* Relational navbar tab — self-fetching, manages its own saves.
+           Rendered outside the legacy CMS form so the global Save button
+           doesn't attempt a JSON-blob write for the navbar page. */
+        <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300">
+          <CmsNavbarTab />
+        </div>
       ) : (
         <form
           onSubmit={save}
@@ -439,17 +454,7 @@ export default function CmsManagementPage({
             />
           )}
 
-          {/* NAVBAR */}
-          {page === PageType.NAVBAR && (
-            <CmsNavbarTab
-              data={data}
-              set={set}
-              makeAutoSave={makeAutoSave}
-              addItem={addItem}
-              removeItem={removeItem}
-              updateItem={updateItem}
-            />
-          )}
+          {/* NAVBAR — handled by the branch above, never reaches here */}
 
           {/* FOOTER */}
           {page === PageType.FOOTER && (

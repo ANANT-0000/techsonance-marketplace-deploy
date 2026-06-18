@@ -1,4 +1,9 @@
+import {
+  CategoryFilterType,
+  DeleteMode,
+} from "@/components/vendor/category/CategoryManager";
 import { VendorRegisterSchema } from "./validation";
+import type { LucideIcon } from "lucide-react";
 export enum UserStatusEnum {
   ACTIVE = "active",
   INACTIVE = "inactive",
@@ -568,15 +573,15 @@ export interface Review {
   product_variant_id: string;
   user_id: string;
 }
-export interface Category {
-  id: string;
-  name: string;
-  description: string;
-  parent_id: string | null;
-  created_at: string;
-  updated_at: string;
-  company_id: string;
-}
+// export interface Category {
+//   id: string;
+//   name: string;
+//   description: string;
+//   parent_id: string | null;
+//   created_at: string;
+//   updated_at: string;
+//   company_id: string;
+// }
 // used in vendor product list and product details page
 export interface Product {
   id: string;
@@ -1083,3 +1088,185 @@ export type FieldConfig = {
   placeholder?: string;
   gridSpan?: GridSpan;
 };
+
+// ── Reducer Enums & Interfaces ──────────────────────────────────
+
+// ── Core Entity ──────────────────────────────────────────────
+/** Represents a single product category as returned from the API. */
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  parent_id: string | null;
+  productCount: number;
+  updated_at: string;
+}
+
+/** A parent category node augmented with its direct children for tree rendering. */
+export interface CategoryTreeNode extends Category {
+  children: Category[];
+}
+
+/** Drawer-specific view model with resolved parent name and children. */
+export interface CategoryDrawerData extends Category {
+  parentName: string;
+  children: Category[];
+}
+
+// ── Form State ───────────────────────────────────────────────
+/** Tracks the current state of the Create/Edit category form. */
+export interface CategoryFormState {
+  name: string;
+  description: string;
+  parentId: string;
+  editingId: string | null;
+}
+
+/** Payload shape sent to the create/update API. */
+export interface CategoryPayload {
+  name: string;
+  description: string;
+  parent_id: string | null;
+}
+
+// ── Filter & Pagination ─────────────────────────────────────
+/** Tracks the current search, filter, and pagination state. */
+export interface CategoryFilterState {
+  searchQuery: string;
+  filterType: CategoryFilterType;
+  currentPage: number;
+  pageSize: number;
+}
+
+// ── Delete Modal ─────────────────────────────────────────────
+/** Configuration for the complex delete modal when a parent has subcategories. */
+export interface DeleteModalConfig {
+  id: string;
+  name: string;
+  subcategories: Category[];
+}
+
+/** Tracks user's choice in the complex delete modal. */
+export interface DeleteModalState {
+  config: DeleteModalConfig | null;
+  modeChoice: DeleteMode;
+  moveTargetParentId: string;
+}
+
+// ── Drag & Drop ──────────────────────────────────────────────
+/** Tracks the current drag-and-drop state for hierarchy reordering. */
+export interface DragDropState {
+  draggedCategoryId: string | null;
+  dragOverCategoryId: string | null;
+}
+
+// ── Stats ────────────────────────────────────────────────────
+/** Computed statistics displayed in the stats cards. */
+export interface CategoryStatsData {
+  totalCategories: number;
+  parentCategoriesCount: number;
+  subcategoriesCount: number;
+  totalAssignedProducts: number;
+}
+
+/** Configuration for a single stat card. */
+export interface StatCardConfig {
+  titleKey: keyof CategoryStatsData;
+  label: string;
+  icon: LucideIcon;
+  colorClass: string;
+}
+
+// ── Component Props ──────────────────────────────────────────
+/** Props for the top-level CategoryManager composition root. */
+export interface CategoryManagerProps {
+  categories: Category[];
+  setCheckChange: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+/** Props for the page header component. */
+export interface CategoryPageHeaderProps {
+  onAddNew: () => void;
+}
+
+/** Props for the stats cards component. */
+export interface CategoryStatsCardsProps {
+  stats: CategoryStatsData;
+}
+
+/** Props for the Create/Edit form component. */
+export interface CategoryFormProps {
+  formState: CategoryFormState;
+  categories: Category[];
+  isPending: boolean;
+  onNameChange: (value: string) => void;
+  onDescriptionChange: (value: string) => void;
+  onParentIdChange: (value: string) => void;
+  onSubmit: (e: React.SubmitEvent) => void;
+  onReset: () => void;
+}
+
+/** Props for the hierarchical tree table. */
+export interface CategoryTreeTableProps {
+  paginatedRoots: CategoryTreeNode[];
+  treeData: CategoryTreeNode[];
+  filterState: CategoryFilterState;
+  selectedIds: string[];
+  expandedIds: string[];
+  dragOverCategoryId: string | null;
+  isPending: boolean;
+  totalPages: number;
+  categories: Category[];
+  bulkParentId: string;
+  onSearchChange: (query: string) => void;
+  onFilterChange: (filter: CategoryFilterType) => void;
+  onPageChange: (page: number) => void;
+  onToggleExpand: (id: string) => void;
+  onSelectAll: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSelectRow: (id: string, isChecked: boolean) => void;
+  onEditClick: (cat: Category) => void;
+  onDeleteClick: (cat: Category) => void;
+  onDrawerOpen: (id: string) => void;
+  onDragStart: (e: React.DragEvent, id: string) => void;
+  onDragOver: (e: React.DragEvent, targetId: string) => void;
+  onDragLeave: () => void;
+  onDrop: (e: React.DragEvent, targetParentId: string) => void;
+  onAddNew: () => void;
+  onBulkParentIdChange: (value: string) => void;
+  onBulkMove: () => void;
+  onBulkExport: () => void;
+  onBulkDelete: () => void;
+}
+
+/** Props for the bulk actions bar. */
+export interface CategoryBulkActionsProps {
+  selectedCount: number;
+  categories: Category[];
+  bulkParentId: string;
+  onBulkParentIdChange: (value: string) => void;
+  onBulkMove: () => void;
+  onBulkExport: () => void;
+  onBulkDelete: () => void;
+}
+
+/** Props for the right-side detail drawer. */
+export interface CategoryDetailDrawerProps {
+  drawerData: CategoryDrawerData | null;
+  onClose: () => void;
+  onEdit: (cat: Category) => void;
+}
+
+/** Props for the complex delete modal. */
+export interface CategoryDeleteModalProps {
+  deleteState: DeleteModalState;
+  categories: Category[];
+  onModeChange: (mode: DeleteMode) => void;
+  onMoveTargetChange: (parentId: string) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+/** Props for the empty state placeholder. */
+export interface CategoryEmptyStateProps {
+  onAddNew: () => void;
+}

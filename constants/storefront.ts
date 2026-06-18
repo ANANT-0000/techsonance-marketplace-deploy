@@ -192,20 +192,23 @@ export const COLOR_SLATE_MUTED = "rgba(15,23,42,0.7)";
 export const COLOR_SLATE_DARK = "#0f172a";
 
 export enum LogoAlignmentEnum {
-  LEFT = "LEFT",
-  CENTER = "CENTER"
+  LEFT = "left",
+  CENTER = "center",
 }
 
 export enum NavbarPositionEnum {
-  STICKY = "STICKY",
-  RELATIVE = "RELATIVE"
+  STICKY = "sticky",
+  RELATIVE = "relative",
 }
 
-export enum ColumnTypeEnum {
-  SUBCATEGORIES = "SUBCATEGORIES",
-  BRANDS = "BRANDS",
-  PROMOTION = "PROMOTION"
+export enum ColumnType {
+  SUBCATEGORIES = "subcategories",
+  BRANDS = "brands",
+  PROMOTION = "promotion",
 }
+
+/** @deprecated Use ColumnType */
+export const ColumnTypeEnum = ColumnType;
 
 export interface NavPromoBlock {
   imageUrl: string;
@@ -222,7 +225,7 @@ export interface NavLinkItem {
 }
 
 export interface NavMegaColumn {
-  type: ColumnTypeEnum;
+  type: ColumnType;
   title: string;
   items?: NavLinkItem[];
   promotion?: NavPromoBlock;
@@ -286,9 +289,24 @@ export const CMS_L1_NAV_PAYLOAD: L1NavbarPayload = {
   },
   navigationItems: [
     { id: "shop-all", label: "Shop All", href: "/store", hasMegaMenu: false },
-    { id: "categories", label: "Categories", href: "/store?type=categories", hasMegaMenu: true },
-    { id: "new-arrivals", label: "New Launches", href: "/store?filter=new", hasMegaMenu: false },
-    { id: "support", label: "Help & Support", href: "/contact", hasMegaMenu: false },
+    {
+      id: "categories",
+      label: "Categories",
+      href: "/store?type=categories",
+      hasMegaMenu: true,
+    },
+    {
+      id: "new-arrivals",
+      label: "New Launches",
+      href: "/store?filter=new",
+      hasMegaMenu: false,
+    },
+    {
+      id: "support",
+      label: "Help & Support",
+      href: "/contact",
+      hasMegaMenu: false,
+    },
   ],
 };
 
@@ -298,17 +316,37 @@ export const CMS_L2_MEGA_PAYLOAD: L2MegaMenuPayload = {
       type: ColumnTypeEnum.SUBCATEGORIES,
       title: "Shop By Audio",
       items: [
-        { label: "True Wireless Earbuds", href: "/store?category=earbuds", iconUrl: "/assets/TWS_icon.png" },
-        { label: "Neckbands", href: "/store?category=neckbands", iconUrl: "/assets/neckband_icon.png" },
-        { label: "Headphones", href: "/store?category=headphones", iconUrl: "/assets/headphones_icon.png" },
-        { label: "Soundbars", href: "/store?category=soundbars", iconUrl: "/assets/soundbar_icon.png" },
+        {
+          label: "True Wireless Earbuds",
+          href: "/store?category=earbuds",
+          iconUrl: "/assets/TWS_icon.png",
+        },
+        {
+          label: "Neckbands",
+          href: "/store?category=neckbands",
+          iconUrl: "/assets/neckband_icon.png",
+        },
+        {
+          label: "Headphones",
+          href: "/store?category=headphones",
+          iconUrl: "/assets/headphones_icon.png",
+        },
+        {
+          label: "Soundbars",
+          href: "/store?category=soundbars",
+          iconUrl: "/assets/soundbar_icon.png",
+        },
       ],
     },
     {
       type: ColumnTypeEnum.SUBCATEGORIES,
       title: "Weartech & Devices",
       items: [
-        { label: "Smart Watches", href: "/store?category=watches", iconUrl: "/assets/watch_icon.png" },
+        {
+          label: "Smart Watches",
+          href: "/store?category=watches",
+          iconUrl: "/assets/watch_icon.png",
+        },
         { label: "Power Banks", href: "/store?category=powerbanks" },
         { label: "Projectors", href: "/store?category=projectors" },
         { label: "Limited Edition", href: "/store?category=limited" },
@@ -328,7 +366,8 @@ export const CMS_L2_MEGA_PAYLOAD: L2MegaMenuPayload = {
       type: ColumnTypeEnum.PROMOTION,
       title: "Featured Launch",
       promotion: {
-        imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop",
+        imageUrl:
+          "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop",
         title: "Acoustic Pro Series X",
         subtitle: "Immersive sound. 40h battery. Hybrid ANC.",
         ctaText: "Shop Now",
@@ -337,4 +376,3 @@ export const CMS_L2_MEGA_PAYLOAD: L2MegaMenuPayload = {
     },
   ],
 };
-
