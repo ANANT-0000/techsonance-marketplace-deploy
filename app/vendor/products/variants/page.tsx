@@ -281,7 +281,7 @@ export default function InventoryPage() {
 
   return (
     <>
-      <main className="px-2 w-full">
+      <main className="px-2 w-full min-h-screen max-h-screen overflow-y-scroll">
         <AnimatePresence>
           {alerts.length > 0 && (
             <motion.section

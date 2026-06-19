@@ -2,6 +2,8 @@ import {
   AppliedPromotion,
   BundleDealConfig,
   BuyXGetYConfig,
+  Category,
+  CategoryTreeNode,
   DiscountConfig,
   FixedAmountConfig,
   FreeShippingConfig,
@@ -156,3 +158,32 @@ export const toDatetimeLocal = (val: string) => {
     return "";
   }
 };
+// utils/categoryTree.ts (new)
+export function buildCategoryTree(categories: Category[]): CategoryTreeNode[] {
+  const byParent = new Map<string | null, Category[]>();
+  categories.forEach((c) => {
+    const key = c.parent_id ?? null;
+    if (!byParent.has(key)) byParent.set(key, []);
+    byParent.get(key)!.push(c);
+  });
+  const build = (parentId: string | null, depth: number): CategoryTreeNode[] =>
+    (byParent.get(parentId) ?? []).map((c) => ({
+      ...c,
+      depth,
+      children: build(c.id, depth + 1),
+    }));
+  return build(null, 0);
+}
+
+export function countNodes(nodes: CategoryTreeNode[]): number {
+  return nodes.reduce((acc, n) => acc + 1 + countNodes(n.children), 0);
+}
+
+export function getCategoryBadge(node: CategoryTreeNode) {
+  const hasChildren = node.children.length > 0;
+  const isRoot = !node.parent_id;
+  if (isRoot && !hasChildren)
+    return { label: "Standalone", tone: "amber" } as const;
+  if (hasChildren) return { label: "Parent", tone: "green" } as const;
+  return { label: "Subcategory", tone: "purple" } as const;
+}

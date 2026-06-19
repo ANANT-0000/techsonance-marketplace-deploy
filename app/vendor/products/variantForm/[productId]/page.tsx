@@ -80,21 +80,19 @@ export default function ProductVariantFormPage() {
   }, [token]);
 
   return (
-    <main className="min-h-screen py-8 px-4 w-full">
-      <div className="mx-auto">
-        <ProductVariantForm
-          vendorId={vendorId}
-          productDetails={
-            productDetails ?? {
-              id: "",
-              name: "",
-              category: { id: "", name: "" },
-            }
+    <main className="min-h-screen max-h-screen overflow-y-scroll py-8 px-4 w-full mx-auto">
+      <ProductVariantForm
+        vendorId={vendorId}
+        productDetails={
+          productDetails ?? {
+            id: "",
+            name: "",
+            category: { id: "", name: "" },
           }
-          productId={productId}
-          warehouseOptions={warehouseOptions}
-        />
-      </div>
+        }
+        productId={productId}
+        warehouseOptions={warehouseOptions}
+      />
     </main>
   );
 }

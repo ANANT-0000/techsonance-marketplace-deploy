@@ -184,7 +184,7 @@ export default function VariantListingPage() {
   };
 
   return (
-    <main className="min-h-screen w-full px-2 pb-10 pt-2 ">
+    <main className="min-h-screen max-h-screen overflow-y-scroll w-full px-2 pb-10 pt-2 ">
       <div className="mx-auto  space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">

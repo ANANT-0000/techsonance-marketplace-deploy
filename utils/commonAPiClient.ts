@@ -267,3 +267,25 @@ export const fetchCategory = async (category: string) => {
     return null;
   }
 };
+
+export const fetchCategories = async (): Promise<any[]> => {
+  const companyDomain = await getCompanyDomain();
+  try {
+    const response = await fetch(`${BASE_API_URL}/v1/categories?limit=100`, {
+      method: "GET",
+      cache: "force-cache",
+      next: { revalidate: 300 },
+      headers: {
+        "Content-Type": "application/json",
+        "company-domain": companyDomain,
+      },
+    });
+    if (response.status !== 200) {
+      return [];
+    }
+    const json = await response.json();
+    return json?.data ?? json ?? [];
+  } catch (error) {
+    return [];
+  }
+};

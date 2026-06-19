@@ -1,5 +1,8 @@
 import {
+  L1NavbarPayload,
+  L2MegaMenuPayload,
   NavItemColType,
+  NavLinkItem,
   NavMenuLogoAlignment,
   NavMenuPosition,
 } from "@/utils/Types";
@@ -197,75 +200,6 @@ export const COLOR_WHITE_MUTED = "rgba(255,255,255,0.7)";
 export const COLOR_SLATE_MUTED = "rgba(15,23,42,0.7)";
 export const COLOR_SLATE_DARK = "#0f172a";
 
-/** @deprecated Use NavMenuLogoAlignment  */
-export enum LogoAlignmentEnum {
-  LEFT = "left",
-  CENTER = "center",
-}
-/** @deprecated Use NavMenuPosition */
-export enum NavbarPositionEnum {
-  STICKY = "sticky",
-  RELATIVE = "relative",
-}
-
-export interface NavPromoBlock {
-  imageUrl: string;
-  title: string;
-  subtitle: string;
-  ctaText: string;
-  ctaHref: string;
-}
-
-export interface NavLinkItem {
-  label: string;
-  href: string;
-  iconUrl?: string;
-}
-
-export interface NavMegaColumn {
-  type: NavItemColType;
-  title: string;
-  href?: string;
-  itemType?: string;
-  items?: NavLinkItem[];
-  promotion?: NavPromoBlock;
-}
-
-export interface L1NavItem {
-  id: string;
-  label: string;
-  href: string;
-  itemType?: string;
-  hasMegaMenu: boolean;
-}
-
-export interface L1NavbarPayload {
-  logo: {
-    src: string;
-    alt: string;
-    href: string;
-    alignment: NavMenuLogoAlignment;
-  };
-  navbar: {
-    position: NavMenuPosition;
-    showBottomBorder: boolean;
-    showShadow: boolean;
-  };
-  searchBar: {
-    isVisible: boolean;
-    placeholder: string;
-    searchEndpoint: string;
-  };
-  utilities: {
-    showAccount: boolean;
-    showWishlist: boolean;
-    showCart: boolean;
-  };
-  navigationItems: L1NavItem[];
-}
-
-export type L2MegaMenuPayload = Record<string, NavMegaColumn[]>;
-
 export const CMS_L1_NAV_PAYLOAD: L1NavbarPayload = {
   logo: {
     src: "/assets/e-commerce_brand_logo.png",
@@ -319,69 +253,4 @@ export const CMS_L1_NAV_PAYLOAD: L1NavbarPayload = {
   ],
 };
 
-export const CMS_L2_MEGA_PAYLOAD: L2MegaMenuPayload = {
-  categories: [
-    {
-      type: NavItemColType.SUBCATEGORIES,
-      title: "Shop By Audio",
-      items: [
-        {
-          label: "True Wireless Earbuds",
-          href: "/store?category=earbuds",
-          iconUrl: "/assets/TWS_icon.png",
-        },
-        {
-          label: "Neckbands",
-          href: "/store?category=neckbands",
-          iconUrl: "/assets/neckband_icon.png",
-        },
-        {
-          label: "Headphones",
-          href: "/store?category=headphones",
-          iconUrl: "/assets/headphones_icon.png",
-        },
-        {
-          label: "Soundbars",
-          href: "/store?category=soundbars",
-          iconUrl: "/assets/soundbar_icon.png",
-        },
-      ],
-    },
-    {
-      type: NavItemColType.SUBCATEGORIES,
-      title: "Weartech & Devices",
-      items: [
-        {
-          label: "Smart Watches",
-          href: "/store?category=watches",
-          iconUrl: "/assets/watch_icon.png",
-        },
-        { label: "Power Banks", href: "/store?category=powerbanks" },
-        { label: "Projectors", href: "/store?category=projectors" },
-        { label: "Limited Edition", href: "/store?category=limited" },
-      ],
-    },
-    {
-      type: NavItemColType.BRANDS,
-      title: "Top Featured Brands",
-      items: [
-        { label: "Apple", href: "/store?brand=apple" },
-        { label: "boAt", href: "/store?brand=boat" },
-        { label: "Sony", href: "/store?brand=sony" },
-        { label: "Sennheiser", href: "/store?brand=sennheiser" },
-      ],
-    },
-    {
-      type: NavItemColType.PROMOTION,
-      title: "Featured Launch",
-      promotion: {
-        imageUrl:
-          "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop",
-        title: "Acoustic Pro Series X",
-        subtitle: "Immersive sound. 40h battery. Hybrid ANC.",
-        ctaText: "Shop Now",
-        ctaHref: "/store/acoustic-pro-series-x",
-      },
-    },
-  ],
-};
+export const CMS_L2_MEGA_PAYLOAD: L2MegaMenuPayload = {};

@@ -245,7 +245,7 @@ export default function Products() {
   }, [searchTerm]);
 
   return (
-    <main className="w-full px-2">
+    <main className="w-full px-2 min-h-screen max-h-screen overflow-y-scroll">
       {/* Header */}
       <div className="flex gap-3 my-6 justify-between items-center">
         <div className="flex items-center gap-2">

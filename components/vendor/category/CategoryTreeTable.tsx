@@ -24,6 +24,8 @@ import {
   CATEGORY_UI_LABELS,
 } from "@/constants";
 import type { Category } from "@/utils/Types";
+import { CategoryRow } from "./CategoryRow";
+import { countNodes } from "@/lib/utils";
 
 // ── Props (minimal — only cross-component callbacks) ─────────
 
@@ -81,12 +83,7 @@ export default function CategoryTreeTable({
   });
 
   const { searchQuery, filterType, currentPage } = filterState;
-
-  // Calculate total selectable rows in the current filtered dataset
-  const totalItemsCount = treeData.reduce(
-    (acc, c) => acc + 1 + c.children.length,
-    0,
-  );
+  const totalItemsCount = countNodes(treeData);
   const isAllSelected =
     selectedIds.length > 0 && selectedIds.length === totalItemsCount;
 
@@ -164,192 +161,28 @@ export default function CategoryTreeTable({
               </th>
             </tr>
           </thead>
+
           <tbody className="divide-y divide-gray-100">
             {paginatedRoots.length > 0 ? (
-              paginatedRoots.map((parent) => {
-                const isExpanded = expandedIds.includes(parent.id);
-                const isSelected = selectedIds.includes(parent.id);
-                const isDragOver = dragOverCategoryId === parent.id;
-
-                return (
-                  <React.Fragment key={parent.id}>
-                    {/* Parent Row */}
-                    <tr
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, parent.id)}
-                      onDragOver={(e) => handleDragOver(e, parent.id)}
-                      onDragLeave={handleDragLeave}
-                      onDrop={(e) => handleDrop(e, parent.id)}
-                      className={`hover:bg-gray-50/80 transition-colors group border-l-4 ${
-                        isDragOver
-                          ? "border-blue-500 bg-blue-50/50"
-                          : "border-transparent"
-                      }`}
-                    >
-                      {/* Selector */}
-                      <td className="py-4 pl-6 pr-3">
-                        <input
-                          type="checkbox"
-                          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500/25 h-4 w-4 cursor-pointer"
-                          checked={isSelected}
-                          onChange={(e) =>
-                            handleSelectRow(parent.id, e.target.checked)
-                          }
-                        />
-                      </td>
-
-                      {/* Category Name & Hierarchy Control */}
-                      <td className="px-4 py-4 font-medium text-gray-900">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => toggleExpand(parent.id)}
-                            className="p-1 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
-                          >
-                            {isExpanded ? (
-                              <ChevronDown size={14} />
-                            ) : (
-                              <ChevronRight size={14} />
-                            )}
-                          </button>
-                          <div className="cursor-grab text-gray-300 hover:text-gray-500 flex items-center">
-                            <Move size={14} />
-                          </div>
-                          <span
-                            onClick={() => onDrawerOpen(parent.id)}
-                            className="cursor-pointer capitalize hover:underline hover:text-indigo-600 font-bold flex items-center gap-1.5"
-                          >
-                            📁 {parent.name}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Badge Type */}
-                      <td className="px-4 py-4">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-150">
-                          {CATEGORY_UI_LABELS.BADGE_PARENT}
-                        </span>
-                      </td>
-
-                      {/* Description */}
-                      <td className="px-4 py-4 text-gray-500 max-w-[200px] truncate">
-                        {parent.description || CATEGORY_UI_LABELS.NO_DATA_DASH}
-                      </td>
-
-                      {/* Product Count */}
-                      <td className="px-4 py-4 text-center">
-                        <span
-                          onClick={() => onDrawerOpen(parent.id)}
-                          className="inline-flex items-center justify-center bg-gray-100 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer text-gray-600 font-bold rounded-lg text-xs min-w-[24px] h-6 px-1.5 transition-colors"
-                        >
-                          {parent.productCount || 0}
-                        </span>
-                      </td>
-
-                      {/* Action Buttons */}
-                      <td className="px-6 py-4 text-right space-x-2">
-                        <button
-                          onClick={() => onEditClick(parent)}
-                          className="inline-flex items-center justify-center p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
-                          title="Edit"
-                        >
-                          <Edit2 size={15} />
-                        </button>
-                        <button
-                          onClick={() => onDeleteClick(parent)}
-                          className="inline-flex items-center justify-center p-2 text-red-650 hover:bg-red-50 rounded-xl transition-all"
-                          title="Delete"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Subcategories (children) */}
-                    {isExpanded &&
-                      parent.children.map((child) => {
-                        const isChildSelected = selectedIds.includes(child.id);
-                        return (
-                          <tr
-                            key={child.id}
-                            draggable
-                            onDragStart={(e) => handleDragStart(e, child.id)}
-                            onDragOver={(e) => handleDragOver(e, child.id)}
-                            onDragLeave={handleDragLeave}
-                            onDrop={(e) => handleDrop(e, child.id)}
-                            className="bg-gray-50/30 hover:bg-gray-50 transition-colors group"
-                          >
-                            {/* Selector */}
-                            <td className="py-3.5 pl-6 pr-3">
-                              <input
-                                type="checkbox"
-                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500/25 h-4 w-4 cursor-pointer"
-                                checked={isChildSelected}
-                                onChange={(e) =>
-                                  handleSelectRow(child.id, e.target.checked)
-                                }
-                              />
-                            </td>
-
-                            {/* Subcategory Indentation Line & Name */}
-                            <td className="px-4 py-3.5 font-medium text-gray-900 pl-12">
-                              <div className="flex items-center gap-2 relative">
-                                <div className="absolute left-[-16px] top-[-8px] h-[24px] w-[12px] border-l border-b border-gray-250 rounded-bl-lg"></div>
-                                <div className="cursor-grab text-gray-300 hover:text-gray-500 flex items-center">
-                                  <Move size={14} />
-                                </div>
-                                <span
-                                  onClick={() => onDrawerOpen(child.id)}
-                                  className="cursor-pointer hover:underline hover:text-indigo-600 font-medium text-gray-700 flex items-center gap-1.5"
-                                >
-                                  📂 {child.name}
-                                </span>
-                              </div>
-                            </td>
-
-                            {/* Badge Type */}
-                            <td className="px-4 py-3.5">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-150">
-                                {CATEGORY_UI_LABELS.BADGE_SUBCATEGORY}
-                              </span>
-                            </td>
-
-                            {/* Description */}
-                            <td className="px-4 py-3.5 text-gray-400 max-w-[200px] truncate text-xs">
-                              {child.description ||
-                                CATEGORY_UI_LABELS.NO_DATA_DASH}
-                            </td>
-
-                            {/* Product Count */}
-                            <td className="px-4 py-3.5 text-center">
-                              <span
-                                onClick={() => onDrawerOpen(child.id)}
-                                className="inline-flex items-center justify-center bg-gray-100 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer text-gray-650 rounded-lg text-xs min-w-[24px] h-6 px-1.5 transition-colors"
-                              >
-                                {child.productCount || 0}
-                              </span>
-                            </td>
-
-                            {/* Action Buttons */}
-                            <td className="px-6 py-3.5 text-right space-x-2">
-                              <button
-                                onClick={() => onEditClick(child)}
-                                className="inline-flex items-center justify-center p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
-                              >
-                                <Edit2 size={14} />
-                              </button>
-                              <button
-                                onClick={() => onDeleteClick(child)}
-                                className="inline-flex items-center justify-center p-2 text-red-650 hover:bg-red-50 rounded-xl transition-all"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                  </React.Fragment>
-                );
-              })
+              paginatedRoots.map((root) => (
+                <CategoryRow
+                  key={root.id}
+                  node={root}
+                  depth={0}
+                  expandedIds={expandedIds}
+                  toggleExpand={toggleExpand}
+                  selectedIds={selectedIds}
+                  handleSelectRow={handleSelectRow}
+                  onDrawerOpen={onDrawerOpen}
+                  onEditClick={onEditClick}
+                  onDeleteClick={onDeleteClick}
+                  dragOverCategoryId={dragOverCategoryId}
+                  handleDragStart={handleDragStart}
+                  handleDragOver={handleDragOver}
+                  handleDragLeave={handleDragLeave}
+                  handleDrop={handleDrop}
+                />
+              ))
             ) : (
               <CategoryEmptyState onAddNew={onAddNew} />
             )}

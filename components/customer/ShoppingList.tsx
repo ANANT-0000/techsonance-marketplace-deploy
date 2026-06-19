@@ -13,7 +13,7 @@ import { ProductSkeleton } from "../common/ProductSkeleton";
 import { SearchBar } from "./SearchBar";
 import { Product, Category } from "@/utils/Types";
 
-import { fetchProducts, SortBy } from "@/utils/commonAPiClient";
+import { fetchProducts, fetchCategories, SortBy } from "@/utils/commonAPiClient";
 import { SHOPPING_LIST_TEXT } from "@/constants/customerText";
 import { PageLoader } from "./PageLoader";
 
@@ -51,6 +51,7 @@ enum ActionType {
   SET_LOADING = "SET_LOADING",
   SET_SORT_OPEN = "SET_SORT_OPEN",
   SET_PAGE_LOADING = "SET_PAGE_LOADING",
+  SET_CATEGORIES = "SET_CATEGORIES",
 }
 
 type Action =
@@ -60,24 +61,25 @@ type Action =
         products: Product[];
         total: number;
         totalPages: number;
-        categories: Category[];
       };
     }
   | { type: ActionType.SET_LOADING; payload: boolean }
   | { type: ActionType.SET_SORT_OPEN; payload: boolean }
-  | { type: ActionType.SET_PAGE_LOADING; payload: boolean };
+  | { type: ActionType.SET_PAGE_LOADING; payload: boolean }
+  | { type: ActionType.SET_CATEGORIES; payload: Category[] };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case ActionType.SET_PAGE_LOADING:
       return { ...state, pageIsLoading: action.payload };
+    case ActionType.SET_CATEGORIES:
+      return { ...state, categories: action.payload };
     case ActionType.SET_PRODUCTS_DATA:
       return {
         ...state,
         products: action.payload.products,
         total: action.payload.total,
         totalPages: action.payload.totalPages,
-        categories: action.payload.categories,
       };
     case ActionType.SET_LOADING:
       return { ...state, isLoading: action.payload };
@@ -158,6 +160,22 @@ export function ShoppingList({ styles }: ShoppingListProps) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Fetch categories once on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categoriesList = await fetchCategories();
+        dispatch({
+          type: ActionType.SET_CATEGORIES,
+          payload: categoriesList,
+        });
+      } catch (e) {
+        // ignore
+      }
+    };
+    loadCategories();
+  }, []);
+
   // ── Single source-of-truth fetch: fires whenever URL params change ────────
   useEffect(() => {
     let cancelled = false;
@@ -177,24 +195,12 @@ export function ShoppingList({ styles }: ShoppingListProps) {
 
         if (cancelled) return;
 
-        // Accumulate categories seen across pages for the sidebar
-        const seen = new Map<string, Category>();
-        (response.data ?? []).forEach((p: Product) => {
-          if (p.category && !seen.has(p.category.id))
-            seen.set(p.category.id, p.category);
-        });
-        const merged = new Map<string, Category>(
-          state.categories.map((c) => [c.id, c]),
-        );
-        seen.forEach((v, k) => merged.set(k, v));
-
         dispatch({
           type: ActionType.SET_PRODUCTS_DATA,
           payload: {
             products: response.data ?? [],
             total: response.total ?? 0,
             totalPages: response.totalPages ?? 1,
-            categories: Array.from(merged.values()),
           },
         });
       } catch (e) {
@@ -205,7 +211,6 @@ export function ShoppingList({ styles }: ShoppingListProps) {
               products: [],
               total: 0,
               totalPages: 1,
-              categories: state.categories,
             },
           });
         }

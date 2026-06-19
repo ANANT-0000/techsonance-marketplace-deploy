@@ -26,11 +26,14 @@ import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import { PROFILE_SIDEBAR_TEXT } from "@/constants/customerText";
 import { BRAND_LOGO } from "@/constants/common";
 import { useNavbarData } from "@/hooks/useNavbarData";
-import { NavbarPositionEnum } from "@/constants";
 import {
   NavItemColType,
   NavMenuLogoAlignment,
   NavMenuPosition,
+  NavLinkItem,
+  MegaMenuColumnData,
+  PromotionData,
+  NavMegaColumn,
 } from "@/utils/Types";
 
 // UI Text Constants (strictly preventing hardcoded keys/texts in component logic)
@@ -79,6 +82,125 @@ function MegaMenuSkeleton() {
     </div>
   );
 }
+function SubLinkBranch({
+  link,
+  depth = 0,
+}: {
+  link: NavLinkItem;
+  depth?: number;
+}) {
+  return (
+    <li className="w-full">
+      <Link
+        href={link.href}
+        className="text-sm font-medium text-slate-700 hover:text-theme-primary transition-colors flex items-center gap-2.5 group"
+      >
+        {link.iconUrl && (
+          <img
+            src={link.iconUrl}
+            alt=""
+            className="w-5 h-5 object-contain shrink-0 rounded group-hover:scale-105 transition-transform"
+          />
+        )}
+        <span className="leading-snug">{link.label}</span>
+      </Link>
+      {link.children?.length > 0 && (
+        <ul className="flex flex-col gap-1.5 pl-3 mt-1.5 ml-2 border-l-2 border-slate-100 list-none">
+          {link.children.map((child) => (
+            <SubLinkBranch key={child.id} link={child} depth={depth + 1} />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+function MegaMenuColumn({
+  col,
+  cIdx,
+  itemId,
+  expandedColumns,
+  toggleColumnExpand,
+}: {
+  col: NavMegaColumn;
+  cIdx: number;
+  itemId: string;
+  expandedColumns: Set<string>;
+  toggleColumnExpand: (key: string) => void;
+}) {
+  const colKey = `${itemId}-${cIdx}`;
+  const isExpanded = expandedColumns.has(colKey);
+  const allItems = col.items || [];
+  const hasOverflow = allItems.length > MEGA_MENU_ITEM_LIMIT;
+  const visibleItems = isExpanded
+    ? allItems
+    : allItems.slice(0, MEGA_MENU_ITEM_LIMIT);
+
+  if (allItems.length === 0) return null; // nothing to render for this column
+
+  return (
+    <div className="flex flex-col min-w-[180px] max-w-[240px] shrink-0">
+      <Link
+        href={col.href || "#"}
+        className={`text-xs font-bold tracking-wider uppercase pb-2.5 mb-2 border-b border-slate-100 ${
+          col.href
+            ? "text-slate-900 hover:text-theme-primary transition-colors"
+            : "text-slate-400 pointer-events-none"
+        }`}
+      >
+        {col.title || "\u00a0"}
+      </Link>
+
+      <ul
+        className={`flex flex-col gap-2.5 list-none p-0 m-0 ${
+          isExpanded ? "max-h-[280px] overflow-y-auto pr-2" : ""
+        }`}
+      >
+        {visibleItems.map((subLink) => (
+          <SubLinkBranch key={subLink.id} link={subLink} />
+        ))}
+        {hasOverflow && (
+          <li>
+            <button
+              type="button"
+              onClick={() => toggleColumnExpand(colKey)}
+              className="text-xs font-semibold text-theme-primary/70 hover:text-theme-primary mt-1 bg-transparent border-none p-0 cursor-pointer"
+            >
+              {isExpanded
+                ? "Show less"
+                : `+${allItems.length - MEGA_MENU_ITEM_LIMIT} more`}
+            </button>
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+function PromoCard({ promo }: { promo: PromotionData }) {
+  return (
+    <div className="bg-slate-50/60 p-4 rounded-2xl flex flex-col h-full border border-slate-100/50 min-w-[200px] max-w-[260px]">
+      <img
+        src={promo.imageUrl}
+        alt={promo.title}
+        className="w-full h-32 object-cover rounded-xl mb-3.5 shadow-xs"
+      />
+      <h4 className="text-sm font-bold text-slate-900 mb-1.5 leading-snug">
+        {promo.title}
+      </h4>
+      <p className="text-xs text-slate-500 mb-4 line-clamp-2 leading-relaxed">
+        {promo.subtitle}
+      </p>
+      <Link
+        href={promo.ctaHref}
+        className="text-xs font-bold text-theme-primary hover:text-theme-primary/85 flex items-center gap-1 mt-auto"
+      >
+        <span>{promo.ctaText}</span>
+        <ChevronRight size={13} />
+      </Link>
+    </div>
+  );
+}
 function NavbarSkeleton() {
   return (
     <header className="hidden lg:block w-full sticky top-0 bg-white border-b border-slate-100 shadow-sm z-50">
@@ -111,7 +233,6 @@ function NavbarSkeleton() {
     </header>
   );
 }
-
 export function Navbar({
   styles = "",
 }: {
@@ -313,6 +434,11 @@ export function Navbar({
               activeMenuId === item.id &&
               (menuDataLoading || hasResolvedColumns);
 
+            // Directory-style menus (e.g. "All Categories") tend to have many
+            // columns — switch from a single horizontal row to a wrapping grid
+            // so 6+ columns don't blow the panel out past the viewport.
+            const isDirectoryStyle = (columns?.length ?? 0) > 4;
+
             return (
               <li
                 key={item.id}
@@ -354,132 +480,56 @@ export function Navbar({
                 <AnimatePresence>
                   {showMenuPanel && (
                     <motion.div
-                      initial={{ opacity: 0, y: 12 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 12 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
-                      className="absolute left-0 top-full mt-3 bg-white border border-slate-100 rounded-3xl shadow-2xl z-50 overflow-hidden w-fit max-w-[min(92vw,960px)]"
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                      className="absolute left-0 top-full mt-3 min-w-[320px] w-max max-w-[min(94vw,980px)] bg-white border border-slate-100 rounded-2xl shadow-[0_12px_40px_-8px_rgba(0,0,0,0.12)] z-50 overflow-hidden"
                     >
                       {menuDataLoading ? (
                         <MegaMenuSkeleton />
-                      ) : (
-                        <div
-                          className="grid gap-x-4 gap-y-4 py-2 px-4 items-stretch"
-                          style={{
-                            gridTemplateColumns: `repeat(${columns!.length}, minmax(100px, 230px))`,
-                          }}
-                        >
-                          {columns!.map((col, cIdx) => {
-                            const isSubcat =
-                              col.type === NavItemColType.SUBCATEGORIES;
-                            const isBrands = col.type === NavItemColType.BRANDS;
-                            const isPromo =
-                              col.type === NavItemColType.PROMOTION;
-                            const isProducts =
-                              col.type === NavItemColType.PRODUCTS;
-                            const colKey = `${item.id}-${cIdx}`;
-                            const isExpanded = expandedColumns.has(colKey);
-                            const allItems = col.items || [];
-                            const hasOverflow =
-                              allItems.length > MEGA_MENU_ITEM_LIMIT;
-                            const visibleItems = isExpanded
-                              ? allItems
-                              : allItems.slice(0, MEGA_MENU_ITEM_LIMIT);
-
-                            return (
-                              <div
+                      ) : isDirectoryStyle ? (
+                        <div className="grid grid-cols-3 gap-x-8 gap-y-6 py-6 px-7 max-h-[480px] overflow-y-auto">
+                          {columns!.map((col, cIdx) =>
+                            col.type === NavItemColType.PROMOTION &&
+                            col.promotion ? (
+                              <PromoCard
                                 key={`col-${cIdx}`}
-                                className="flex flex-col"
-                              >
-                                {/* Column Heading */}
-                                {
-                                  <Link
-                                    href={col.href || "#"}
-                                    className={`text-xs font-bold tracking-wider capitalize ${
-                                      col.href && col.href.length > 0
-                                        ? "text-theme-primary cursor-pointer hover:underline"
-                                        : "pointer-events-none"
-                                    }`}
-                                  >
-                                    {col.title || "\u00a0"}
-                                  </Link>
-                                }
-
-                                {/* Subcategories and Brands Links rendering */}
-                                {(isSubcat || isBrands || isProducts) &&
-                                  allItems.length > 0 && (
-                                    <ul
-                                      className={`flex flex-col gap-3 items-start list-none p-0 m-0 w-full ${
-                                        isExpanded
-                                          ? "max-h-[320px] overflow-y-auto pr-2"
-                                          : ""
-                                      }`}
-                                    >
-                                      {visibleItems.map((subLink, lIdx) => (
-                                        <li
-                                          key={`sub-${lIdx}`}
-                                          className="w-full"
-                                        >
-                                          <Link
-                                            href={subLink.href}
-                                            className="text-sm font-medium text-slate-700 hover:text-theme-primary transition-colors flex items-center gap-2.5 group text-left"
-                                          >
-                                            {isSubcat && subLink.iconUrl && (
-                                              <img
-                                                src={subLink.iconUrl}
-                                                alt={subLink.label}
-                                                className="w-5 h-5 object-contain shrink-0 group-hover:scale-105 transition-transform"
-                                              />
-                                            )}
-                                            <span className="leading-snug">
-                                              {subLink.label}
-                                            </span>
-                                          </Link>
-                                        </li>
-                                      ))}
-                                      {hasOverflow && (
-                                        <li>
-                                          <button
-                                            type="button"
-                                            onClick={() =>
-                                              toggleColumnExpand(colKey)
-                                            }
-                                            className="text-xs font-semibold text-theme-primary/80 hover:text-theme-primary mt-1 cursor-pointer bg-transparent border-none p-0"
-                                          >
-                                            {isExpanded
-                                              ? "Show less"
-                                              : `+${allItems.length - MEGA_MENU_ITEM_LIMIT} more`}
-                                          </button>
-                                        </li>
-                                      )}
-                                    </ul>
-                                  )}
-                                {/* Promotional Cards rendering */}
-                                {isPromo && col.promotion && (
-                                  <div className="bg-slate-50/60 p-4 rounded-2xl flex flex-col h-full border border-slate-100/50">
-                                    <img
-                                      src={col.promotion.imageUrl}
-                                      alt={col.promotion.title}
-                                      className="w-full h-32 object-cover rounded-xl mb-3.5 shadow-xs"
-                                    />
-                                    <h4 className="text-sm font-bold text-slate-900 mb-1.5 leading-snug">
-                                      {col.promotion.title}
-                                    </h4>
-                                    <p className="text-xs text-slate-500 mb-4 line-clamp-2 leading-relaxed">
-                                      {col.promotion.subtitle}
-                                    </p>
-                                    <Link
-                                      href={col.promotion.ctaHref}
-                                      className="text-xs font-bold text-theme-primary hover:text-theme-primary/85 flex items-center gap-1 mt-auto"
-                                    >
-                                      <span>{col.promotion.ctaText}</span>
-                                      <ChevronRight size={13} />
-                                    </Link>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
+                                promo={col.promotion}
+                              />
+                            ) : (
+                              <MegaMenuColumn
+                                key={`col-${cIdx}`}
+                                col={col}
+                                cIdx={cIdx}
+                                itemId={item.id}
+                                expandedColumns={expandedColumns}
+                                toggleColumnExpand={toggleColumnExpand}
+                              />
+                            ),
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex gap-6 py-6 px-7 divide-x divide-slate-100 max-h-[440px]">
+                          {columns!.map((col, cIdx) => (
+                            <div
+                              key={`col-${cIdx}`}
+                              className={`shrink-0 ${cIdx > 0 ? "pl-6" : ""}`}
+                            >
+                              {col.type === NavItemColType.PROMOTION &&
+                              col.promotion ? (
+                                <PromoCard promo={col.promotion} />
+                              ) : (
+                                <MegaMenuColumn
+                                  col={col}
+                                  cIdx={cIdx}
+                                  itemId={item.id}
+                                  expandedColumns={expandedColumns}
+                                  toggleColumnExpand={toggleColumnExpand}
+                                />
+                              )}
+                            </div>
+                          ))}
                         </div>
                       )}
                     </motion.div>

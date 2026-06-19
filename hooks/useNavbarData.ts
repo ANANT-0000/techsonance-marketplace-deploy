@@ -7,10 +7,6 @@ import { LANG_KEY, NAVBAR_CACHE_KEY } from "@/constants";
 import {
   CMS_L1_NAV_PAYLOAD,
   CMS_L2_MEGA_PAYLOAD,
-  L1NavbarPayload,
-  L2MegaMenuPayload,
-  LogoAlignmentEnum,
-  NavbarPositionEnum,
 } from "@/constants/storefront";
 
 import { UiText } from "@/constants/ui-text";
@@ -22,8 +18,11 @@ import {
   subscribeNavbarChange,
 } from "@/utils/cache";
 import {
+  L1NavbarPayload,
+  L2MegaMenuPayload,
   NavItemColType,
   NavItemDisplayType,
+  NavLinkItem,
   NavMenuLogoAlignment,
   NavMenuPosition,
 } from "@/utils/Types";
@@ -76,7 +75,7 @@ interface NavItemApi {
     sort_order: number;
     item_type: string;
     meta: NavItemMetaApi;
-    items?: { label: string; href: string; iconUrl?: string }[];
+    items?: NavLinkItem[];
   }[];
 }
 
@@ -151,6 +150,7 @@ function transformApiResponse(data: NavbarApiResponse): {
       const itemType = col.item_type;
       if (colType === NavItemColType.PROMOTION) {
         return {
+          id: col.id,
           type: NavItemColType.PROMOTION,
           title: m.col_title || col.label,
           promotion: {
@@ -164,6 +164,7 @@ function transformApiResponse(data: NavbarApiResponse): {
       }
 
       return {
+        id: col.id,
         type: colType,
         title: m.col_title || col.label,
         href: href,

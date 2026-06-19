@@ -334,6 +334,7 @@ export const createProductVariant = async (
       method: "POST",
       body: variantData,
       headers: {
+        Authorization: `Bearer ${token}`,
         "company-domain": companyDomain,
       },
     });
@@ -2183,6 +2184,7 @@ export interface NavItemMetaPayload {
   promo_subtitle?: string;
   promo_cta_href?: string;
   icon_url?: string;
+  route_key?: string;
   product_ids?: string[];
 }
 export interface CreateNavItemPayload {

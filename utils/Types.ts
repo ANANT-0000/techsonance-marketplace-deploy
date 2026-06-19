@@ -1096,6 +1096,7 @@ export type FieldConfig = {
 export interface Category {
   id: string;
   name: string;
+  slug: string;
   description: string;
   parent_id: string | null;
   productCount: number;
@@ -1104,9 +1105,9 @@ export interface Category {
 
 /** A parent category node augmented with its direct children for tree rendering. */
 export interface CategoryTreeNode extends Category {
-  children: Category[];
+  children: CategoryTreeNode[];
+  depth: number;
 }
-
 /** Drawer-specific view model with resolved parent name and children. */
 export interface CategoryDrawerData extends Category {
   parentName: string;
@@ -1278,6 +1279,7 @@ export enum NavItemDisplayType {
   CATEGORY_LISTING = "category_listing",
   DYNAMIC_SUBCATEGORIES = "dynamic_subcategories",
   PRODUCT_RANGES = "product_ranges",
+  CATEGORY_DIRECTORY = "category_directory",
 }
 export enum NavItemColType {
   SUBCATEGORIES = "subcategories",
@@ -1296,4 +1298,147 @@ export enum NavMenuLogoAlignment {
 export enum NavMenuType {
   SIMPLE = "simple",
   MEGA = "mega",
+}
+export interface CategoryNode {
+  id: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+  children: CategoryNode[];
+}
+
+export interface NavLinkItem {
+  id: string;
+  label: string;
+  href: string;
+  iconUrl?: string | null;
+  categoryId?: string | null;
+  children: NavLinkItem[];
+}
+
+export interface MegaMenuColumn {
+  id: string;
+  title: string;
+  href: string;
+  type: NavItemColType;
+  items: NavLinkItem[];
+  promotion?: {
+    imageUrl: string;
+    title: string;
+    subtitle: string;
+    ctaHref: string;
+    ctaText: string;
+  };
+}
+
+export enum LinkMode {
+  CATEGORY_QUERY = "category_query",
+  STATIC_PAGE = "static_page",
+  MEGA_MENU = "mega_menu",
+  CATEGORY_DIRECTORY = "category_directory",
+}
+/** @deprecated Use NavMenuLogoAlignment  */
+export enum LogoAlignmentEnum {
+  LEFT = "left",
+  CENTER = "center",
+}
+/** @deprecated Use NavMenuPosition */
+export enum NavbarPositionEnum {
+  STICKY = "sticky",
+  RELATIVE = "relative",
+}
+
+export interface NavPromoBlock {
+  id?: string;
+  imageUrl: string;
+  title: string;
+  subtitle: string;
+  ctaText: string;
+  ctaHref: string;
+}
+
+export interface NavMegaColumn {
+  id: string;
+  type: NavItemColType;
+  title: string;
+  href?: string;
+  itemType?: string;
+  items?: NavLinkItem[];
+  promotion?: NavPromoBlock;
+}
+
+export interface L1NavItem {
+  id: string;
+  label: string;
+  href: string;
+  itemType?: string;
+  hasMegaMenu: boolean;
+}
+
+export interface L1NavbarPayload {
+  logo: {
+    src: string;
+    alt: string;
+    href: string;
+    alignment: NavMenuLogoAlignment;
+  };
+  navbar: {
+    position: NavMenuPosition;
+    showBottomBorder: boolean;
+    showShadow: boolean;
+  };
+  searchBar: {
+    isVisible: boolean;
+    placeholder: string;
+    searchEndpoint: string;
+  };
+  utilities: {
+    showAccount: boolean;
+    showWishlist: boolean;
+    showCart: boolean;
+  };
+  navigationItems: L1NavItem[];
+}
+
+export type L2MegaMenuPayload = Record<string, NavMegaColumn[]>;
+
+export interface SiteMap {
+  id: string;
+  key: string;
+  label: string;
+  base_path: string;
+  default_query_param: string | null;
+}
+
+export interface NavLinkItem {
+  id: string;
+  label: string;
+  href: string;
+  iconUrl?: string | null;
+  categoryId?: string | null;
+  children: NavLinkItem[];
+}
+
+export interface PromotionData {
+  imageUrl: string;
+  title: string;
+  subtitle: string;
+  ctaHref: string;
+  ctaText: string;
+}
+
+export interface MegaMenuColumnData {
+  id: string;
+  title: string;
+  href: string;
+  type: NavItemColType;
+  items: NavLinkItem[];
+  promotion?: PromotionData;
+}
+
+export interface L1NavItem {
+  id: string;
+  label: string;
+  href: string;
+  hasMegaMenu: boolean;
 }

@@ -44,10 +44,7 @@ function DesktopSidebarContent({
   setIsPriceOpen: (v: boolean) => void;
 }) {
   const toggleCategory = (id: string) => {
-    const next = filters.selectedCategories.includes(id)
-      ? filters.selectedCategories.filter((c) => c !== id)
-      : [...filters.selectedCategories, id];
-
+    const next = filters.selectedCategories.includes(id) ? [] : [id];
     onFiltersChange({ ...filters, selectedCategories: next });
   };
 
@@ -196,9 +193,7 @@ export function FilterSidebar({
   };
 
   const toggleCategory = (id: string) => {
-    const next = filters.selectedCategories.includes(id)
-      ? filters.selectedCategories.filter((c) => c !== id)
-      : [...filters.selectedCategories, id];
+    const next = filters.selectedCategories.includes(id) ? [] : [id];
     onFiltersChange({ ...filters, selectedCategories: next });
   };
 

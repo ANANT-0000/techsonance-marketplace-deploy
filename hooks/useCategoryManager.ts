@@ -405,13 +405,19 @@ export function useCategoryManager({
 
   // ── Tree Data ──
   const treeData = useMemo<CategoryTreeNode[]>(() => {
-    const roots = filteredCategories.filter((c) => !c.parent_id);
-    const subCats = filteredCategories.filter((c) => c.parent_id);
-
-    return roots.map((root) => {
-      const children = subCats.filter((sub) => sub.parent_id === root.id);
-      return { ...root, children };
-    });
+    const buildTree = (
+      parentId: string | null,
+      currentDepth: number,
+    ): CategoryTreeNode[] => {
+      return filteredCategories
+        .filter((c) => c.parent_id === parentId)
+        .map((cat) => ({
+          ...cat,
+          depth: currentDepth,
+          children: buildTree(cat.id, currentDepth + 1),
+        }));
+    };
+    return buildTree(null, 0);
   }, [filteredCategories]);
 
   // ── Pagination ──

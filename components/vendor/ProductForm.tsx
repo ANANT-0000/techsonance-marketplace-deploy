@@ -237,17 +237,17 @@ export function ProductForm({
       category_id: data.category,
       status: data.status.toLowerCase(),
       base_price: String(data.basePrice),
-      discount_percent: String(data.discountPercent),
+      discount_percent: data.discountPercent !== null && data.discountPercent !== undefined ? String(data.discountPercent) : "0",
       stock_quantity: Number(data.stocks),
       sku: data.sku,
       warehouse_id: data.warehouseId,
       tax_slab_id: data.taxSlabId,
+      variant_name: data.productName,
     };
 
     const payload = isUpdate
       ? {
           ...basePayload,
-          variant_name: data.productName,
           variant_id: existingData?.variantId,
           price: Number(data.basePrice),
         }

@@ -12,15 +12,17 @@ import {
   deleteVendorProductCategory,
   updateVendorProductCategory,
 } from "@/utils/vendorApiClient";
-import {
-  CategoryFilterType,
-} from "@/components/vendor/category/CategoryManager";
+import { CategoryFilterType } from "@/components/vendor/category/CategoryManager";
 import {
   CATEGORY_EXPORT,
   CATEGORY_PAGINATION,
   CATEGORY_TOAST,
 } from "@/constants";
-import type { Category, CategoryFilterState, CategoryTreeNode } from "@/utils/Types";
+import type {
+  Category,
+  CategoryFilterState,
+  CategoryTreeNode,
+} from "@/utils/Types";
 
 // ── Props ────────────────────────────────────────────────────
 
@@ -49,13 +51,17 @@ export function useCategoryTable({
 
   // ── Filter & Pagination State ──
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState<CategoryFilterType>(CategoryFilterType.ALL);
-  const [currentPage, setCurrentPage] = useState<number>(CATEGORY_PAGINATION.DEFAULT_PAGE);
+  const [filterType, setFilterType] = useState<CategoryFilterType>(
+    CategoryFilterType.ALL,
+  );
+  const [currentPage, setCurrentPage] = useState<number>(
+    CATEGORY_PAGINATION.DEFAULT_PAGE,
+  );
   const pageSize = CATEGORY_PAGINATION.DEFAULT_PAGE_SIZE;
 
   // ── Tree Expand State ──
-  const [expandedIds, setExpandedIds] = useState<string[]>(
-    () => categories.filter((c) => !c.parent_id).map((c) => c.id),
+  const [expandedIds, setExpandedIds] = useState<string[]>(() =>
+    categories.filter((c) => !c.parent_id).map((c) => c.id),
   );
 
   // ── Selection State ──
@@ -63,8 +69,12 @@ export function useCategoryTable({
   const [bulkParentId, setBulkParentId] = useState("");
 
   // ── Drag & Drop State ──
-  const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null);
-  const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null);
+  const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(
+    null,
+  );
+  const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(
+    null,
+  );
 
   // ═══════════════════════════════════════════════════════════
   //  Computed Values
@@ -94,19 +104,28 @@ export function useCategoryTable({
     } else if (filterType === CategoryFilterType.UNUSED) {
       list = list.filter((c) => !c.productCount);
     } else if (filterType === CategoryFilterType.MOST_USED) {
-      list = [...list].sort((a, b) => (b.productCount || 0) - (a.productCount || 0));
+      list = [...list].sort(
+        (a, b) => (b.productCount || 0) - (a.productCount || 0),
+      );
     }
 
     return list;
   }, [categories, searchQuery, filterType]);
 
   const treeData = useMemo<CategoryTreeNode[]>(() => {
-    const roots = filteredCategories.filter((c) => !c.parent_id);
-    const subCats = filteredCategories.filter((c) => c.parent_id);
-    return roots.map((root) => ({
-      ...root,
-      children: subCats.filter((sub) => sub.parent_id === root.id),
-    }));
+    const buildTree = (
+      parentId: string | null,
+      currentDepth: number,
+    ): CategoryTreeNode[] => {
+      return filteredCategories
+        .filter((c) => c.parent_id === parentId)
+        .map((cat) => ({
+          ...cat,
+          depth: currentDepth,
+          children: buildTree(cat.id, currentDepth + 1),
+        }));
+    };
+    return buildTree(null, 0);
   }, [filteredCategories]);
 
   const paginatedRoots = useMemo<CategoryTreeNode[]>(() => {
@@ -237,7 +256,11 @@ export function useCategoryTable({
         try {
           const res = await updateVendorProductCategory(
             id,
-            { name: cat.name, description: cat.description, parent_id: targetParentId },
+            {
+              name: cat.name,
+              description: cat.description,
+              parent_id: targetParentId,
+            },
             token,
           );
           if (res.status === 200) successCount++;
@@ -319,7 +342,10 @@ export function useCategoryTable({
         );
         if (res.status === 200) {
           toast.success(
-            CATEGORY_TOAST.HIERARCHY_UPDATED(draggedCat.name, targetParent.name),
+            CATEGORY_TOAST.HIERARCHY_UPDATED(
+              draggedCat.name,
+              targetParent.name,
+            ),
           );
           setCheckChange((prev) => !prev);
         } else {

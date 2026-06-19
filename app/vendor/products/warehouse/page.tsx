@@ -247,7 +247,7 @@ export default function LocationsPage() {
   }, [closedLocationForm]);
 
   return (
-    <main className="mt-1 h-screen relative w-full">
+    <main className="mt-1 min-h-screen max-h-screen overflow-y-scroll relative w-full">
       <AnimatePresence>
         {closedLocationForm && (
           <motion.section

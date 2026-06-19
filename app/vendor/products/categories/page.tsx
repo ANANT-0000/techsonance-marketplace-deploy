@@ -5,6 +5,7 @@ import { authToken } from "@/utils/authToken";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CATEGORY_MANAGER_TEXT } from "@/constants/vendorText";
+import { Category } from "@/utils/Types";
 
 const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
   await fetchVendorsProductsCategory(token)
@@ -25,16 +26,7 @@ const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
 
 export default function CategoryPage() {
   const token = authToken();
-  const [categoryOptions, setCategoryOptions] = useState<
-    {
-      id: string;
-      name: string;
-      description: string;
-      parent_id: string | null;
-      productCount: number;
-      updated_at: string;
-    }[]
-  >([]);
+  const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
   const [checkChange, setCheckChange] = useState(false);
   useEffect(() => {
     if (token) {
@@ -47,7 +39,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className=" p-6 w-full h-screen overflow-y-scroll">
+    <div className=" p-6 w-full min-h-screen max-h-screen overflow-y-scroll">
       <header className="mb-8">
         <h1 className="text-theme-h4 font-bold text-gray-800">
           {CATEGORY_MANAGER_TEXT.HEADER.TITLE}

@@ -103,10 +103,19 @@ type StockManagerAction =
   | { type: StockManagerActionType.CLOSE_MODAL }
   | { type: StockManagerActionType.SET_EDIT_STOCK_VALUE; payload: number }
   | { type: StockManagerActionType.SET_IS_SAVING; payload: boolean }
-  | { type: StockManagerActionType.SET_CONFIRM_CONFIG; payload: StockManagerState["confirmConfig"] }
+  | {
+      type: StockManagerActionType.SET_CONFIRM_CONFIG;
+      payload: StockManagerState["confirmConfig"];
+    }
   | { type: StockManagerActionType.SET_IS_STATUS_UPDATING; payload: boolean }
-  | { type: StockManagerActionType.UPDATE_VARIANT_STOCK; payload: { variantId: string; stock: number } }
-  | { type: StockManagerActionType.UPDATE_VARIANT_STATUS; payload: { variantId: string; status: string } };
+  | {
+      type: StockManagerActionType.UPDATE_VARIANT_STOCK;
+      payload: { variantId: string; stock: number };
+    }
+  | {
+      type: StockManagerActionType.UPDATE_VARIANT_STATUS;
+      payload: { variantId: string; status: string };
+    };
 
 const initialState: StockManagerState = {
   loading: true,
@@ -122,7 +131,10 @@ const initialState: StockManagerState = {
   isStatusUpdating: false,
 };
 
-function stockManagerReducer(state: StockManagerState, action: StockManagerAction): StockManagerState {
+function stockManagerReducer(
+  state: StockManagerState,
+  action: StockManagerAction,
+): StockManagerState {
   switch (action.type) {
     case StockManagerActionType.SET_LOADING:
       return { ...state, loading: action.payload };
@@ -156,7 +168,7 @@ function stockManagerReducer(state: StockManagerState, action: StockManagerActio
         variants: state.variants.map((v) =>
           v.variantId === action.payload.variantId
             ? { ...v, stock: action.payload.stock }
-            : v
+            : v,
         ),
       };
     case StockManagerActionType.UPDATE_VARIANT_STATUS:
@@ -165,7 +177,7 @@ function stockManagerReducer(state: StockManagerState, action: StockManagerActio
         variants: state.variants.map((v) =>
           v.variantId === action.payload.variantId
             ? { ...v, status: action.payload.status }
-            : v
+            : v,
         ),
       };
     default:
@@ -196,7 +208,10 @@ export default function StockManagerPage() {
     dispatch({ type: StockManagerActionType.SET_LOADING, payload: true });
     try {
       const res = await fetchStockManagerVariants(token as string);
-      dispatch({ type: StockManagerActionType.SET_VARIANTS, payload: res.data || [] });
+      dispatch({
+        type: StockManagerActionType.SET_VARIANTS,
+        payload: res.data || [],
+      });
     } catch {
     } finally {
       dispatch({ type: StockManagerActionType.SET_LOADING, payload: false });
@@ -231,7 +246,10 @@ export default function StockManagerPage() {
     const { variantId, currentStatus } = confirmConfig;
     const nextStatus = currentStatus === "active" ? "inactive" : "active";
 
-    dispatch({ type: StockManagerActionType.SET_IS_STATUS_UPDATING, payload: true });
+    dispatch({
+      type: StockManagerActionType.SET_IS_STATUS_UPDATING,
+      payload: true,
+    });
 
     // Optimistic UI update
     dispatch({
@@ -241,7 +259,10 @@ export default function StockManagerPage() {
 
     try {
       await updateProductVariantStatus(variantId, nextStatus, token as string);
-      dispatch({ type: StockManagerActionType.SET_CONFIRM_CONFIG, payload: null });
+      dispatch({
+        type: StockManagerActionType.SET_CONFIRM_CONFIG,
+        payload: null,
+      });
     } catch {
       alert(STOCK_MANAGER_TEXT.TOASTS.UPDATE_STATUS_FAIL);
       // Revert if API fails
@@ -250,13 +271,17 @@ export default function StockManagerPage() {
         payload: { variantId, status: currentStatus },
       });
     } finally {
-      dispatch({ type: StockManagerActionType.SET_IS_STATUS_UPDATING, payload: false });
+      dispatch({
+        type: StockManagerActionType.SET_IS_STATUS_UPDATING,
+        payload: false,
+      });
     }
   };
 
   const handleSaveStock = async () => {
     if (!activeModalItem) return;
-    if (editStockValue < 0) return alert(STOCK_MANAGER_TEXT.TOASTS.STOCK_MIN_ERR);
+    if (editStockValue < 0)
+      return alert(STOCK_MANAGER_TEXT.TOASTS.STOCK_MIN_ERR);
     dispatch({ type: StockManagerActionType.SET_IS_SAVING, payload: true });
     try {
       await quickUpdateStock(
@@ -266,7 +291,10 @@ export default function StockManagerPage() {
       );
       dispatch({
         type: StockManagerActionType.UPDATE_VARIANT_STOCK,
-        payload: { variantId: activeModalItem.variantId, stock: editStockValue },
+        payload: {
+          variantId: activeModalItem.variantId,
+          stock: editStockValue,
+        },
       });
       dispatch({ type: StockManagerActionType.CLOSE_MODAL });
     } catch {
@@ -310,9 +338,8 @@ export default function StockManagerPage() {
   // Config variables for the confirmation modal
   const isActivating = confirmConfig?.currentStatus !== "active";
 
-
   return (
-    <main className="w-full min-h-screen px-4 sm:px-6 pb-12 relative">
+    <main className="w-full min-h-screen max-h-screen overflow-y-scroll px-4 sm:px-6 pb-12 relative">
       {/* ── Page Header ── */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-8 pb-6">
         <div className="flex items-center gap-3">
@@ -393,7 +420,12 @@ export default function StockManagerPage() {
               type="text"
               placeholder={STOCK_MANAGER_TEXT.FILTERS.SEARCH_PLACEHOLDER}
               value={searchQuery}
-              onChange={(e) => dispatch({ type: StockManagerActionType.SET_SEARCH_QUERY, payload: e.target.value })}
+              onChange={(e) =>
+                dispatch({
+                  type: StockManagerActionType.SET_SEARCH_QUERY,
+                  payload: e.target.value,
+                })
+              }
               className="w-full pl-9 pr-3 py-2 text-theme-body-sm bg-white border-2 border-stone-200 rounded-xl shadow-sm placeholder-stone-400 text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all"
             />
           </div>
@@ -404,12 +436,23 @@ export default function StockManagerPage() {
             />
             <select
               value={statusFilter}
-              onChange={(e) => dispatch({ type: StockManagerActionType.SET_STATUS_FILTER, payload: e.target.value })}
+              onChange={(e) =>
+                dispatch({
+                  type: StockManagerActionType.SET_STATUS_FILTER,
+                  payload: e.target.value,
+                })
+              }
               className="pl-8 pr-4 py-2 text-theme-body-sm bg-white border-2 border-stone-200 rounded-xl shadow-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all cursor-pointer appearance-none"
             >
-              <option value="">{STOCK_MANAGER_TEXT.FILTERS.ALL_STATUSES}</option>
-              <option value="active">{STOCK_MANAGER_TEXT.FILTERS.STATUS_ACTIVE}</option>
-              <option value="inactive">{STOCK_MANAGER_TEXT.FILTERS.STATUS_INACTIVE}</option>
+              <option value="">
+                {STOCK_MANAGER_TEXT.FILTERS.ALL_STATUSES}
+              </option>
+              <option value="active">
+                {STOCK_MANAGER_TEXT.FILTERS.STATUS_ACTIVE}
+              </option>
+              <option value="inactive">
+                {STOCK_MANAGER_TEXT.FILTERS.STATUS_INACTIVE}
+              </option>
             </select>
           </div>
           <div className="relative">
@@ -419,18 +462,30 @@ export default function StockManagerPage() {
             />
             <select
               value={sortBy}
-              onChange={(e) => dispatch({ type: StockManagerActionType.SET_SORT_BY, payload: e.target.value })}
+              onChange={(e) =>
+                dispatch({
+                  type: StockManagerActionType.SET_SORT_BY,
+                  payload: e.target.value,
+                })
+              }
               className="pl-8 pr-4 py-2 text-theme-body-sm bg-white border-2 border-stone-200 rounded-xl shadow-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all cursor-pointer appearance-none"
             >
-              <option value="stock_asc">{STOCK_MANAGER_TEXT.FILTERS.SORT_STOCK_ASC}</option>
-              <option value="stock_desc">{STOCK_MANAGER_TEXT.FILTERS.SORT_STOCK_DESC}</option>
-              <option value="name_asc">{STOCK_MANAGER_TEXT.FILTERS.SORT_NAME_ASC}</option>
+              <option value="stock_asc">
+                {STOCK_MANAGER_TEXT.FILTERS.SORT_STOCK_ASC}
+              </option>
+              <option value="stock_desc">
+                {STOCK_MANAGER_TEXT.FILTERS.SORT_STOCK_DESC}
+              </option>
+              <option value="name_asc">
+                {STOCK_MANAGER_TEXT.FILTERS.SORT_NAME_ASC}
+              </option>
             </select>
           </div>
         </div>
         {!loading && (
           <span className="text-theme-body-sm font-medium text-stone-500">
-            {filteredAndSorted.length} {STOCK_MANAGER_TEXT.FILTERS.RECORDS_MATCHING}
+            {filteredAndSorted.length}{" "}
+            {STOCK_MANAGER_TEXT.FILTERS.RECORDS_MATCHING}
           </span>
         )}
       </div>
@@ -557,7 +612,9 @@ export default function StockManagerPage() {
                           }`}
                         />
 
-                        {item.status === "active" ? STOCK_MANAGER_TEXT.TABLE.STATUS_ACTIVE : STOCK_MANAGER_TEXT.TABLE.STATUS_INACTIVE}
+                        {item.status === "active"
+                          ? STOCK_MANAGER_TEXT.TABLE.STATUS_ACTIVE
+                          : STOCK_MANAGER_TEXT.TABLE.STATUS_INACTIVE}
                       </span>
                     </td>
 
@@ -605,8 +662,11 @@ export default function StockManagerPage() {
           <span className="font-semibold text-stone-600">
             {filteredAndSorted.length}
           </span>{" "}
-          {STOCK_MANAGER_TEXT.FOOTER.OF} {totalVariants} {STOCK_MANAGER_TEXT.FOOTER.ITEMS_CLICK_ANY}{" "}
-          <span className="font-semibold text-stone-600">{STOCK_MANAGER_TEXT.FOOTER.ROW}</span>{" "}
+          {STOCK_MANAGER_TEXT.FOOTER.OF} {totalVariants}{" "}
+          {STOCK_MANAGER_TEXT.FOOTER.ITEMS_CLICK_ANY}{" "}
+          <span className="font-semibold text-stone-600">
+            {STOCK_MANAGER_TEXT.FOOTER.ROW}
+          </span>{" "}
           {STOCK_MANAGER_TEXT.FOOTER.TO_EDIT_QUANTITY}
         </p>
       )}
@@ -639,7 +699,9 @@ export default function StockManagerPage() {
                   )}
                 </div>
                 <button
-                  onClick={() => dispatch({ type: StockManagerActionType.CLOSE_MODAL })}
+                  onClick={() =>
+                    dispatch({ type: StockManagerActionType.CLOSE_MODAL })
+                  }
                   className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors shrink-0"
                   aria-label="Close"
                 >
@@ -662,11 +724,11 @@ export default function StockManagerPage() {
                 {/* Arrow */}
                 <div className="flex flex-col items-center justify-center shrink-0 px-2">
                   <svg
-                     width="20"
-                     height="14"
-                     viewBox="0 0 20 14"
-                     fill="none"
-                     className="text-stone-300"
+                    width="20"
+                    height="14"
+                    viewBox="0 0 20 14"
+                    fill="none"
+                    className="text-stone-300"
                   >
                     <path
                       d="M1 7h18M13 1l6 6-6 6"
@@ -714,9 +776,10 @@ export default function StockManagerPage() {
                     onChange={(e) =>
                       dispatch({
                         type: StockManagerActionType.SET_EDIT_STOCK_VALUE,
-                        payload: e.target.value === ""
-                          ? 0
-                          : Math.max(0, parseInt(e.target.value, 10)),
+                        payload:
+                          e.target.value === ""
+                            ? 0
+                            : Math.max(0, parseInt(e.target.value, 10)),
                       })
                     }
                     className="w-full border-2 border-stone-200 rounded-xl pl-4 pr-16 py-3 text-theme-h5 font-bold text-stone-800 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all tabular-nums"
@@ -757,7 +820,9 @@ export default function StockManagerPage() {
                 {/* Actions */}
                 <div className="flex items-center gap-2 shrink-0">
                   <button
-                    onClick={() => dispatch({ type: StockManagerActionType.CLOSE_MODAL })}
+                    onClick={() =>
+                      dispatch({ type: StockManagerActionType.CLOSE_MODAL })
+                    }
                     className="px-4 py-2.5 rounded-xl border border-stone-200 text-theme-caption font-bold text-stone-600 bg-white hover:bg-stone-50 active:bg-stone-100 transition-colors"
                   >
                     {STOCK_MANAGER_TEXT.MODAL.CANCEL}
@@ -768,7 +833,9 @@ export default function StockManagerPage() {
                     className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50 text-theme-caption font-bold shadow-sm transition-colors"
                   >
                     <Check size={16} strokeWidth={2.5} />
-                    {isSaving ? STOCK_MANAGER_TEXT.MODAL.SAVING : STOCK_MANAGER_TEXT.MODAL.COMMIT}
+                    {isSaving
+                      ? STOCK_MANAGER_TEXT.MODAL.SAVING
+                      : STOCK_MANAGER_TEXT.MODAL.COMMIT}
                   </button>
                 </div>
               </div>
@@ -780,19 +847,43 @@ export default function StockManagerPage() {
       {/* ── Status Confirmation Modal ── */}
       <ConfirmationModal
         isOpen={!!confirmConfig?.isOpen}
-        onClose={() => dispatch({ type: StockManagerActionType.SET_CONFIRM_CONFIG, payload: null })}
+        onClose={() =>
+          dispatch({
+            type: StockManagerActionType.SET_CONFIRM_CONFIG,
+            payload: null,
+          })
+        }
         onConfirm={executeStatusToggle}
         isLoading={isStatusUpdating}
-        title={isActivating ? STOCK_MANAGER_TEXT.CONFIRM.PUBLISH_TITLE : STOCK_MANAGER_TEXT.CONFIRM.DEACTIVATE_TITLE}
+        title={
+          isActivating
+            ? STOCK_MANAGER_TEXT.CONFIRM.PUBLISH_TITLE
+            : STOCK_MANAGER_TEXT.CONFIRM.DEACTIVATE_TITLE
+        }
         message={
           isActivating
-            ? STOCK_MANAGER_TEXT.CONFIRM.PUBLISH_MSG(confirmConfig?.productName.trim().split(" ").slice(0, 2).join(" ") ?? "")
-            : STOCK_MANAGER_TEXT.CONFIRM.DEACTIVATE_MSG(confirmConfig?.productName.trim().split(" ").slice(0, 2).join(" ") ?? "")
+            ? STOCK_MANAGER_TEXT.CONFIRM.PUBLISH_MSG(
+                confirmConfig?.productName
+                  .trim()
+                  .split(" ")
+                  .slice(0, 2)
+                  .join(" ") ?? "",
+              )
+            : STOCK_MANAGER_TEXT.CONFIRM.DEACTIVATE_MSG(
+                confirmConfig?.productName
+                  .trim()
+                  .split(" ")
+                  .slice(0, 2)
+                  .join(" ") ?? "",
+              )
         }
         actionType={isActivating ? "activate" : "deactivate"}
-        confirmText={isActivating ? STOCK_MANAGER_TEXT.CONFIRM.PUBLISH_BTN : STOCK_MANAGER_TEXT.CONFIRM.DEACTIVATE_BTN}
+        confirmText={
+          isActivating
+            ? STOCK_MANAGER_TEXT.CONFIRM.PUBLISH_BTN
+            : STOCK_MANAGER_TEXT.CONFIRM.DEACTIVATE_BTN
+        }
       />
     </main>
   );
 }
-

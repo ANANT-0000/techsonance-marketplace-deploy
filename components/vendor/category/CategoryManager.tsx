@@ -75,7 +75,9 @@ export default function CategoryManager({
     name: string;
     subcategories: Category[];
   } | null>(null);
-  const [deleteModeChoice, setDeleteModeChoice] = useState<DeleteMode>(DeleteMode.MOVE);
+  const [deleteModeChoice, setDeleteModeChoice] = useState<DeleteMode>(
+    DeleteMode.MOVE,
+  );
   const [deleteMoveTargetParentId, setDeleteMoveTargetParentId] = useState("");
 
   // ═══════════════════════════════════════════════════════════
@@ -104,7 +106,12 @@ export default function CategoryManager({
       (acc, c) => acc + (c.productCount || 0),
       0,
     );
-    return { totalCategories, parentCategoriesCount, subcategoriesCount, totalAssignedProducts };
+    return {
+      totalCategories,
+      parentCategoriesCount,
+      subcategoriesCount,
+      totalAssignedProducts,
+    };
   }, [categories]);
 
   const activeDrawerCategory = useMemo<CategoryDrawerData | null>(() => {
@@ -143,7 +150,10 @@ export default function CategoryManager({
   const handleComplexDeleteRequest = useCallback(
     (cat: Category) => {
       const subs = categories.filter((c) => c.parent_id === cat.id);
-      const targetOption = categories.find((c) => !c.parent_id && c.id !== cat.id);
+      const targetOption = categories.find(
+        (c) => !c.parent_id && c.id !== cat.id,
+      );
+
       setDeleteModalConfig({ id: cat.id, name: cat.name, subcategories: subs });
       setDeleteMoveTargetParentId(targetOption ? targetOption.id : "");
       setDeleteModeChoice(DeleteMode.MOVE);
@@ -157,17 +167,25 @@ export default function CategoryManager({
 
     try {
       if (deleteModeChoice === DeleteMode.MOVE) {
-        const targetParent = deleteMoveTargetParentId === "" ? null : deleteMoveTargetParentId;
+        const targetParent =
+          deleteMoveTargetParentId === "" ? null : deleteMoveTargetParentId;
         for (const sub of deleteModalConfig.subcategories) {
           await updateVendorProductCategory(
             sub.id,
-            { name: sub.name, description: sub.description, parent_id: targetParent },
+            {
+              name: sub.name,
+              description: sub.description,
+              parent_id: targetParent,
+            },
             token,
           );
         }
       }
 
-      const res = await deleteVendorProductCategory(deleteModalConfig.id, token);
+      const res = await deleteVendorProductCategory(
+        deleteModalConfig.id,
+        token,
+      );
       if (res.status === 200) {
         toast.success(CATEGORY_TOAST.DELETED);
         setDeleteModalConfig(null);
@@ -178,7 +196,13 @@ export default function CategoryManager({
     } catch {
       toast.error(CATEGORY_TOAST.DELETE_ERROR);
     }
-  }, [deleteModalConfig, deleteModeChoice, deleteMoveTargetParentId, token, setCheckChange]);
+  }, [
+    deleteModalConfig,
+    deleteModeChoice,
+    deleteMoveTargetParentId,
+    token,
+    setCheckChange,
+  ]);
 
   const deleteState: DeleteModalState = {
     config: deleteModalConfig,

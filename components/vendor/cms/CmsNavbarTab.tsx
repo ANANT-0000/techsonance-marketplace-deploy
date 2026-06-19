@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Plus,
   Trash2,
@@ -35,10 +35,14 @@ import {
 import { authToken } from "@/utils/authToken";
 import { dispatchNavbarChange } from "@/utils/cache";
 import {
+  LinkMode,
+  NavItemColType,
   NavItemDisplayType,
   NavItemType,
   NavMenuLogoAlignment,
   NavMenuPosition,
+  NavMenuType,
+  SiteMap,
 } from "@/utils/Types";
 
 // ─── Local Types ─────────────────────────────────────────────────────────────
@@ -95,10 +99,10 @@ const ITEM_TYPE_OPTIONS = [
 ];
 
 const COL_TYPE_OPTIONS = [
-  { value: ColType.SUBCATEGORIES, label: "Subcategory Links" },
-  { value: ColType.BRANDS, label: "Brand Links" },
-  { value: ColType.PROMOTION, label: "Promotion Banner" },
-  { value: ColType.PRODUCTS, label: "Manual Product Picks" },
+  { value: NavItemColType.SUBCATEGORIES, label: "Subcategory Links" },
+  { value: NavItemColType.BRANDS, label: "Brand Links" },
+  { value: NavItemColType.PROMOTION, label: "Promotion Banner" },
+  { value: NavItemColType.PRODUCTS, label: "Manual Product Picks" },
 ];
 const DISPLAY_TYPE_OPTIONS = [
   {
@@ -172,20 +176,32 @@ function L2ColumnEditor({
   col,
   categories,
   products,
+  parentRouteKey, // ← passed from L1ItemEditor
+  siteMaps,
   menuId,
   token,
   onSaved,
   onDeleted,
 }: {
   col: L2Column;
-  categories: { id: string; name: string }[];
+  categories: {
+    id: string;
+    name: string;
+    slug: string;
+    parent_id: string | null;
+  }[];
   products: { id: string; name: string }[];
+  parentRouteKey: string;
+  siteMaps: SiteMap[];
   menuId: string;
   token: string;
   onSaved: (updated: L2Column) => void;
   onDeleted: (id: string) => void;
 }) {
-  const [draft, setDraft] = useState<L2Column>(col);
+  const [draft, setDraft] = useState<L2Column>({
+    ...col,
+    meta: col.meta || {},
+  });
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -194,7 +210,10 @@ function L2ColumnEditor({
     setDraft((p) => ({ ...p, [field]: val }));
   const patchMeta = (field: keyof NavItemMetaPayload, val: any) =>
     setDraft((p) => ({ ...p, meta: { ...p.meta, [field]: val } }));
-
+  const activeRoute =
+    siteMaps.find((r) => r.key === parentRouteKey) ??
+    siteMaps.find((r) => r.key === "category");
+  const selectedCategory = categories.find((c) => c.id === draft.category_id);
   const save = async () => {
     setSaving(true);
     setError(null);
@@ -226,9 +245,9 @@ function L2ColumnEditor({
     onDeleted(col.id);
   };
 
-  const isPromo = draft.meta.col_type === ColType.PROMOTION;
-  const isSubcat = draft.meta.col_type === ColType.SUBCATEGORIES;
-  const isProducts = draft.meta.col_type === ColType.PRODUCTS;
+  const isPromo = draft.meta.col_type === NavItemColType.PROMOTION;
+  const isSubcat = draft.meta.col_type === NavItemColType.SUBCATEGORIES;
+  const isProducts = draft.meta.col_type === NavItemColType.PRODUCTS;
 
   return (
     <div className="border border-gray-100 rounded-xl bg-gray-50 overflow-hidden">
@@ -238,7 +257,7 @@ function L2ColumnEditor({
           {draft.label || "Unnamed Column"}
         </span>
         <span className="text-[10px] bg-purple-100 text-purple-600 font-bold px-2 py-0.5 rounded-full uppercase">
-          {draft.meta.col_type || ColType.SUBCATEGORIES}
+          {draft.meta.col_type || NavItemColType.SUBCATEGORIES}
         </span>
         <button
           onClick={() => setOpen((o) => !o)}
@@ -268,7 +287,7 @@ function L2ColumnEditor({
             />
             <SelectField
               label="Column Type"
-              value={draft.meta.col_type || ColType.SUBCATEGORIES}
+              value={draft.meta.col_type || NavItemColType.SUBCATEGORIES}
               onChange={(v: string) => patchMeta("col_type", v)}
               options={COL_TYPE_OPTIONS}
             />
@@ -363,14 +382,22 @@ function L2ColumnEditor({
                 textarea
               />
             </>
-          ) : !isProducts ? (
+          ) : isProducts ? null : selectedCategory && activeRoute ? (
+            <p className="text-xs text-gray-500 font-mono bg-gray-100 rounded-lg px-3 py-2">
+              Resolves to: {activeRoute.base_path}
+              {activeRoute.default_query_param
+                ? `?${activeRoute.default_query_param}=`
+                : ""}
+              {selectedCategory.slug}
+            </p>
+          ) : (
             <InputField
               label="Section Link (href)"
               value={draft.href}
               onChange={(v: string) => patch("href", v)}
               mono
             />
-          ) : null}
+          )}
 
           {error && <p className="text-xs font-medium text-red-500">{error}</p>}
 
@@ -383,9 +410,16 @@ function L2ColumnEditor({
   );
 }
 // ─── L1 Item Editor ───────────────────────────────────────────────────────────
+function deriveLinkMode(item: L1Item): LinkMode {
+  if (item.has_mega_menu) return LinkMode.MEGA_MENU;
+  if (item.item_type === NavItemType.CATEGORY) return LinkMode.CATEGORY_QUERY;
+  return LinkMode.STATIC_PAGE;
+}
 function L1ItemEditor({
   item,
   categories,
+  siteMaps,
+  mapsLoading,
   products,
   menuId,
   token,
@@ -393,19 +427,91 @@ function L1ItemEditor({
   onDeleted,
 }: {
   item: L1Item;
-  categories: { id: string; name: string }[];
+  categories: {
+    id: string;
+    name: string;
+    slug: string;
+    parent_id: string | null;
+  }[];
+  siteMaps: SiteMap[];
+  mapsLoading: boolean;
   products: { id: string; name: string }[];
   menuId: string;
   token: string;
   onSaved: (updated: L1Item) => void;
   onDeleted: (id: string) => void;
 }) {
-  const [draft, setDraft] = useState<L1Item>(item);
+  const [draft, setDraft] = useState<L1Item>({
+    ...item,
+    meta: item.meta || {},
+    megaMenuColumns: item.megaMenuColumns || [],
+  });
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState(false);
   const [addingCol, setAddingCol] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const categoryOptions = useMemo(
+    () => buildIndentedCategoryOptions(categories),
+    [categories],
+  );
 
+  const defaultRouteKey =
+    siteMaps.find((r) => r.key === "store")?.key ?? siteMaps[0]?.key ?? "";
+  const activeRouteKey = draft.meta.route_key || defaultRouteKey;
+  const activeRoute = siteMaps.find((r) => r.key === activeRouteKey);
+  const selectedCategory = categories.find((c) => c.id === draft.category_id);
+  const childCountMap = useMemo(() => {
+    const m = new Map<string, number>();
+    categories.forEach((c) => {
+      if (c.parent_id) m.set(c.parent_id, (m.get(c.parent_id) ?? 0) + 1);
+    });
+    return m;
+  }, [categories]);
+  const linkMode = deriveLinkMode(draft);
+  const selectedHasChildren =
+    !!draft.category_id && (childCountMap.get(draft.category_id) ?? 0) > 0;
+
+  // auto-revert if the source category stops qualifying (e.g. admin re-picks a leaf)
+  useEffect(() => {
+    if (draft.has_mega_menu && !selectedHasChildren) {
+      setDraft((p) => ({ ...p, has_mega_menu: false }));
+    }
+  }, [selectedHasChildren]);
+
+  function handleLinkModeChange(mode: LinkMode) {
+    setDraft((p) => {
+      if (mode === LinkMode.STATIC_PAGE)
+        return {
+          ...p,
+          item_type: NavItemType.CUSTOM_LINK,
+          has_mega_menu: false,
+        };
+      if (mode === LinkMode.CATEGORY_QUERY)
+        return { ...p, item_type: NavItemType.CATEGORY, has_mega_menu: false };
+      if (mode === LinkMode.CATEGORY_DIRECTORY)
+        return {
+          ...p,
+          item_type: NavItemType.CUSTOM_LINK,
+          category_id: null,
+          has_mega_menu: true,
+          meta: {
+            ...p.meta,
+            display_type: NavItemDisplayType.CATEGORY_DIRECTORY,
+            parent_category_id: undefined,
+          },
+        };
+      return {
+        ...p,
+        item_type: NavItemType.CATEGORY,
+        has_mega_menu: true,
+        meta: {
+          ...p.meta,
+          display_type: NavItemDisplayType.DYNAMIC_SUBCATEGORIES,
+          parent_category_id: p.category_id || "",
+        },
+      };
+    });
+  }
   const patch = (field: keyof L1Item, val: any) =>
     setDraft((p) => ({ ...p, [field]: val }));
   const patchMeta = (field: keyof NavItemMetaPayload, val: any) =>
@@ -447,7 +553,7 @@ function L1ItemEditor({
       item_type: NavItemType.CUSTOM_LINK,
       has_mega_menu: false,
       sort_order: draft.megaMenuColumns.length,
-      meta: { col_type: ColType.SUBCATEGORIES, col_title: "New Column" },
+      meta: { col_type: NavItemColType.SUBCATEGORIES, col_title: "New Column" },
     };
     const res = await createNavbarItem(newCol, token);
     setAddingCol(false);
@@ -531,31 +637,85 @@ function L1ItemEditor({
               value={draft.label}
               onChange={(v: string) => patch("label", v)}
             />
+
             <SelectField
               label="Link Type"
-              value={draft.item_type}
-              onChange={(v: string) => patch("item_type", v as any)}
-              options={ITEM_TYPE_OPTIONS}
+              value={linkMode}
+              onChange={(v: string) => handleLinkModeChange(v as LinkMode)}
+              options={[
+                { value: LinkMode.CATEGORY_QUERY, label: "Category Query" },
+                { value: LinkMode.STATIC_PAGE, label: "Static Page" },
+                {
+                  value: LinkMode.MEGA_MENU,
+                  label: "Dynamic Mega Menu (Auto-Tree)",
+                },
+                {
+                  value: LinkMode.CATEGORY_DIRECTORY,
+                  label: "All Categories (Directory)",
+                },
+              ]}
             />
-            {draft.item_type === "category" ? (
-              <SelectField
-                label="Category"
-                value={draft.category_id || ""}
-                onChange={(v: string) => patch("category_id", v)}
-                options={[
-                  { value: "", label: "— Select Category —" },
-                  ...categories.map((c) => ({ value: c.id, label: c.name })),
-                ]}
-              />
-            ) : (
+
+            {linkMode === "static_page" ? (
               <InputField
                 label="URL / Path"
                 value={draft.href}
                 onChange={(v: string) => patch("href", v)}
                 mono
               />
-            )}
+            ) : linkMode !== "category_directory" ? (
+              // ↓ THE ONLY category selector that exists anywhere in this form now.
+              // No separate "Source Parent Category" block — ever.
+              <SelectField
+                label="Category"
+                value={draft.category_id || ""}
+                onChange={(v: string) => {
+                  patch("category_id", v);
+                  patchMeta("parent_category_id", v); // kept in sync silently, never shown twice
+                }}
+                options={[
+                  { value: "", label: "— Select Category —" },
+                  ...categoryOptions,
+                ]}
+              />
+            ) : null}
           </div>
+
+          {linkMode !== "static_page" && (
+            <>
+              {mapsLoading ? (
+                <div className="h-9 bg-gray-100 rounded-lg animate-pulse" />
+              ) : (
+                <SelectField
+                  label="Target Page"
+                  value={activeRouteKey} // ← never blank once routes load
+                  onChange={(v: string) => patchMeta("route_key", v)}
+                  options={siteMaps.map((r) => ({
+                    value: r.key,
+                    label: `${r.label} (${r.base_path})`,
+                  }))}
+                />
+              )}
+            </>
+          )}
+
+          {linkMode === "category_directory" && (
+            <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-xs text-indigo-700">
+              Every top-level category becomes its own column automatically — no
+              selection needed. New root categories appear here the moment
+              they're created.
+            </div>
+          )}
+
+          {linkMode === "mega_menu" && draft.category_id && (
+            <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-xs text-indigo-700">
+              Columns are generated from every subcategory of{" "}
+              <strong>
+                {categories.find((c) => c.id === draft.category_id)?.name}
+              </strong>
+              .
+            </div>
+          )}
 
           {/* Mega menu toggle */}
           <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
@@ -641,6 +801,8 @@ function L1ItemEditor({
                   categories={categories}
                   menuId={menuId}
                   token={token}
+                  parentRouteKey={activeRouteKey}
+                  siteMaps={siteMaps}
                   onSaved={onColSaved}
                   onDeleted={onColDeleted}
                   products={products}
@@ -653,7 +815,28 @@ function L1ItemEditor({
     </div>
   );
 }
-
+function buildIndentedCategoryOptions(
+  cats: { id: string; name: string; parent_id: string | null }[],
+) {
+  const byParent = new Map<string | null, typeof cats>();
+  cats.forEach((c) => {
+    const key = c.parent_id;
+    if (!byParent.has(key)) byParent.set(key, []);
+    byParent.get(key)!.push(c);
+  });
+  const options: { value: string; label: string }[] = [];
+  const walk = (parentId: string | null, depth: number) => {
+    (byParent.get(parentId) ?? []).forEach((c) => {
+      options.push({
+        value: c.id,
+        label: `${"—".repeat(depth)}${depth ? " " : ""}${c.name}`,
+      });
+      walk(c.id, depth + 1);
+    });
+  };
+  walk(null, 0);
+  return options;
+}
 // ─── Main Tab Component ───────────────────────────────────────────────────────
 
 export function CmsNavbarTab() {
@@ -661,9 +844,7 @@ export function CmsNavbarTab() {
 
   const [data, setData] = useState<NavbarData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    [],
-  );
+
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   // Scalar settings draft (separate from item tree so saves are isolated)
   const [settings, setSettings] = useState<UpsertNavMenuPayload>({});
@@ -672,17 +853,23 @@ export function CmsNavbarTab() {
   // Local item tree (mutated by add/remove/reorder actions)
   const [items, setItems] = useState<L1Item[]>([]);
   const [addingItem, setAddingItem] = useState(false);
+  const [categories, setCategories] = useState<
+    { id: string; name: string; parent_id: string | null; slug: string }[]
+  >([]);
+  const [siteMaps, setSiteMaps] = useState<SiteMap[]>([]);
+  const [MapsLoading, setMapsLoading] = useState(true);
 
   // ── Initial load ────────────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      const [navRes, catRes, prodRes] = await Promise.all([
+      const [navRes, catRes, prodRes, MapsRes] = await Promise.all([
         AxiosAPI.get("/v1/navbar").catch(() => null),
         AxiosAPI.get("/v1/categories?limit=200").catch(() => null),
         token
           ? fetchVendorActiveProducts(token).catch(() => null)
           : Promise.resolve(null),
+        AxiosAPI.get("/v1/site-maps").catch(() => null),
       ]);
 
       if (navRes?.data) {
@@ -698,6 +885,8 @@ export function CmsNavbarTab() {
         const list = (prodRes.data?.data ?? prodRes.data ?? []) as any[];
         setProducts(list.map((p) => ({ id: p.id, name: p.name })));
       }
+      if (MapsRes?.data) setSiteMaps(MapsRes.data?.data ?? MapsRes.data ?? []);
+      setMapsLoading(false);
       setLoading(false);
     };
     load();
@@ -924,11 +1113,13 @@ export function CmsNavbarTab() {
         )}
 
         <div className="space-y-3">
-          {items.map((item) => (
+          {items.map((item, idx) => (
             <L1ItemEditor
-              key={item.id}
+              key={idx}
               item={item}
               categories={categories}
+              siteMaps={siteMaps}
+              mapsLoading={MapsLoading}
               menuId={menuId!}
               token={token!}
               onSaved={onItemSaved}

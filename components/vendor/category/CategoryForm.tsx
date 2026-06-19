@@ -3,11 +3,50 @@
 // CategoryForm — Create/Edit Category Form Panel
 // ============================================================
 
-import React from "react";
+import React, { useMemo } from "react";
 import { FolderPlus, Edit2 } from "lucide-react";
 import { CATEGORY_UI_LABELS, CATEGORY_VALIDATION } from "@/constants";
-import { CategoryFormProps } from "@/utils/Types";
+import { Category, CategoryFormProps } from "@/utils/Types";
+function getDescendantIds(categories: Category[], rootId: string): Set<string> {
+  const ids = new Set<string>();
+  const stack = [rootId];
+  while (stack.length) {
+    const current = stack.pop()!;
+    categories.forEach((c) => {
+      if (c.parent_id === current && !ids.has(c.id)) {
+        ids.add(c.id);
+        stack.push(c.id);
+      }
+    });
+  }
+  return ids;
+}
 
+function buildIndentedParentOptions(
+  categories: Category[],
+  excludeIds: Set<string>,
+) {
+  const byParent = new Map<string | null, Category[]>();
+  categories.forEach((c) => {
+    const key = c.parent_id ?? null;
+    if (!byParent.has(key)) byParent.set(key, []);
+    byParent.get(key)!.push(c);
+  });
+  const options: { value: string; label: string }[] = [];
+  const walk = (parentId: string | null, depth: number) => {
+    (byParent.get(parentId) ?? [])
+      .filter((c) => !excludeIds.has(c.id))
+      .forEach((c) => {
+        options.push({
+          value: c.id,
+          label: `${"—".repeat(depth)}${depth ? " " : ""}${c.name}`,
+        });
+        walk(c.id, depth + 1);
+      });
+  };
+  walk(null, 0);
+  return options;
+}
 export default function CategoryForm({
   formState,
   categories,
@@ -19,7 +58,18 @@ export default function CategoryForm({
   onReset,
 }: CategoryFormProps) {
   const { name, description, parentId, editingId } = formState;
+  const excludeIds = useMemo(() => {
+    const set = editingId
+      ? getDescendantIds(categories, editingId)
+      : new Set<string>();
+    if (editingId) set.add(editingId); // can't parent itself
+    return set;
+  }, [categories, editingId]);
 
+  const parentOptions = useMemo(
+    () => buildIndentedParentOptions(categories, excludeIds),
+    [categories, excludeIds],
+  );
   return (
     <div
       id="category-form-section"
@@ -56,11 +106,10 @@ export default function CategoryForm({
             className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm bg-gray-50 hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 outline-none transition-all cursor-pointer disabled:opacity-50"
           >
             <option value="">{CATEGORY_UI_LABELS.PARENT_NONE_OPTION}</option>
-            {categories
-              .filter((c) => !c.parent_id && c.id !== editingId) // Only roots can be parents, prevent self-parenting
-              .map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
+            {parentOptions &&
+              parentOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
                 </option>
               ))}
           </select>

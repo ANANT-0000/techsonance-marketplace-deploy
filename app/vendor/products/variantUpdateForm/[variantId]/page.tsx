@@ -152,16 +152,14 @@ export default function ProductVariantFormPage() {
     : undefined;
 
   return (
-    <main className="min-h-screen w-full py-8 px-4">
-      <div className="mx-auto">
-        <ProductVariantForm
-          vendorId={vendorId}
-          productId={existVariant?.product_id}
-          existVariant={existingProductVariant}
-          variantId={variantId}
-          warehouseOptions={warehouseOptions}
-        />
-      </div>
+    <main className="min-h-screen max-h-screen overflow-y-scroll w-full py-8 px-4">
+      <ProductVariantForm
+        vendorId={vendorId}
+        productId={existVariant?.product_id}
+        existVariant={existingProductVariant}
+        variantId={variantId}
+        warehouseOptions={warehouseOptions}
+      />
     </main>
   );
 }

@@ -202,17 +202,15 @@ export default function ProductUpdateFormPage() {
       : {};
 
   return (
-    <main className="min-h-screen  overflow-y-scroll py-8 w-full">
-      <div className=" mx-auto">
-        <ProductForm
-          categoryOptions={categoryOptions}
-          warehouseOptions={warehouseOptions}
-          taxSlabsOptions={taxSlabsOptions}
-          vendorId={vendorId}
-          existingData={exitingData}
-          productId={id}
-        />
-      </div>
+    <main className="min-h-screen max-h-screen overflow-y-scroll py-8 w-full mx-auto">
+      <ProductForm
+        categoryOptions={categoryOptions}
+        warehouseOptions={warehouseOptions}
+        taxSlabsOptions={taxSlabsOptions}
+        vendorId={vendorId}
+        existingData={exitingData}
+        productId={id}
+      />
     </main>
   );
 }
