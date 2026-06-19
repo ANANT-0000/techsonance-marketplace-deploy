@@ -7,16 +7,15 @@ import {
   ComplianceDocument,
   ComplianceField,
   ComplianceFieldPayload,
-  OrderStatus,
-  ReturnStatus,
-} from "./Types";
-import {
-  ColType,
+  NavItemColType,
   NavItemDisplayType,
   NavItemType,
   NavMenuLogoAlignment,
   NavMenuPosition,
-} from "@/components/vendor/cms/CmsNavbarTab";
+  OrderStatus,
+  ReturnStatus,
+} from "./Types";
+
 // ==========================================
 // CATEGORY API ENDPOINTS
 // ==========================================
@@ -2177,7 +2176,7 @@ export interface NavItemMetaPayload {
   display_type?: NavItemDisplayType;
   show_category_icons?: boolean;
   parent_category_id?: string;
-  col_type?: ColType;
+  col_type?: NavItemColType;
   col_title?: string;
   promo_image_url?: string;
   promo_title?: string;

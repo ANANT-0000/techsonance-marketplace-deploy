@@ -33,7 +33,7 @@ export async function generateMetadata({
 }: ShoppingPageProps): Promise<Metadata> {
   const params = await searchParams;
   const search = params?.search ?? "";
-  const categoryId = params?.category ?? "";
+  const category = params?.category ?? "";
 
   let title =
     "Shop High-Quality Tech, Electronics & Hardware | Techsonance Store";
@@ -44,14 +44,14 @@ export async function generateMetadata({
     const formatted = search.trim().replace(/\b\w/g, (c) => c.toUpperCase());
     title = `Buy ${formatted} Online at Best Prices | Techsonance Store`;
     description = `Looking to buy ${formatted} online? Check out the latest models, verified customer reviews, and top-rated deals on ${formatted} at Techsonance Marketplace.`;
-  } else if (categoryId) {
+  } else if (category) {
     try {
-      const category = await fetchCategory(categoryId);
-      if (category?.name) {
-        const catName = category.name.trim();
+      const categoryData = await fetchCategory(category);
+      if (categoryData?.name) {
+        const catName = categoryData.name.trim();
         title = `Buy ${catName} Online - Best Deals & Discounts | Techsonance Store`;
         description =
-          category.description ??
+          categoryData.description ??
           `Shop the latest ${catName} products online at Techsonance. Discover premium quality items, exclusive discounts, and fast delivery.`;
       }
     } catch {

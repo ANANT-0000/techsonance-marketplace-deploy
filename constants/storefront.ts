@@ -1,4 +1,8 @@
-import { ColType } from "@/components/vendor/cms/CmsNavbarTab";
+import {
+  NavItemColType,
+  NavMenuLogoAlignment,
+  NavMenuPosition,
+} from "@/utils/Types";
 
 export const DEFAULT_STORE_NAME = "Marketplace Store";
 export const DEFAULT_FAVICON_PATH = "/favicon.ico";
@@ -193,18 +197,16 @@ export const COLOR_WHITE_MUTED = "rgba(255,255,255,0.7)";
 export const COLOR_SLATE_MUTED = "rgba(15,23,42,0.7)";
 export const COLOR_SLATE_DARK = "#0f172a";
 
+/** @deprecated Use NavMenuLogoAlignment  */
 export enum LogoAlignmentEnum {
   LEFT = "left",
   CENTER = "center",
 }
-
+/** @deprecated Use NavMenuPosition */
 export enum NavbarPositionEnum {
   STICKY = "sticky",
   RELATIVE = "relative",
 }
-
-/** @deprecated Use ColumnType */
-export const ColumnTypeEnum = ColType;
 
 export interface NavPromoBlock {
   imageUrl: string;
@@ -221,8 +223,10 @@ export interface NavLinkItem {
 }
 
 export interface NavMegaColumn {
-  type: ColType;
+  type: NavItemColType;
   title: string;
+  href?: string;
+  itemType?: string;
   items?: NavLinkItem[];
   promotion?: NavPromoBlock;
 }
@@ -231,6 +235,7 @@ export interface L1NavItem {
   id: string;
   label: string;
   href: string;
+  itemType?: string;
   hasMegaMenu: boolean;
 }
 
@@ -239,10 +244,10 @@ export interface L1NavbarPayload {
     src: string;
     alt: string;
     href: string;
-    alignment: LogoAlignmentEnum;
+    alignment: NavMenuLogoAlignment;
   };
   navbar: {
-    position: NavbarPositionEnum;
+    position: NavMenuPosition;
     showBottomBorder: boolean;
     showShadow: boolean;
   };
@@ -266,10 +271,10 @@ export const CMS_L1_NAV_PAYLOAD: L1NavbarPayload = {
     src: "/assets/e-commerce_brand_logo.png",
     alt: "Techsonance Store logo",
     href: "/",
-    alignment: LogoAlignmentEnum.LEFT,
+    alignment: NavMenuLogoAlignment.LEFT,
   },
   navbar: {
-    position: NavbarPositionEnum.STICKY,
+    position: NavMenuPosition.STICKY,
     showBottomBorder: true,
     showShadow: true,
   },
@@ -284,17 +289,25 @@ export const CMS_L1_NAV_PAYLOAD: L1NavbarPayload = {
     showCart: true,
   },
   navigationItems: [
-    { id: "shop-all", label: "Shop All", href: "/store", hasMegaMenu: false },
+    {
+      id: "shop-all",
+      label: "Shop All",
+      href: "/store",
+      itemType: "category",
+      hasMegaMenu: false,
+    },
     {
       id: "categories",
       label: "Categories",
       href: "/store?type=categories",
+      itemType: "category",
       hasMegaMenu: true,
     },
     {
       id: "new-arrivals",
       label: "New Launches",
       href: "/store?filter=new",
+      itemType: "category",
       hasMegaMenu: false,
     },
     {
@@ -309,7 +322,7 @@ export const CMS_L1_NAV_PAYLOAD: L1NavbarPayload = {
 export const CMS_L2_MEGA_PAYLOAD: L2MegaMenuPayload = {
   categories: [
     {
-      type: ColumnTypeEnum.SUBCATEGORIES,
+      type: NavItemColType.SUBCATEGORIES,
       title: "Shop By Audio",
       items: [
         {
@@ -335,7 +348,7 @@ export const CMS_L2_MEGA_PAYLOAD: L2MegaMenuPayload = {
       ],
     },
     {
-      type: ColumnTypeEnum.SUBCATEGORIES,
+      type: NavItemColType.SUBCATEGORIES,
       title: "Weartech & Devices",
       items: [
         {
@@ -349,7 +362,7 @@ export const CMS_L2_MEGA_PAYLOAD: L2MegaMenuPayload = {
       ],
     },
     {
-      type: ColumnTypeEnum.BRANDS,
+      type: NavItemColType.BRANDS,
       title: "Top Featured Brands",
       items: [
         { label: "Apple", href: "/store?brand=apple" },
@@ -359,7 +372,7 @@ export const CMS_L2_MEGA_PAYLOAD: L2MegaMenuPayload = {
       ],
     },
     {
-      type: ColumnTypeEnum.PROMOTION,
+      type: NavItemColType.PROMOTION,
       title: "Featured Launch",
       promotion: {
         imageUrl:

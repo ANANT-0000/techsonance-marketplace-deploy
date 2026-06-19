@@ -25,18 +25,13 @@ import { openLoginModal, logOut } from "@/lib/features/auth/authSlice";
 import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import { PROFILE_SIDEBAR_TEXT } from "@/constants/customerText";
 import { BRAND_LOGO } from "@/constants/common";
-import {
-  LogoAlignmentEnum,
-  NavbarPositionEnum,
-  ColumnTypeEnum,
-  CMS_L1_NAV_PAYLOAD,
-  CMS_L2_MEGA_PAYLOAD,
-  L1NavbarPayload,
-  L2MegaMenuPayload,
-} from "@/constants/storefront";
-
 import { useNavbarData } from "@/hooks/useNavbarData";
-import { ColType } from "../vendor/cms/CmsNavbarTab";
+import { NavbarPositionEnum } from "@/constants";
+import {
+  NavItemColType,
+  NavMenuLogoAlignment,
+  NavMenuPosition,
+} from "@/utils/Types";
 
 // UI Text Constants (strictly preventing hardcoded keys/texts in component logic)
 const NAVBAR_UI_TEXT = {
@@ -133,8 +128,6 @@ export function Navbar({
   const { wishItems } = useAppSelector((state: RootState) => state.wishlist);
   const { user } = useAppSelector((state: RootState) => state.auth);
 
-  const wishlistCount = wishItems.length;
-
   // Load configuration directly from the hook — transformation is done there.
   const { l1Config, l2Config, isLoading } = useNavbarData();
 
@@ -188,9 +181,6 @@ export function Navbar({
   }
 
   // Show a full matching skeleton overlay when data is loading from the server
-  if (menuDataLoading) {
-    return <NavbarSkeleton />;
-  }
 
   // Jitter-free Menu Hover Management
   const handleMouseEnter = (itemId: string, hasMegaMenu: boolean) => {
@@ -278,8 +268,11 @@ export function Navbar({
     themeData.logo_dark_url ||
     BRAND_LOGO;
 
-  const isSticky = l1Config.navbar.position === NavbarPositionEnum.STICKY;
-  const isLogoLeft = l1Config.logo.alignment === LogoAlignmentEnum.LEFT;
+  const isSticky = l1Config.navbar.position === NavMenuPosition.STICKY;
+  const isLogoLeft = l1Config.logo.alignment === NavMenuLogoAlignment.LEFT;
+  if (menuDataLoading) {
+    return <NavbarSkeleton />;
+  }
 
   return (
     <header
@@ -371,16 +364,19 @@ export function Navbar({
                         <MegaMenuSkeleton />
                       ) : (
                         <div
-                          className="grid gap-x-12 gap-y-8 p-9 items-stretch"
+                          className="grid gap-x-4 gap-y-4 py-2 px-4 items-stretch"
                           style={{
-                            gridTemplateColumns: `repeat(${columns!.length}, minmax(190px, 230px))`,
+                            gridTemplateColumns: `repeat(${columns!.length}, minmax(100px, 230px))`,
                           }}
                         >
                           {columns!.map((col, cIdx) => {
-                            const isSubcat = col.type === ColType.SUBCATEGORIES;
-                            const isBrands = col.type === ColType.BRANDS;
-                            const isPromo = col.type === ColType.PROMOTION;
-                            const isProducts = col.type === ColType.PRODUCTS;
+                            const isSubcat =
+                              col.type === NavItemColType.SUBCATEGORIES;
+                            const isBrands = col.type === NavItemColType.BRANDS;
+                            const isPromo =
+                              col.type === NavItemColType.PROMOTION;
+                            const isProducts =
+                              col.type === NavItemColType.PRODUCTS;
                             const colKey = `${item.id}-${cIdx}`;
                             const isExpanded = expandedColumns.has(colKey);
                             const allItems = col.items || [];
@@ -393,16 +389,21 @@ export function Navbar({
                             return (
                               <div
                                 key={`col-${cIdx}`}
-                                className="flex flex-col min-w-[180px]"
+                                className="flex flex-col"
                               >
                                 {/* Column Heading */}
-                                <h3
-                                  className={`text-xs font-bold tracking-wider text-slate-400 uppercase mb-4 pb-2 ${
-                                    col.title ? "border-b border-slate-100" : ""
-                                  }`}
-                                >
-                                  {col.title || "\u00a0"} 323
-                                </h3>
+                                {
+                                  <Link
+                                    href={col.href || "#"}
+                                    className={`text-xs font-bold tracking-wider capitalize ${
+                                      col.href && col.href.length > 0
+                                        ? "text-theme-primary cursor-pointer hover:underline"
+                                        : "pointer-events-none"
+                                    }`}
+                                  >
+                                    {col.title || "\u00a0"}
+                                  </Link>
+                                }
 
                                 {/* Subcategories and Brands Links rendering */}
                                 {(isSubcat || isBrands || isProducts) &&

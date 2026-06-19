@@ -402,7 +402,6 @@ export default function DashboardPage() {
         });
       })
       .catch((err) => {
-        console.error("Failed to load recent orders:", err);
         reducerDispatch({
           type: DashboardActionType.SET_LOADING_RECENT_ORDERS,
           payload: false,
@@ -514,7 +513,6 @@ export default function DashboardPage() {
           });
         })
         .catch((err) => {
-          console.error("Failed to load metrics:", err);
           reducerDispatch({
             type: DashboardActionType.SET_LOADING_METRICS,
             payload: false,

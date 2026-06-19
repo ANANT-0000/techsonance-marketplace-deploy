@@ -1270,3 +1270,30 @@ export interface CategoryDeleteModalProps {
 export interface CategoryEmptyStateProps {
   onAddNew: () => void;
 }
+export enum NavItemType {
+  CUSTOM_LINK = "custom_link",
+  CATEGORY = "category",
+}
+export enum NavItemDisplayType {
+  CATEGORY_LISTING = "category_listing",
+  DYNAMIC_SUBCATEGORIES = "dynamic_subcategories",
+  PRODUCT_RANGES = "product_ranges",
+}
+export enum NavItemColType {
+  SUBCATEGORIES = "subcategories",
+  BRANDS = "brands",
+  PROMOTION = "promotion",
+  PRODUCTS = "products",
+}
+export enum NavMenuPosition {
+  STICKY = "sticky",
+  RELATIVE = "relative",
+}
+export enum NavMenuLogoAlignment {
+  LEFT = "left",
+  CENTER = "center",
+}
+export enum NavMenuType {
+  SIMPLE = "simple",
+  MEGA = "mega",
+}

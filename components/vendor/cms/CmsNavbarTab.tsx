@@ -34,35 +34,15 @@ import {
 } from "@/utils/vendorApiClient";
 import { authToken } from "@/utils/authToken";
 import { dispatchNavbarChange } from "@/utils/cache";
+import {
+  NavItemDisplayType,
+  NavItemType,
+  NavMenuLogoAlignment,
+  NavMenuPosition,
+} from "@/utils/Types";
 
 // ─── Local Types ─────────────────────────────────────────────────────────────
-export enum NavItemType {
-  CUSTOM_LINK = "custom_link",
-  CATEGORY = "category",
-}
-export enum NavItemDisplayType {
-  CATEGORY_LISTING = "category_listing",
-  DYNAMIC_SUBCATEGORIES = "dynamic_subcategories",
-  PRODUCT_RANGES = "product_ranges",
-}
-export enum NavItemColType {
-  SUBCATEGORIES = "subcategories",
-  BRANDS = "brands",
-  PROMOTION = "promotion",
-}
-
-export enum NavMenuPosition {
-  STICKY = "sticky",
-  RELATIVE = "relative",
-}
-export enum NavMenuLogoAlignment {
-  LEFT = "left",
-  CENTER = "center",
-}
-export enum NavMenuType {
-  SIMPLE = "simple",
-  MEGA = "mega",
-}
+/** @deprecated Use NavItemColType */
 export enum ColType {
   SUBCATEGORIES = "subcategories",
   BRANDS = "brands",

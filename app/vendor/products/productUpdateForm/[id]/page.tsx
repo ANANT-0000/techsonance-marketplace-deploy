@@ -98,11 +98,9 @@ const getExitingProduct = async (
   id
     ? await fetchVendorOneProducts(id, token)
         .then((res) => {
-          console.log(res.data, "res.data");
           setGetExitingProduct(res.data);
         })
         .catch((error) => {
-          console.log(error, "error");
           setGetExitingProduct(null);
         })
     : null;
@@ -154,7 +152,6 @@ export default function ProductUpdateFormPage() {
     redirect("/auth/vendorLogin");
   }
   useEffect(() => {
-    console.log("get product");
     getExitingProduct(setGetExitingProduct, id, token);
     getCategoryOptions(setCategoryOptions, token);
     getWarehouseOptions(setWarehouseOptions, token);

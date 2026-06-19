@@ -216,7 +216,7 @@ export default function CategoryTreeTable({
                           </div>
                           <span
                             onClick={() => onDrawerOpen(parent.id)}
-                            className="cursor-pointer hover:underline hover:text-indigo-600 font-bold flex items-center gap-1.5"
+                            className="cursor-pointer capitalize hover:underline hover:text-indigo-600 font-bold flex items-center gap-1.5"
                           >
                             📁 {parent.name}
                           </span>

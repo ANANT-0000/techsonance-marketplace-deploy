@@ -244,21 +244,18 @@ export const fetchHomepageProducts = async (
   }
 };
 
-export const fetchCategory = async (categoryId: string) => {
+export const fetchCategory = async (category: string) => {
   const companyDomain = await getCompanyDomain();
   try {
-    const response = await fetch(
-      `${BASE_API_URL}/v1/categories/${categoryId}`,
-      {
-        method: "GET",
-        cache: "force-cache",
-        next: { revalidate: 60 },
-        headers: {
-          "Content-Type": "application/json",
-          "company-domain": companyDomain,
-        },
+    const response = await fetch(`${BASE_API_URL}/v1/categories/${category}`, {
+      method: "GET",
+      cache: "force-cache",
+      next: { revalidate: 60 },
+      headers: {
+        "Content-Type": "application/json",
+        "company-domain": companyDomain,
       },
-    );
+    });
     if (response.status !== 200) {
       return null;
     }
