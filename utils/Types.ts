@@ -1101,6 +1101,7 @@ export interface Category {
   parent_id: string | null;
   productCount: number;
   updated_at: string;
+  icon_url: string | null;
 }
 
 /** A parent category node augmented with its direct children for tree rendering. */
@@ -1121,6 +1122,7 @@ export interface CategoryFormState {
   description: string;
   parentId: string;
   editingId: string | null;
+  icon_url: string;
 }
 
 /** Payload shape sent to the create/update API. */
@@ -1128,6 +1130,7 @@ export interface CategoryPayload {
   name: string;
   description: string;
   parent_id: string | null;
+  icon_url?: string | null;
 }
 
 // ── Filter & Pagination ─────────────────────────────────────
@@ -1203,6 +1206,7 @@ export interface CategoryFormProps {
   onNameChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onParentIdChange: (value: string) => void;
+  onIconUrlChange: (value: string) => void;
   onSubmit: (e: React.SubmitEvent) => void;
   onReset: () => void;
 }
@@ -1280,6 +1284,7 @@ export enum NavItemDisplayType {
   DYNAMIC_SUBCATEGORIES = "dynamic_subcategories",
   PRODUCT_RANGES = "product_ranges",
   CATEGORY_DIRECTORY = "category_directory",
+  CATEGORY_LISTING_VISUAL = "category_listing_visual",
 }
 export enum NavItemColType {
   SUBCATEGORIES = "subcategories",
@@ -1321,6 +1326,7 @@ export interface MegaMenuColumn {
   title: string;
   href: string;
   type: NavItemColType;
+  iconUrl?: string | null;
   items: NavLinkItem[];
   promotion?: {
     imageUrl: string;
@@ -1365,6 +1371,7 @@ export interface NavMegaColumn {
   itemType?: string;
   items?: NavLinkItem[];
   promotion?: NavPromoBlock;
+  iconUrl?: string | null;
 }
 
 export interface L1NavItem {
@@ -1373,6 +1380,7 @@ export interface L1NavItem {
   href: string;
   itemType?: string;
   hasMegaMenu: boolean;
+  displayType?: NavItemDisplayType;
 }
 
 export interface L1NavbarPayload {
@@ -1441,4 +1449,5 @@ export interface L1NavItem {
   label: string;
   href: string;
   hasMegaMenu: boolean;
+  displayType?: NavItemDisplayType;
 }

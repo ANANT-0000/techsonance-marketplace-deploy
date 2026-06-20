@@ -16,10 +16,10 @@ import { Product, Category } from "@/utils/Types";
 import { fetchProducts, fetchCategories, SortBy } from "@/utils/commonAPiClient";
 import { SHOPPING_LIST_TEXT } from "@/constants/customerText";
 import { PageLoader } from "./PageLoader";
+import toast from "react-hot-toast";
+import { ShoppingListConfig } from "@/constants";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const PAGE_SIZE = 12;
 
 export const SORT_OPTIONS: { label: string; value: SortBy }[] = [
   { label: SHOPPING_LIST_TEXT.SORT_NEWEST, value: "newest" },
@@ -29,8 +29,8 @@ export const SORT_OPTIONS: { label: string; value: SortBy }[] = [
 ];
 
 const DEFAULT_FILTERS: FilterState = {
-  minPrice: 0,
-  maxPrice: 50000,
+  minPrice: ShoppingListConfig.DEFAULT_MIN_PRICE,
+  maxPrice: ShoppingListConfig.DEFAULT_MAX_PRICE,
   selectedCategories: [],
 };
 
@@ -85,8 +85,10 @@ function reducer(state: State, action: Action): State {
       return { ...state, isLoading: action.payload };
     case ActionType.SET_SORT_OPEN:
       return { ...state, isSortOpen: action.payload };
-    default:
+    default: {
+      const _exhaustiveCheck: never = action;
       return state;
+    }
   }
 }
 
@@ -125,8 +127,8 @@ export function ShoppingList({ styles }: ShoppingListProps) {
   // ── Derive all "controlled" state directly from URL ───────────────────────
   const search = searchParams.get("search") ?? "";
   const category = searchParams.get("category") ?? "";
-  const minPrice = Number(searchParams.get("min_price") ?? 0);
-  const maxPrice = Number(searchParams.get("max_price") ?? 50000);
+  const minPrice = Number(searchParams.get("min_price") ?? ShoppingListConfig.DEFAULT_MIN_PRICE);
+  const maxPrice = Number(searchParams.get("max_price") ?? ShoppingListConfig.DEFAULT_MAX_PRICE);
   const sortBy = (searchParams.get("sort_by") as SortBy) ?? "newest";
   const page = Number(searchParams.get("page") ?? 1);
 
@@ -170,7 +172,8 @@ export function ShoppingList({ styles }: ShoppingListProps) {
           payload: categoriesList,
         });
       } catch (e) {
-        // ignore
+        toast.error(ShoppingListConfig.ERROR_LOAD_CATEGORIES);
+        console.error("Categories fetch error (developer details):", e);
       }
     };
     loadCategories();
@@ -186,11 +189,11 @@ export function ShoppingList({ styles }: ShoppingListProps) {
         const response = await fetchProducts({
           search: search.replace("...", "") || undefined,
           category: category || undefined,
-          min_price: minPrice > 0 ? minPrice : undefined,
-          max_price: maxPrice < 50000 ? maxPrice : undefined,
+          min_price: minPrice > ShoppingListConfig.DEFAULT_MIN_PRICE ? minPrice : undefined,
+          max_price: maxPrice < ShoppingListConfig.DEFAULT_MAX_PRICE ? maxPrice : undefined,
           sort_by: sortBy,
-          offset: (page - 1) * PAGE_SIZE,
-          limit: PAGE_SIZE,
+          offset: (page - 1) * ShoppingListConfig.PAGE_SIZE,
+          limit: ShoppingListConfig.PAGE_SIZE,
         });
 
         if (cancelled) return;
@@ -204,6 +207,8 @@ export function ShoppingList({ styles }: ShoppingListProps) {
           },
         });
       } catch (e) {
+        toast.error(ShoppingListConfig.ERROR_LOAD_PRODUCTS);
+        console.error("Products fetch error (developer details):", e);
         if (!cancelled) {
           dispatch({
             type: ActionType.SET_PRODUCTS_DATA,
@@ -251,8 +256,8 @@ export function ShoppingList({ styles }: ShoppingListProps) {
   const handleFiltersChange = (newFilters: FilterState) => {
     pushParams({
       category: newFilters.selectedCategories[0] ?? null,
-      min_price: newFilters.minPrice > 0 ? newFilters.minPrice : null,
-      max_price: newFilters.maxPrice < 50000 ? newFilters.maxPrice : null,
+      min_price: newFilters.minPrice > ShoppingListConfig.DEFAULT_MIN_PRICE ? newFilters.minPrice : null,
+      max_price: newFilters.maxPrice < ShoppingListConfig.DEFAULT_MAX_PRICE ? newFilters.maxPrice : null,
       page: 1,
     });
   };
@@ -375,7 +380,7 @@ export function ShoppingList({ styles }: ShoppingListProps) {
                   exit={{ opacity: 0 }}
                   className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
                 >
-                  {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                  {Array.from({ length: ShoppingListConfig.PAGE_SIZE }).map((_, i) => (
                     <ProductSkeleton key={i} />
                   ))}
                 </motion.ul>

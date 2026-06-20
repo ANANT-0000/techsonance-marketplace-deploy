@@ -18,6 +18,7 @@ const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
           parent_id: c.parent_id,
           productCount: c.products?.length || 0,
           updated_at: c.updated_at || new Date().toISOString(),
+          icon_url: c.icon_url || null,
         })),
       );
     })

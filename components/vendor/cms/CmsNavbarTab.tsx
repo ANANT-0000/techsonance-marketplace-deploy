@@ -1,5 +1,11 @@
 "use client";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useReducer,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   Plus,
   Trash2,
@@ -34,6 +40,7 @@ import {
 } from "@/utils/vendorApiClient";
 import { authToken } from "@/utils/authToken";
 import { dispatchNavbarChange } from "@/utils/cache";
+import toast from "react-hot-toast";
 import {
   LinkMode,
   NavItemColType,
@@ -44,6 +51,7 @@ import {
   NavMenuType,
   SiteMap,
 } from "@/utils/Types";
+import { CmsNavbarConfig } from "@/constants";
 
 // ─── Local Types ─────────────────────────────────────────────────────────────
 /** @deprecated Use NavItemColType */
@@ -107,7 +115,11 @@ const COL_TYPE_OPTIONS = [
 const DISPLAY_TYPE_OPTIONS = [
   {
     value: NavItemDisplayType.CATEGORY_LISTING,
-    label: "Curated Category List",
+    label: "Curated Category List (Apple-Style)",
+  },
+  {
+    value: NavItemDisplayType.CATEGORY_LISTING_VISUAL,
+    label: "Curated Visual Grid (boAt-Style)",
   },
   {
     value: NavItemDisplayType.DYNAMIC_SUBCATEGORIES,
@@ -217,32 +229,54 @@ function L2ColumnEditor({
   const save = async () => {
     setSaving(true);
     setError(null);
-    const res = await updateNavbarItem(
-      col.id,
-      {
-        label: draft.label,
-        href: draft.href,
-        sort_order: draft.sort_order,
-        meta: draft.meta,
-        category_id: draft.category_id || undefined,
-        item_type: draft.category_id
-          ? NavItemType.CATEGORY
-          : NavItemType.CUSTOM_LINK,
-      },
-      token,
-    );
-    setSaving(false);
-    if (res?.success === false) {
-      setError(res?.message || "Failed to save column.");
-      return;
+    try {
+      const res = await updateNavbarItem(
+        col.id,
+        {
+          label: draft.label,
+          href: draft.href,
+          sort_order: draft.sort_order,
+          meta: draft.meta,
+          category_id: draft.category_id || undefined,
+          item_type: draft.category_id
+            ? NavItemType.CATEGORY
+            : NavItemType.CUSTOM_LINK,
+        },
+        token,
+      );
+      setSaving(false);
+      if (res?.success === false) {
+        const errorMsg = res?.message || CmsNavbarConfig.ERROR_SAVE_COLUMN;
+        setError(errorMsg);
+        toast.error(errorMsg);
+        console.error("Save column error (developer details):", res);
+        return;
+      }
+      toast.success(CmsNavbarConfig.SUCCESS_SAVE_COLUMN);
+      onSaved({ ...draft, id: col.id });
+    } catch (err) {
+      setSaving(false);
+      setError(CmsNavbarConfig.ERROR_SAVE_COLUMN);
+      toast.error(CmsNavbarConfig.ERROR_SAVE_COLUMN);
+      console.error("Save column exception (developer details):", err);
     }
-    onSaved({ ...draft, id: col.id });
   };
 
   const remove = async () => {
     if (!confirm(`Delete column "${col.label}"?`)) return;
-    await deleteNavbarItem(col.id, token);
-    onDeleted(col.id);
+    try {
+      const res = await deleteNavbarItem(col.id, token);
+      if (res?.success === false) {
+        toast.error(res?.message || CmsNavbarConfig.ERROR_DELETE_COLUMN);
+        console.error("Delete column error (developer details):", res);
+        return;
+      }
+      toast.success(CmsNavbarConfig.SUCCESS_DELETE_COLUMN);
+      onDeleted(col.id);
+    } catch (err) {
+      toast.error(CmsNavbarConfig.ERROR_DELETE_COLUMN);
+      console.error("Delete column exception (developer details):", err);
+    }
   };
 
   const isPromo = draft.meta.col_type === NavItemColType.PROMOTION;
@@ -520,56 +554,82 @@ function L1ItemEditor({
   const save = async () => {
     setSaving(true);
     setError(null);
-    const res = await updateNavbarItem(
-      item.id,
-      {
-        label: draft.label,
-        href: draft.href,
-        item_type: draft.item_type,
-        category_id: draft.category_id || undefined,
-        has_mega_menu: draft.has_mega_menu,
-        sort_order: draft.sort_order,
-        meta: draft.meta,
-      },
-      token,
-    );
-    setSaving(false);
-    if (res?.success === false) {
-      setError(res?.message || "Failed to save link.");
-      return;
+    try {
+      const res = await updateNavbarItem(
+        item.id,
+        {
+          label: draft.label,
+          href: draft.href,
+          item_type: draft.item_type,
+          category_id: draft.category_id || undefined,
+          has_mega_menu: draft.has_mega_menu,
+          sort_order: draft.sort_order,
+          meta: draft.meta,
+        },
+        token,
+      );
+      setSaving(false);
+      if (res?.success === false) {
+        const errorMsg = res?.message || CmsNavbarConfig.ERROR_SAVE_LINK;
+        setError(errorMsg);
+        toast.error(errorMsg);
+        console.error("Save link error (developer details):", res);
+        return;
+      }
+      toast.success(CmsNavbarConfig.SUCCESS_SAVE_LINK);
+      onSaved({ ...draft, id: item.id });
+      dispatchNavbarChange();
+    } catch (err) {
+      setSaving(false);
+      setError(CmsNavbarConfig.ERROR_SAVE_LINK);
+      toast.error(CmsNavbarConfig.ERROR_SAVE_LINK);
+      console.error("Save link exception (developer details):", err);
     }
-    onSaved({ ...draft, id: item.id });
-    dispatchNavbarChange();
   };
 
   const addColumn = async () => {
     setAddingCol(true);
     setError(null);
-    const newCol: CreateNavItemPayload = {
-      menu_id: menuId,
-      parent_id: item.id,
-      label: "New Column",
-      href: "/store",
-      item_type: NavItemType.CUSTOM_LINK,
-      has_mega_menu: false,
-      sort_order: draft.megaMenuColumns.length,
-      meta: { col_type: NavItemColType.SUBCATEGORIES, col_title: "New Column" },
-    };
-    const res = await createNavbarItem(newCol, token);
-    setAddingCol(false);
+    try {
+      const newCol: CreateNavItemPayload = {
+        menu_id: menuId,
+        parent_id: item.id,
+        label: "New Column",
+        href: "/store",
+        item_type: NavItemType.CUSTOM_LINK,
+        has_mega_menu: false,
+        sort_order: draft.megaMenuColumns.length,
+        meta: {
+          col_type: NavItemColType.SUBCATEGORIES,
+          col_title: "New Column",
+        },
+      };
+      const res = await createNavbarItem(newCol, token);
+      setAddingCol(false);
 
-    if (res?.success === false) {
-      setError(res?.message || "Failed to add column.");
-      return;
-    }
-    const newColData = res?.data?.data || res?.data;
-    if (newColData?.id) {
-      setDraft((p) => ({
-        ...p,
-        megaMenuColumns: [...p.megaMenuColumns, newColData as L2Column],
-      }));
-    } else {
-      setError("Column was not created — please retry.");
+      if (res?.success === false) {
+        const errorMsg = res?.message || CmsNavbarConfig.ERROR_ADD_COLUMN;
+        setError(errorMsg);
+        toast.error(errorMsg);
+        console.error("Add column error (developer details):", res);
+        return;
+      }
+      const newColData = res?.data?.data || res?.data;
+      if (newColData?.id) {
+        toast.success(CmsNavbarConfig.SUCCESS_ADD_COLUMN);
+        setDraft((p) => ({
+          ...p,
+          megaMenuColumns: [...p.megaMenuColumns, newColData as L2Column],
+        }));
+      } else {
+        setError("Column was not created — please retry.");
+        toast.error("Column was not created — please retry.");
+      }
+    } catch (err) {
+      setAddingCol(false);
+      setError(CmsNavbarConfig.ERROR_ADD_COLUMN);
+      toast.error(CmsNavbarConfig.ERROR_ADD_COLUMN);
+      console.error("Add column exception (developer details):", err);
     }
   };
   const remove = async () => {
@@ -579,8 +639,19 @@ function L1ItemEditor({
       )
     )
       return;
-    await deleteNavbarItem(item.id, token);
-    onDeleted(item.id);
+    try {
+      const res = await deleteNavbarItem(item.id, token);
+      if (res?.success === false) {
+        toast.error(res?.message || CmsNavbarConfig.ERROR_DELETE_LINK);
+        console.error("Delete link error (developer details):", res);
+        return;
+      }
+      toast.success(CmsNavbarConfig.SUCCESS_DELETE_LINK);
+      onDeleted(item.id);
+    } catch (err) {
+      toast.error(CmsNavbarConfig.ERROR_DELETE_LINK);
+      console.error("Delete link exception (developer details):", err);
+    }
   };
 
   const onColSaved = (updated: L2Column) =>
@@ -754,8 +825,10 @@ function L1ItemEditor({
                     />
                   </div>
                 )}
-                {draft.meta.display_type ===
-                  NavItemDisplayType.CATEGORY_LISTING && (
+                {(draft.meta.display_type ===
+                  NavItemDisplayType.CATEGORY_LISTING ||
+                  draft.meta.display_type ===
+                    NavItemDisplayType.CATEGORY_LISTING_VISUAL) && (
                   <div className="mt-2">
                     <Toggle
                       label="Show category icons"
@@ -839,106 +912,323 @@ function buildIndentedCategoryOptions(
 }
 // ─── Main Tab Component ───────────────────────────────────────────────────────
 
+interface CmsNavbarState {
+  data: NavbarData | null;
+  loading: boolean;
+  products: { id: string; name: string }[];
+  settings: UpsertNavMenuPayload;
+  savingSettings: boolean;
+  items: L1Item[];
+  addingItem: boolean;
+  categories: {
+    id: string;
+    name: string;
+    parent_id: string | null;
+    slug: string;
+  }[];
+  siteMaps: SiteMap[];
+  mapsLoading: boolean;
+}
+
+const initialCmsNavbarState: CmsNavbarState = {
+  data: null,
+  loading: true,
+  products: [],
+  settings: {},
+  savingSettings: false,
+  items: [],
+  addingItem: false,
+  categories: [],
+  siteMaps: [],
+  mapsLoading: true,
+};
+
+enum CmsNavbarActionType {
+  SET_LOADING = "SET_LOADING",
+  SET_MAPS_LOADING = "SET_MAPS_LOADING",
+  SET_INITIAL_DATA = "SET_INITIAL_DATA",
+  PATCH_SETTINGS = "PATCH_SETTINGS",
+  SET_SAVING_SETTINGS = "SET_SAVING_SETTINGS",
+  SET_ADDING_ITEM = "SET_ADDING_ITEM",
+  SET_ITEMS = "SET_ITEMS",
+  ADD_ITEM = "ADD_ITEM",
+  SAVE_ITEM = "SAVE_ITEM",
+  DELETE_ITEM = "DELETE_ITEM",
+}
+
+type CmsNavbarAction =
+  | { type: CmsNavbarActionType.SET_LOADING; payload: boolean }
+  | { type: CmsNavbarActionType.SET_MAPS_LOADING; payload: boolean }
+  | {
+      type: CmsNavbarActionType.SET_INITIAL_DATA;
+      payload: {
+        data: NavbarData | null;
+        settings: UpsertNavMenuPayload;
+        items: L1Item[];
+        categories: {
+          id: string;
+          name: string;
+          parent_id: string | null;
+          slug: string;
+        }[];
+        products: { id: string; name: string }[];
+        siteMaps: SiteMap[];
+      };
+    }
+  | {
+      type: CmsNavbarActionType.PATCH_SETTINGS;
+      payload: { field: keyof UpsertNavMenuPayload; value: any };
+    }
+  | { type: CmsNavbarActionType.SET_SAVING_SETTINGS; payload: boolean }
+  | { type: CmsNavbarActionType.SET_ADDING_ITEM; payload: boolean }
+  | { type: CmsNavbarActionType.SET_ITEMS; payload: L1Item[] }
+  | { type: CmsNavbarActionType.ADD_ITEM; payload: L1Item }
+  | { type: CmsNavbarActionType.SAVE_ITEM; payload: L1Item }
+  | { type: CmsNavbarActionType.DELETE_ITEM; payload: string };
+
+function cmsNavbarReducer(
+  state: CmsNavbarState,
+  action: CmsNavbarAction,
+): CmsNavbarState {
+  switch (action.type) {
+    case CmsNavbarActionType.SET_LOADING:
+      return { ...state, loading: action.payload };
+    case CmsNavbarActionType.SET_MAPS_LOADING:
+      return { ...state, mapsLoading: action.payload };
+    case CmsNavbarActionType.SET_INITIAL_DATA:
+      return {
+        ...state,
+        data: action.payload.data,
+        settings: action.payload.settings,
+        items: action.payload.items,
+        categories: action.payload.categories,
+        products: action.payload.products,
+        siteMaps: action.payload.siteMaps,
+      };
+    case CmsNavbarActionType.PATCH_SETTINGS:
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          [action.payload.field]: action.payload.value,
+        },
+      };
+    case CmsNavbarActionType.SET_SAVING_SETTINGS:
+      return { ...state, savingSettings: action.payload };
+    case CmsNavbarActionType.SET_ADDING_ITEM:
+      return { ...state, addingItem: action.payload };
+    case CmsNavbarActionType.SET_ITEMS:
+      return { ...state, items: action.payload };
+    case CmsNavbarActionType.ADD_ITEM:
+      return { ...state, items: [...state.items, action.payload] };
+    case CmsNavbarActionType.SAVE_ITEM:
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.payload.id ? action.payload : item,
+        ),
+      };
+    case CmsNavbarActionType.DELETE_ITEM:
+      return {
+        ...state,
+        items: state.items.filter((item) => item.id !== action.payload),
+      };
+    default: {
+      const _exhaustiveCheck: never = action;
+      return state;
+    }
+  }
+}
+
 export function CmsNavbarTab() {
   const token = authToken();
-
-  const [data, setData] = useState<NavbarData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
-  // Scalar settings draft (separate from item tree so saves are isolated)
-  const [settings, setSettings] = useState<UpsertNavMenuPayload>({});
-  const [savingSettings, setSavingSettings] = useState(false);
-
-  // Local item tree (mutated by add/remove/reorder actions)
-  const [items, setItems] = useState<L1Item[]>([]);
-  const [addingItem, setAddingItem] = useState(false);
-  const [categories, setCategories] = useState<
-    { id: string; name: string; parent_id: string | null; slug: string }[]
-  >([]);
-  const [siteMaps, setSiteMaps] = useState<SiteMap[]>([]);
-  const [MapsLoading, setMapsLoading] = useState(true);
+  const [state, dispatch] = useReducer(cmsNavbarReducer, initialCmsNavbarState);
 
   // ── Initial load ────────────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
-      setLoading(true);
-      const [navRes, catRes, prodRes, MapsRes] = await Promise.all([
-        AxiosAPI.get("/v1/navbar").catch(() => null),
-        AxiosAPI.get("/v1/categories?limit=200").catch(() => null),
-        token
-          ? fetchVendorActiveProducts(token).catch(() => null)
-          : Promise.resolve(null),
-        AxiosAPI.get("/v1/site-maps").catch(() => null),
-      ]);
+      dispatch({ type: CmsNavbarActionType.SET_LOADING, payload: true });
+      try {
+        const [navRes, catRes, prodRes, MapsRes] = await Promise.all([
+          AxiosAPI.get("/v1/navbar").catch((err) => {
+            console.error("Navbar GET error (developer details):", err);
+            return null;
+          }),
+          AxiosAPI.get("/v1/categories?limit=200").catch((err) => {
+            console.error("Categories GET error (developer details):", err);
+            return null;
+          }),
+          token
+            ? fetchVendorActiveProducts(token).catch((err) => {
+                console.error(
+                  "Vendor products fetch error (developer details):",
+                  err,
+                );
+                return null;
+              })
+            : Promise.resolve(null),
+          AxiosAPI.get("/v1/site-maps").catch((err) => {
+            console.error("Site maps GET error (developer details):", err);
+            return null;
+          }),
+        ]);
 
-      if (navRes?.data) {
-        const d: NavbarData = navRes.data?.data ?? navRes.data;
-        setData(d);
-        setSettings(d.settings ?? {});
-        setItems(d.navigationItems ?? []);
+        let d: NavbarData | null = null;
+        let setts: UpsertNavMenuPayload = {};
+        let itms: L1Item[] = [];
+        let cats: {
+          id: string;
+          name: string;
+          parent_id: string | null;
+          slug: string;
+        }[] = [];
+        let prods: { id: string; name: string }[] = [];
+        let sMaps: SiteMap[] = [];
+
+        if (navRes?.data) {
+          d = navRes.data?.data ?? navRes.data;
+          setts = d?.settings ?? {};
+          itms = d?.navigationItems ?? [];
+        }
+        if (catRes?.data) {
+          cats = catRes.data?.data ?? catRes.data ?? [];
+        }
+        if (prodRes?.data) {
+          const list = (prodRes.data?.data ?? prodRes.data ?? []) as any[];
+          prods = list.map((p) => ({ id: p.id, name: p.name }));
+        }
+        if (MapsRes?.data) {
+          sMaps = MapsRes.data?.data ?? MapsRes.data ?? [];
+        }
+
+        dispatch({
+          type: CmsNavbarActionType.SET_INITIAL_DATA,
+          payload: {
+            data: d,
+            settings: setts,
+            items: itms,
+            categories: cats,
+            products: prods,
+            siteMaps: sMaps,
+          },
+        });
+      } catch (err) {
+        toast.error(CmsNavbarConfig.ERROR_LOAD_DATA);
+        console.error("Initial load error (developer details):", err);
+      } finally {
+        dispatch({
+          type: CmsNavbarActionType.SET_MAPS_LOADING,
+          payload: false,
+        });
+        dispatch({ type: CmsNavbarActionType.SET_LOADING, payload: false });
       }
-      if (catRes?.data) {
-        setCategories(catRes.data?.data ?? catRes.data ?? []);
-      }
-      if (prodRes?.data) {
-        const list = (prodRes.data?.data ?? prodRes.data ?? []) as any[];
-        setProducts(list.map((p) => ({ id: p.id, name: p.name })));
-      }
-      if (MapsRes?.data) setSiteMaps(MapsRes.data?.data ?? MapsRes.data ?? []);
-      setMapsLoading(false);
-      setLoading(false);
     };
     load();
-  }, []);
+  }, [token]);
 
   // ── Patch helpers ────────────────────────────────────────────────────────────
   const patchSettings = (field: keyof UpsertNavMenuPayload, val: any) =>
-    setSettings((p) => ({ ...p, [field]: val }));
+    dispatch({
+      type: CmsNavbarActionType.PATCH_SETTINGS,
+      payload: { field, value: val },
+    });
 
   // ── Save scalar settings ────────────────────────────────────────────────────
   const saveSettings = async () => {
     if (!token) return;
-    setSavingSettings(true);
-    await upsertNavbarMenu(settings, token);
-    setSavingSettings(false);
-    dispatchNavbarChange();
+    dispatch({ type: CmsNavbarActionType.SET_SAVING_SETTINGS, payload: true });
+    try {
+      const res = await upsertNavbarMenu(state.settings, token);
+      dispatch({
+        type: CmsNavbarActionType.SET_SAVING_SETTINGS,
+        payload: false,
+      });
+      if (res?.success === false) {
+        toast.error(res?.message || CmsNavbarConfig.ERROR_SAVE_SETTINGS);
+        console.error("Save settings error (developer details):", res);
+        return;
+      }
+      toast.success(CmsNavbarConfig.SUCCESS_SAVE_SETTINGS);
+      dispatchNavbarChange();
+    } catch (err) {
+      dispatch({
+        type: CmsNavbarActionType.SET_SAVING_SETTINGS,
+        payload: false,
+      });
+      toast.error(CmsNavbarConfig.ERROR_SAVE_SETTINGS);
+      console.error("Save settings exception (developer details):", err);
+    }
   };
+
   const makeAutoSave = async (newUrl: string) => {
     if (!token) return;
-    const updatedSettings = { ...settings, logo_src: newUrl };
-    setSettings(updatedSettings);
-    await upsertNavbarMenu(updatedSettings, token);
+    const updatedSettings = { ...state.settings, logo_src: newUrl };
+    dispatch({
+      type: CmsNavbarActionType.PATCH_SETTINGS,
+      payload: { field: "logo_src", value: newUrl },
+    });
+    try {
+      const res = await upsertNavbarMenu(updatedSettings, token);
+      if (res?.success === false) {
+        toast.error(res?.message || CmsNavbarConfig.ERROR_SAVE_SETTINGS);
+        console.error("Auto save logo error (developer details):", res);
+      } else {
+        toast.success("Logo auto-saved successfully.");
+      }
+    } catch (err) {
+      toast.error(CmsNavbarConfig.ERROR_SAVE_SETTINGS);
+      console.error("Auto save logo exception (developer details):", err);
+    }
   };
 
   // ── Add a new L1 item ───────────────────────────────────────────────────────
   const addL1Item = async () => {
-    if (!data?.menu_id || !token) return;
-    setAddingItem(true);
-    const res = await createNavbarItem(
-      {
-        menu_id: data.menu_id,
-        label: "New Link",
-        href: "/store",
-        item_type: NavItemType.CUSTOM_LINK,
-        has_mega_menu: false,
-        sort_order: items.length,
-        meta: {},
-      },
-      token,
-    );
-    setAddingItem(false);
-    if (res?.data) setItems((p) => [...p, res.data as L1Item]);
+    if (!state.data?.menu_id || !token) return;
+    dispatch({ type: CmsNavbarActionType.SET_ADDING_ITEM, payload: true });
+    try {
+      const res = await createNavbarItem(
+        {
+          menu_id: state.data.menu_id,
+          label: "New Link",
+          href: "/store",
+          item_type: NavItemType.CUSTOM_LINK,
+          has_mega_menu: false,
+          sort_order: state.items.length,
+          meta: {},
+        },
+        token,
+      );
+      dispatch({ type: CmsNavbarActionType.SET_ADDING_ITEM, payload: false });
+      if (res?.success === false) {
+        toast.error(res?.message || CmsNavbarConfig.ERROR_ADD_LINK);
+        console.error("Add link error (developer details):", res);
+        return;
+      }
+      const newItemData = res?.data?.data || res?.data;
+      if (newItemData?.id) {
+        toast.success(CmsNavbarConfig.SUCCESS_ADD_LINK);
+        dispatch({
+          type: CmsNavbarActionType.ADD_ITEM,
+          payload: newItemData as L1Item,
+        });
+      } else {
+        toast.error("Link was not created — please retry.");
+      }
+    } catch (err) {
+      dispatch({ type: CmsNavbarActionType.SET_ADDING_ITEM, payload: false });
+      toast.error(CmsNavbarConfig.ERROR_ADD_LINK);
+      console.error("Add link exception (developer details):", err);
+    }
   };
 
   const onItemSaved = (updated: L1Item) =>
-    setItems((p) => p.map((i) => (i.id === updated.id ? updated : i)));
+    dispatch({ type: CmsNavbarActionType.SAVE_ITEM, payload: updated });
 
   const onItemDeleted = (id: string) =>
-    setItems((p) => p.filter((i) => i.id !== id));
+    dispatch({ type: CmsNavbarActionType.DELETE_ITEM, payload: id });
 
   // ─── Loading skeleton ───────────────────────────────────────────────────────
-  if (loading) {
+  if (state.loading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((n) => (
@@ -946,8 +1236,10 @@ export function CmsNavbarTab() {
         ))}
       </div>
     );
-  } // ─── Empty state (no menu_id yet) ──────────────────────────────────────────
-  const menuId = data?.menu_id;
+  }
+
+  // ─── Empty state (no menu_id yet) ──────────────────────────────────────────
+  const menuId = state.data?.menu_id;
   return (
     <div className="space-y-6">
       {/* ── 1. Logo & Branding ──────────────────────────────────────────────── */}
@@ -956,7 +1248,7 @@ export function CmsNavbarTab() {
         action={
           <SaveBtn
             onClick={saveSettings}
-            saving={savingSettings}
+            saving={state.savingSettings}
             label="Save All Settings"
           />
         }
@@ -965,24 +1257,24 @@ export function CmsNavbarTab() {
           <div className="md:col-span-2">
             <ImageUploadField
               label="Logo Image (Cloudinary / CDN URL)"
-              value={settings.logo_src || ""}
+              value={state.settings.logo_src || ""}
               onChange={(v: string) => patchSettings("logo_src", v)}
               onAutoSave={makeAutoSave}
             />
           </div>
           <InputField
             label="Logo Alt Text"
-            value={settings.logo_alt || ""}
+            value={state.settings.logo_alt || ""}
             onChange={(v: string) => patchSettings("logo_alt", v)}
           />
           <InputField
             label="Logo Link (href)"
-            value={settings.logo_href || "/"}
+            value={state.settings.logo_href || "/"}
             onChange={(v: string) => patchSettings("logo_href", v)}
           />
           <SelectField
             label="Logo Alignment"
-            value={settings.logo_alignment || "LEFT"}
+            value={state.settings.logo_alignment || "LEFT"}
             onChange={(v: string) => patchSettings("logo_alignment", v as any)}
             options={ALIGNMENT_OPTIONS}
           />
@@ -994,19 +1286,19 @@ export function CmsNavbarTab() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <SelectField
             label="Scroll Position"
-            value={settings.position || "STICKY"}
+            value={state.settings.position || "STICKY"}
             onChange={(v: string) => patchSettings("position", v as any)}
             options={POSITION_OPTIONS}
           />
           <div className="space-y-1 col-span-2">
             <Toggle
               label="Show drop-shadow"
-              value={settings.show_shadow ?? true}
+              value={state.settings.show_shadow ?? true}
               onChange={(v) => patchSettings("show_shadow", v)}
             />
             <Toggle
               label="Show bottom border"
-              value={settings.show_border ?? true}
+              value={state.settings.show_border ?? true}
               onChange={(v) => patchSettings("show_border", v)}
             />
           </div>
@@ -1017,19 +1309,19 @@ export function CmsNavbarTab() {
       <CmsSection title="Search Bar">
         <Toggle
           label="Show search bar"
-          value={settings.search_visible ?? true}
+          value={state.settings.search_visible ?? true}
           onChange={(v) => patchSettings("search_visible", v)}
         />
-        {settings.search_visible !== false && (
+        {state.settings.search_visible !== false && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
             <InputField
               label="Placeholder Text"
-              value={settings.search_placeholder || ""}
+              value={state.settings.search_placeholder || ""}
               onChange={(v: string) => patchSettings("search_placeholder", v)}
             />
             <InputField
               label="Search Endpoint"
-              value={settings.search_endpoint || "/store/search"}
+              value={state.settings.search_endpoint || "/store/search"}
               onChange={(v: string) => patchSettings("search_endpoint", v)}
               mono
             />
@@ -1045,7 +1337,7 @@ export function CmsNavbarTab() {
             <div className="flex-1">
               <Toggle
                 label="Account"
-                value={settings.show_account ?? true}
+                value={state.settings.show_account ?? true}
                 onChange={(v) => patchSettings("show_account", v)}
               />
             </div>
@@ -1055,7 +1347,7 @@ export function CmsNavbarTab() {
             <div className="flex-1">
               <Toggle
                 label="Wishlist"
-                value={settings.show_wishlist ?? true}
+                value={state.settings.show_wishlist ?? true}
                 onChange={(v) => patchSettings("show_wishlist", v)}
               />
             </div>
@@ -1065,7 +1357,7 @@ export function CmsNavbarTab() {
             <div className="flex-1">
               <Toggle
                 label="Cart"
-                value={settings.show_cart ?? true}
+                value={state.settings.show_cart ?? true}
                 onChange={(v) => patchSettings("show_cart", v)}
               />
             </div>
@@ -1075,16 +1367,16 @@ export function CmsNavbarTab() {
 
       {/* ── 5. Navigation Items (L1) ────────────────────────────────────────── */}
       <CmsSection
-        title={`Navigation Links (${items.length})`}
+        title={`Navigation Links (${state.items.length})`}
         action={
           menuId ? (
             <button
               onClick={addL1Item}
-              disabled={addingItem}
+              disabled={state.addingItem}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
-              {addingItem ? "Adding…" : "Add Link"}
+              {state.addingItem ? "Adding…" : "Add Link"}
             </button>
           ) : undefined
         }
@@ -1097,15 +1389,15 @@ export function CmsNavbarTab() {
             </p>
             <button
               onClick={saveSettings}
-              disabled={savingSettings}
+              disabled={state.savingSettings}
               className="mt-3 px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition-colors"
             >
-              {savingSettings ? "Saving…" : "Save Settings & Unlock"}
+              {state.savingSettings ? "Saving…" : "Save Settings & Unlock"}
             </button>
           </div>
         )}
 
-        {menuId && items.length === 0 && (
+        {menuId && state.items.length === 0 && (
           <div className="text-center py-8 text-gray-400 text-sm border border-dashed border-gray-200 rounded-xl">
             <LinkIcon className="w-8 h-8 mx-auto mb-2 opacity-30" />
             <p>No navigation links yet — add your first link above.</p>
@@ -1113,18 +1405,18 @@ export function CmsNavbarTab() {
         )}
 
         <div className="space-y-3">
-          {items.map((item, idx) => (
+          {state.items.map((item, idx) => (
             <L1ItemEditor
               key={idx}
               item={item}
-              categories={categories}
-              siteMaps={siteMaps}
-              mapsLoading={MapsLoading}
+              categories={state.categories}
+              siteMaps={state.siteMaps}
+              mapsLoading={state.mapsLoading}
               menuId={menuId!}
               token={token!}
               onSaved={onItemSaved}
               onDeleted={onItemDeleted}
-              products={products}
+              products={state.products}
             />
           ))}
         </div>

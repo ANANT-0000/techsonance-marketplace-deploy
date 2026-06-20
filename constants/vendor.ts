@@ -757,3 +757,28 @@ export const CATEGORY_TOAST = {
   DELETE_MODAL_SUBTITLE: (name: string, count: number) =>
     `"${name}" contains ${count} subcategories.`,
 } as const;
+export const CmsNavbarConfig = {
+  ERROR_LOAD_DATA:
+    "We couldn't load the CMS navbar configuration. Please try again.",
+  ERROR_SAVE_SETTINGS:
+    "Something went wrong while saving the branding settings.",
+  ERROR_ADD_LINK:
+    "Something went wrong while adding the link. Please try again.",
+  ERROR_SAVE_LINK:
+    "Something went wrong while saving the link. Please try again.",
+  ERROR_DELETE_LINK:
+    "Something went wrong while deleting the link. Please try again.",
+  ERROR_ADD_COLUMN:
+    "Something went wrong while adding the column. Please try again.",
+  ERROR_SAVE_COLUMN:
+    "Something went wrong while saving the column. Please try again.",
+  ERROR_DELETE_COLUMN:
+    "Something went wrong while deleting the column. Please try again.",
+  SUCCESS_SAVE_SETTINGS: "Branding settings saved successfully.",
+  SUCCESS_ADD_LINK: "Navigation link added successfully.",
+  SUCCESS_SAVE_LINK: "Navigation link saved successfully.",
+  SUCCESS_DELETE_LINK: "Navigation link deleted successfully.",
+  SUCCESS_ADD_COLUMN: "Column added successfully.",
+  SUCCESS_SAVE_COLUMN: "Column saved successfully.",
+  SUCCESS_DELETE_COLUMN: "Column deleted successfully.",
+} as const;

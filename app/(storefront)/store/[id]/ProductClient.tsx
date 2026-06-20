@@ -48,6 +48,7 @@ import { openLoginModal } from "@/lib/features/auth/authSlice";
 import { RootState } from "@/lib/store";
 import { AxiosError, AxiosResponse } from "axios";
 import { PageLoader } from "@/components/customer/PageLoader";
+import { ProductClientConfig } from "@/constants";
 
 // ─── Trust Badges ────────────────────────────────────────────────────────────
 const trustBadges = [
@@ -207,8 +208,10 @@ function reducer(state: State, action: Action): State {
       return { ...state, activeTab: action.payload };
     case ActionType.SET_QUANTITY:
       return { ...state, quantity: action.payload };
-    default:
+    default: {
+      const _exhaustiveCheck: never = action;
       return state;
+    }
   }
 }
 
@@ -270,6 +273,11 @@ export default function ProductClient({ id }: { id: string }) {
           },
         });
       } catch (error) {
+        toast.error(ProductClientConfig.PRODUCT_LOAD_ERROR);
+        console.error(
+          "Product details fetch error (developer details):",
+          error,
+        );
         dispatch({ type: ActionType.SET_PAGE_LOADING, payload: false });
       } finally {
         dispatch({ type: ActionType.SET_LOADING, payload: false });
@@ -364,7 +372,7 @@ export default function ProductClient({ id }: { id: string }) {
 
   const handleCouponSelect = async (coupon: Coupon) => {
     await AxiosAPI.post(
-      "/v1/coupon/validate",
+      ProductClientConfig.COUPON_VALIDATE_API,
       {
         userId: user?.id,
         code: coupon.code,
@@ -375,7 +383,9 @@ export default function ProductClient({ id }: { id: string }) {
     )
       .then((res: AxiosResponse) => {
         if (res.data.success !== true || res.status !== 201) {
-          toast.error(res.data.message || "Failed to validate coupon");
+          toast.error(
+            res.data.message || ProductClientConfig.COUPON_VALIDATE_ERROR,
+          );
           setTimeout(
             () =>
               dispatch({
@@ -385,14 +395,14 @@ export default function ProductClient({ id }: { id: string }) {
             1500,
           );
         } else {
-          toast.success("Coupon applied successfully");
+          toast.success(ProductClientConfig.COUPON_SUCCESS);
           dispatch({ type: ActionType.SET_SELECTED_COUPON, payload: coupon });
           dispatch({ type: ActionType.SET_COUPON_MODAL_OPEN, payload: false });
         }
       })
       .catch((err: AxiosError) => {
-        // @ts-ignore
-        toast.error(err.response?.data?.error || "Failed to validate coupon");
+        toast.error(ProductClientConfig.COUPON_VALIDATE_ERROR);
+        console.error("Coupon validation error (developer context):", err);
       });
   };
 
@@ -416,7 +426,8 @@ export default function ProductClient({ id }: { id: string }) {
         </span>
         <ChevronRight size={12} />
         <span className="hover:text-gray-700 cursor-pointer transition-colors capitalize">
-          {state.product?.category?.name || "Products"}
+          {state.product?.category?.name ||
+            ProductClientConfig.FALLBACK_CATEGORY_NAME}
         </span>
         <ChevronRight size={12} />
         <span className="text-gray-800 font-semibold">
@@ -702,7 +713,9 @@ export default function ProductClient({ id }: { id: string }) {
                 <span
                   className={`text-theme-body-sm font-semibold ${inStock ? "text-emerald-700" : "text-red-500"}`}
                 >
-                  {inStock ? "In Stock · Ready to ship" : "Out of Stock"}
+                  {inStock
+                    ? ProductClientConfig.IN_STOCK_MESSAGE
+                    : ProductClientConfig.OUT_OF_STOCK_MESSAGE}
                 </span>
               </div>
             </motion.div>
@@ -837,7 +850,7 @@ export default function ProductClient({ id }: { id: string }) {
                   />
                 ) : (
                   <span className="flex-1 h-12 flex items-center justify-center rounded-2xl bg-gray-100 text-gray-400 font-bold text-theme-body-sm">
-                    Out of Stock
+                    {ProductClientConfig.OUT_OF_STOCK_MESSAGE}
                   </span>
                 )}
               </motion.div>
@@ -992,7 +1005,7 @@ export default function ProductClient({ id }: { id: string }) {
               />
             ) : (
               <span className="flex-1 h-12 flex items-center justify-center rounded-2xl bg-gray-100 text-gray-400 font-bold text-theme-body-sm">
-                Out of Stock
+                {ProductClientConfig.OUT_OF_STOCK_MESSAGE}
               </span>
             )}
           </div>

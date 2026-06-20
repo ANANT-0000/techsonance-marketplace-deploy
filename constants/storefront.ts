@@ -254,3 +254,24 @@ export const CMS_L1_NAV_PAYLOAD: L1NavbarPayload = {
 };
 
 export const CMS_L2_MEGA_PAYLOAD: L2MegaMenuPayload = {};
+export const ProductClientConfig = {
+  DEFAULT_MAX_PRICE: 50000,
+  SAVINGS_CURRENCY_SYMBOL: "₹",
+  FALLBACK_CATEGORY_NAME: "Products",
+  IN_STOCK_MESSAGE: "In Stock · Ready to ship",
+  OUT_OF_STOCK_MESSAGE: "Out of Stock",
+  COUPON_SUCCESS: "Coupon applied successfully",
+  COUPON_VALIDATE_ERROR: "Failed to validate coupon",
+  PRODUCT_LOAD_ERROR:
+    "We couldn't load the product details right now. Please try again.",
+  COUPON_VALIDATE_API: "/v1/coupon/validate",
+  PRODUCTS_API_DETAILS: "/v1/products/",
+} as const;
+
+export const ShoppingListConfig = {
+  PAGE_SIZE: 12,
+  DEFAULT_MIN_PRICE: 0,
+  DEFAULT_MAX_PRICE: 50000,
+  ERROR_LOAD_CATEGORIES: "We couldn't load the categories right now.",
+  ERROR_LOAD_PRODUCTS: "Something went wrong. Please try again in a moment.",
+} as const;

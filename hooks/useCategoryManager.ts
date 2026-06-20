@@ -832,7 +832,7 @@ export function useCategoryManager({
     token,
     isPending,
 
-    formState: { name, description, parentId, editingId },
+    formState: { name, description, parentId, editingId, icon_url: "" },
     onNameChange,
     onDescriptionChange,
     onParentIdChange,

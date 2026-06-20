@@ -7,6 +7,7 @@ import React, { useMemo } from "react";
 import { FolderPlus, Edit2 } from "lucide-react";
 import { CATEGORY_UI_LABELS, CATEGORY_VALIDATION } from "@/constants";
 import { Category, CategoryFormProps } from "@/utils/Types";
+import { ImageUploadField } from "@/components/vendor/cms/ImageUploadField";
 function getDescendantIds(categories: Category[], rootId: string): Set<string> {
   const ids = new Set<string>();
   const stack = [rootId];
@@ -54,10 +55,11 @@ export default function CategoryForm({
   onNameChange,
   onDescriptionChange,
   onParentIdChange,
+  onIconUrlChange,
   onSubmit,
   onReset,
 }: CategoryFormProps) {
-  const { name, description, parentId, editingId } = formState;
+  const { name, description, parentId, editingId, icon_url } = formState;
   const excludeIds = useMemo(() => {
     const set = editingId
       ? getDescendantIds(categories, editingId)
@@ -152,6 +154,15 @@ export default function CategoryForm({
             placeholder={CATEGORY_UI_LABELS.DESCRIPTION_PLACEHOLDER}
             disabled={isPending}
             className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-500 outline-none transition-all resize-none disabled:opacity-50"
+          />
+        </div>
+
+        {/* Category Image / Thumbnail (Optional) */}
+        <div>
+          <ImageUploadField
+            label="Thumbnail / Category Image (Optional)"
+            value={icon_url || ""}
+            onChange={(newUrl) => onIconUrlChange(newUrl)}
           />
         </div>
 

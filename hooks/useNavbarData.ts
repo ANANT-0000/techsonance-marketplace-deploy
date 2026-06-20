@@ -1,14 +1,13 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useReducer, useCallback } from "react";
 import AxiosAPI from "@/lib/axios";
+import toast from "react-hot-toast";
 import { NAV_LINKS } from "@/constants/customer";
-
 import { LANG_KEY, NAVBAR_CACHE_KEY } from "@/constants";
 import {
   CMS_L1_NAV_PAYLOAD,
   CMS_L2_MEGA_PAYLOAD,
 } from "@/constants/storefront";
-
 import { UiText } from "@/constants/ui-text";
 import {
   getCachedData,
@@ -20,14 +19,31 @@ import {
 import {
   L1NavbarPayload,
   L2MegaMenuPayload,
+  L1NavItem,
   NavItemColType,
   NavItemDisplayType,
   NavLinkItem,
   NavMenuLogoAlignment,
   NavMenuPosition,
 } from "@/utils/Types";
+import { AxiosResponse } from "axios";
 
-// ─── Response shape returned by GET /v1/navbar ───────────────────────────────
+// ─── Enums ───────────────────────────────────────────────────────────────────
+export enum NavbarFetchStatus {
+  IDLE = "IDLE",
+  LOADING = "LOADING",
+  SUCCESS = "SUCCESS",
+  ERROR = "ERROR",
+}
+
+export enum NavbarActionType {
+  FETCH_START = "FETCH_START",
+  FETCH_SUCCESS = "FETCH_SUCCESS",
+  FETCH_ERROR = "FETCH_ERROR",
+  SET_LANG = "SET_LANG",
+}
+
+// ─── Interfaces ──────────────────────────────────────────────────────────────
 interface NavbarApiSettings {
   logo_src?: string;
   logo_alt?: string;
@@ -58,6 +74,17 @@ interface NavItemMetaApi {
   product_ids?: string[];
 }
 
+interface ApiSubLink {
+  id: string;
+  label: string;
+  href: string;
+  icon_url?: string | null;
+  iconUrl?: string | null;
+  category_id?: string | null;
+  categoryId?: string | null;
+  children?: ApiSubLink[];
+}
+
 interface NavItemApi {
   id: string;
   label: string;
@@ -67,7 +94,6 @@ interface NavItemApi {
   has_mega_menu: boolean;
   sort_order: number;
   meta: NavItemMetaApi;
-
   megaMenuColumns: {
     id: string;
     label: string;
@@ -75,7 +101,7 @@ interface NavItemApi {
     sort_order: number;
     item_type: string;
     meta: NavItemMetaApi;
-    items?: NavLinkItem[];
+    items?: ApiSubLink[];
   }[];
 }
 
@@ -85,7 +111,35 @@ interface NavbarApiResponse {
   navigationItems: NavItemApi[];
 }
 
-// ─── Transform the relational API response into the shape Navbar.tsx expects ──
+interface NavbarState {
+  status: NavbarFetchStatus;
+  lang: string;
+  l1Config: L1NavbarPayload;
+  l2Config: L2MegaMenuPayload;
+  menuLinks: (L1NavItem | Record<string, string | undefined>)[];
+  navbarConfig: NavbarApiResponse | null;
+}
+
+type NavbarAction =
+  | { type: NavbarActionType.FETCH_START }
+  | {
+      type: NavbarActionType.FETCH_SUCCESS;
+      payload: {
+        l1: L1NavbarPayload;
+        l2: L2MegaMenuPayload;
+        raw: NavbarApiResponse;
+      };
+    }
+  | { type: NavbarActionType.FETCH_ERROR }
+  | { type: NavbarActionType.SET_LANG; payload: string };
+
+// ─── Constants/Config ────────────────────────────────────────────────────────
+export const NavbarConfig = {
+  DEFAULT_LOCALE: "en",
+  ERROR_USER_MESSAGE: "We couldn't load navigation menu right now. Please try again in a moment.",
+} as const;
+
+// ─── Transform Helper ────────────────────────────────────────────────────────
 function transformApiResponse(data: NavbarApiResponse): {
   l1: L1NavbarPayload;
   l2: L2MegaMenuPayload;
@@ -128,10 +182,10 @@ function transformApiResponse(data: NavbarApiResponse): {
       href: item.href,
       itemType: item.item_type,
       hasMegaMenu: item.has_mega_menu,
+      displayType: item.meta?.display_type,
     })),
   };
 
-  // Build L2 mega-menu payload from the nested megaMenuColumns
   const l2: L2MegaMenuPayload = { ...CMS_L2_MEGA_PAYLOAD };
   data.navigationItems.forEach((item) => {
     if (!item.has_mega_menu || !item.megaMenuColumns?.length) return;
@@ -169,7 +223,22 @@ function transformApiResponse(data: NavbarApiResponse): {
         title: m.col_title || col.label,
         href: href,
         itemType: itemType,
-        items: col.items || [],
+        items: (col.items || []).map((subLink: ApiSubLink): NavLinkItem => ({
+          id: subLink.id,
+          label: subLink.label,
+          href: subLink.href,
+          iconUrl: subLink.icon_url || subLink.iconUrl || null,
+          categoryId: subLink.category_id || subLink.categoryId || null,
+          children: (subLink.children || []).map((l3: ApiSubLink): NavLinkItem => ({
+            id: l3.id,
+            label: l3.label,
+            href: l3.href,
+            iconUrl: l3.icon_url || l3.iconUrl || null,
+            categoryId: l3.category_id || l3.categoryId || null,
+            children: [],
+          })),
+        })),
+        iconUrl: m.icon_url || null,
       };
     });
   });
@@ -177,39 +246,80 @@ function transformApiResponse(data: NavbarApiResponse): {
   return { l1, l2 };
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+// ─── Reducer with Exhaustive Check ───────────────────────────────────────────
+function navbarReducer(state: NavbarState, action: NavbarAction): NavbarState {
+  switch (action.type) {
+    case NavbarActionType.FETCH_START:
+      return {
+        ...state,
+        status: NavbarFetchStatus.LOADING,
+      };
+    case NavbarActionType.FETCH_SUCCESS:
+      return {
+        ...state,
+        status: NavbarFetchStatus.SUCCESS,
+        l1Config: action.payload.l1,
+        l2Config: action.payload.l2,
+        navbarConfig: action.payload.raw,
+        menuLinks: action.payload.l1.navigationItems,
+      };
+    case NavbarActionType.FETCH_ERROR:
+      return {
+        ...state,
+        status: NavbarFetchStatus.ERROR,
+      };
+    case NavbarActionType.SET_LANG:
+      return {
+        ...state,
+        lang: action.payload,
+      };
+    default:
+      const _exhaustiveCheck: never = action;
+      return state;
+  }
+}
+
+// ─── Initial State ───────────────────────────────────────────────────────────
+const initialNavbarState: NavbarState = {
+  status: NavbarFetchStatus.IDLE,
+  lang: NavbarConfig.DEFAULT_LOCALE,
+  l1Config: CMS_L1_NAV_PAYLOAD,
+  l2Config: CMS_L2_MEGA_PAYLOAD,
+  menuLinks: NAV_LINKS,
+  navbarConfig: null,
+};
+
+// ─── Refactored useNavbarData Hook ───────────────────────────────────────────
 export function useNavbarData() {
-  const [lang, setLang] = useState<string>("en");
-  const [l1Config, setL1Config] = useState<L1NavbarPayload>(CMS_L1_NAV_PAYLOAD);
-  const [l2Config, setL2Config] =
-    useState<L2MegaMenuPayload>(CMS_L2_MEGA_PAYLOAD);
-  const [menuLinks, setMenuLinks] = useState<any[]>(NAV_LINKS);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [state, dispatch] = useReducer(navbarReducer, initialNavbarState);
 
-  // navbarConfig kept for backward compat with any consumers that read it
-  const [navbarConfig, setNavbarConfig] = useState<any>(null);
-
+  // Sync locale with localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedLang = localStorage.getItem(LANG_KEY) || "en";
-      setLang(savedLang);
+      const savedLang = localStorage.getItem(LANG_KEY) || NavbarConfig.DEFAULT_LOCALE;
+      dispatch({ type: NavbarActionType.SET_LANG, payload: savedLang });
     }
-    const unsubscribe = subscribeLocaleChange((newLang) => setLang(newLang));
+    const unsubscribe = subscribeLocaleChange((newLang) => {
+      dispatch({ type: NavbarActionType.SET_LANG, payload: newLang });
+    });
     return unsubscribe;
   }, []);
 
-  const fetchNavbar = async (currentLang: string, forceRefresh = false) => {
-    setIsLoading(true);
+  const fetchNavbar = useCallback(async (currentLang: string, forceRefresh = false) => {
+    dispatch({ type: NavbarActionType.FETCH_START });
     const cacheKey = `${NAVBAR_CACHE_KEY}_relational_${currentLang}`;
 
     if (!forceRefresh) {
       const cached = getCachedData(cacheKey);
       if (cached) {
-        setL1Config(cached.l1);
-        setL2Config(cached.l2);
-        setNavbarConfig(cached.raw);
-        setMenuLinks(cached.l1.navigationItems);
-        setIsLoading(false);
+        dispatch({
+          type: NavbarActionType.FETCH_SUCCESS,
+          payload: {
+            l1: cached.l1,
+            l2: cached.l2,
+            raw: cached.raw,
+          },
+        });
         return;
       }
     } else {
@@ -217,28 +327,38 @@ export function useNavbarData() {
     }
 
     try {
-      const res = await AxiosAPI.get(`/v1/navbar`);
-      const data: NavbarApiResponse = res.data?.data ?? res.data;
+      const res: AxiosResponse<NavbarApiResponse> = await AxiosAPI.get(`/v1/navbar`);
+      const data: NavbarApiResponse = res.data;
       if (data?.navigationItems) {
         const { l1, l2 } = transformApiResponse(data);
-        setL1Config(l1);
-        setL2Config(l2);
-        setNavbarConfig(data);
-        setMenuLinks(l1.navigationItems);
+        dispatch({
+          type: NavbarActionType.FETCH_SUCCESS,
+          payload: { l1, l2, raw: data },
+        });
         cacheData(cacheKey, { l1, l2, raw: data });
+      } else {
+        dispatch({ type: NavbarActionType.FETCH_ERROR });
       }
-    } catch {
-      // On fetch failure keep defaults already set in state
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      // Tier 1: User-Facing Error feedback
+      toast.error(NavbarConfig.ERROR_USER_MESSAGE);
+      // Tier 2: Developer Visibility logs
+      console.error("Navbar fetch error (developer details):", error);
+      dispatch({ type: NavbarActionType.FETCH_ERROR });
     }
-  };
-  useEffect(() => {
-    fetchNavbar(lang, true);
-    const unsubscribe = subscribeNavbarChange(() => {});
-    return unsubscribe;
   }, []);
 
-  // Return everything the existing Navbar.tsx + any other consumers expect
-  return { navbarConfig, l1Config, l2Config, menuLinks, isLoading };
+  useEffect(() => {
+    fetchNavbar(state.lang, true);
+    const unsubscribe = subscribeNavbarChange(() => {});
+    return unsubscribe;
+  }, [state.lang, fetchNavbar]);
+
+  return {
+    navbarConfig: state.navbarConfig,
+    l1Config: state.l1Config,
+    l2Config: state.l2Config,
+    menuLinks: state.menuLinks,
+    isLoading: state.status === NavbarFetchStatus.LOADING,
+  };
 }

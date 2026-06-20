@@ -54,6 +54,22 @@ export default function CategoryDetailDrawer({
             </h2>
           </div>
 
+          {/* Category Image / Thumbnail */}
+          {drawerData.icon_url && (
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-gray-400">
+                Category Image / Thumbnail
+              </span>
+              <div className="mt-1.5 w-full h-[180px] rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center">
+                <img
+                  src={drawerData.icon_url}
+                  alt={drawerData.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Badges / Hierarchy Type */}
           <div className="flex gap-2">
             <span

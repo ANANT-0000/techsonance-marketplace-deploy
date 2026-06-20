@@ -96,7 +96,16 @@ export function CategoryRow({
               onClick={() => onDrawerOpen(node.id)}
               className="cursor-pointer capitalize hover:underline hover:text-indigo-600 font-medium text-gray-700 flex items-center gap-1.5"
             >
-              {hasChildren ? "📁" : "📂"} {node.name}
+              {node.icon_url ? (
+                <img
+                  src={node.icon_url}
+                  alt={node.name}
+                  className="w-5 h-5 object-cover rounded-md border border-gray-200 bg-white"
+                />
+              ) : (
+                hasChildren ? "📁" : "📂"
+              )}
+              {node.name}
             </span>
           </div>
         </td>

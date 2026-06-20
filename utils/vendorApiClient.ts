@@ -220,7 +220,7 @@ export const fetchVendorProducts = async (
   try {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(
-      `${BASE_API_URL}/v1/products/all?offset=${offset}&limit=${limit}&search=${search ?? null}&category=${category ?? null}&status=${status ?? null}`,
+      `${BASE_API_URL}/v1/products/vendor-products?offset=${offset}&limit=${limit}&search=${search ?? null}&category=${category ?? null}&status=${status ?? null}`,
       {
         method: "GET",
         // cache: 'force-cache',

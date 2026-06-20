@@ -34,6 +34,7 @@ import {
   MegaMenuColumnData,
   PromotionData,
   NavMegaColumn,
+  NavItemDisplayType,
 } from "@/utils/Types";
 
 // UI Text Constants (strictly preventing hardcoded keys/texts in component logic)
@@ -438,6 +439,8 @@ export function Navbar({
             // columns — switch from a single horizontal row to a wrapping grid
             // so 6+ columns don't blow the panel out past the viewport.
             const isDirectoryStyle = (columns?.length ?? 0) > 4;
+            const isVisual =
+              item.displayType === NavItemDisplayType.CATEGORY_LISTING_VISUAL;
 
             return (
               <li
@@ -467,7 +470,6 @@ export function Navbar({
                       />
                     )}
                   </Link>
-
                   {isActive && (
                     <motion.div
                       layoutId="nav-underline-desktop"
@@ -488,6 +490,29 @@ export function Navbar({
                     >
                       {menuDataLoading ? (
                         <MegaMenuSkeleton />
+                      ) : isVisual ? (
+                        <div className="grid grid-cols-5 gap-6 py-6 px-7 w-full min-w-[600px] max-w-[min(94vw,980px)]">
+                          {columns!.map((col) => (
+                            <Link
+                              key={col.id}
+                              href={col.href || "#"}
+                              className="flex items-center gap-4 p-3 bg-gray-50/60 hover:bg-theme-primary/5 hover:text-theme-primary rounded-xl transition-all group/item border border-transparent hover:border-theme-primary/20 cursor-pointer"
+                            >
+                              {col.iconUrl ? (
+                                <img
+                                  src={col.iconUrl}
+                                  alt={col.title}
+                                  className="w-12 h-12 object-contain mix-blend-multiply flex-shrink-0 group-hover/item:scale-105 transition-transform"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0" />
+                              )}
+                              <span className="font-semibold text-xs tracking-tight text-slate-800 group-hover/item:text-theme-primary">
+                                {col.title}
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
                       ) : isDirectoryStyle ? (
                         <div className="grid grid-cols-3 gap-x-8 gap-y-6 py-6 px-7 max-h-[480px] overflow-y-auto">
                           {columns!.map((col, cIdx) =>

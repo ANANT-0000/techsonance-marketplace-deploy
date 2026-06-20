@@ -90,6 +90,7 @@ export default function CategoryManager({
     onNameChange,
     onDescriptionChange,
     onParentIdChange,
+    onIconUrlChange,
     handleSaveCategory,
     handleResetForm,
   } = useCategoryForm({ setCheckChange, editTarget });
@@ -232,6 +233,7 @@ export default function CategoryManager({
           onNameChange={onNameChange}
           onDescriptionChange={onDescriptionChange}
           onParentIdChange={onParentIdChange}
+          onIconUrlChange={onIconUrlChange}
           onSubmit={handleSaveCategory}
           onReset={handleResetForm}
         />

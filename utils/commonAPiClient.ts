@@ -100,8 +100,7 @@ export const fetchProducts = async (
   try {
     const response = await fetch(url, {
       method: "GET",
-      cache: "force-cache",
-      next: { revalidate: 60 },
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -151,8 +150,7 @@ export const fetchProductProducts = async (
   try {
     const response = await fetch(url, {
       method: "GET",
-      cache: "force-cache",
-      next: { revalidate: 60 },
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -186,8 +184,7 @@ export const fetchProductOptions = async (): Promise<
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/products/options`, {
       method: "GET",
-      cache: "force-cache",
-      next: { revalidate: 300 },
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,

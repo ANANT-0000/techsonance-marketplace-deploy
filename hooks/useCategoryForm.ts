@@ -42,6 +42,7 @@ export function useCategoryForm({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [parentId, setParentId] = useState("");
+  const [iconUrl, setIconUrl] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // ── Sync form when editTarget changes from parent ──
@@ -50,6 +51,7 @@ export function useCategoryForm({
       setName(editTarget.name);
       setDescription(editTarget.description || "");
       setParentId(editTarget.parent_id || "");
+      setIconUrl(editTarget.icon_url || "");
       setEditingId(editTarget.id);
       document
         .getElementById("category-form-section")
@@ -62,6 +64,7 @@ export function useCategoryForm({
     setName("");
     setDescription("");
     setParentId("");
+    setIconUrl("");
     setEditingId(null);
   }, []);
 
@@ -88,6 +91,7 @@ export function useCategoryForm({
         name: name.trim(),
         description: description.trim(),
         parent_id: parentId === "" ? null : parentId,
+        icon_url: iconUrl === "" ? null : iconUrl,
       };
 
       try {
@@ -123,7 +127,7 @@ export function useCategoryForm({
 
   // ── Return ──
 
-  const formState: CategoryFormState = { name, description, parentId, editingId };
+  const formState: CategoryFormState = { name, description, parentId, editingId, icon_url: iconUrl };
 
   return {
     formState,
@@ -131,6 +135,7 @@ export function useCategoryForm({
     onNameChange: setName,
     onDescriptionChange: setDescription,
     onParentIdChange: setParentId,
+    onIconUrlChange: setIconUrl,
     handleSaveCategory,
     handleResetForm,
   };

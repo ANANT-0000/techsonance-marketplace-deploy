@@ -43,8 +43,11 @@ function DesktopSidebarContent({
   isPriceOpen: boolean;
   setIsPriceOpen: (v: boolean) => void;
 }) {
-  const toggleCategory = (id: string) => {
-    const next = filters.selectedCategories.includes(id) ? [] : [id];
+  const toggleCategory = (cat: Category) => {
+    const isCurrentlySelected =
+      filters.selectedCategories.includes(cat.id) ||
+      filters.selectedCategories.includes(cat.slug);
+    const next = isCurrentlySelected ? [] : [cat.slug];
     onFiltersChange({ ...filters, selectedCategories: next });
   };
 
@@ -58,7 +61,9 @@ function DesktopSidebarContent({
           </h2>
           <div className="flex flex-col gap-3">
             {categories.map((cat) => {
-              const isSelected = filters.selectedCategories.includes(cat.id);
+              const isSelected =
+                filters.selectedCategories.includes(cat.id) ||
+                filters.selectedCategories.includes(cat.slug);
               return (
                 <label
                   key={cat.id}
@@ -80,7 +85,7 @@ function DesktopSidebarContent({
                     type="checkbox"
                     className="hidden"
                     checked={isSelected}
-                    onChange={() => toggleCategory(cat.id)}
+                    onChange={() => toggleCategory(cat)}
                   />
                 </label>
               );
@@ -192,8 +197,11 @@ export function FilterSidebar({
     onFiltersChange(DEFAULT_FILTERS);
   };
 
-  const toggleCategory = (id: string) => {
-    const next = filters.selectedCategories.includes(id) ? [] : [id];
+  const toggleCategory = (cat: Category) => {
+    const isCurrentlySelected =
+      filters.selectedCategories.includes(cat.id) ||
+      filters.selectedCategories.includes(cat.slug);
+    const next = isCurrentlySelected ? [] : [cat.slug];
     onFiltersChange({ ...filters, selectedCategories: next });
   };
 
@@ -311,9 +319,9 @@ export function FilterSidebar({
                   </h3>
                   <div className="flex flex-col gap-5">
                     {categories.map((cat) => {
-                      const isSelected = filters.selectedCategories.includes(
-                        cat.id,
-                      );
+                      const isSelected =
+                        filters.selectedCategories.includes(cat.id) ||
+                        filters.selectedCategories.includes(cat.slug);
                       return (
                         <label
                           key={cat.id}
@@ -337,7 +345,7 @@ export function FilterSidebar({
                             type="checkbox"
                             className="hidden"
                             checked={isSelected}
-                            onChange={() => toggleCategory(cat.id)}
+                            onChange={() => toggleCategory(cat)}
                           />
                         </label>
                       );
