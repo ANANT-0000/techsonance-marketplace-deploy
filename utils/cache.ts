@@ -98,12 +98,23 @@ export const clearCachedData = (key: string) => {
 
 export const dispatchNavbarChange = () => {
   if (typeof window === "undefined") return;
+  // Write a unique value to storage to trigger 'storage' events in other tabs
+  localStorage.setItem(NAVBAR_CHANGE_EVENT, Date.now().toString());
   window.dispatchEvent(new CustomEvent(NAVBAR_CHANGE_EVENT));
 };
 
 export const subscribeNavbarChange = (callback: () => void) => {
   if (typeof window === "undefined") return () => {};
   const handler = () => callback();
+  const handleStorage = (e: StorageEvent) => {
+    if (e.key === NAVBAR_CHANGE_EVENT) {
+      callback();
+    }
+  };
   window.addEventListener(NAVBAR_CHANGE_EVENT, handler);
-  return () => window.removeEventListener(NAVBAR_CHANGE_EVENT, handler);
+  window.addEventListener("storage", handleStorage);
+  return () => {
+    window.removeEventListener(NAVBAR_CHANGE_EVENT, handler);
+    window.removeEventListener("storage", handleStorage);
+  };
 };

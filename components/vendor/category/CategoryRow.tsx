@@ -123,9 +123,20 @@ export function CategoryRow({
             {badge.label}
           </span>
         </td>
-
         <td className="px-4 py-3.5 text-gray-500 max-w-[200px] truncate text-xs">
           {node.description || CATEGORY_UI_LABELS.NO_DATA_DASH}
+        </td>
+
+        <td className="px-4 py-3.5">
+          <span
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+              node.show_in_nav
+                ? "bg-emerald-50 text-emerald-700 border-emerald-150"
+                : "bg-slate-50 text-slate-500 border-slate-200"
+            }`}
+          >
+            {node.show_in_nav ? "Visible" : "Hidden"}
+          </span>
         </td>
 
         <td className="px-4 py-3.5 text-center">

@@ -159,6 +159,9 @@ export default function CategoryTreeTable({
               <th className="px-4 py-4">
                 {CATEGORY_TABLE_HEADERS.DESCRIPTION}
               </th>
+              <th className="px-4 py-4">
+                {CATEGORY_TABLE_HEADERS.NAVIGATION}
+              </th>
               <th className="px-4 py-4 text-center">
                 {CATEGORY_TABLE_HEADERS.PRODUCTS}
               </th>

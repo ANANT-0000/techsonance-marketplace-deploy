@@ -615,13 +615,14 @@ export const CATEGORY_TABLE_HEADERS = {
   CATEGORY: "Category",
   TYPE: "Type",
   DESCRIPTION: "Description",
+  NAVIGATION: "Navigation",
   PRODUCTS: "Products",
   ACTIONS: "Actions",
 } as const;
 
 // ── Table Column Span ────────────────────────────────────────
 
-export const CATEGORY_TABLE_COL_SPAN = 6;
+export const CATEGORY_TABLE_COL_SPAN = 7;
 
 // ── Export Config ────────────────────────────────────────────
 

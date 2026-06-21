@@ -291,7 +291,7 @@ function SearchableCategoryPicker({
               : "text-gray-400 hover:bg-gray-50"
           }`}
         >
-          — No category selected —
+          — All active categories —
         </button>
 
         {filtered.length > maxDisplay && (
@@ -639,11 +639,7 @@ function L1ItemEditor({
         draft.target_route || selectedRoute?.key || "store";
       const resolvedHref = selectedRoute?.base_path || "/";
 
-      if (isAutoTree && !draft.root_category_id) {
-        setError("Please select a root category for this auto-tree layout.");
-        setSaving(false);
-        return;
-      }
+
       const res = await updateNavbarItem(
         item.id,
         {
@@ -654,8 +650,8 @@ function L1ItemEditor({
           has_mega_menu: hasMegaMenuVal,
           layout_type: layoutTypeVal,
           root_category_id: isAutoTree
-            ? (draft.root_category_id ?? undefined)
-            : undefined,
+            ? (draft.root_category_id ?? null)
+            : null,
           target_route: targetRouteVal,
           sort_order: draft.sort_order,
           meta: (() => {
@@ -882,12 +878,12 @@ function L1ItemEditor({
                 <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-xs font-bold text-amber-800">
-                    Root Category Required
+                    Root Category (Optional)
                   </p>
                   <p className="text-xs text-amber-700 mt-0.5">
-                    The menu will auto-generate from the category you select
-                    here. Visibility and ordering are controlled in Category
-                    Manager.
+                    Select a root category to restrict the menu to a specific
+                    branch. If none is selected, the menu will auto-generate
+                    from all top-level parent categories.
                   </p>
                 </div>
               </div>

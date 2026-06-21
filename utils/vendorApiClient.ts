@@ -47,6 +47,8 @@ export const createVendorProductCategory = async (
     name: string;
     description?: string;
     parent_id?: string | null;
+    icon_url?: string | null;
+    show_in_nav?: boolean;
   },
   token: string,
 ) => {
@@ -76,6 +78,8 @@ export const updateVendorProductCategory = async (
     name: string;
     description?: string;
     parent_id?: string | null;
+    icon_url?: string | null;
+    show_in_nav?: boolean;
   },
   token: string,
 ) => {
@@ -2257,6 +2261,7 @@ export const createNavbarItem = async (
       body: JSON.stringify(payload),
     });
     revalidatePath("/vendor/cms");
+
     return await res.json();
   } catch {
     return { success: false, message: "Error creating nav item" };
@@ -2281,6 +2286,7 @@ export const updateNavbarItem = async (
       body: JSON.stringify(payload),
     });
     revalidatePath("/vendor/cms");
+
     return await res.json();
   } catch {
     return { success: false, message: "Error updating nav item" };
@@ -2299,6 +2305,7 @@ export const deleteNavbarItem = async (id: string, token: string) => {
       },
     });
     revalidatePath("/vendor/cms");
+
     return await res.json();
   } catch {
     return { success: false, message: "Error deleting nav item" };
@@ -2322,6 +2329,7 @@ export const reorderNavbarItems = async (
       body: JSON.stringify({ items }),
     });
     revalidatePath("/vendor/cms");
+    ("navbar");
     return await res.json();
   } catch {
     return { success: false, message: "Error reordering nav items" };

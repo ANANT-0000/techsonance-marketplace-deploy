@@ -971,11 +971,11 @@ export function Navbar({
                         <MegaMenuSkeleton />
                       ) : layoutType === NavLayoutType.DIRECTORY ? (
                         // DIRECTORY: Apple-style Grid of column headers & bulleted links
-                        <div className="grid grid-cols-4 gap-x-8 gap-y-6 py-6 px-7 max-h-[480px] overflow-y-auto w-full min-w-[700px] max-w-[min(94vw,980px)]">
+                        <div className="flex flex-wrap gap-x-8 gap-y-6 py-6 px-7 max-h-[480px] overflow-y-auto max-w-[min(94vw,980px)]">
                           {columns!.map((col, cIdx) => (
                             <div
                               key={col.id || `col-${cIdx}`}
-                              className="flex flex-col gap-2.5 text-left"
+                              className="flex flex-col gap-2.5 text-left min-w-[140px] max-w-[200px]"
                             >
                               <Link
                                 href={col.href || "#"}
@@ -1000,7 +1000,7 @@ export function Navbar({
                         </div>
                       ) : layoutType === NavLayoutType.GRID ? (
                         // VISUAL_MATRIX_ENGINE: boAt-style Grid of cards with fallback colored letter-circle, and tag pills
-                        <div className="grid grid-cols-4 gap-6 py-6 px-7 w-full min-w-[750px] max-w-[min(94vw,980px)] max-h-[480px] overflow-y-auto">
+                        <div className="flex flex-wrap gap-6 py-6 px-7 max-w-[min(94vw,980px)] max-h-[480px] overflow-y-auto">
                           {columns!.map((col) => {
                             const firstLetter = col.title
                               ? col.title.charAt(0).toUpperCase()
@@ -1023,7 +1023,7 @@ export function Navbar({
                             return (
                               <div
                                 key={col.id}
-                                className="flex flex-col p-4 bg-slate-50/70 hover:bg-white hover:shadow-lg rounded-2xl transition-all duration-300 border border-slate-100 hover:border-theme-primary/10 group"
+                                className="flex flex-col p-4 bg-slate-50/70 hover:bg-white hover:shadow-lg rounded-2xl transition-all duration-300 border border-slate-100 hover:border-theme-primary/10 group min-w-[150px] max-w-[200px]"
                               >
                                 <Link
                                   href={col.href || "#"}
@@ -1064,12 +1064,12 @@ export function Navbar({
                           })}
                         </div>
                       ) : isVisual ? (
-                        <div className="grid grid-cols-5 gap-6 py-6 px-7 w-full min-w-[600px] max-w-[min(94vw,980px)]">
+                        <div className="flex flex-wrap gap-6 py-6 px-7 max-w-[min(94vw,980px)]">
                           {columns!.map((col) => (
                             <Link
                               key={col.id}
                               href={col.href || "#"}
-                              className="flex items-center gap-4 p-3 bg-gray-50/60 hover:bg-theme-primary/5 hover:text-theme-primary rounded-xl transition-all group/item border border-transparent hover:border-theme-primary/20 cursor-pointer"
+                              className="flex items-center gap-4 p-3 bg-gray-50/60 hover:bg-theme-primary/5 hover:text-theme-primary rounded-xl transition-all group/item border border-transparent hover:border-theme-primary/20 cursor-pointer min-w-[140px]"
                             >
                               {col.iconUrl ? (
                                 <img

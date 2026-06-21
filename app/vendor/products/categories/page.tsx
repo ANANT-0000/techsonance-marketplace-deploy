@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CATEGORY_MANAGER_TEXT } from "@/constants/vendorText";
 import { Category } from "@/utils/Types";
+import toast from "react-hot-toast";
 
 const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
   await fetchVendorsProductsCategory(token)
@@ -19,10 +20,13 @@ const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
           productCount: c.products?.length || 0,
           updated_at: c.updated_at || new Date().toISOString(),
           icon_url: c.icon_url || null,
+          show_in_nav: c.show_in_nav ?? true,
         })),
       );
     })
-    .catch((error) => {});
+    .catch(() => {
+      toast.error("Failed to load categories. Please try again.");
+    });
 };
 
 export default function CategoryPage() {

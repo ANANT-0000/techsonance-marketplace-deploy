@@ -369,7 +369,9 @@ export function useNavbarData() {
 
   useEffect(() => {
     fetchNavbar(state.lang, true);
-    const unsubscribe = subscribeNavbarChange(() => {});
+    const unsubscribe = subscribeNavbarChange(() => {
+      fetchNavbar(state.lang, false);
+    });
     return unsubscribe;
   }, [state.lang, fetchNavbar]);
 
