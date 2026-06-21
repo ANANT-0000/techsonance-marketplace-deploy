@@ -25,6 +25,7 @@ import {
   NavLinkItem,
   NavMenuLogoAlignment,
   NavMenuPosition,
+  NavLayoutType,
 } from "@/utils/Types";
 import { AxiosResponse } from "axios";
 
@@ -94,12 +95,16 @@ interface NavItemApi {
   has_mega_menu: boolean;
   sort_order: number;
   meta: NavItemMetaApi;
+  layout_type?: NavLayoutType;
+  root_category_id?: string | null;
+  categories?: any[];
   megaMenuColumns: {
     id: string;
     label: string;
     href: string;
     sort_order: number;
     item_type: string;
+    iconUrl?: string | null;
     meta: NavItemMetaApi;
     items?: ApiSubLink[];
   }[];
@@ -136,7 +141,8 @@ type NavbarAction =
 // ─── Constants/Config ────────────────────────────────────────────────────────
 export const NavbarConfig = {
   DEFAULT_LOCALE: "en",
-  ERROR_USER_MESSAGE: "We couldn't load navigation menu right now. Please try again in a moment.",
+  ERROR_USER_MESSAGE:
+    "We couldn't load navigation menu right now. Please try again in a moment.",
 } as const;
 
 // ─── Transform Helper ────────────────────────────────────────────────────────
@@ -183,6 +189,10 @@ function transformApiResponse(data: NavbarApiResponse): {
       itemType: item.item_type,
       hasMegaMenu: item.has_mega_menu,
       displayType: item.meta?.display_type,
+      layout_type: item.layout_type || NavLayoutType.NONE,
+      root_category_id: item.root_category_id || null,
+      targetRoute: (item as any).target_route || null,
+      categories: item.categories || [],
     })),
   };
 
@@ -191,7 +201,7 @@ function transformApiResponse(data: NavbarApiResponse): {
     if (!item.has_mega_menu || !item.megaMenuColumns?.length) return;
 
     l2[item.id] = item.megaMenuColumns.map((col) => {
-      const m = col.meta;
+      const m = col.meta || {};
       const colType =
         m.col_type?.toLowerCase() === NavItemColType.BRANDS
           ? NavItemColType.BRANDS
@@ -223,22 +233,26 @@ function transformApiResponse(data: NavbarApiResponse): {
         title: m.col_title || col.label,
         href: href,
         itemType: itemType,
-        items: (col.items || []).map((subLink: ApiSubLink): NavLinkItem => ({
-          id: subLink.id,
-          label: subLink.label,
-          href: subLink.href,
-          iconUrl: subLink.icon_url || subLink.iconUrl || null,
-          categoryId: subLink.category_id || subLink.categoryId || null,
-          children: (subLink.children || []).map((l3: ApiSubLink): NavLinkItem => ({
-            id: l3.id,
-            label: l3.label,
-            href: l3.href,
-            iconUrl: l3.icon_url || l3.iconUrl || null,
-            categoryId: l3.category_id || l3.categoryId || null,
-            children: [],
-          })),
-        })),
-        iconUrl: m.icon_url || null,
+        items: (col.items || []).map(
+          (subLink: ApiSubLink): NavLinkItem => ({
+            id: subLink.id,
+            label: subLink.label,
+            href: subLink.href,
+            iconUrl: subLink.icon_url || subLink.iconUrl || null,
+            categoryId: subLink.category_id || subLink.categoryId || null,
+            children: (subLink.children || []).map(
+              (l3: ApiSubLink): NavLinkItem => ({
+                id: l3.id,
+                label: l3.label,
+                href: l3.href,
+                iconUrl: l3.icon_url || l3.iconUrl || null,
+                categoryId: l3.category_id || l3.categoryId || null,
+                children: [],
+              }),
+            ),
+          }),
+        ),
+        iconUrl: col.iconUrl || m.icon_url || null,
       };
     });
   });
@@ -296,7 +310,8 @@ export function useNavbarData() {
   // Sync locale with localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedLang = localStorage.getItem(LANG_KEY) || NavbarConfig.DEFAULT_LOCALE;
+      const savedLang =
+        localStorage.getItem(LANG_KEY) || NavbarConfig.DEFAULT_LOCALE;
       dispatch({ type: NavbarActionType.SET_LANG, payload: savedLang });
     }
     const unsubscribe = subscribeLocaleChange((newLang) => {
@@ -305,48 +320,52 @@ export function useNavbarData() {
     return unsubscribe;
   }, []);
 
-  const fetchNavbar = useCallback(async (currentLang: string, forceRefresh = false) => {
-    dispatch({ type: NavbarActionType.FETCH_START });
-    const cacheKey = `${NAVBAR_CACHE_KEY}_relational_${currentLang}`;
+  const fetchNavbar = useCallback(
+    async (currentLang: string, forceRefresh = false) => {
+      dispatch({ type: NavbarActionType.FETCH_START });
+      const cacheKey = `${NAVBAR_CACHE_KEY}_relational_${currentLang}`;
 
-    if (!forceRefresh) {
-      const cached = getCachedData(cacheKey);
-      if (cached) {
-        dispatch({
-          type: NavbarActionType.FETCH_SUCCESS,
-          payload: {
-            l1: cached.l1,
-            l2: cached.l2,
-            raw: cached.raw,
-          },
-        });
-        return;
-      }
-    } else {
-      clearCachedData(cacheKey);
-    }
-
-    try {
-      const res: AxiosResponse<NavbarApiResponse> = await AxiosAPI.get(`/v1/navbar`);
-      const data: NavbarApiResponse = res.data;
-      if (data?.navigationItems) {
-        const { l1, l2 } = transformApiResponse(data);
-        dispatch({
-          type: NavbarActionType.FETCH_SUCCESS,
-          payload: { l1, l2, raw: data },
-        });
-        cacheData(cacheKey, { l1, l2, raw: data });
+      if (!forceRefresh) {
+        const cached = getCachedData(cacheKey);
+        if (cached) {
+          dispatch({
+            type: NavbarActionType.FETCH_SUCCESS,
+            payload: {
+              l1: cached.l1,
+              l2: cached.l2,
+              raw: cached.raw,
+            },
+          });
+          return;
+        }
       } else {
+        clearCachedData(cacheKey);
+      }
+
+      try {
+        const res: AxiosResponse<any> = await AxiosAPI.get(`/v1/navbar`);
+        const rawData = res.data;
+        const data: NavbarApiResponse = rawData?.data ?? rawData;
+        if (data?.navigationItems) {
+          const { l1, l2 } = transformApiResponse(data);
+          dispatch({
+            type: NavbarActionType.FETCH_SUCCESS,
+            payload: { l1, l2, raw: data },
+          });
+          cacheData(cacheKey, { l1, l2, raw: data });
+        } else {
+          dispatch({ type: NavbarActionType.FETCH_ERROR });
+        }
+      } catch (error) {
+        // Tier 1: User-Facing Error feedback
+        toast.error(NavbarConfig.ERROR_USER_MESSAGE);
+        // Tier 2: Developer Visibility logs
+        console.error("Navbar fetch error (developer details):", error);
         dispatch({ type: NavbarActionType.FETCH_ERROR });
       }
-    } catch (error) {
-      // Tier 1: User-Facing Error feedback
-      toast.error(NavbarConfig.ERROR_USER_MESSAGE);
-      // Tier 2: Developer Visibility logs
-      console.error("Navbar fetch error (developer details):", error);
-      dispatch({ type: NavbarActionType.FETCH_ERROR });
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
     fetchNavbar(state.lang, true);

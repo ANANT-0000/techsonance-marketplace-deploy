@@ -43,6 +43,7 @@ export function useCategoryForm({
   const [description, setDescription] = useState("");
   const [parentId, setParentId] = useState("");
   const [iconUrl, setIconUrl] = useState("");
+  const [showInNav, setShowInNav] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // ── Sync form when editTarget changes from parent ──
@@ -52,6 +53,7 @@ export function useCategoryForm({
       setDescription(editTarget.description || "");
       setParentId(editTarget.parent_id || "");
       setIconUrl(editTarget.icon_url || "");
+      setShowInNav(editTarget.show_in_nav ?? true);
       setEditingId(editTarget.id);
       document
         .getElementById("category-form-section")
@@ -65,6 +67,7 @@ export function useCategoryForm({
     setDescription("");
     setParentId("");
     setIconUrl("");
+    setShowInNav(true);
     setEditingId(null);
   }, []);
 
@@ -92,6 +95,7 @@ export function useCategoryForm({
         description: description.trim(),
         parent_id: parentId === "" ? null : parentId,
         icon_url: iconUrl === "" ? null : iconUrl,
+        show_in_nav: showInNav,
       };
 
       try {
@@ -122,12 +126,12 @@ export function useCategoryForm({
         toast.error(CATEGORY_TOAST.UNEXPECTED_ERROR);
       }
     },
-    [token, name, description, parentId, editingId, router, handleResetForm, setCheckChange],
+    [token, name, description, parentId, editingId, iconUrl, showInNav, router, handleResetForm, setCheckChange],
   );
 
   // ── Return ──
 
-  const formState: CategoryFormState = { name, description, parentId, editingId, icon_url: iconUrl };
+  const formState: CategoryFormState = { name, description, parentId, editingId, icon_url: iconUrl, show_in_nav: showInNav };
 
   return {
     formState,
@@ -136,6 +140,7 @@ export function useCategoryForm({
     onDescriptionChange: setDescription,
     onParentIdChange: setParentId,
     onIconUrlChange: setIconUrl,
+    onShowInNavChange: setShowInNav,
     handleSaveCategory,
     handleResetForm,
   };

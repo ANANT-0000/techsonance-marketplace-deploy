@@ -10,6 +10,7 @@ import {
   NavItemColType,
   NavItemDisplayType,
   NavItemType,
+  NavLayoutType,
   NavMenuLogoAlignment,
   NavMenuPosition,
   OrderStatus,
@@ -2196,7 +2197,10 @@ export interface CreateNavItemPayload {
   category_id?: string;
   has_mega_menu: boolean;
   sort_order?: number;
+  root_category_id?: string | null;
   meta?: NavItemMetaPayload;
+  layout_type?: NavLayoutType;
+  target_route?: string;
 }
 
 /** GET /v1/navbar — public storefront fetch */

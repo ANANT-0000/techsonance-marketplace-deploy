@@ -1102,6 +1102,7 @@ export interface Category {
   productCount: number;
   updated_at: string;
   icon_url: string | null;
+  show_in_nav: boolean;
 }
 
 /** A parent category node augmented with its direct children for tree rendering. */
@@ -1123,6 +1124,7 @@ export interface CategoryFormState {
   parentId: string;
   editingId: string | null;
   icon_url: string;
+  show_in_nav: boolean;
 }
 
 /** Payload shape sent to the create/update API. */
@@ -1131,6 +1133,7 @@ export interface CategoryPayload {
   description: string;
   parent_id: string | null;
   icon_url?: string | null;
+  show_in_nav?: boolean;
 }
 
 // ── Filter & Pagination ─────────────────────────────────────
@@ -1207,7 +1210,8 @@ export interface CategoryFormProps {
   onDescriptionChange: (value: string) => void;
   onParentIdChange: (value: string) => void;
   onIconUrlChange: (value: string) => void;
-  onSubmit: (e: React.SubmitEvent) => void;
+  onShowInNavChange: (value: boolean) => void;
+  onSubmit: (e: React.FormEvent) => void;
   onReset: () => void;
 }
 
@@ -1336,7 +1340,11 @@ export interface MegaMenuColumn {
     ctaText: string;
   };
 }
-
+export enum NavLayoutType {
+  NONE = "none",
+  DIRECTORY = "directory",
+  GRID = "grid",
+}
 export enum LinkMode {
   CATEGORY_QUERY = "category_query",
   STATIC_PAGE = "static_page",
@@ -1374,6 +1382,14 @@ export interface NavMegaColumn {
   iconUrl?: string | null;
 }
 
+export interface MegaMenuNode {
+  id: string;
+  name: string;
+  slug: string;
+  image?: string;
+  children?: MegaMenuNode[];
+}
+
 export interface L1NavItem {
   id: string;
   label: string;
@@ -1381,6 +1397,11 @@ export interface L1NavItem {
   itemType?: string;
   hasMegaMenu: boolean;
   displayType?: NavItemDisplayType;
+  layout_type?: NavLayoutType;
+  targetRoute?: string | null;
+  categories?: MegaMenuNode[];
+  root_category_id?: string | null;
+  isEmptyTree?: boolean;
 }
 
 export interface L1NavbarPayload {
@@ -1444,10 +1465,4 @@ export interface MegaMenuColumnData {
   promotion?: PromotionData;
 }
 
-export interface L1NavItem {
-  id: string;
-  label: string;
-  href: string;
-  hasMegaMenu: boolean;
-  displayType?: NavItemDisplayType;
-}
+// duplicate declaration removed

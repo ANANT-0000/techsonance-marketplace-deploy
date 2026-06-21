@@ -22,6 +22,7 @@ import CategoryForm from "./CategoryForm";
 import CategoryTreeTable from "./CategoryTreeTable";
 import CategoryDetailDrawer from "./CategoryDetailDrawer";
 import CategoryDeleteModal from "./CategoryDeleteModal";
+import { ConfirmationModal } from "@/components/common/ConfirmationModal";
 
 import type {
   Category,
@@ -80,6 +81,16 @@ export default function CategoryManager({
   );
   const [deleteMoveTargetParentId, setDeleteMoveTargetParentId] = useState("");
 
+  // Simple delete confirmation modal state
+  const [isSimpleDeleteOpen, setIsSimpleDeleteOpen] = useState(false);
+  const [simpleDeleteTarget, setSimpleDeleteTarget] = useState<Category | null>(null);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+
+  // Bulk delete confirmation modal state
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+  const [bulkDeleteTargetIds, setBulkDeleteTargetIds] = useState<string[]>([]);
+  const [bulkDeleteOnSuccess, setBulkDeleteOnSuccess] = useState<(() => void) | null>(null);
+
   // ═══════════════════════════════════════════════════════════
   //  Form hook (form owns its own state)
   // ═══════════════════════════════════════════════════════════
@@ -91,6 +102,7 @@ export default function CategoryManager({
     onDescriptionChange,
     onParentIdChange,
     onIconUrlChange,
+    onShowInNavChange,
     handleSaveCategory,
     handleResetForm,
   } = useCategoryForm({ setCheckChange, editTarget });
@@ -205,6 +217,66 @@ export default function CategoryManager({
     setCheckChange,
   ]);
 
+  const handleSimpleDeleteRequest = useCallback((cat: Category) => {
+    setSimpleDeleteTarget(cat);
+    setIsSimpleDeleteOpen(true);
+  }, []);
+
+  const handleConfirmSimpleDelete = useCallback(async () => {
+    if (!simpleDeleteTarget || !token) return;
+    setIsDeleteLoading(true);
+    try {
+      const res = await deleteVendorProductCategory(simpleDeleteTarget.id, token);
+      if (res.status === 200) {
+        toast.success(CATEGORY_TOAST.DELETED);
+        setIsSimpleDeleteOpen(false);
+        setSimpleDeleteTarget(null);
+        setCheckChange((prev) => !prev);
+      } else {
+        toast.error(res.message || CATEGORY_TOAST.DELETE_FAILED);
+      }
+    } catch {
+      toast.error(CATEGORY_TOAST.DELETE_CATEGORY_FAILED);
+    } finally {
+      setIsDeleteLoading(false);
+    }
+  }, [simpleDeleteTarget, token, setCheckChange]);
+
+  const handleBulkDeleteRequest = useCallback((selectedIds: string[], onSuccess: () => void) => {
+    if (selectedIds.length === 0) return;
+    setBulkDeleteTargetIds(selectedIds);
+    setBulkDeleteOnSuccess(() => onSuccess);
+    setIsBulkDeleteOpen(true);
+  }, []);
+
+  const handleConfirmBulkDelete = useCallback(async () => {
+    if (bulkDeleteTargetIds.length === 0 || !token) return;
+    setIsDeleteLoading(true);
+    try {
+      let successCount = 0;
+      for (const id of bulkDeleteTargetIds) {
+        try {
+          const res = await deleteVendorProductCategory(id, token);
+          if (res.status === 200) successCount++;
+        } catch {
+          // continue with remaining
+        }
+      }
+      toast.success(CATEGORY_TOAST.BULK_DELETED(successCount));
+      if (bulkDeleteOnSuccess) {
+        bulkDeleteOnSuccess();
+      }
+      setIsBulkDeleteOpen(false);
+      setBulkDeleteTargetIds([]);
+      setBulkDeleteOnSuccess(null);
+      setCheckChange((prev) => !prev);
+    } catch {
+      toast.error(CATEGORY_TOAST.DELETE_ERROR);
+    } finally {
+      setIsDeleteLoading(false);
+    }
+  }, [bulkDeleteTargetIds, bulkDeleteOnSuccess, token, setCheckChange]);
+
   const deleteState: DeleteModalState = {
     config: deleteModalConfig,
     modeChoice: deleteModeChoice,
@@ -234,6 +306,7 @@ export default function CategoryManager({
           onDescriptionChange={onDescriptionChange}
           onParentIdChange={onParentIdChange}
           onIconUrlChange={onIconUrlChange}
+          onShowInNavChange={onShowInNavChange}
           onSubmit={handleSaveCategory}
           onReset={handleResetForm}
         />
@@ -246,6 +319,8 @@ export default function CategoryManager({
           onComplexDelete={handleComplexDeleteRequest}
           onDrawerOpen={setDrawerCategoryId}
           onAddNew={handleAddNew}
+          onSimpleDelete={handleSimpleDeleteRequest}
+          onBulkDelete={handleBulkDeleteRequest}
         />
       </div>
 
@@ -264,6 +339,43 @@ export default function CategoryManager({
         onMoveTargetChange={setDeleteMoveTargetParentId}
         onConfirm={handleConfirmComplexDelete}
         onCancel={() => setDeleteModalConfig(null)}
+      />
+
+      {/* Simple Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isSimpleDeleteOpen}
+        onClose={() => {
+          if (!isDeleteLoading) {
+            setIsSimpleDeleteOpen(false);
+            setSimpleDeleteTarget(null);
+          }
+        }}
+        onConfirm={handleConfirmSimpleDelete}
+        title="Delete Category"
+        message={simpleDeleteTarget ? CATEGORY_TOAST.DELETE_CONFIRM(simpleDeleteTarget.name) : ""}
+        actionType="danger"
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={isDeleteLoading}
+      />
+
+      {/* Bulk Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isBulkDeleteOpen}
+        onClose={() => {
+          if (!isDeleteLoading) {
+            setIsBulkDeleteOpen(false);
+            setBulkDeleteTargetIds([]);
+            setBulkDeleteOnSuccess(null);
+          }
+        }}
+        onConfirm={handleConfirmBulkDelete}
+        title="Delete Multiple Categories"
+        message={CATEGORY_TOAST.BULK_DELETE_CONFIRM(bulkDeleteTargetIds.length)}
+        actionType="danger"
+        confirmText="Delete Selected"
+        cancelText="Cancel"
+        isLoading={isDeleteLoading}
       />
 
       <Toaster />

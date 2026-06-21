@@ -337,7 +337,7 @@ export default function CmsManagementPage({
   };
 
   return (
-    <div className="flex-1 bg-gray-50 p-6 lg:p-10 max-h-screen overflow-y-auto">
+    <div className=" flex-1 bg-gray-50 p-6 lg:p-10 min-h-screen max-h-screen overflow-y-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-theme-h4 font-bold text-gray-900">

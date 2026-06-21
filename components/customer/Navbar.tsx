@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useReducer } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -14,6 +14,8 @@ import {
   HelpCircle,
   ShoppingCart,
   ChevronRight,
+  X,
+  Menu,
 } from "lucide-react";
 import { SearchBar } from "@/components/customer/SearchBar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,6 +37,7 @@ import {
   PromotionData,
   NavMegaColumn,
   NavItemDisplayType,
+  NavLayoutType,
 } from "@/utils/Types";
 
 // UI Text Constants (strictly preventing hardcoded keys/texts in component logic)
@@ -234,6 +237,86 @@ function NavbarSkeleton() {
     </header>
   );
 }
+
+enum NavbarState {
+  CLOSED = "CLOSED",
+  OPENING = "OPENING",
+  OPEN = "OPEN",
+  CLOSING = "CLOSING",
+}
+
+enum NavbarActionType {
+  HOVER_ENTER = "HOVER_ENTER",
+  HOVER_LEAVE = "HOVER_LEAVE",
+  TIMEOUT_OPEN = "TIMEOUT_OPEN",
+  TIMEOUT_CLOSE = "TIMEOUT_CLOSE",
+  FORCE_CLOSE = "FORCE_CLOSE",
+}
+
+type NavbarAction =
+  | {
+      type: NavbarActionType.HOVER_ENTER;
+      payload: { itemId: string; hasMegaMenu: boolean };
+    }
+  | { type: NavbarActionType.HOVER_LEAVE }
+  | { type: NavbarActionType.TIMEOUT_OPEN }
+  | { type: NavbarActionType.TIMEOUT_CLOSE }
+  | { type: NavbarActionType.FORCE_CLOSE };
+
+interface State {
+  status: NavbarState;
+  activeMenuId: string | null;
+}
+
+const navbarReducer = (state: State, action: NavbarAction): State => {
+  switch (action.type) {
+    case NavbarActionType.HOVER_ENTER:
+      if (!action.payload.hasMegaMenu) {
+        return { status: NavbarState.CLOSED, activeMenuId: null };
+      }
+      if (state.status === NavbarState.CLOSED) {
+        return { status: NavbarState.OPENING, activeMenuId: action.payload.itemId };
+      }
+      if (state.status === NavbarState.OPENING) {
+        return { ...state, activeMenuId: action.payload.itemId };
+      }
+      if (state.status === NavbarState.OPEN) {
+        return { ...state, activeMenuId: action.payload.itemId };
+      }
+      if (state.status === NavbarState.CLOSING) {
+        return { status: NavbarState.OPEN, activeMenuId: action.payload.itemId };
+      }
+      return state;
+
+    case NavbarActionType.HOVER_LEAVE:
+      if (state.status === NavbarState.OPENING) {
+        return { status: NavbarState.CLOSED, activeMenuId: null };
+      }
+      if (state.status === NavbarState.OPEN) {
+        return { ...state, status: NavbarState.CLOSING };
+      }
+      return state;
+
+    case NavbarActionType.TIMEOUT_OPEN:
+      if (state.status === NavbarState.OPENING) {
+        return { ...state, status: NavbarState.OPEN };
+      }
+      return state;
+
+    case NavbarActionType.TIMEOUT_CLOSE:
+      if (state.status === NavbarState.CLOSING) {
+        return { status: NavbarState.CLOSED, activeMenuId: null };
+      }
+      return state;
+
+    case NavbarActionType.FORCE_CLOSE:
+      return { status: NavbarState.CLOSED, activeMenuId: null };
+
+    default:
+      return state;
+  }
+};
+
 export function Navbar({
   styles = "",
 }: {
@@ -254,29 +337,223 @@ export function Navbar({
   const { l1Config, l2Config, isLoading } = useNavbarData();
 
   // Isolated interactive states
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [menuState, dispatchMenuState] = useReducer(navbarReducer, {
+    status: NavbarState.CLOSED,
+    activeMenuId: null,
+  });
+
+  const activeMenuId = menuState.activeMenuId;
+
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedColumns, setExpandedColumns] = useState<Set<string>>(
     new Set(),
   );
 
-  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Mobile menu interactive states and drill-down history stack
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  interface MobileStackItem {
+    title: string;
+    items: Array<{
+      id: string;
+      label: string;
+      href: string;
+      hasChildren: boolean;
+      children?: NavLinkItem[];
+    }>;
+  }
+  const [mobileStack, setMobileStack] = useState<MobileStackItem[]>([]);
+
+  // Initialize mobile stack
+  useEffect(() => {
+    if (l1Config.navigationItems) {
+      setMobileStack([
+        {
+          title: "Menu",
+          items: l1Config.navigationItems.map((item) => {
+            const hasChildren =
+              item.hasMegaMenu &&
+              !!l2Config?.[item.id] &&
+              l2Config[item.id].some(
+                (col) => col.type !== NavItemColType.PROMOTION,
+              );
+            return {
+              id: item.id,
+              label: item.label,
+              href: item.href,
+              hasChildren,
+            };
+          }),
+        },
+      ]);
+    }
+  }, [l1Config, l2Config]);
+
+  // Reset mobile stack when menu closes
+  useEffect(() => {
+    if (!isMobileMenuOpen && l1Config.navigationItems) {
+      setMobileStack([
+        {
+          title: "Menu",
+          items: l1Config.navigationItems.map((item) => {
+            const hasChildren =
+              item.hasMegaMenu &&
+              !!l2Config?.[item.id] &&
+              l2Config[item.id].some(
+                (col) => col.type !== NavItemColType.PROMOTION,
+              );
+            return {
+              id: item.id,
+              label: item.label,
+              href: item.href,
+              hasChildren,
+            };
+          }),
+        },
+      ]);
+    }
+  }, [isMobileMenuOpen, l1Config, l2Config]);
+
+  const handleDrillDown = (item: {
+    id: string;
+    label: string;
+    href: string;
+    children?: NavLinkItem[];
+  }) => {
+    const currentDepth = mobileStack.length;
+    let nextItems: any[] = [];
+    if (currentDepth === 1) {
+      const columns = l2Config?.[item.id] || [];
+      nextItems = columns
+        .filter((col) => col.type !== NavItemColType.PROMOTION)
+        .map((col) => ({
+          id: col.id,
+          label: col.title,
+          href: col.href || "#",
+          hasChildren: col.items && col.items.length > 0,
+          children: col.items,
+        }));
+    } else {
+      const subcategories = item.children || [];
+      nextItems = subcategories.map((child) => ({
+        id: child.id,
+        label: child.label,
+        href: child.href,
+        hasChildren: child.children && child.children.length > 0,
+        children: child.children,
+      }));
+    }
+
+    if (currentDepth + 1 === 5) {
+      nextItems = nextItems.map((n) => ({ ...n, hasChildren: false }));
+    }
+
+    setMobileStack((prev) => [
+      ...prev,
+      {
+        title: item.label,
+        items: nextItems,
+      },
+    ]);
+  };
+
+  const handleBack = () => {
+    setMobileStack((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.slice(0, -1);
+    });
+  };
+
+  const openTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
 
   const menuDataLoading = isLoading;
 
-  // Escape listener to close menus
+  // Watch hover transitions and manage timeouts in useEffect
+  useEffect(() => {
+    if (openTimeoutRef.current) clearTimeout(openTimeoutRef.current);
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+
+    if (menuState.status === NavbarState.OPENING) {
+      openTimeoutRef.current = setTimeout(() => {
+        dispatchMenuState({ type: NavbarActionType.TIMEOUT_OPEN });
+      }, 150);
+    } else if (menuState.status === NavbarState.CLOSING) {
+      closeTimeoutRef.current = setTimeout(() => {
+        dispatchMenuState({ type: NavbarActionType.TIMEOUT_CLOSE });
+      }, 250);
+    }
+
+    return () => {
+      if (openTimeoutRef.current) clearTimeout(openTimeoutRef.current);
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, [menuState.status, menuState.activeMenuId]);
+
+  // Mobile menu focus trap
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      const focusableElements = drawerRef.current?.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusableElements && focusableElements.length > 0) {
+        const firstElement = focusableElements[0] as HTMLElement;
+        firstElement.focus();
+      }
+    } else {
+      hamburgerRef.current?.focus();
+    }
+  }, [isMobileMenuOpen]);
+
+  const handleDrawerKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Tab" && drawerRef.current) {
+      const focusableElements = drawerRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement =
+        focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    }
+    if (e.key === "Escape") {
+      setIsMobileMenuOpen(false);
+    }
+  };
+
+  // Escape listener to close desktop menus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setActiveMenuId(null);
+        dispatchMenuState({ type: NavbarActionType.FORCE_CLOSE });
         setIsProfileOpen(false);
       }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Force close menus on path changes
+  useEffect(() => {
+    dispatchMenuState({ type: NavbarActionType.FORCE_CLOSE });
+    setIsMobileMenuOpen(false);
+  }, [path]);
 
   // Click outside listener for profile dropdown
   useEffect(() => {
@@ -302,27 +579,20 @@ export function Navbar({
     return null;
   }
 
-  // Show a full matching skeleton overlay when data is loading from the server
-
-  // Jitter-free Menu Hover Management
+  // Jitter-free Menu Hover Management via state machine
   const handleMouseEnter = (itemId: string, hasMegaMenu: boolean) => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    if (hasMegaMenu) {
-      setActiveMenuId(itemId);
-    } else {
-      setActiveMenuId(null);
-    }
+    dispatchMenuState({
+      type: NavbarActionType.HOVER_ENTER,
+      payload: { itemId, hasMegaMenu },
+    });
   };
 
   const handleMouseLeave = () => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    hoverTimeoutRef.current = setTimeout(() => {
-      setActiveMenuId(null);
-    }, 150);
+    dispatchMenuState({ type: NavbarActionType.HOVER_LEAVE });
   };
 
   const handleBackdropClick = () => {
-    setActiveMenuId(null);
+    dispatchMenuState({ type: NavbarActionType.FORCE_CLOSE });
   };
 
   const toggleColumnExpand = (colKey: string) => {
@@ -397,11 +667,219 @@ export function Navbar({
   }
 
   return (
-    <header
-      className={`hidden lg:block w-full z-50 ${isSticky ? "sticky top-0" : "relative"}`}
-    >
+    <header className={`w-full z-50 ${isSticky ? "sticky top-0" : "relative"}`}>
+      {/* MOBILE HEADER (lg:hidden) */}
+      <div className="lg:hidden block w-full bg-navbar text-navbar-foreground border-b border-border shadow-sm">
+        <div className="flex items-center justify-between px-4 py-3 h-[60px] w-full">
+          {/* Hamburger Menu Icon */}
+          <button
+            ref={hamburgerRef}
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-expanded={isMobileMenuOpen}
+            aria-haspopup="dialog"
+            className="p-2 -ml-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
+            aria-label="Open mobile menu"
+          >
+            <Menu size={24} />
+          </button>
+
+          {/* Logo */}
+          <div className="flex-1 flex justify-center">
+            <Link href={l1Config.logo.href}>
+              <img
+                src={logoUrl}
+                alt={l1Config.logo.alt || NAVBAR_UI_TEXT.LOGO_ALT}
+                className="h-9 object-contain rounded-2xl font-black"
+              />
+            </Link>
+          </div>
+
+          {/* Utilities */}
+          <div className="flex items-center gap-2">
+            {l1Config.utilities.showWishlist && user && (
+              <Link
+                href="/customer/wishlist"
+                className="p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors"
+                aria-label={NAVBAR_UI_TEXT.WISH_ARIA_LABEL}
+              >
+                <Heart size={20} strokeWidth={1.7} />
+              </Link>
+            )}
+
+            {l1Config.utilities.showCart && (
+              <button
+                onClick={() => dispatch(toggleCartSidebar("open"))}
+                className="relative p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
+                aria-label={NAVBAR_UI_TEXT.CART_ARIA_LABEL}
+              >
+                {items.length > 0 && (
+                  <span className="absolute top-0 right-0 text-[9px] font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4.5 h-4.5 flex items-center justify-center border border-navbar">
+                    {items.length}
+                  </span>
+                )}
+                <ShoppingBag size={20} strokeWidth={1.7} />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* MOBILE DRILL-DOWN SIDE DRAWER */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <div className="lg:hidden fixed inset-0 z-[100] flex">
+            {/* Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-xs w-full h-full"
+            />
+
+            {/* Drawer content drawer panel */}
+            <motion.div
+              ref={drawerRef}
+              onKeyDown={handleDrawerKeyDown}
+              role="dialog"
+              aria-modal="true"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.25 }}
+              className="absolute top-0 bottom-0 left-0 w-[290px] bg-white border-r border-slate-150 shadow-2xl flex flex-col p-5 overflow-hidden"
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+                <Link
+                  href="/"
+                  className="flex flex-col text-left"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <img
+                    src={logoUrl}
+                    alt={l1Config.logo.alt || NAVBAR_UI_TEXT.LOGO_ALT}
+                    className="h-8 object-contain rounded-xl font-black"
+                  />
+                </Link>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-1.5 hover:bg-slate-150 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer"
+                  aria-label="Close mobile menu"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Mobile Search Bar inside Drawer */}
+              {l1Config.searchBar.isVisible && (
+                <div className="py-4 border-b border-slate-100 shrink-0">
+                  <SearchBar
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    onSearch={(q) => {
+                      if (q.trim()) {
+                        setIsMobileMenuOpen(false);
+                        router.push(
+                          `${l1Config.searchBar.searchEndpoint}?q=${encodeURIComponent(q.trim())}`,
+                        );
+                      }
+                    }}
+                    placeholder={l1Config.searchBar.placeholder}
+                  />
+                </div>
+              )}
+
+              {/* Drill-down Navigation Container */}
+              <div className="flex-1 flex flex-col min-h-0 mt-4">
+                {/* Back button if depth > 1 */}
+                {mobileStack.length > 1 && (
+                  <button
+                    onClick={handleBack}
+                    className="flex items-center gap-1.5 py-2 px-1 text-xs font-bold text-theme-primary hover:text-theme-primary/80 transition-colors mb-3 cursor-pointer text-left"
+                    aria-label="Go back to previous menu"
+                  >
+                    <ChevronRight size={14} className="rotate-180" />
+                    <span>Back to {mobileStack[mobileStack.length - 2].title}</span>
+                  </button>
+                )}
+
+                {/* Current menu title */}
+                <h3 className="px-1 text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">
+                  {mobileStack[mobileStack.length - 1]?.title || "Menu"}
+                </h3>
+
+                {/* List of items */}
+                <nav className="flex-1 overflow-y-auto space-y-1 pr-1 hide-scrollbar min-h-0">
+                  {mobileStack[mobileStack.length - 1]?.items.map((item) => {
+                    if (item.hasChildren) {
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleDrillDown(item)}
+                          className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer text-left"
+                          aria-label={`Drill down to ${item.label}`}
+                        >
+                          <span>{item.label}</span>
+                          <ChevronRight size={14} className="text-slate-400" />
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-750 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Drawer Footer / Account Link */}
+              <div className="pt-4 border-t border-slate-150 flex flex-col gap-2 shrink-0">
+                {l1Config.utilities.showAccount && (
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      if (user?.id) {
+                        router.push("/customer");
+                      } else {
+                        dispatch(openLoginModal(null));
+                      }
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors text-left border-none bg-transparent cursor-pointer"
+                  >
+                    <User size={16} strokeWidth={1.7} />
+                    <span>{user?.id ? "My Profile" : "Sign In"}</span>
+                  </button>
+                )}
+                {user?.id && (
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      dispatch(logOut());
+                      router.push("/");
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition-colors text-left border-none bg-transparent cursor-pointer"
+                  >
+                    <LogOut size={16} strokeWidth={1.7} />
+                    <span>Logout</span>
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* DESKTOP HEADER (hidden lg:flex) */}
       <nav
-        className={`relative bg-navbar text-navbar-foreground flex items-center justify-between xl:px-16 lg:px-8 py-3.5 storefront-nav w-full ${styles} ${
+        className={`hidden lg:flex relative bg-navbar text-navbar-foreground items-center justify-between xl:px-16 lg:px-8 py-3.5 storefront-nav w-full ${styles} ${
           l1Config.navbar.showShadow ? "shadow-md" : "shadow-sm"
         } ${l1Config.navbar.showBottomBorder ? "border-b border-border" : ""}`}
       >
@@ -428,26 +906,27 @@ export function Navbar({
           {l1Config.navigationItems.map((item) => {
             const isActive = path === item.href;
             const hasMega = item.hasMegaMenu;
-            const columns = l2Config?.[item.id];
-            const hasResolvedColumns = !!columns && columns.length > 0;
+            const rawColumns = l2Config?.[item.id];
+            const columns = Array.isArray(rawColumns) ? rawColumns : [];
+            const hasResolvedColumns = columns.length > 0;
             const showMenuPanel =
               hasMega &&
               activeMenuId === item.id &&
+              (menuState.status === NavbarState.OPEN ||
+                menuState.status === NavbarState.CLOSING) &&
               (menuDataLoading || hasResolvedColumns);
 
-            // Directory-style menus (e.g. "All Categories") tend to have many
-            // columns — switch from a single horizontal row to a wrapping grid
-            // so 6+ columns don't blow the panel out past the viewport.
             const isDirectoryStyle = (columns?.length ?? 0) > 4;
             const isVisual =
               item.displayType === NavItemDisplayType.CATEGORY_LISTING_VISUAL;
+            const layoutType = item.layout_type || NavLayoutType.NONE;
 
             return (
               <li
                 key={item.id}
                 className="relative py-2"
                 onMouseEnter={() => handleMouseEnter(item.id, hasMega)}
-                onClick={() => setActiveMenuId(item.id)}
+                onClick={() => handleMouseEnter(item.id, hasMega)}
               >
                 <div className="flex items-center">
                   <Link
@@ -490,6 +969,100 @@ export function Navbar({
                     >
                       {menuDataLoading ? (
                         <MegaMenuSkeleton />
+                      ) : layoutType === NavLayoutType.DIRECTORY ? (
+                        // DIRECTORY: Apple-style Grid of column headers & bulleted links
+                        <div className="grid grid-cols-4 gap-x-8 gap-y-6 py-6 px-7 max-h-[480px] overflow-y-auto w-full min-w-[700px] max-w-[min(94vw,980px)]">
+                          {columns!.map((col, cIdx) => (
+                            <div
+                              key={col.id || `col-${cIdx}`}
+                              className="flex flex-col gap-2.5 text-left"
+                            >
+                              <Link
+                                href={col.href || "#"}
+                                className="text-xs font-extrabold tracking-wider uppercase pb-2 mb-1 border-b border-slate-100 text-slate-950 hover:text-theme-primary transition-colors"
+                              >
+                                {col.title}
+                              </Link>
+                              <ul className="flex flex-col gap-2 list-none p-0 m-0">
+                                {col.items?.map((l3) => (
+                                  <li key={l3.id}>
+                                    <Link
+                                      href={l3.href || "#"}
+                                      className="text-sm font-medium text-slate-650 hover:text-theme-primary transition-colors hover:translate-x-0.5 transform inline-block transition-transform duration-150"
+                                    >
+                                      {l3.label}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      ) : layoutType === NavLayoutType.GRID ? (
+                        // VISUAL_MATRIX_ENGINE: boAt-style Grid of cards with fallback colored letter-circle, and tag pills
+                        <div className="grid grid-cols-4 gap-6 py-6 px-7 w-full min-w-[750px] max-w-[min(94vw,980px)] max-h-[480px] overflow-y-auto">
+                          {columns!.map((col) => {
+                            const firstLetter = col.title
+                              ? col.title.charAt(0).toUpperCase()
+                              : "?";
+                            const colors = [
+                              "bg-red-100 text-red-700",
+                              "bg-blue-100 text-blue-700",
+                              "bg-green-100 text-green-700",
+                              "bg-yellow-100 text-yellow-700",
+                              "bg-purple-100 text-purple-700",
+                              "bg-pink-100 text-pink-700",
+                              "bg-indigo-100 text-indigo-700",
+                              "bg-emerald-100 text-emerald-700",
+                              "bg-rose-100 text-rose-700",
+                            ];
+                            const colorClass =
+                              colors[(col.id?.charCodeAt(0) || 0) % colors.length] ||
+                              "bg-gray-150 text-gray-700";
+
+                            return (
+                              <div
+                                key={col.id}
+                                className="flex flex-col p-4 bg-slate-50/70 hover:bg-white hover:shadow-lg rounded-2xl transition-all duration-300 border border-slate-100 hover:border-theme-primary/10 group"
+                              >
+                                <Link
+                                  href={col.href || "#"}
+                                  className="flex items-center gap-3.5 mb-3 cursor-pointer text-left"
+                                >
+                                  {col.iconUrl ? (
+                                    <img
+                                      src={col.iconUrl}
+                                      alt={col.title}
+                                      className="w-12 h-12 object-contain mix-blend-multiply flex-shrink-0 group-hover:scale-105 transition-transform duration-300 rounded-lg"
+                                    />
+                                  ) : (
+                                    <div
+                                      className={`w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-lg shadow-sm ${colorClass} group-hover:scale-105 transition-transform duration-300`}
+                                    >
+                                      {firstLetter}
+                                    </div>
+                                  )}
+                                  <span className="font-bold text-xs tracking-tight text-slate-800 group-hover:text-theme-primary transition-colors">
+                                    {col.title}
+                                  </span>
+                                </Link>
+                                {col.items && col.items.length > 0 && (
+                                  <div className="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-slate-100/50">
+                                    {col.items.map((l3) => (
+                                      <Link
+                                        key={l3.id}
+                                        href={l3.href || "#"}
+                                        className="text-[10px] font-semibold bg-white border border-slate-150 text-slate-650 hover:bg-theme-primary hover:text-white hover:border-theme-primary px-2.5 py-0.5 rounded-full transition-colors duration-150 shrink-0"
+                                      >
+                                        {l3.label}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       ) : isVisual ? (
                         <div className="grid grid-cols-5 gap-6 py-6 px-7 w-full min-w-[600px] max-w-[min(94vw,980px)]">
                           {columns!.map((col) => (
@@ -719,7 +1292,9 @@ export function Navbar({
 
       {/* Dimming overlay for menu backdrop */}
       <AnimatePresence>
-        {activeMenuId && (
+        {(menuState.status === NavbarState.OPEN ||
+          menuState.status === NavbarState.CLOSING) &&
+          activeMenuId && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

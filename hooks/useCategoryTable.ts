@@ -35,6 +35,10 @@ export interface UseCategoryTableProps {
   onComplexDelete: (cat: Category) => void;
   /** Called when clicking a row name — parent opens the drawer */
   onDrawerOpen: (id: string) => void;
+  /** Called for simple category deletion (no subcategories) */
+  onSimpleDelete: (cat: Category) => void;
+  /** Called for bulk category deletion */
+  onBulkDelete: (selectedIds: string[], onSuccess: () => void) => void;
 }
 
 // ── Hook ─────────────────────────────────────────────────────
@@ -45,6 +49,8 @@ export function useCategoryTable({
   onEditClick,
   onComplexDelete,
   onDrawerOpen,
+  onSimpleDelete,
+  onBulkDelete,
 }: UseCategoryTableProps) {
   const token = authToken();
   const [isPending, startTransition] = useTransition();
@@ -205,45 +211,20 @@ export function useCategoryTable({
         return;
       }
       // Simple delete
-      if (confirm(CATEGORY_TOAST.DELETE_CONFIRM(cat.name))) {
-        startTransition(async () => {
-          try {
-            const res = await deleteVendorProductCategory(cat.id, token || "");
-            if (res.status === 200) {
-              toast.success(CATEGORY_TOAST.DELETED);
-              setCheckChange((prev) => !prev);
-            } else {
-              toast.error(res.message || CATEGORY_TOAST.DELETE_FAILED);
-            }
-          } catch {
-            toast.error(CATEGORY_TOAST.DELETE_CATEGORY_FAILED);
-          }
-        });
-      }
+      onSimpleDelete(cat);
     },
-    [categories, token, setCheckChange, onComplexDelete],
+    [categories, onComplexDelete, onSimpleDelete],
   );
 
   // ── Bulk Operations ──
 
   const handleBulkDelete = useCallback(async () => {
     if (!token) return;
-    if (confirm(CATEGORY_TOAST.BULK_DELETE_CONFIRM(selectedIds.length))) {
-      let successCount = 0;
-      for (const id of selectedIds) {
-        try {
-          const res = await deleteVendorProductCategory(id, token);
-          if (res.status === 200) successCount++;
-        } catch {
-          /* continue with remaining */
-        }
-      }
-      toast.success(CATEGORY_TOAST.BULK_DELETED(successCount));
+    onBulkDelete(selectedIds, () => {
       setSelectedIds([]);
       setBulkParentId("");
-      setCheckChange((prev) => !prev);
-    }
-  }, [token, selectedIds, setCheckChange]);
+    });
+  }, [token, selectedIds, onBulkDelete]);
 
   const handleBulkMove = useCallback(async () => {
     if (!token) return;

@@ -11,9 +11,10 @@ import { ImageUploadField } from "@/components/vendor/cms/ImageUploadField";
 function getDescendantIds(categories: Category[], rootId: string): Set<string> {
   const ids = new Set<string>();
   const stack = [rootId];
+  const safeCats = Array.isArray(categories) ? categories : [];
   while (stack.length) {
     const current = stack.pop()!;
-    categories.forEach((c) => {
+    safeCats.forEach((c) => {
       if (c.parent_id === current && !ids.has(c.id)) {
         ids.add(c.id);
         stack.push(c.id);
@@ -27,22 +28,27 @@ function buildIndentedParentOptions(
   categories: Category[],
   excludeIds: Set<string>,
 ) {
+  const safeCats = Array.isArray(categories) ? categories : [];
   const byParent = new Map<string | null, Category[]>();
-  categories.forEach((c) => {
+  safeCats.forEach((c) => {
     const key = c.parent_id ?? null;
     if (!byParent.has(key)) byParent.set(key, []);
     byParent.get(key)!.push(c);
   });
   const options: { value: string; label: string }[] = [];
+  const visited = new Set<string>();
   const walk = (parentId: string | null, depth: number) => {
     (byParent.get(parentId) ?? [])
       .filter((c) => !excludeIds.has(c.id))
       .forEach((c) => {
+        if (visited.has(c.id)) return;
+        visited.add(c.id);
         options.push({
           value: c.id,
           label: `${"—".repeat(depth)}${depth ? " " : ""}${c.name}`,
         });
         walk(c.id, depth + 1);
+        visited.delete(c.id);
       });
   };
   walk(null, 0);
@@ -50,15 +56,17 @@ function buildIndentedParentOptions(
 }
 export default function CategoryForm({
   formState,
-  categories,
+  categories: rawCategories,
   isPending,
   onNameChange,
   onDescriptionChange,
   onParentIdChange,
   onIconUrlChange,
+  onShowInNavChange,
   onSubmit,
   onReset,
 }: CategoryFormProps) {
+  const categories = Array.isArray(rawCategories) ? rawCategories : [];
   const { name, description, parentId, editingId, icon_url } = formState;
   const excludeIds = useMemo(() => {
     const set = editingId
@@ -160,10 +168,35 @@ export default function CategoryForm({
         {/* Category Image / Thumbnail (Optional) */}
         <div>
           <ImageUploadField
-            label="Thumbnail / Category Image (Optional)"
+            label="Menu Icon / Category Thumbnail (Optional)"
             value={icon_url || ""}
             onChange={(newUrl) => onIconUrlChange(newUrl)}
           />
+        </div>
+
+        {/* Show in Storefront Navigation Toggle */}
+        <div className="flex items-center justify-between py-2 border-t border-gray-100 pt-4">
+          <div className="flex flex-col text-left">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Show in Storefront Navigation
+            </span>
+            <span className="text-[10px] text-gray-400 mt-1">
+              Hide this category and its descendants from storefront navigation.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => onShowInNavChange(!formState.show_in_nav)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none shrink-0 ${
+              formState.show_in_nav ? "bg-indigo-600" : "bg-gray-200"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${
+                formState.show_in_nav ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
         </div>
 
         {/* Action Buttons */}

@@ -36,6 +36,8 @@ interface CategoryTreeTableProps {
   onComplexDelete: (cat: Category) => void;
   onDrawerOpen: (id: string) => void;
   onAddNew: () => void;
+  onSimpleDelete: (cat: Category) => void;
+  onBulkDelete: (selectedIds: string[], onSuccess: () => void) => void;
 }
 
 // ── Component ────────────────────────────────────────────────
@@ -47,6 +49,8 @@ export default function CategoryTreeTable({
   onComplexDelete,
   onDrawerOpen,
   onAddNew,
+  onSimpleDelete,
+  onBulkDelete,
 }: CategoryTreeTableProps) {
   // All table state lives here — fully self-contained
   const {
@@ -80,6 +84,8 @@ export default function CategoryTreeTable({
     onEditClick,
     onComplexDelete,
     onDrawerOpen,
+    onSimpleDelete,
+    onBulkDelete,
   });
 
   const { searchQuery, filterType, currentPage } = filterState;
