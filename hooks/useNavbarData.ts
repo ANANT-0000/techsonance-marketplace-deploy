@@ -360,7 +360,7 @@ export function useNavbarData() {
         // Tier 1: User-Facing Error feedback
         toast.error(NavbarConfig.ERROR_USER_MESSAGE);
         // Tier 2: Developer Visibility logs
-        console.error("Navbar fetch error (developer details):", error);
+
         dispatch({ type: NavbarActionType.FETCH_ERROR });
       }
     },

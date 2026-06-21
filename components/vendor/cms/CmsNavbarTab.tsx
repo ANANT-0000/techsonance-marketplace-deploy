@@ -413,7 +413,7 @@ function L2ColumnEditor({
       const res = await deleteNavbarItem(col.id, token);
       if (res?.success === false) {
         toast.error(res?.message || CmsNavbarConfig.ERROR_DELETE_COLUMN);
-        console.error("Delete column error (developer details):", res);
+
         return;
       }
       toast.success(CmsNavbarConfig.SUCCESS_DELETE_COLUMN);
@@ -421,7 +421,7 @@ function L2ColumnEditor({
       dispatchNavbarChange();
     } catch (err) {
       toast.error(CmsNavbarConfig.ERROR_DELETE_COLUMN);
-      console.error("Delete column exception (developer details):", err);
+      co;
     }
   };
 
@@ -614,7 +614,7 @@ function L1ItemEditor({
       "",
     root_category_id: item.root_category_id || null,
   });
-  console.log("draft", draft);
+
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState(false);
   const [addingCol, setAddingCol] = useState(false);
@@ -638,7 +638,6 @@ function L1ItemEditor({
       const targetRouteVal =
         draft.target_route || selectedRoute?.key || "store";
       const resolvedHref = selectedRoute?.base_path || "/";
-
 
       const res = await updateNavbarItem(
         item.id,
@@ -709,7 +708,7 @@ function L1ItemEditor({
         const errorMsg = res?.message || CmsNavbarConfig.ERROR_ADD_COLUMN;
         setError(errorMsg);
         toast.error(errorMsg);
-        console.error("Add column error (developer details):", res);
+
         return;
       }
       const newColData = res?.data?.data || res?.data;
@@ -727,7 +726,6 @@ function L1ItemEditor({
       setAddingCol(false);
       setError(CmsNavbarConfig.ERROR_ADD_COLUMN);
       toast.error(CmsNavbarConfig.ERROR_ADD_COLUMN);
-      console.error("Add column exception (developer details):", err);
     }
   };
 
@@ -1165,7 +1163,7 @@ export function CmsNavbarTab() {
       });
       if (res?.success === false) {
         toast.error(res?.message || CmsNavbarConfig.ERROR_SAVE_SETTINGS);
-        console.error("Save settings error (developer details):", res);
+
         return;
       }
       toast.success(CmsNavbarConfig.SUCCESS_SAVE_SETTINGS);
@@ -1176,7 +1174,6 @@ export function CmsNavbarTab() {
         payload: false,
       });
       toast.error(CmsNavbarConfig.ERROR_SAVE_SETTINGS);
-      console.error("Save settings exception (developer details):", err);
     }
   };
 

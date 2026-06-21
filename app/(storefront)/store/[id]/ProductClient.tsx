@@ -274,10 +274,7 @@ export default function ProductClient({ id }: { id: string }) {
         });
       } catch (error) {
         toast.error(ProductClientConfig.PRODUCT_LOAD_ERROR);
-        console.error(
-          "Product details fetch error (developer details):",
-          error,
-        );
+
         dispatch({ type: ActionType.SET_PAGE_LOADING, payload: false });
       } finally {
         dispatch({ type: ActionType.SET_LOADING, payload: false });
@@ -402,7 +399,6 @@ export default function ProductClient({ id }: { id: string }) {
       })
       .catch((err: AxiosError) => {
         toast.error(ProductClientConfig.COUPON_VALIDATE_ERROR);
-        console.error("Coupon validation error (developer context):", err);
       });
   };
 
