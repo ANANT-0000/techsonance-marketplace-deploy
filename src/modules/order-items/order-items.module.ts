@@ -1,0 +1,21 @@
+import { Module } from '@nestjs/common';
+import { OrderItemsService } from './order-items.service';
+import { OrderItemsController } from './order-items.controller';
+import { MailModule } from '../../common/services/mail/mail.module';
+import { CompanyModule } from '../company/company.module';
+import { InventoryModule } from '../inventory/inventory.module';
+import { DrizzleModule } from '../../drizzle/drizzle.module';
+import { ProductPoliciesModule } from '../product-policies/product-policies.module';
+
+@Module({
+  imports: [
+    MailModule,
+    CompanyModule,
+    InventoryModule,
+    DrizzleModule,
+    ProductPoliciesModule,
+  ],
+  controllers: [OrderItemsController],
+  providers: [OrderItemsService],
+})
+export class OrderItemsModule {}

@@ -339,6 +339,75 @@ function SearchableCategoryPicker({
   );
 }
 
+export enum L2ColumnActionType {
+  SET_DRAFT = "SET_DRAFT",
+  PATCH_DRAFT = "PATCH_DRAFT",
+  PATCH_META = "PATCH_META",
+  SET_SAVING = "SET_SAVING",
+  TOGGLE_OPEN = "TOGGLE_OPEN",
+  SET_ERROR = "SET_ERROR",
+  RESET_ERROR = "RESET_ERROR",
+}
+
+export interface L2ColumnState {
+  draft: L2Column;
+  saving: boolean;
+  open: boolean;
+  error: string | null;
+}
+
+export type L2ColumnAction =
+  | { type: L2ColumnActionType.SET_DRAFT; payload: L2Column }
+  | {
+      type: L2ColumnActionType.PATCH_DRAFT;
+      payload: { field: keyof L2Column; value: any };
+    }
+  | {
+      type: L2ColumnActionType.PATCH_META;
+      payload: { field: keyof NavItemMetaPayload; value: any };
+    }
+  | { type: L2ColumnActionType.SET_SAVING; payload: boolean }
+  | { type: L2ColumnActionType.TOGGLE_OPEN }
+  | { type: L2ColumnActionType.SET_ERROR; payload: string }
+  | { type: L2ColumnActionType.RESET_ERROR };
+
+function l2ColumnReducer(
+  state: L2ColumnState,
+  action: L2ColumnAction,
+): L2ColumnState {
+  switch (action.type) {
+    case L2ColumnActionType.SET_DRAFT:
+      return { ...state, draft: action.payload };
+    case L2ColumnActionType.PATCH_DRAFT:
+      return {
+        ...state,
+        draft: { ...state.draft, [action.payload.field]: action.payload.value },
+      };
+    case L2ColumnActionType.PATCH_META:
+      return {
+        ...state,
+        draft: {
+          ...state.draft,
+          meta: {
+            ...state.draft.meta,
+            [action.payload.field]: action.payload.value,
+          },
+        },
+      };
+    case L2ColumnActionType.SET_SAVING:
+      return { ...state, saving: action.payload };
+    case L2ColumnActionType.TOGGLE_OPEN:
+      return { ...state, open: !state.open };
+    case L2ColumnActionType.SET_ERROR:
+      return { ...state, error: action.payload };
+    case L2ColumnActionType.RESET_ERROR:
+      return { ...state, error: null };
+    default:
+      const _exhaustiveCheck: never = action as never;
+      return state;
+  }
+}
+
 function L2ColumnEditor({
   col,
   categories: rawCategories,
@@ -358,23 +427,29 @@ function L2ColumnEditor({
 }) {
   const categories = Array.isArray(rawCategories) ? rawCategories : [];
   const products = Array.isArray(rawProducts) ? rawProducts : [];
-  const [draft, setDraft] = useState<L2Column>({
-    ...col,
-    meta: col.meta || {},
+  const [state, dispatch] = useReducer(l2ColumnReducer, {
+    draft: { ...col, meta: col.meta || {} },
+    saving: false,
+    open: false,
+    error: null,
   });
-  const [saving, setSaving] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { draft, saving, open, error } = state;
 
   const patch = (field: keyof L2Column, val: any) =>
-    setDraft((p) => ({ ...p, [field]: val }));
+    dispatch({
+      type: L2ColumnActionType.PATCH_DRAFT,
+      payload: { field, value: val },
+    });
   const patchMeta = (field: keyof NavItemMetaPayload, val: any) =>
-    setDraft((p) => ({ ...p, meta: { ...p.meta, [field]: val } }));
+    dispatch({
+      type: L2ColumnActionType.PATCH_META,
+      payload: { field, value: val },
+    });
 
   const selectedCategory = categories.find((c) => c.id === draft.category_id);
   const save = async () => {
-    setSaving(true);
-    setError(null);
+    dispatch({ type: L2ColumnActionType.SET_SAVING, payload: true });
+    dispatch({ type: L2ColumnActionType.RESET_ERROR });
     try {
       const res = await updateNavbarItem(
         col.id,
@@ -390,10 +465,10 @@ function L2ColumnEditor({
         },
         token,
       );
-      setSaving(false);
+      dispatch({ type: L2ColumnActionType.SET_SAVING, payload: false });
       if (res?.success === false) {
         const errorMsg = res?.message || CmsNavbarConfig.ERROR_SAVE_COLUMN;
-        setError(errorMsg);
+        dispatch({ type: L2ColumnActionType.SET_ERROR, payload: errorMsg });
         toast.error(errorMsg);
         return;
       }
@@ -401,8 +476,11 @@ function L2ColumnEditor({
       onSaved({ ...draft, id: col.id });
       dispatchNavbarChange();
     } catch {
-      setSaving(false);
-      setError(CmsNavbarConfig.ERROR_SAVE_COLUMN);
+      dispatch({ type: L2ColumnActionType.SET_SAVING, payload: false });
+      dispatch({
+        type: L2ColumnActionType.SET_ERROR,
+        payload: CmsNavbarConfig.ERROR_SAVE_COLUMN,
+      });
       toast.error(CmsNavbarConfig.ERROR_SAVE_COLUMN);
     }
   };
@@ -421,7 +499,6 @@ function L2ColumnEditor({
       dispatchNavbarChange();
     } catch (err) {
       toast.error(CmsNavbarConfig.ERROR_DELETE_COLUMN);
-      co;
     }
   };
 
@@ -443,7 +520,7 @@ function L2ColumnEditor({
           {colTypeLabel}
         </span>
         <button
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => dispatch({ type: L2ColumnActionType.TOGGLE_OPEN })}
           className="p-1 text-gray-400 hover:text-gray-700"
         >
           {open ? (
@@ -482,16 +559,19 @@ function L2ColumnEditor({
               value={draft.category_id || ""}
               onChange={(v: string) => {
                 const cat = categories.find((c) => c.id === v);
-                setDraft((p) => ({
-                  ...p,
-                  category_id: v || null,
-                  label:
-                    !p.label ||
-                    p.label === "Unnamed Column" ||
-                    p.label === "New Column"
-                      ? cat?.name || p.label
-                      : p.label,
-                }));
+                dispatch({
+                  type: L2ColumnActionType.SET_DRAFT,
+                  payload: {
+                    ...draft,
+                    category_id: v || null,
+                    label:
+                      !draft.label ||
+                      draft.label === "Unnamed Column" ||
+                      draft.label === "New Column"
+                        ? cat?.name || draft.label
+                        : draft.label,
+                  },
+                });
               }}
               options={[
                 { value: "", label: "— No category (manual links) —" },
@@ -577,6 +657,61 @@ function L2ColumnEditor({
   );
 }
 
+export enum L1ItemActionType {
+  SET_DRAFT = "SET_DRAFT",
+  PATCH_DRAFT = "PATCH_DRAFT",
+  SET_SAVING = "SET_SAVING",
+  TOGGLE_OPEN = "TOGGLE_OPEN",
+  SET_ADDING_COL = "SET_ADDING_COL",
+  SET_ERROR = "SET_ERROR",
+  RESET_ERROR = "RESET_ERROR",
+}
+
+export interface L1ItemState {
+  draft: L1Item;
+  saving: boolean;
+  open: boolean;
+  addingCol: boolean;
+  error: string | null;
+}
+
+export type L1ItemAction =
+  | { type: L1ItemActionType.SET_DRAFT; payload: L1Item }
+  | {
+      type: L1ItemActionType.PATCH_DRAFT;
+      payload: { field: keyof L1Item; value: any };
+    }
+  | { type: L1ItemActionType.SET_SAVING; payload: boolean }
+  | { type: L1ItemActionType.TOGGLE_OPEN }
+  | { type: L1ItemActionType.SET_ADDING_COL; payload: boolean }
+  | { type: L1ItemActionType.SET_ERROR; payload: string }
+  | { type: L1ItemActionType.RESET_ERROR };
+
+function l1ItemReducer(state: L1ItemState, action: L1ItemAction): L1ItemState {
+  switch (action.type) {
+    case L1ItemActionType.SET_DRAFT:
+      return { ...state, draft: action.payload };
+    case L1ItemActionType.PATCH_DRAFT:
+      return {
+        ...state,
+        draft: { ...state.draft, [action.payload.field]: action.payload.value },
+      };
+    case L1ItemActionType.SET_SAVING:
+      return { ...state, saving: action.payload };
+    case L1ItemActionType.TOGGLE_OPEN:
+      return { ...state, open: !state.open };
+    case L1ItemActionType.SET_ADDING_COL:
+      return { ...state, addingCol: action.payload };
+    case L1ItemActionType.SET_ERROR:
+      return { ...state, error: action.payload };
+    case L1ItemActionType.RESET_ERROR:
+      return { ...state, error: null };
+    default:
+      const _exhaustiveCheck: never = action as never;
+      return state;
+  }
+}
+
 // ─── L1 Item Editor ───────────────────────────────────────────────────────────
 function L1ItemEditor({
   item,
@@ -602,23 +737,25 @@ function L1ItemEditor({
   const categories = Array.isArray(rawCategories) ? rawCategories : [];
   const siteMaps = Array.isArray(rawSiteMaps) ? rawSiteMaps : [];
   const products = Array.isArray(rawProducts) ? rawProducts : [];
-  const [draft, setDraft] = useState<L1Item>({
-    ...item,
-    meta: item.meta || {},
-    megaMenuColumns: item.megaMenuColumns || [],
-    layout_type: item.layout_type || NavLayoutType.NONE,
-    target_route:
-      item.target_route ||
-      siteMaps.find((r) => r.key === "store")?.key ||
-      siteMaps[0]?.key ||
-      "",
-    root_category_id: item.root_category_id || null,
+  const [state, dispatch] = useReducer(l1ItemReducer, {
+    draft: {
+      ...item,
+      meta: item.meta || {},
+      megaMenuColumns: item.megaMenuColumns || [],
+      layout_type: item.layout_type || NavLayoutType.NONE,
+      target_route:
+        item.target_route ||
+        siteMaps.find((r) => r.key === "store")?.key ||
+        siteMaps[0]?.key ||
+        "",
+      root_category_id: item.root_category_id || null,
+    },
+    saving: false,
+    open: false,
+    addingCol: false,
+    error: null,
   });
-
-  const [saving, setSaving] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [addingCol, setAddingCol] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { draft, saving, open, addingCol, error } = state;
   const layoutType = (draft.layout_type || NavLayoutType.NONE) as NavLayoutType;
   const isAutoTree = layoutType !== NavLayoutType.NONE;
   const hasMegaMenu = isAutoTree || draft.has_mega_menu;
@@ -627,11 +764,14 @@ function L1ItemEditor({
     siteMaps.find((r) => r.key === "store");
 
   const patch = (field: keyof L1Item, val: any) =>
-    setDraft((p) => ({ ...p, [field]: val }));
+    dispatch({
+      type: L1ItemActionType.PATCH_DRAFT,
+      payload: { field, value: val },
+    });
 
   const save = async () => {
-    setSaving(true);
-    setError(null);
+    dispatch({ type: L1ItemActionType.SET_SAVING, payload: true });
+    dispatch({ type: L1ItemActionType.RESET_ERROR });
     try {
       const layoutTypeVal = layoutType;
       const hasMegaMenuVal = isAutoTree ? true : draft.has_mega_menu;
@@ -660,10 +800,10 @@ function L1ItemEditor({
         },
         token,
       );
-      setSaving(false);
+      dispatch({ type: L1ItemActionType.SET_SAVING, payload: false });
       if (res?.success === false) {
         const msg = res?.message || CmsNavbarConfig.ERROR_SAVE_LINK;
-        setError(msg);
+        dispatch({ type: L1ItemActionType.SET_ERROR, payload: msg });
         toast.error(msg);
         return;
       }
@@ -678,15 +818,18 @@ function L1ItemEditor({
       });
       dispatchNavbarChange();
     } catch {
-      setSaving(false);
-      setError(CmsNavbarConfig.ERROR_SAVE_LINK);
+      dispatch({ type: L1ItemActionType.SET_SAVING, payload: false });
+      dispatch({
+        type: L1ItemActionType.SET_ERROR,
+        payload: CmsNavbarConfig.ERROR_SAVE_LINK,
+      });
       toast.error(CmsNavbarConfig.ERROR_SAVE_LINK);
     }
   };
 
   const addColumn = async () => {
-    setAddingCol(true);
-    setError(null);
+    dispatch({ type: L1ItemActionType.SET_ADDING_COL, payload: true });
+    dispatch({ type: L1ItemActionType.RESET_ERROR });
     try {
       const newCol: CreateNavItemPayload = {
         menu_id: menuId,
@@ -702,11 +845,11 @@ function L1ItemEditor({
         },
       };
       const res = await createNavbarItem(newCol, token);
-      setAddingCol(false);
+      dispatch({ type: L1ItemActionType.SET_ADDING_COL, payload: false });
 
       if (res?.success === false) {
         const errorMsg = res?.message || CmsNavbarConfig.ERROR_ADD_COLUMN;
-        setError(errorMsg);
+        dispatch({ type: L1ItemActionType.SET_ERROR, payload: errorMsg });
         toast.error(errorMsg);
 
         return;
@@ -714,17 +857,26 @@ function L1ItemEditor({
       const newColData = res?.data?.data || res?.data;
       if (newColData?.id) {
         toast.success(CmsNavbarConfig.SUCCESS_ADD_COLUMN);
-        setDraft((p) => ({
-          ...p,
-          megaMenuColumns: [...p.megaMenuColumns, newColData as L2Column],
-        }));
+        dispatch({
+          type: L1ItemActionType.SET_DRAFT,
+          payload: {
+            ...draft,
+            megaMenuColumns: [...draft.megaMenuColumns, newColData as L2Column],
+          },
+        });
       } else {
-        setError("Column was not created — please retry.");
+        dispatch({
+          type: L1ItemActionType.SET_ERROR,
+          payload: "Column was not created — please retry.",
+        });
         toast.error("Column was not created — please retry.");
       }
     } catch (err) {
-      setAddingCol(false);
-      setError(CmsNavbarConfig.ERROR_ADD_COLUMN);
+      dispatch({ type: L1ItemActionType.SET_ADDING_COL, payload: false });
+      dispatch({
+        type: L1ItemActionType.SET_ERROR,
+        payload: CmsNavbarConfig.ERROR_ADD_COLUMN,
+      });
       toast.error(CmsNavbarConfig.ERROR_ADD_COLUMN);
     }
   };
@@ -751,18 +903,24 @@ function L1ItemEditor({
   };
 
   const onColSaved = (updated: L2Column) =>
-    setDraft((p) => ({
-      ...p,
-      megaMenuColumns: p.megaMenuColumns.map((c) =>
-        c.id === updated.id ? updated : c,
-      ),
-    }));
+    dispatch({
+      type: L1ItemActionType.SET_DRAFT,
+      payload: {
+        ...draft,
+        megaMenuColumns: draft.megaMenuColumns.map((c) =>
+          c.id === updated.id ? updated : c,
+        ),
+      },
+    });
 
   const onColDeleted = (id: string) =>
-    setDraft((p) => ({
-      ...p,
-      megaMenuColumns: p.megaMenuColumns.filter((c) => c.id !== id),
-    }));
+    dispatch({
+      type: L1ItemActionType.SET_DRAFT,
+      payload: {
+        ...draft,
+        megaMenuColumns: draft.megaMenuColumns.filter((c) => c.id !== id),
+      },
+    });
 
   const badge = hasMegaMenu ? badgeFor(layoutType, draft.has_mega_menu) : null;
   function badgeFor(lt: NavLayoutType, hasMega: boolean) {
@@ -791,7 +949,7 @@ function L1ItemEditor({
           </span>
         )}
         <button
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => dispatch({ type: L1ItemActionType.TOGGLE_OPEN })}
           className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
         >
           {open ? (
@@ -850,14 +1008,17 @@ function L1ItemEditor({
               label="Menu Style"
               value={layoutType}
               onChange={(v: string) =>
-                setDraft((p) => ({
-                  ...p,
-                  layout_type: v as NavLayoutType,
-                  has_mega_menu:
-                    v !== NavLayoutType.NONE ? true : p.has_mega_menu,
-                  root_category_id:
-                    v === NavLayoutType.NONE ? null : p.root_category_id,
-                }))
+                dispatch({
+                  type: L1ItemActionType.SET_DRAFT,
+                  payload: {
+                    ...draft,
+                    layout_type: v as NavLayoutType,
+                    has_mega_menu:
+                      v !== NavLayoutType.NONE ? true : draft.has_mega_menu,
+                    root_category_id:
+                      v === NavLayoutType.NONE ? null : draft.root_category_id,
+                  },
+                })
               }
               options={LAYOUT_OPTIONS.map((opt) => ({
                 value: opt.value,

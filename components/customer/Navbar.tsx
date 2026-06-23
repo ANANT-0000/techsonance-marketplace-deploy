@@ -25,7 +25,12 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { useThemeData } from "@/hooks/useThemeData";
 import { openLoginModal, logOut } from "@/lib/features/auth/authSlice";
 import { toggleCartSidebar } from "@/lib/features/CartSidebar";
-import { PROFILE_SIDEBAR_TEXT } from "@/constants/customerText";
+import {
+  PROFILE_SIDEBAR_TEXT,
+  NAVBAR_TEXT,
+  NavbarConfig,
+  NAVBAR_UI_TEXT,
+} from "@/constants/customerText";
 import { BRAND_LOGO } from "@/constants/common";
 import { useNavbarData } from "@/hooks/useNavbarData";
 import {
@@ -41,23 +46,11 @@ import {
 } from "@/utils/Types";
 
 // UI Text Constants (strictly preventing hardcoded keys/texts in component logic)
-const NAVBAR_UI_TEXT = {
-  MY_ORDERS: PROFILE_SIDEBAR_TEXT.LINKS.ORDERS,
-  MY_CART: PROFILE_SIDEBAR_TEXT.LINKS.CART,
-  MY_ADDRESSES: PROFILE_SIDEBAR_TEXT.LINKS.ADDRESSES,
-  SUPPORT: PROFILE_SIDEBAR_TEXT.LINKS.SUPPORT,
-  LOGOUT: PROFILE_SIDEBAR_TEXT.LINKS.LOGOUT,
-  SIGN_IN: "Sign In",
-  WISH_ARIA_LABEL: "Wishlist page link",
-  CART_ARIA_LABEL: "Toggle cart sidebar",
-  PROFILE_ARIA_LABEL: "User profile dropdown",
-  LOGO_ALT: "Store Brand Logo",
-};
 
 // Mega menu layout tuning
-const MEGA_MENU_ITEM_LIMIT = 9;
-const MEGA_MENU_SKELETON_COLUMNS = 4;
-const MEGA_MENU_SKELETON_ROWS = 6;
+const MEGA_MENU_ITEM_LIMIT = NavbarConfig.LIMITS.MEGA_MENU_ITEM;
+const MEGA_MENU_SKELETON_COLUMNS = NavbarConfig.LIMITS.SKELETON_COLUMNS;
+const MEGA_MENU_SKELETON_ROWS = NavbarConfig.LIMITS.SKELETON_ROWS;
 
 function MegaMenuSkeleton() {
   return (
@@ -238,22 +231,51 @@ function NavbarSkeleton() {
   );
 }
 
-enum NavbarState {
+export enum NavbarState {
   CLOSED = "CLOSED",
   OPENING = "OPENING",
   OPEN = "OPEN",
   CLOSING = "CLOSING",
 }
 
-enum NavbarActionType {
+export enum NavbarActionType {
   HOVER_ENTER = "HOVER_ENTER",
   HOVER_LEAVE = "HOVER_LEAVE",
   TIMEOUT_OPEN = "TIMEOUT_OPEN",
   TIMEOUT_CLOSE = "TIMEOUT_CLOSE",
   FORCE_CLOSE = "FORCE_CLOSE",
+  TOGGLE_PROFILE = "TOGGLE_PROFILE",
+  SET_PROFILE_OPEN = "SET_PROFILE_OPEN",
+  SET_SEARCH_QUERY = "SET_SEARCH_QUERY",
+  TOGGLE_COLUMN_EXPAND = "TOGGLE_COLUMN_EXPAND",
+  SET_MOBILE_MENU_OPEN = "SET_MOBILE_MENU_OPEN",
+  SET_MOBILE_STACK = "SET_MOBILE_STACK",
+  PUSH_MOBILE_STACK = "PUSH_MOBILE_STACK",
+  POP_MOBILE_STACK = "POP_MOBILE_STACK",
 }
 
-type NavbarAction =
+export interface MobileStackItem {
+  title: string;
+  items: Array<{
+    id: string;
+    label: string;
+    href: string;
+    hasChildren: boolean;
+    children?: NavLinkItem[];
+  }>;
+}
+
+export interface State {
+  status: NavbarState;
+  activeMenuId: string | null;
+  isProfileOpen: boolean;
+  searchQuery: string;
+  expandedColumns: Set<string>;
+  isMobileMenuOpen: boolean;
+  mobileStack: MobileStackItem[];
+}
+
+export type NavbarAction =
   | {
       type: NavbarActionType.HOVER_ENTER;
       payload: { itemId: string; hasMegaMenu: boolean };
@@ -261,21 +283,28 @@ type NavbarAction =
   | { type: NavbarActionType.HOVER_LEAVE }
   | { type: NavbarActionType.TIMEOUT_OPEN }
   | { type: NavbarActionType.TIMEOUT_CLOSE }
-  | { type: NavbarActionType.FORCE_CLOSE };
-
-interface State {
-  status: NavbarState;
-  activeMenuId: string | null;
-}
+  | { type: NavbarActionType.FORCE_CLOSE }
+  | { type: NavbarActionType.TOGGLE_PROFILE }
+  | { type: NavbarActionType.SET_PROFILE_OPEN; payload: boolean }
+  | { type: NavbarActionType.SET_SEARCH_QUERY; payload: string }
+  | { type: NavbarActionType.TOGGLE_COLUMN_EXPAND; payload: string }
+  | { type: NavbarActionType.SET_MOBILE_MENU_OPEN; payload: boolean }
+  | { type: NavbarActionType.SET_MOBILE_STACK; payload: MobileStackItem[] }
+  | { type: NavbarActionType.PUSH_MOBILE_STACK; payload: MobileStackItem }
+  | { type: NavbarActionType.POP_MOBILE_STACK };
 
 const navbarReducer = (state: State, action: NavbarAction): State => {
   switch (action.type) {
     case NavbarActionType.HOVER_ENTER:
       if (!action.payload.hasMegaMenu) {
-        return { status: NavbarState.CLOSED, activeMenuId: null };
+        return { ...state, status: NavbarState.CLOSED, activeMenuId: null };
       }
       if (state.status === NavbarState.CLOSED) {
-        return { status: NavbarState.OPENING, activeMenuId: action.payload.itemId };
+        return {
+          ...state,
+          status: NavbarState.OPENING,
+          activeMenuId: action.payload.itemId,
+        };
       }
       if (state.status === NavbarState.OPENING) {
         return { ...state, activeMenuId: action.payload.itemId };
@@ -284,13 +313,17 @@ const navbarReducer = (state: State, action: NavbarAction): State => {
         return { ...state, activeMenuId: action.payload.itemId };
       }
       if (state.status === NavbarState.CLOSING) {
-        return { status: NavbarState.OPEN, activeMenuId: action.payload.itemId };
+        return {
+          ...state,
+          status: NavbarState.OPEN,
+          activeMenuId: action.payload.itemId,
+        };
       }
       return state;
 
     case NavbarActionType.HOVER_LEAVE:
       if (state.status === NavbarState.OPENING) {
-        return { status: NavbarState.CLOSED, activeMenuId: null };
+        return { ...state, status: NavbarState.CLOSED, activeMenuId: null };
       }
       if (state.status === NavbarState.OPEN) {
         return { ...state, status: NavbarState.CLOSING };
@@ -305,14 +338,46 @@ const navbarReducer = (state: State, action: NavbarAction): State => {
 
     case NavbarActionType.TIMEOUT_CLOSE:
       if (state.status === NavbarState.CLOSING) {
-        return { status: NavbarState.CLOSED, activeMenuId: null };
+        return { ...state, status: NavbarState.CLOSED, activeMenuId: null };
       }
       return state;
 
     case NavbarActionType.FORCE_CLOSE:
-      return { status: NavbarState.CLOSED, activeMenuId: null };
+      return { ...state, status: NavbarState.CLOSED, activeMenuId: null };
+
+    case NavbarActionType.TOGGLE_PROFILE:
+      return { ...state, isProfileOpen: !state.isProfileOpen };
+
+    case NavbarActionType.SET_PROFILE_OPEN:
+      return { ...state, isProfileOpen: action.payload };
+
+    case NavbarActionType.SET_SEARCH_QUERY:
+      return { ...state, searchQuery: action.payload };
+
+    case NavbarActionType.TOGGLE_COLUMN_EXPAND:
+      const nextCols = new Set(state.expandedColumns);
+      if (nextCols.has(action.payload)) {
+        nextCols.delete(action.payload);
+      } else {
+        nextCols.add(action.payload);
+      }
+      return { ...state, expandedColumns: nextCols };
+
+    case NavbarActionType.SET_MOBILE_MENU_OPEN:
+      return { ...state, isMobileMenuOpen: action.payload };
+
+    case NavbarActionType.SET_MOBILE_STACK:
+      return { ...state, mobileStack: action.payload };
+
+    case NavbarActionType.PUSH_MOBILE_STACK:
+      return { ...state, mobileStack: [...state.mobileStack, action.payload] };
+
+    case NavbarActionType.POP_MOBILE_STACK:
+      if (state.mobileStack.length <= 1) return state;
+      return { ...state, mobileStack: state.mobileStack.slice(0, -1) };
 
     default:
+      const _exhaustiveCheck: never = action;
       return state;
   }
 };
@@ -336,82 +401,79 @@ export function Navbar({
   // Load configuration directly from the hook — transformation is done there.
   const { l1Config, l2Config, isLoading } = useNavbarData();
 
-  // Isolated interactive states
+  // Isolated interactive states combined into single reducer for State Management Rule
   const [menuState, dispatchMenuState] = useReducer(navbarReducer, {
     status: NavbarState.CLOSED,
     activeMenuId: null,
+    isProfileOpen: false,
+    searchQuery: "",
+    expandedColumns: new Set<string>(),
+    isMobileMenuOpen: false,
+    mobileStack: [],
   });
 
-  const activeMenuId = menuState.activeMenuId;
-
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [expandedColumns, setExpandedColumns] = useState<Set<string>>(
-    new Set(),
-  );
-
-  // Mobile menu interactive states and drill-down history stack
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  interface MobileStackItem {
-    title: string;
-    items: Array<{
-      id: string;
-      label: string;
-      href: string;
-      hasChildren: boolean;
-      children?: NavLinkItem[];
-    }>;
-  }
-  const [mobileStack, setMobileStack] = useState<MobileStackItem[]>([]);
+  const {
+    activeMenuId,
+    isProfileOpen,
+    searchQuery,
+    expandedColumns,
+    isMobileMenuOpen,
+    mobileStack,
+  } = menuState;
 
   // Initialize mobile stack
   useEffect(() => {
     if (l1Config.navigationItems) {
-      setMobileStack([
-        {
-          title: "Menu",
-          items: l1Config.navigationItems.map((item) => {
-            const hasChildren =
-              item.hasMegaMenu &&
-              !!l2Config?.[item.id] &&
-              l2Config[item.id].some(
-                (col) => col.type !== NavItemColType.PROMOTION,
-              );
-            return {
-              id: item.id,
-              label: item.label,
-              href: item.href,
-              hasChildren,
-            };
-          }),
-        },
-      ]);
+      dispatchMenuState({
+        type: NavbarActionType.SET_MOBILE_STACK,
+        payload: [
+          {
+            title: NavbarConfig.STRINGS.MENU,
+            items: l1Config.navigationItems.map((item) => {
+              const hasChildren =
+                item.hasMegaMenu &&
+                !!l2Config?.[item.id] &&
+                l2Config[item.id].some(
+                  (col) => col.type !== NavItemColType.PROMOTION,
+                );
+              return {
+                id: item.id,
+                label: item.label,
+                href: item.href,
+                hasChildren,
+              };
+            }),
+          },
+        ],
+      });
     }
   }, [l1Config, l2Config]);
 
   // Reset mobile stack when menu closes
   useEffect(() => {
     if (!isMobileMenuOpen && l1Config.navigationItems) {
-      setMobileStack([
-        {
-          title: "Menu",
-          items: l1Config.navigationItems.map((item) => {
-            const hasChildren =
-              item.hasMegaMenu &&
-              !!l2Config?.[item.id] &&
-              l2Config[item.id].some(
-                (col) => col.type !== NavItemColType.PROMOTION,
-              );
-            return {
-              id: item.id,
-              label: item.label,
-              href: item.href,
-              hasChildren,
-            };
-          }),
-        },
-      ]);
+      dispatchMenuState({
+        type: NavbarActionType.SET_MOBILE_STACK,
+        payload: [
+          {
+            title: NavbarConfig.STRINGS.MENU,
+            items: l1Config.navigationItems.map((item) => {
+              const hasChildren =
+                item.hasMegaMenu &&
+                !!l2Config?.[item.id] &&
+                l2Config[item.id].some(
+                  (col) => col.type !== NavItemColType.PROMOTION,
+                );
+              return {
+                id: item.id,
+                label: item.label,
+                href: item.href,
+                hasChildren,
+              };
+            }),
+          },
+        ],
+      });
     }
   }, [isMobileMenuOpen, l1Config, l2Config]);
 
@@ -449,20 +511,17 @@ export function Navbar({
       nextItems = nextItems.map((n) => ({ ...n, hasChildren: false }));
     }
 
-    setMobileStack((prev) => [
-      ...prev,
-      {
+    dispatchMenuState({
+      type: NavbarActionType.PUSH_MOBILE_STACK,
+      payload: {
         title: item.label,
         items: nextItems,
       },
-    ]);
+    });
   };
 
   const handleBack = () => {
-    setMobileStack((prev) => {
-      if (prev.length <= 1) return prev;
-      return prev.slice(0, -1);
-    });
+    dispatchMenuState({ type: NavbarActionType.POP_MOBILE_STACK });
   };
 
   const openTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -510,15 +569,16 @@ export function Navbar({
   }, [isMobileMenuOpen]);
 
   const handleDrawerKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Tab" && drawerRef.current) {
+    if (e.key === NavbarConfig.KEYS.TAB && drawerRef.current) {
       const focusableElements = drawerRef.current.querySelectorAll(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       );
       if (focusableElements.length === 0) return;
 
       const firstElement = focusableElements[0] as HTMLElement;
-      const lastElement =
-        focusableElements[focusableElements.length - 1] as HTMLElement;
+      const lastElement = focusableElements[
+        focusableElements.length - 1
+      ] as HTMLElement;
 
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {
@@ -532,27 +592,37 @@ export function Navbar({
         }
       }
     }
-    if (e.key === "Escape") {
-      setIsMobileMenuOpen(false);
+    if (e.key === NavbarConfig.KEYS.ESCAPE) {
+      dispatchMenuState({
+        type: NavbarActionType.SET_MOBILE_MENU_OPEN,
+        payload: false,
+      });
     }
   };
 
   // Escape listener to close desktop menus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === NavbarConfig.KEYS.ESCAPE) {
         dispatchMenuState({ type: NavbarActionType.FORCE_CLOSE });
-        setIsProfileOpen(false);
+        dispatchMenuState({
+          type: NavbarActionType.SET_PROFILE_OPEN,
+          payload: false,
+        });
       }
     };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener(NavbarConfig.EVENTS.KEYDOWN, handleKeyDown);
+    return () =>
+      document.removeEventListener(NavbarConfig.EVENTS.KEYDOWN, handleKeyDown);
   }, []);
 
   // Force close menus on path changes
   useEffect(() => {
     dispatchMenuState({ type: NavbarActionType.FORCE_CLOSE });
-    setIsMobileMenuOpen(false);
+    dispatchMenuState({
+      type: NavbarActionType.SET_MOBILE_MENU_OPEN,
+      payload: false,
+    });
   }, [path]);
 
   // Click outside listener for profile dropdown
@@ -562,11 +632,21 @@ export function Navbar({
         profileRef.current &&
         !profileRef.current.contains(e.target as Node)
       ) {
-        setIsProfileOpen(false);
+        dispatchMenuState({
+          type: NavbarActionType.SET_PROFILE_OPEN,
+          payload: false,
+        });
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener(
+      NavbarConfig.EVENTS.MOUSEDOWN,
+      handleClickOutside,
+    );
+    return () =>
+      document.removeEventListener(
+        NavbarConfig.EVENTS.MOUSEDOWN,
+        handleClickOutside,
+      );
   }, []);
 
   // Hide header in Admin, Vendor, or Checkout contexts
@@ -596,28 +676,29 @@ export function Navbar({
   };
 
   const toggleColumnExpand = (colKey: string) => {
-    setExpandedColumns((prev) => {
-      const next = new Set(prev);
-      if (next.has(colKey)) {
-        next.delete(colKey);
-      } else {
-        next.add(colKey);
-      }
-      return next;
+    dispatchMenuState({
+      type: NavbarActionType.TOGGLE_COLUMN_EXPAND,
+      payload: colKey,
     });
   };
 
   const handleOrdersClick = () => {
-    setIsProfileOpen(false);
+    dispatchMenuState({
+      type: NavbarActionType.SET_PROFILE_OPEN,
+      payload: false,
+    });
     if (!user?.id) {
-      dispatch(openLoginModal("/customer/orders"));
+      dispatch(openLoginModal(NavbarConfig.ROUTES.ORDERS));
     } else {
-      router.push("/customer/orders");
+      router.push(NavbarConfig.ROUTES.ORDERS);
     }
   };
 
   const handleCartClick = () => {
-    setIsProfileOpen(false);
+    dispatchMenuState({
+      type: NavbarActionType.SET_PROFILE_OPEN,
+      payload: false,
+    });
     if (!user?.id) {
       dispatch(openLoginModal("/customer/cart"));
     } else {
@@ -626,7 +707,10 @@ export function Navbar({
   };
 
   const handleAddressesClick = () => {
-    setIsProfileOpen(false);
+    dispatchMenuState({
+      type: NavbarActionType.SET_PROFILE_OPEN,
+      payload: false,
+    });
     if (!user?.id) {
       dispatch(openLoginModal("/customer/addresses"));
     } else {
@@ -635,7 +719,10 @@ export function Navbar({
   };
 
   const handleSupportClick = () => {
-    setIsProfileOpen(false);
+    dispatchMenuState({
+      type: NavbarActionType.SET_PROFILE_OPEN,
+      payload: false,
+    });
     if (user?.id) {
       router.push("/customer/support");
     } else {
@@ -644,7 +731,10 @@ export function Navbar({
   };
 
   const handleAuthClick = () => {
-    setIsProfileOpen(false);
+    dispatchMenuState({
+      type: NavbarActionType.SET_PROFILE_OPEN,
+      payload: false,
+    });
     if (user?.id) {
       dispatch(logOut());
       router.push("/");
@@ -674,7 +764,12 @@ export function Navbar({
           {/* Hamburger Menu Icon */}
           <button
             ref={hamburgerRef}
-            onClick={() => setIsMobileMenuOpen(true)}
+            onClick={() =>
+              dispatchMenuState({
+                type: NavbarActionType.SET_MOBILE_MENU_OPEN,
+                payload: true,
+              })
+            }
             aria-expanded={isMobileMenuOpen}
             aria-haspopup="dialog"
             className="p-2 -ml-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
@@ -733,7 +828,12 @@ export function Navbar({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={() =>
+                dispatchMenuState({
+                  type: NavbarActionType.SET_MOBILE_MENU_OPEN,
+                  payload: false,
+                })
+              }
               className="absolute inset-0 bg-black/40 backdrop-blur-xs w-full h-full"
             />
 
@@ -754,7 +854,12 @@ export function Navbar({
                 <Link
                   href="/"
                   className="flex flex-col text-left"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() =>
+                    dispatchMenuState({
+                      type: NavbarActionType.SET_MOBILE_MENU_OPEN,
+                      payload: false,
+                    })
+                  }
                 >
                   <img
                     src={logoUrl}
@@ -763,7 +868,12 @@ export function Navbar({
                   />
                 </Link>
                 <button
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() =>
+                    dispatchMenuState({
+                      type: NavbarActionType.SET_MOBILE_MENU_OPEN,
+                      payload: false,
+                    })
+                  }
                   className="p-1.5 hover:bg-slate-150 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer"
                   aria-label="Close mobile menu"
                 >
@@ -776,10 +886,18 @@ export function Navbar({
                 <div className="py-4 border-b border-slate-100 shrink-0">
                   <SearchBar
                     value={searchQuery}
-                    onChange={setSearchQuery}
+                    onChange={(q) =>
+                      dispatchMenuState({
+                        type: NavbarActionType.SET_SEARCH_QUERY,
+                        payload: q,
+                      })
+                    }
                     onSearch={(q) => {
                       if (q.trim()) {
-                        setIsMobileMenuOpen(false);
+                        dispatchMenuState({
+                          type: NavbarActionType.SET_MOBILE_MENU_OPEN,
+                          payload: false,
+                        });
                         router.push(
                           `${l1Config.searchBar.searchEndpoint}?q=${encodeURIComponent(q.trim())}`,
                         );
@@ -800,13 +918,16 @@ export function Navbar({
                     aria-label="Go back to previous menu"
                   >
                     <ChevronRight size={14} className="rotate-180" />
-                    <span>Back to {mobileStack[mobileStack.length - 2].title}</span>
+                    <span>
+                      Back to {mobileStack[mobileStack.length - 2].title}
+                    </span>
                   </button>
                 )}
 
                 {/* Current menu title */}
                 <h3 className="px-1 text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">
-                  {mobileStack[mobileStack.length - 1]?.title || "Menu"}
+                  {mobileStack[mobileStack.length - 1]?.title ||
+                    NavbarConfig.STRINGS.MENU}
                 </h3>
 
                 {/* List of items */}
@@ -830,7 +951,12 @@ export function Navbar({
                       <Link
                         key={item.id}
                         href={item.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
+                        onClick={() =>
+                          dispatchMenuState({
+                            type: NavbarActionType.SET_MOBILE_MENU_OPEN,
+                            payload: false,
+                          })
+                        }
                         className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-750 hover:bg-slate-50 hover:text-slate-900 transition-colors"
                       >
                         {item.label}
@@ -845,7 +971,10 @@ export function Navbar({
                 {l1Config.utilities.showAccount && (
                   <button
                     onClick={() => {
-                      setIsMobileMenuOpen(false);
+                      dispatchMenuState({
+                        type: NavbarActionType.SET_MOBILE_MENU_OPEN,
+                        payload: false,
+                      });
                       if (user?.id) {
                         router.push("/customer");
                       } else {
@@ -861,7 +990,10 @@ export function Navbar({
                 {user?.id && (
                   <button
                     onClick={() => {
-                      setIsMobileMenuOpen(false);
+                      dispatchMenuState({
+                        type: NavbarActionType.SET_MOBILE_MENU_OPEN,
+                        payload: false,
+                      });
                       dispatch(logOut());
                       router.push("/");
                     }}
@@ -1017,8 +1149,9 @@ export function Navbar({
                               "bg-rose-100 text-rose-700",
                             ];
                             const colorClass =
-                              colors[(col.id?.charCodeAt(0) || 0) % colors.length] ||
-                              "bg-gray-150 text-gray-700";
+                              colors[
+                                (col.id?.charCodeAt(0) || 0) % colors.length
+                              ] || "bg-gray-150 text-gray-700";
 
                             return (
                               <div
@@ -1156,7 +1289,12 @@ export function Navbar({
           <div className="flex-1 max-w-[440px] mx-6">
             <SearchBar
               value={searchQuery}
-              onChange={setSearchQuery}
+              onChange={(q) =>
+                dispatchMenuState({
+                  type: NavbarActionType.SET_SEARCH_QUERY,
+                  payload: q,
+                })
+              }
               onSearch={(q) => {
                 if (q.trim()) {
                   router.push(
@@ -1175,7 +1313,9 @@ export function Navbar({
           {l1Config.utilities.showAccount && (
             <div className="relative" ref={profileRef}>
               <button
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                onClick={() =>
+                  dispatchMenuState({ type: NavbarActionType.TOGGLE_PROFILE })
+                }
                 className="p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors flex items-center gap-0.5 cursor-pointer"
                 aria-label={NAVBAR_UI_TEXT.PROFILE_ARIA_LABEL}
                 aria-expanded={isProfileOpen}
@@ -1295,16 +1435,16 @@ export function Navbar({
         {(menuState.status === NavbarState.OPEN ||
           menuState.status === NavbarState.CLOSING) &&
           activeMenuId && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            onClick={handleBackdropClick}
-            className="fixed inset-0 top-[72px] bg-black/40 backdrop-blur-xs z-40 cursor-default pointer-events-auto"
-            aria-hidden="true"
-          />
-        )}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={handleBackdropClick}
+              className="fixed inset-0 top-[72px] bg-black/40 backdrop-blur-xs z-40 cursor-default pointer-events-auto"
+              aria-hidden="true"
+            />
+          )}
       </AnimatePresence>
     </header>
   );

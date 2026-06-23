@@ -1,8 +1,4 @@
 "use client";
-// ============================================================
-// CategoryDetailDrawer — Slide-out Detail Panel
-// ============================================================
-
 import React from "react";
 import { Info, X, Edit2 } from "lucide-react";
 

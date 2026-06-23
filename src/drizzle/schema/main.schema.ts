@@ -1,0 +1,173 @@
+import * as pg from 'drizzle-orm/pg-core';
+import {
+  AccessStatus,
+  UserRole,
+  UserStatus,
+  EntityStatus,
+} from '../types/types';
+import { EntityStatusEnum } from './enums.schema';
+import { user } from './users.schema';
+export const companyEnum = pg.pgEnum('company_enum', UserStatus);
+export const company = pg.pgTable(
+  'company',
+  {
+    id: pg.uuid('id').primaryKey().defaultRandom(),
+    company_name: pg.text('company_name').notNull(),
+    company_domain: pg.text('company_domain').notNull(),
+    company_structure: pg.text('company_structure').notNull(),
+    company_status: companyEnum('company_status').default(UserStatus.PENDING),
+    created_at: pg.timestamp('created_at').notNull().defaultNow(),
+    updated_at: pg
+      .timestamp('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+    status: EntityStatusEnum('status').default(EntityStatus.ACTIVE),
+    deleted_at: pg.timestamp('deleted_at'),
+  },
+  (t) => [
+    pg.uniqueIndex('uq_company_domain').on(t.company_domain),
+    pg.index('idx_company_status').on(t.company_status),
+    pg.index('idx_company_name').on(t.company_name),
+  ],
+);
+export const UserRoleEnum = pg.pgEnum('user_role_enum', [
+  UserRole.ADMIN,
+  UserRole.VENDOR,
+  UserRole.CUSTOMER,
+]);
+export const user_roles = pg.pgTable('user_roles', {
+  id: pg.uuid('id').primaryKey().defaultRandom(),
+  role_name: pg.text('role_name').notNull().default(UserRole.ADMIN).unique(),
+  description: pg.text('description'),
+  created_at: pg.timestamp('created_at').notNull().defaultNow(),
+  updated_at: pg
+    .timestamp('updated_at')
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+export const AccessStatusEnum = pg.pgEnum('access_status_enum', AccessStatus);
+export const user_and_company = pg.pgTable(
+  'user_and_company',
+  {
+    id: pg.uuid('id').primaryKey().defaultRandom(),
+    user_id: pg
+      .uuid('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    company_id: pg
+      .uuid('company_id')
+      .notNull()
+      .references(() => company.id, { onDelete: 'cascade' }),
+    role_id: pg
+      .uuid('role_id')
+      .notNull()
+      .references(() => user_roles.id),
+    access_status: AccessStatusEnum('access_status')
+      .notNull()
+      .default(AccessStatus.ACTIVE),
+    created_at: pg.timestamp('created_at').notNull().defaultNow(),
+    updated_at: pg
+      .timestamp('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    pg.uniqueIndex('uq_user_company').on(t.user_id, t.company_id),
+    pg.index('idx_uac_user_id').on(t.user_id),
+    pg.index('idx_uac_company_id').on(t.company_id),
+    pg.index('idx_uac_access_status').on(t.access_status),
+  ],
+);
+
+export const permissions = pg.pgTable('user_permissions', {
+  id: pg.uuid('id').primaryKey().defaultRandom(),
+  permission_name: pg.text('permission_name').notNull(),
+  created_at: pg.timestamp('created_at').notNull().defaultNow(),
+  updated_at: pg
+    .timestamp('updated_at')
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+export const role_permissions = pg.pgTable('role_permissions', {
+  id: pg.uuid('id').primaryKey().defaultRandom(),
+  role_id: pg.uuid('role_id').references(() => user_roles.id),
+  permission_id: pg.uuid('permission_id').references(() => permissions.id),
+  created_at: pg.timestamp('created_at').notNull().defaultNow(),
+  updated_at: pg
+    .timestamp('updated_at')
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+export const cms_pages = pg.pgTable('cms_pages', {
+  id: pg.uuid('id').primaryKey().defaultRandom(),
+  title: pg.text('title').notNull(),
+  content: pg.text('content').notNull(),
+  page_content_type: pg.text('page_content_type').notNull(),
+  seo_meta: pg.jsonb('seo_meta').notNull(),
+  language: pg.varchar('language', { length: 10 }).notNull().default('en'),
+  created_at: pg.timestamp('created_at').notNull().defaultNow(),
+  updated_at: pg
+    .timestamp('updated_at')
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+  company_id: pg.uuid('company_id').references(() => company.id),
+});
+
+export const refresh_tokens = pg.pgTable('refresh_tokens', {
+  id: pg.uuid('id').primaryKey().defaultRandom(),
+  user_id: pg
+    .uuid('user_id')
+    .references(() => user.id, { onDelete: 'cascade' }),
+  token_hash: pg.text('token_hash').notNull(),
+  is_revoked: pg.boolean('is_revoked').default(false).notNull(),
+  expires_at: pg.timestamp('expires_at').notNull(),
+  created_at: pg
+    .timestamp('created_at')
+    .$default(() => new Date())
+    .notNull(),
+});
+
+export const site_maps = pg.pgTable(
+  'site_maps',
+  {
+    id: pg.uuid('id').primaryKey().defaultRandom(),
+    company_id: pg
+      .uuid('company_id')
+      .notNull()
+      .references(() => company.id, { onDelete: 'cascade' }),
+
+    /** Stable identifier the rest of the system references — e.g.
+     *  'store', 'blog', 'customer_support'. Vendor-defined, not an enum,
+     *  so new page types never require a migration. */
+    key: pg.varchar('key', { length: 60 }).notNull(),
+
+    /** Admin-facing name shown in selectors, e.g. "Store / Shop", "Blog". */
+    label: pg.varchar('label', { length: 120 }).notNull(),
+
+    /** The actual route prefix. This is the one thing allowed to change
+     *  freely — e.g. '/store' → '/shop' — without touching nav_items. */
+    base_path: pg.text('base_path').notNull(),
+
+    /** searchParams key appended for dynamic targets (category slug,
+     *  product id, etc). Null for static pages like /customer/support. */
+    default_query_param: pg.varchar('default_query_param', { length: 60 }),
+
+    /** Seeded purposes (store, support) — key can't be deleted, only
+     *  base_path edited, so a broken nav item is never possible. */
+    is_system: pg.boolean('is_system').notNull().default(false),
+
+    created_at: pg.timestamp('created_at').notNull().defaultNow(),
+    updated_at: pg
+      .timestamp('updated_at')
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [pg.uniqueIndex('uq_site_maps_company_key').on(t.company_id, t.key)],
+);

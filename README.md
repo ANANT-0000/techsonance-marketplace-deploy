@@ -1,292 +1,386 @@
-# TechSonance Marketplace — Sound Sphere
+<div align="center">
 
-A comprehensive **multi-tenant techsonance marketplace** platform where customers can browse and purchase music products, vendors can manage their stores, and admins can oversee the entire platform — all from a single, beautifully crafted React application.
+# 🛍️ TechSonance Marketplace Server
 
-![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-7.2-646CFF?logo=vite&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1-06B6D4?logo=tailwindcss&logoColor=white)
-![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.11-764ABC?logo=redux&logoColor=white)
+<p align="center">
+  <img src="https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" alt="NestJS" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black" alt="Drizzle ORM" />
+  <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=Swagger&logoColor=black" alt="Swagger" />
+</p>
 
----
-
-## 📖 Table of Contents
-
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [User Roles & Permissions](#user-roles--permissions)
-- [Routing Overview](#routing-overview)
-- [State Management](#state-management)
-- [Environment Variables](#environment-variables)
-- [Available Scripts](#available-scripts)
-- [Contributing](#contributing)
-- [License](#license)
+<p align="center">
+  <b>
+    A highly scalable, modular backend API built to power the TechSonance Marketplace —
+    a dedicated platform for vendors to easily obtain and manage their own storefronts and websites.
+  </b>
+</p>
 
 ---
 
-## Overview
-The platform operates on a **multi-tenant architecture** where each vendor operates an isolated storefront under the Sound Sphere umbrella, managed centrally by platform administrators.
+</div>
+
+## 🚀 Project Overview
+
+The **TechSonance Marketplace Server** is the central nervous system of the marketplace platform. Engineered with **NestJS**, it handles complex e-commerce logic ranging from vendor onboarding to dynamic invoice generation.
+
+The primary goal of this platform is to provide vendors with **dedicated, customizable storefronts**, streamlining their business operations, inventory, and sales channels under one unified ecosystem.
 
 ---
 
-## Key Features
+# 🛠️ Architecture & Tech Stack
 
-### 🛒 Customer Storefront
-- **Product Browsing** — Browse by category, filter, and search across all vendor products
-- **Shopping Cart** — Persistent cart with add/remove/update quantity, synced to localStorage
-- **Wishlist** — Save favourite products for later, persisted across sessions
-- **Checkout Flow** — Address selection, payment, and order confirmation
-- **Order Tracking** — View order history and delivery status
-- **User Profiles** — Manage personal info, multiple addresses (CRUD), and change password
-- **Responsive Design** — Mobile-first with dedicated bottom tab navigation
+This project leverages a modern, type-safe stack for maximum developer productivity and application stability.
 
-### 🏪 Vendor Dashboard
-- **Product Management** — Full CRUD for product listings (name, price, SKU, images, variants)
-- **Order Processing** — View and manage incoming customer orders
-- **Inventory Tracking** — Monitor stock levels
-- **Financial Analytics** — Revenue insights and financial data via Recharts
-- **Marketing Tools** — Promotional capabilities
-- **Customer Care** — Handle customer inquiries and support
-- **Store Settings** — Store profile, locations/warehouses, business profile, billing & banking, security
+## Core Technologies
 
-### 🛡️ Admin Panel
-- **Vendor Management** — View all vendors, approve/reject registrations
-- **Support Tickets** — Handle platform-wide support cases
-- **Audit Logs** — System-wide activity tracking
-- **Dashboard Analytics** — High-level platform metrics with data visualisations
-- **Dark / Light Theme** — Toggle between themes in the admin panel
-
-### 🔐 Authentication & Security
-- **Role-Based Access Control (RBAC)** — Protected routes per user role
-- **JWT Token Auth** — Token-based authentication stored securely
-- **Separate Login Portals** — Dedicated login/register flows for Admin, Vendor, and Customer
-- **Session Persistence** — Auth state restored from localStorage on reload
+| Technology | Description |
+|------------|-------------|
+| **NestJS** | Robust modular Node.js framework |
+| **TypeScript** | End-to-end type safety |
+| **PostgreSQL** | Relational database with ACID compliance |
+| **Drizzle ORM** | Lightweight type-safe ORM and query builder |
 
 ---
 
-## Tech Stack
+## 📚 Key Libraries & Integrations
 
-| Category | Technologies |
-|---|---|
-| **Framework** | React 19 · TypeScript 5.9 · Vite 7.2 |
-| **State Management** | Redux Toolkit · React Redux |
-| **Routing** | React Router v7 |
-| **Styling** | Tailwind CSS 4 · shadcn/ui · Radix UI · Motion (animations) |
-| **Forms & Validation** | React Hook Form · Zod |
-| **Data Visualisation** | Recharts |
-| **HTTP Client** | Axios |
-| **Icons** | Lucide React |
-| **Utilities** | date-fns · clsx · tailwind-merge · class-variance-authority |
-| **UI Extras** | Embla Carousel · React Day Picker · react-responsive |
+### 🔐 Security
+- `@nestjs/jwt`
+- `passport-google-oauth20`
+- `bcrypt`
+- `argon2`
+- `helmet`
+
+### ☁️ Media Management
+- `cloudinary`
+- `multer`
+
+### 📧 Communication
+- `nodemailer`
+- `resend`
+
+### 📄 Document Generation
+- `puppeteer`
+- `handlebars`
+
+### 📘 Documentation
+- `@nestjs/swagger`
 
 ---
 
-## Getting Started
+# 📦 Core Modules & Domains
 
-### Prerequisites
+The application follows a modular architecture with domain-driven design principles.
 
-- **Node.js** ≥ 18
-- **npm** ≥ 9
+---
 
-### Installation
+## 🔐 1. Authentication & Authorization (`auth`)
+
+### Features
+- JWT-based authentication
+- Google OAuth 2.0 integration
+- Role-based access control (RBAC)
+- Secure password hashing
+- HTTP-only cookie support
+
+### Security Components
+- `@Roles()` decorators
+- `RoleGuard`
+- JWT guards
+- Password encryption using `bcrypt` and `argon2`
+
+---
+
+## 👥 2. User & Vendor Management (`users`, `vendors`, `company`)
+
+### Vendor Features
+- Vendor onboarding
+- Dedicated storefront setup
+- Company identity management
+- Marketplace profile customization
+
+### User Features
+- Multi-address management
+- State code management
+- User profile handling
+
+---
+
+## 🛒 3. E-Commerce Engine (`products`, `orders`, `cart`, `checkout`)
+
+### Product Management
+- Product variants
+- Categories
+- Inventory tracking
+- Product policies
+
+### Shopping Features
+- Shopping cart system
+- Wishlist management
+- Coupon and discount handling
+- Checkout processing
+
+### Post-Sale Features
+- Product reviews
+- Return requests
+- Refund management
+
+---
+
+## 🎫 4. Support & Communication (`tickets`, `mail`, `invoice`)
+
+### Ticketing System
+- Customer support workflows
+- Vendor support management
+- Internal issue resolution
+
+### Mail Services
+Automated email templates for:
+- Order placed
+- Vendor approval
+- Password reset
+- Notifications
+
+### Invoice System
+- GST-compliant invoices
+- PDF generation
+- Warranty document generation
+- Minimal & standard invoice formats
+
+---
+
+# 🛡️ Security & Global Configuration
+
+The backend enforces strict global security and validation standards.
+
+## Global Features
+
+### ✅ Payload Validation
+Global `ValidationPipe` configuration:
+```ts
+whitelist: true
+````
+
+### 🔒 HTTP Security
+
+* Helmet protection
+* CORS configuration
+* Secure headers
+
+### 🌐 CORS Policies
+
+Dynamic origins configured through:
+
+```env
+ALLOWED_ORIGINS=
+```
+
+### 📦 Unified Response Formatting
+
+* Global `ResponseInterceptor`
+* `HttpExceptionFilter`
+
+### 📁 Large Payload Support
+
+Supports uploads up to:
+
+```txt
+50mb
+```
+
+---
+
+# 🚦 Getting Started
+
+## 📋 Prerequisites
+
+Before starting, ensure you have:
+
+* Node.js (v18+ recommended)
+* PostgreSQL database
+* Cloudinary account
+* SMTP or Resend mail service
+
+---
+
+# 📥 Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/techsonance-infotech/techsonance-marketplace.git
-cd techsonance-marketplace
+git clone https://github.com/your-username/techsonance-marketplace-server.git
+
+# Move into project directory
+cd techsonance-marketplace-server
 
 # Install dependencies
 npm install
+```
 
-# Create your environment file
-cp .env.local.example .env.local
-# → Then fill in the API base URLs (see Environment Variables below)
+---
 
-# Start the development server
+# ⚙️ Environment Configuration
+
+Create a `.env` file in the root directory.
+
+```env
+# Application
+PORT=8000
+ALLOWED_ORIGINS=http://localhost:3000,https://your-frontend-domain.com
+
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/techsonance_db
+
+# JWT
+JWT_SECRET=your_super_secret_key
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Mailer
+RESEND_API_KEY=your_resend_api_key
+SMTP_HOST=your_smtp_host
+```
+
+---
+
+# ▶️ Running the Application
+
+## Development Mode
+
+```bash
+npm run start
+```
+
+## Watch Mode (Hot Reload)
+
+```bash
 npm run dev
 ```
 
-The app will be available at **http://localhost:5173** (with `--host` enabled for network access).
+## Production Mode
 
----
-
-## Project Structure
-
-```
-techsonance-marketplace/
-├── public/                         # Static assets
-├── src/
-│   ├── app/
-│   │   ├── main.tsx                # App entry point & route configuration
-│   │   ├── store.ts                # Redux store with localStorage middleware
-│   │   ├── index.css               # Global styles (Tailwind)
-│   │   ├── not-found.tsx           # 404 page
-│   │   └── pages/
-│   │       ├── admin/              # Admin pages (7 files)
-│   │       │   ├── AdminLayout.tsx
-│   │       │   ├── DashBoard.tsx
-│   │       │   ├── VendorManagement.tsx
-│   │       │   ├── VendorForm.tsx
-│   │       │   ├── ApproveVendor.tsx
-│   │       │   ├── SupportTickets.tsx
-│   │       │   └── AuditLog.tsx
-│   │       ├── vendor/             # Vendor pages
-│   │       │   ├── VendorLayout.tsx
-│   │       │   ├── Dashboard.tsx
-│   │       │   ├── Orders.tsx
-│   │       │   ├── Inventory.tsx
-│   │       │   ├── Finances.tsx
-│   │       │   ├── Marketing.tsx
-│   │       │   ├── CustomerCare.tsx
-│   │       │   ├── products/       # Product CRUD pages
-│   │       │   └── settings/       # Vendor settings pages (6 files)
-│   │       ├── shop/               # Customer-facing pages
-│   │       │   ├── ShopLayout.tsx
-│   │       │   ├── index.tsx       # Home (hero, categories, featured)
-│   │       │   ├── Shopping.tsx    # Product listing with filters
-│   │       │   ├── Product.tsx     # Product detail
-│   │       │   ├── Contact.tsx
-│   │       │   ├── AboutAs.tsx
-│   │       │   └── customerProfile/
-│   │       │       ├── UserLayout.tsx
-│   │       │       ├── Addresses.tsx, Wishlist.tsx, CartList.tsx ...
-│   │       │       └── Payment/    # Checkout & OrderStatus
-│   │       └── auth/               # Login & Register pages per role
-│   │
-│   ├── components/
-│   │   ├── common/                 # Shared (ProtectedRoute, Sidebar, Pagination ...)
-│   │   ├── admin/                  # Admin Navbar, DashboardChart
-│   │   ├── vendor/                 # Vendor Navbar
-│   │   ├── customer/               # 14 storefront components
-│   │   └── ui/                     # shadcn/ui primitives (Button, Card, Carousel ...)
-│   │
-│   ├── features/                   # Redux slices (7 total)
-│   │   ├── auth/authSlice.ts       # Auth + user profile + address CRUD
-│   │   ├── theme/adminThemeSlice.ts
-│   │   ├── Cart.ts
-│   │   ├── CartSidebar.ts
-│   │   ├── Wishlist.ts
-│   │   ├── sidebar.ts
-│   │   └── menuBar.ts
-│   │
-│   ├── utils/
-│   │   ├── constants.ts            # Nav links, API base URLs
-│   │   ├── Types.ts                # TypeScript interfaces & types
-│   │   ├── validation.ts           # Zod schemas
-│   │   └── customer/constants.ts   # Customer-specific content & categories
-│   │
-│   ├── assets/                     # Brand logos, icons, poster images
-│   └── lib/utils.ts                # Utility helpers (cn, etc.)
-│
-├── components.json                 # shadcn/ui config
-├── vite.config.ts                  # Vite configuration
-├── tsconfig.json                   # TypeScript base config
-├── tsconfig.app.json               # App TS config
-├── tsconfig.node.json              # Node TS config
-├── eslint.config.js                # ESLint config
-└── PROJECT_ARCHITECTURE_UPDATED.md # Detailed architecture documentation
+```bash
+npm run build
+npm run start:prod
 ```
 
 ---
 
-## User Roles & Permissions
+# 📚 API Documentation (Swagger)
 
-| Role | `user_role_id` | Permissions | Dashboard |
-|---|:---:|---|---|
-| **Admin** | `1` | Read · Create · Delete · Update | `/admin` |
-| **Vendor** | `2` | Read · Create · Update | `/vendor` |
-| **Customer** | `3` | Read | `/` (Storefront) |
+Interactive API documentation is available using Swagger.
 
-Each role has a dedicated login portal, layout, sidebar, and set of protected routes. The `ProtectedRoute` component validates the user's role before rendering any guarded page.
+## Access Swagger
 
----
+After starting the server, open:
 
-## Routing Overview
-
-| Path | Layout | Description |
-|---|---|---|
-| `/` | `ShopLayout` | Customer storefront (Home, Shopping, Product Detail, Contact, About) |
-| `/auth/*` | — | Login & registration pages for all roles |
-| `/customerProfile/:userId/*` | `UserLayout` | Profile, addresses, wishlist, cart, orders, checkout |
-| `/admin/*` | `AdminLayout` | Admin dashboard, vendor management, support tickets, audit logs |
-| `/vendor/*` | `VendorLayout` | Vendor dashboard, products, orders, inventory, finances, marketing, settings |
-| `/vendor/settings/*` | `VendorSettingLayout` | Nested vendor settings (store profile, locations, security, billing) |
-
-> For the full route tree, see `src/app/main.tsx` or [PROJECT_ARCHITECTURE_UPDATED.md](./PROJECT_ARCHITECTURE_UPDATED.md).
-
----
-
-## State Management
-
-The app uses **Redux Toolkit** with **7 slices** and a custom localStorage middleware for state persistence:
-
-| Slice | Persisted | Purpose |
-|---|:---:|---|
-| `auth` | ✅ | User session, profile, addresses |
-| `cart` | ✅ | Shopping cart items |
-| `wishlist` | ✅ | Saved/favourite products |
-| `cartSidebar` | ✅ | Cart panel open/close state |
-| `adminTheme` | ❌ | Dark/light mode toggle |
-| `sidebar` | ❌ | Admin/vendor sidebar collapse |
-| `menu` | ❌ | Mobile menu open/close |
-
-State is hydrated from `localStorage` on app init and automatically synced back via custom Redux middleware whenever relevant actions are dispatched.
-
----
-
-## Environment Variables
-
-Create a `.env.local` file in the project root with the following variables:
-
-```env
-VITE_VENDOR_BASE_URL=http://api.example.com/vendor
-VITE_CUSTOMER_BASE_URL=http://api.example.com/customer
-VITE_ADMIN_BASE_URL=http://api.example.com/admin
+```txt
+http://localhost:<PORT>/api
 ```
 
-These are used across the app via `import.meta.env.VITE_*` to configure Axios base URLs for each role's API.
+## Authentication
+
+Use the **Authorize** button and provide:
+
+```txt
+Bearer <JWT_TOKEN>
+```
 
 ---
 
-## Available Scripts
+# 📁 Suggested Project Structure
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start dev server (with `--host` for LAN access) |
-| `npm run build` | Type-check + production build |
-| `npm run preview` | Preview the production build locally |
-| `npm run lint` | Run ESLint across the codebase |
-
----
-
-## Contributing
-
-1. **Fork** the repository
-2. **Create a feature branch** — `git checkout -b feature/my-feature`
-3. **Commit your changes** — `git commit -m "feat: add my feature"`
-4. **Push to the branch** — `git push origin feature/my-feature`
-5. **Open a Pull Request**
-
-### Development Guidelines
-
-- Follow the existing **feature-based folder structure** (pages by role, components by domain)
-- Add new Redux slices in `src/features/` and register them in `src/app/store.ts`
-- Define all TypeScript interfaces in `src/utils/Types.ts`
-- Use **Zod** schemas (in `src/utils/validation.ts`) for form validation
-- Keep navigation constants centralised in `src/utils/constants.ts`
-- Use **shadcn/ui** components from `src/components/ui/` for consistent UI
+```bash
+src/
+├── auth/
+├── users/
+├── vendors/
+├── products/
+├── orders/
+├── cart/
+├── checkout/
+├── invoice/
+├── mail/
+├── tickets/
+├── refunds/
+├── returns/
+├── coupon/
+├── company/
+├── common/
+├── config/
+└── main.ts
+```
 
 ---
 
-## License
+# 🧪 Available Scripts
 
-This project is private and proprietary to **TechSonance Infotech**.
+```bash
+# Start development server
+npm run start
+
+# Start with watch mode
+npm run dev
+
+# Production build
+npm run build
+
+# Start production server
+npm run start:prod
+
+# Run linting
+npm run lint
+
+# Run tests
+npm run test
+```
 
 ---
 
-<p align="center">
-  Built with ❤️ by <strong>TechSonance Infotech</strong>
-</p>
+# 🌟 Highlights
+
+✅ Modular scalable architecture
+✅ Vendor-specific storefront support
+✅ JWT + Google OAuth authentication
+✅ GST-compliant invoice generation
+✅ Cloudinary media uploads
+✅ Swagger API documentation
+✅ Drizzle ORM with PostgreSQL
+✅ Advanced security configuration
+✅ Automated mailing system
+✅ Role-based authorization system
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push the branch
+5. Open a Pull Request
+
+---
+
+# 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+<div align="center">
+
+### 💙 Built with NestJS & TypeScript
+
+</div>
+```
