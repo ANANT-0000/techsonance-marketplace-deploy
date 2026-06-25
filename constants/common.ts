@@ -50,8 +50,8 @@ export const toggle_dark = "/assets/toggle-dark.png";
 // TYPES  (Re-exported from utils/Types.ts)
 // ============================================================
 
-export { UserRole } from "@/utils/Types";
-export type { VendorUser, User, Cart, CartItem, Wishlist, UserOrder, Order, PermissionEnum, RoleDefinition } from "@/utils/Types";
+export { UserRole, Permission } from "@/utils/Types";
+export type { VendorUser, User, Cart, CartItem, Wishlist, UserOrder, Order, RoleDefinition } from "@/utils/Types";
 
 
 export const ORGANIZATION_TAXATION_OPTIONS =

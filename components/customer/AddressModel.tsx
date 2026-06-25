@@ -3,8 +3,8 @@ import { FormInput } from "../common/FormInput";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  AddressForEnum,
-  AddressOperationEnum,
+  AddressFor,
+  AddressOperation,
   Address,
   User,
 } from "@/utils/Types";
@@ -49,7 +49,7 @@ export const AddressModal = ({
   user: Partial<User>;
   addressId?: string | null;
   addressList?: Address[];
-  operation: AddressOperationEnum;
+  operation: AddressOperation;
   onClose: () => void;
   onSuccess?: (val: boolean) => void;
 }) => {
@@ -123,25 +123,25 @@ export const AddressModal = ({
   }, []);
 
   useEffect(() => {
-    if (operation !== AddressOperationEnum.EDIT) {
+    if (operation !== AddressOperation.EDIT) {
       setValue("state", "");
       setValue("city", "");
     }
   }, [watchedCountry, setValue, operation]);
 
   useEffect(() => {
-    if (operation !== AddressOperationEnum.EDIT) {
+    if (operation !== AddressOperation.EDIT) {
       setValue("city", "");
     }
   }, [watchedState, setValue, operation]);
 
   useEffect(() => {
-    if (operation === AddressOperationEnum.EDIT && addressId) {
+    if (operation === AddressOperation.EDIT && addressId) {
       reset({
         name: existingAddress?.name || "",
         address_for:
-          (existingAddress?.address_type as AddressForEnum) ||
-          AddressForEnum.HOME,
+          (existingAddress?.address_type as AddressFor) ||
+          AddressFor.HOME,
         is_default: existingAddress?.is_default || false,
         phone: existingAddress?.number || "",
         address_line_1: existingAddress?.address_line1 || "",
@@ -164,7 +164,7 @@ export const AddressModal = ({
   // ─── Submit (logic unchanged) ─────────────────────────────────────────────
   const onSubmit = async (data: any) => {
     if (!token) return;
-    if (operation === AddressOperationEnum.EDIT && addressId && user.id) {
+    if (operation === AddressOperation.EDIT && addressId && user.id) {
       const result = await fetchUpdateUserAddress(
         user.id,
         addressId,
@@ -225,7 +225,7 @@ export const AddressModal = ({
               <MapPin size={15} className="text-theme-primary" />
             </div>
             <h2 className="text-theme-body font-bold text-gray-900">
-              {operation === AddressOperationEnum.EDIT
+              {operation === AddressOperation.EDIT
                 ? ADDRESS_MODEL_TEXT.TITLE_EDIT
                 : ADDRESS_MODEL_TEXT.TITLE_ADD}
             </h2>
@@ -270,6 +270,62 @@ export const AddressModal = ({
               if (field.id === "country") dynamicOptions = availableCountries;
               if (field.id === "state") dynamicOptions = availableStates;
               if (field.id === "city") dynamicOptions = availableCities;
+
+              // ── Phone field — custom renderer with digit-only enforcement ──
+              if (field.id === "phone") {
+                const phoneVal = watch("phone") ?? "";
+                return (
+                  <div key={field.id} className="flex flex-col">
+                    <label
+                      htmlFor="phone"
+                      className="text-theme-body-sm font-semibold text-foreground mb-1.5"
+                    >
+                      {field.label}{" "}
+                      <span className="text-destructive">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="phone"
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={10}
+                        placeholder="10-digit mobile number"
+                        {...register("phone")}
+                        onKeyDown={(e) => {
+                          // Allow: backspace, delete, tab, escape, enter, arrow keys
+                          const allowedKeys = [
+                            "Backspace", "Delete", "Tab", "Escape", "Enter",
+                            "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+                            "Home", "End",
+                          ];
+                          if (allowedKeys.includes(e.key)) return;
+                          // Allow Ctrl/Cmd shortcuts (copy/paste/select all)
+                          if (e.ctrlKey || e.metaKey) return;
+                          // Block anything that is not a digit
+                          if (!/^\d$/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onInput={(e) => {
+                          const el = e.currentTarget;
+                          // Strip non-digits and cap at 10
+                          el.value = el.value.replace(/\D/g, "").slice(0, 10);
+                        }}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-12 text-theme-body-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-400 select-none pointer-events-none">
+                        {phoneVal.length}/10
+                      </span>
+                    </div>
+                    {fieldError && (
+                      <p className="text-red-500 text-theme-xxs mt-1.5 font-medium flex items-center gap-1">
+                        <AlertCircle size={10} className="shrink-0" />
+                        {fieldError.message as string}
+                      </p>
+                    )}
+                  </div>
+                );
+              }
 
               return (
                 <div

@@ -6,7 +6,6 @@ import {
   CategoryTreeNode,
   DiscountConfig,
   FixedAmountConfig,
-  FreeShippingConfig,
   PercentageConfig,
   PromotionRuleType,
   PromotionType,
@@ -61,20 +60,22 @@ export function calculateCouponDiscount(
   if (!coupon) return 0;
 
   const config = coupon.discount_config;
-  if (!config) return 0;
-  // ── Helper: is it a PercentageOffConfig? ─────────────────────────────
-  // All config shapes have different required keys — use them as discriminants.
+  const type = (coupon.discount_type ?? "").toLowerCase();
+
+  // ── Helper type guards ──────────────────────────────────────────────────
   const isPercentage = (c: DiscountConfig): c is PercentageConfig =>
     "value" in c &&
     !("buy_qty" in c) &&
     !("tiers" in c) &&
-    !("product_variant_ids" in c);
+    !("product_variant_ids" in c) &&
+    !("max_shipping_waived" in c);
 
   const isFixed = (c: DiscountConfig): c is FixedAmountConfig =>
     "value" in c &&
     !("buy_qty" in c) &&
     !("tiers" in c) &&
-    !("product_variant_ids" in c);
+    !("product_variant_ids" in c) &&
+    !("max_shipping_waived" in c);
 
   const isBuyXGetY = (c: DiscountConfig): c is BuyXGetYConfig =>
     "buy_qty" in c && "get_qty" in c;
@@ -85,47 +86,51 @@ export function calculateCouponDiscount(
   const isBundle = (c: DiscountConfig): c is BundleDealConfig =>
     "product_variant_ids" in c && "bundle_price" in c;
 
-  const isFreeShipping = (c: DiscountConfig): c is FreeShippingConfig =>
-    !("value" in c) &&
-    !("buy_qty" in c) &&
-    !("tiers" in c) &&
-    !("product_variant_ids" in c);
-
-  // ── Route by discount_type (source of truth) ──────────────────────────
-  const type = (coupon.discount_type ?? "").toLowerCase();
-
+  // ── Route by discount_type ──────────────────────────────────────────────
   switch (type) {
     case PromotionType.PERCENTAGE: {
-      if (!isPercentage(config)) return 0;
-      const raw = Math.floor((subtotal * config.value) / 100);
-      return config.cap != null && config.cap > 0
-        ? Math.min(raw, config.cap)
-        : raw;
+      // Primary: use discount_config.value
+      if (config && isPercentage(config)) {
+        const raw = Math.floor((subtotal * config.value) / 100);
+        return config.cap != null && config.cap > 0
+          ? Math.min(raw, config.cap)
+          : raw;
+      }
+      // Fallback: use discount_value field directly (percentage)
+      const fallbackPct = Number(coupon.discount_value ?? 0);
+      if (fallbackPct > 0) {
+        const raw = Math.floor((subtotal * fallbackPct) / 100);
+        const cap = coupon.max_discount_amount
+          ? Number(coupon.max_discount_amount)
+          : 0;
+        return cap > 0 ? Math.min(raw, cap) : raw;
+      }
+      return 0;
     }
 
     case PromotionType.FIXED_AMOUNT: {
-      if (!isFixed(config)) return 0;
-      // Can't discount more than the cart itself
-      return Math.min(config.value, subtotal);
+      // Primary: use discount_config.value
+      if (config && isFixed(config)) {
+        return Math.min(config.value, subtotal);
+      }
+      // Fallback: use discount_value field directly (flat amount)
+      const fallbackAmt = Number(coupon.discount_value ?? 0);
+      return fallbackAmt > 0 ? Math.min(fallbackAmt, subtotal) : 0;
     }
 
     case PromotionType.BUY_X_GET_Y: {
-      if (!isBuyXGetY(config)) return 0;
-      // Discount = price of "get" items × get_discount_percent/100
-      // We don't have per-item prices here, so we return 0 and let
-      // the server apply the line-item discount. Flag it clearly:
-      return 0; // applied server-side per line item
+      if (!config || !isBuyXGetY(config)) return 0;
+      // Discount applied server-side per line item
+      return 0;
     }
 
     case PromotionType.FREE_SHIPPING: {
       // Shipping discount is handled separately in the delivery variable.
-      // Return 0 here so it doesn't double-count.
       return 0;
     }
 
     case PromotionType.TIERED_DISCOUNT: {
-      if (!isTiered(config)) return 0;
-      // Find the highest tier the subtotal qualifies for
+      if (!config || !isTiered(config)) return 0;
       const activeTier = [...config.tiers]
         .sort((a, b) => b.min_cart - a.min_cart)
         .find((tier) => subtotal >= tier.min_cart);
@@ -134,8 +139,7 @@ export function calculateCouponDiscount(
     }
 
     case PromotionType.BUNDLE_DEAL: {
-      if (!isBundle(config)) return 0;
-      // Discount = difference between full subtotal and the fixed bundle price
+      if (!config || !isBundle(config)) return 0;
       return Math.max(0, subtotal - config.bundle_price);
     }
 

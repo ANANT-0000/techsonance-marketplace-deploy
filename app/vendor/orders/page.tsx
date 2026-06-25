@@ -12,9 +12,9 @@ import {
 import Link from "next/link";
 import {
   OrderStatus as OrderStatusType,
-  OrderStatusEnum,
+  OrderStatus,
   ReturnType,
-  UserStatusEnum,
+  UserStatus,
 } from "@/utils/Types";
 import { redirect } from "next/navigation";
 import { authToken } from "@/utils/authToken";
@@ -67,7 +67,7 @@ const getStatusBadges = (statuses: string | string[]) => {
   );
   const renderBadge = (status: string, index: number) => {
     switch (status) {
-      case OrderStatusEnum.PENDING:
+      case OrderStatus.PENDING:
         return (
           <span
             key={index}
@@ -77,7 +77,7 @@ const getStatusBadges = (statuses: string | string[]) => {
           </span>
         );
 
-      case OrderStatusEnum.DELIVERED:
+      case OrderStatus.DELIVERED:
         return (
           <span
             key={index}
@@ -87,7 +87,7 @@ const getStatusBadges = (statuses: string | string[]) => {
           </span>
         );
 
-      case UserStatusEnum.ACTIVE:
+      case UserStatus.ACTIVE:
         return (
           <span
             key={index}
@@ -97,7 +97,7 @@ const getStatusBadges = (statuses: string | string[]) => {
           </span>
         );
 
-      case OrderStatusEnum.CANCELLED:
+      case OrderStatus.CANCELLED:
         return (
           <span
             key={index}
@@ -107,7 +107,7 @@ const getStatusBadges = (statuses: string | string[]) => {
           </span>
         );
 
-      case OrderStatusEnum.SHIPPED:
+      case OrderStatus.SHIPPED:
         return (
           <span
             key={index}
@@ -164,8 +164,8 @@ export default function OrdersPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [orderStatus, setOrderStatus] = useState<OrderStatusType>(
-    OrderStatusEnum.PENDING,
+  const [orderStatus, setOrderStatus] = useState<OrderStatusType | "">(
+    "",
   );
   const [sortBy, setSortBy] = useState<string>("desc");
   const [orders, setOrders] = useState<OrderType[]>([]);
@@ -320,19 +320,19 @@ export default function OrdersPage() {
             value={orderStatus}
           >
             <option value="">{UiText.ORDERS.ALL}</option>
-            <option value={OrderStatusEnum.PENDING}>
+            <option value={OrderStatus.PENDING}>
               {UiText.ORDERS.PENDING}
             </option>
-            <option value={OrderStatusEnum.PROCESSING}>
+            <option value={OrderStatus.PROCESSING}>
               {UiText.ORDERS.PROCESSING}
             </option>
-            <option value={OrderStatusEnum.SHIPPED}>
+            <option value={OrderStatus.SHIPPED}>
               {UiText.ORDERS.SHIPPED}
             </option>
-            <option value={OrderStatusEnum.DELIVERED}>
+            <option value={OrderStatus.DELIVERED}>
               {UiText.ORDERS.DELIVERED}
             </option>
-            <option value={OrderStatusEnum.CANCELLED}>
+            <option value={OrderStatus.CANCELLED}>
               {UiText.ORDERS.CANCELLED}
             </option>
           </select>

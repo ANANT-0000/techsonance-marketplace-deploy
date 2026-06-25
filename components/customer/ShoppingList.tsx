@@ -256,11 +256,6 @@ export function ShoppingList({ styles }: ShoppingListProps) {
     const next = buildParams(searchParams, delta);
     router.push(`${pathname || ""}?${next.toString()}`, { scroll: false });
   };
-
-  const handleSearch = (value: string) => {
-    pushParams({ search: value || null, page: 1 });
-  };
-
   const handleSortChange = (value: SortBy) => {
     pushParams({ sort_by: value, page: 1 });
     dispatch({ type: ActionType.SET_SORT_OPEN, payload: false });
@@ -334,16 +329,6 @@ export function ShoppingList({ styles }: ShoppingListProps) {
                   {SHOPPING_LIST_TEXT.PRODUCTS}
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="w-72">
-                    <SearchBar
-                      value={search}
-                      onChange={(val) =>
-                        pushParams({ search: val || null, page: 1 })
-                      }
-                      onSearch={handleSearch}
-                      placeholder={SHOPPING_LIST_TEXT.SEARCH_PLACEHOLDER}
-                    />
-                  </div>
                   <div ref={sortRef} className="relative">
                     <button
                       onClick={() =>

@@ -9,7 +9,7 @@ import { ProductForm } from "@/components/vendor/ProductForm";
 import {
   Inventory,
   ProductResponseType,
-  ProductStatusEnum,
+  ProductStatus,
   ProductImageType,
 } from "@/utils/Types";
 import {
@@ -73,6 +73,10 @@ interface ProductVariant {
   product: Product;
   inventory: Inventory;
   warehouse_id: string;
+  weight_kg?: string;
+  length_cm?: number;
+  width_cm?: number;
+  height_cm?: number;
 }
 const getCategoryOptions = async (
   setCategoryOptions: (
@@ -193,11 +197,15 @@ export default function ProductUpdateFormPage() {
           // Note: 'category_id' isn't in the provided JSON, but kept here if your schema expects it
           category: exitingProduct?.product?.category_id || "",
           taxSlabId: exitingProduct?.product?.tax_slab_id || "",
-          status: (exitingProduct?.status as ProductStatusEnum) || "",
+          status: (exitingProduct?.status as ProductStatus) || "",
           variantId: exitingProduct?.id || "",
 
           // Fixed: Warehouse ID is inside the 'inventory' object
           warehouseId: exitingProduct?.inventory?.warehouse_id || "",
+          weight_kg: exitingProduct?.weight_kg || "",
+          length_cm: exitingProduct?.length_cm?.toString() || "",
+          width_cm: exitingProduct?.width_cm?.toString() || "",
+          height_cm: exitingProduct?.height_cm?.toString() || "",
         }
       : {};
 

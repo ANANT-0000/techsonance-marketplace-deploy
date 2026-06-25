@@ -30,7 +30,7 @@ export default function VendorLayout({
   const vendorId = user && "vendor_id" in user ? user?.vendor_id : "";
   const router = useRouter();
   useEffect(() => {
-    if (!isAuthenticated || role !== UserRole.Vendor) {
+    if (!isAuthenticated || role !== UserRole.VENDOR) {
       router.replace(ROOT_PATH);
     }
   }, []);
@@ -55,7 +55,7 @@ export default function VendorLayout({
       <main className={`flex w-full`}>
         <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={VENDOR_BASE_PATH} />
         <ProtectedRoute
-          allowedRoles={[UserRole.Vendor, UserRole.Admin]}
+          allowedRoles={[UserRole.VENDOR, UserRole.ADMIN]}
           loginPath={VENDOR_LOGIN_PATH}
         >
           <div className="flex-1 flex flex-col min-h-screen">

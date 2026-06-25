@@ -58,7 +58,7 @@ const initialState: AuthType = {
   error: null,
   access_token: null,
   refresh_token: null,
-  role: UserRole.Customer,
+  role: UserRole.CUSTOMER,
   isLoginModalOpen: false,
   loginRedirectUrl: null,
 };
@@ -80,7 +80,7 @@ const authSlice = createSlice({
           const parsedAuth = isAuthRaw ? JSON.parse(isAuthRaw) : null;
 
           state.isAuthenticated = !!parsedAuth?.isAuthenticated;
-          state.role = parsedAuth?.role || UserRole.Customer;
+          state.role = parsedAuth?.role || UserRole.CUSTOMER;
 
           const serializedUser = localStorage.getItem(USER_STORAGE_KEY);
           if (

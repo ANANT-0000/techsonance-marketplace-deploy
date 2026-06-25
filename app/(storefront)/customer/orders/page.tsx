@@ -4,7 +4,7 @@ import { UiText } from "@/constants/ui-text";
 import type { RootState } from "@/lib/store";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
+import { OrderStatus } from "@/utils/Types";
 import { useRouter } from "next/navigation";
 import { useMediaQuery } from "react-responsive";
 import { useAppSelector } from "@/hooks/reduxHooks";
@@ -23,21 +23,21 @@ export default function OrdersPage({ uiText }: OrdersPageProps) {
   const isMobile = useMediaQuery({ maxWidth: 640 });
   const [orderStatus, setOrderStatus] = useState<
     OrderStatus | "returns" | null
-  >(OrderStatusEnum.PENDING);
+  >(OrderStatus.PENDING);
 
   const ordersStatusMap: Array<OrderStatus | "returns"> = [
-    OrderStatusEnum.PROCESSING,
-    OrderStatusEnum.SHIPPED,
-    OrderStatusEnum.DELIVERED,
-    OrderStatusEnum.CANCELLED,
+    OrderStatus.PROCESSING,
+    OrderStatus.SHIPPED,
+    OrderStatus.DELIVERED,
+    OrderStatus.CANCELLED,
     "returns",
   ];
 
   const defaultStatusLabels: Record<string, string> = {
-    [OrderStatusEnum.PROCESSING]:
+    [OrderStatus.PROCESSING]:
       UiText.CUSTOMER_ORDERS.STATUS_LABELS.PROCESSING,
-    [OrderStatusEnum.DELIVERED]: UiText.CUSTOMER_ORDERS.STATUS_LABELS.DELIVERED,
-    [OrderStatusEnum.CANCELLED]: UiText.CUSTOMER_ORDERS.STATUS_LABELS.CANCELLED,
+    [OrderStatus.DELIVERED]: UiText.CUSTOMER_ORDERS.STATUS_LABELS.DELIVERED,
+    [OrderStatus.CANCELLED]: UiText.CUSTOMER_ORDERS.STATUS_LABELS.CANCELLED,
     returns: UiText.CUSTOMER_ORDERS.STATUS_LABELS.RETURNS,
   };
 

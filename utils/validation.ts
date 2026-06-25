@@ -1,6 +1,12 @@
 import * as z from "zod";
-import { BannerPlacement, ProductStatusEnum, PromotionType } from "./Types";
+import { BannerPlacement, ProductStatus, PromotionType } from "./Types";
 import { COMPLIANCE_REGEX } from "@/app/auth/vendorRegister/page";
+import {
+  BRANDING_DEFAULT_PRIMARY_COLOR,
+  BRANDING_DEFAULT_BACKGROUND_COLOR,
+  BRANDING_DEFAULT_TEXT_COLOR,
+  BRANDING_DEFAULT_WHITE_COLOR,
+} from "@/constants";
 export const passwordValidation = new RegExp(
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*\-+]).{8,}$/,
 );
@@ -244,9 +250,32 @@ export const productSchema = z.object({
 
   category: z.string().min(1, { error: "Please select a category" }),
 
-  status: z.enum(ProductStatusEnum, { error: "Please select a status" }),
+  status: z.enum(Object.values(ProductStatus) as [string, ...string[]], {
+    error: "Please select a status",
+  }),
   warehouseId: z.string().min(1, { error: "Warehouse is required" }),
   taxSlabId: z.string().min(1, { error: "Tax slab is required" }),
+  weight_kg: z
+    .string()
+    .min(1, { error: "Weight is required" })
+    .regex(/^\d+(\.\d{1,2})?$/, {
+      error: "Invalid weight format. Use numbers like 0.5 or 10",
+    }),
+  length_cm: z
+    .string()
+    .min(1, { error: "Length is required" })
+    .regex(/^\d+$/, { error: "Length must be a positive integer" })
+    .transform((val) => parseInt(val, 10)),
+  width_cm: z
+    .string()
+    .min(1, { error: "Width is required" })
+    .regex(/^\d+$/, { error: "Width must be a positive integer" })
+    .transform((val) => parseInt(val, 10)),
+  height_cm: z
+    .string()
+    .min(1, { error: "Height is required" })
+    .regex(/^\d+$/, { error: "Height must be a positive integer" })
+    .transform((val) => parseInt(val, 10)),
   productMedia: z
     .array(z.any())
     .min(0, { error: "At least one product image is required" })
@@ -304,9 +333,30 @@ export const productVariantSchema = z.object({
     .transform((val) => (val ? parseInt(val, 10) : null)),
 
   sku: z.string().optional(),
-  status: z.enum(ProductStatusEnum, {
+  status: z.enum(Object.values(ProductStatus) as [string, ...string[]], {
     error: "Please select a status",
   }),
+  weight_kg: z
+    .string()
+    .min(1, { error: "Weight is required" })
+    .regex(/^\d+(\.\d{1,2})?$/, {
+      error: "Invalid weight format. Use numbers like 0.5 or 10",
+    }),
+  length_cm: z
+    .string()
+    .min(1, { error: "Length is required" })
+    .regex(/^\d+$/, { error: "Length must be a positive integer" })
+    .transform((val) => parseInt(val, 10)),
+  width_cm: z
+    .string()
+    .min(1, { error: "Width is required" })
+    .regex(/^\d+$/, { error: "Width must be a positive integer" })
+    .transform((val) => parseInt(val, 10)),
+  height_cm: z
+    .string()
+    .min(1, { error: "Height is required" })
+    .regex(/^\d+$/, { error: "Height must be a positive integer" })
+    .transform((val) => parseInt(val, 10)),
   variantMediaMain: z
     .array(z.any())
     .min(0, { error: "At least one product image is required" })
@@ -421,9 +471,12 @@ export const couponSchema = z
       .min(3, { message: "Description must be at least 3 characters" })
       .max(100, { message: "Description cannot exceed 100 characters" }),
 
-    discount_type: z.enum(PromotionType, {
-      message: "Please select a valid discount type",
-    }),
+    discount_type: z.enum(
+      Object.values(PromotionType) as [string, ...string[]],
+      {
+        message: "Please select a valid discount type",
+      },
+    ),
 
     value: z
       .number("Enter a valid amount")
@@ -514,23 +567,42 @@ export const AddressSchema = z.object({
   name: z
     .string()
     .min(2, "Name must be at least 2 characters")
-    .max(50, "Name is too long"),
+    .max(36, "Name must not exceed 36 characters")
+    .regex(
+      /^[a-zA-Z\s\-]+$/,
+      "Name can only contain letters spaces, and hyphens",
+    ),
   phone: z
     .string()
-    .regex(/^[\d\s]+$/, "Phone number must contain only digits and spaces")
-    .min(10, "Phone number is too short")
-    .max(15, "Phone number is too long")
-    .transform((val) => val.replace(/\s/g, "")),
+    .regex(/^\d{10}$/, "Phone number must be exactly 10 digits with no spaces"),
   address_for: z.enum(ADDRESS_TYPE_ENUM),
 
-  address_line_1: z.string().min(1, "Address line 1 is required"),
+  address_line_1: z
+    .string()
+    .min(1, "Address line 1 is required")
+    .max(100, "Address line 1 must not exceed 100 characters"),
 
-  city: z.string().min(1, "City is required"),
+  city: z
+    .string()
+    .min(1, "City is required")
+    .max(50, "City must not exceed 50 characters"),
 
-  state: z.string().min(1, "State is required"),
-  street: z.string().min(1, "Street is required"),
-  country: z.string().min(1, "Country is required"),
-  landmark: z.string().min(1, "Landmark is required"),
+  state: z
+    .string()
+    .min(1, "State is required")
+    .max(50, "State must not exceed 50 characters"),
+  street: z
+    .string()
+    .min(1, "Street is required")
+    .max(100, "Street must not exceed 100 characters"),
+  country: z
+    .string()
+    .min(1, "Country is required")
+    .max(50, "Country must not exceed 50 characters"),
+  landmark: z
+    .string()
+    .min(1, "Landmark is required")
+    .max(100, "Landmark must not exceed 100 characters"),
 
   postal_code: z
     .string()
@@ -542,7 +614,7 @@ export const AddressSchema = z.object({
 
 export type AddressType = z.infer<typeof AddressSchema>;
 
-export enum LocationForEnum {
+export enum LocationFor {
   WAREHOUSE = "warehouse",
   HUB = "hub",
   OTHER = "other",
@@ -550,7 +622,7 @@ export enum LocationForEnum {
 export const locationSchema = z.object({
   default: z.string().transform((val) => val === "true"), // Converts string "true" to boolean true
   name: z.string().min(3, { error: "Name must be at least 3 characters" }),
-  type: z.enum(LocationForEnum, {
+  type: z.enum(Object.values(LocationFor) as [string, ...string[]], {
     error: "Please select a valid type",
   }),
   address: z
@@ -574,7 +646,7 @@ export const brandingSchema = z.object({
   primary_color: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color")
-    .default("#000000"),
+    .default(BRANDING_DEFAULT_PRIMARY_COLOR),
   secondary_color: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color")
@@ -589,27 +661,27 @@ export const brandingSchema = z.object({
   background_color: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color")
-    .default("#f8fafc"),
+    .default(BRANDING_DEFAULT_BACKGROUND_COLOR),
   text_color: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color")
-    .default("#0f172a"),
+    .default(BRANDING_DEFAULT_TEXT_COLOR),
   navbar_bg: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color")
-    .default("#ffffff"),
+    .default(BRANDING_DEFAULT_WHITE_COLOR),
   navbar_fg: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color")
-    .default("#0f172a"),
+    .default(BRANDING_DEFAULT_TEXT_COLOR),
   footer_bg: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color")
-    .default("#0f172a"),
+    .default(BRANDING_DEFAULT_TEXT_COLOR),
   footer_fg: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color")
-    .default("#ffffff"),
+    .default(BRANDING_DEFAULT_WHITE_COLOR),
   navbar_position: z.string().optional().default("sticky"),
   logo_alignment: z.string().optional().default("left"),
   footer_style: z.string().optional().default("detailed"),
@@ -737,7 +809,7 @@ export const ticketSchema = z.object({
 export type TicketFormData = z.infer<typeof ticketSchema>;
 
 export const bannerSchema = z.object({
-  placement: z.enum(BannerPlacement, {
+  placement: z.enum(Object.values(BannerPlacement) as [string, ...string[]], {
     message: "Please select a valid placement",
   }),
 

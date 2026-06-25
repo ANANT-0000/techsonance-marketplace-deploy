@@ -354,7 +354,7 @@ export default function OrderDetailPage() {
             <>
               <Button
                 asChild
-                className="flex-1 bg-black text-white hover:bg-gray-800 h-12 rounded-xl text-theme-body-sm font-bold transition-all shadow-sm"
+                className="flex-1  h-12 rounded-xl text-theme-body-sm font-bold transition-all shadow-sm border-border text-white bg-black hover:bg-black/70"
               >
                 <Link href={`/customer/orders/${orderid}`}>
                   Track Order Details

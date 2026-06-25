@@ -195,7 +195,6 @@ export const IMAGE_COLOR_DEFAULTS = {
   fallbackColor: "rgb(15, 23, 42)",
 };
 
-export const COLOR_WHITE = "#ffffff";
 export const COLOR_WHITE_MUTED = "rgba(255,255,255,0.7)";
 export const COLOR_SLATE_MUTED = "rgba(15,23,42,0.7)";
 export const COLOR_SLATE_DARK = "#0f172a";

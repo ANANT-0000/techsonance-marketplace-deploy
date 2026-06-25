@@ -14,14 +14,26 @@ export function ItemListPanel({
   quickBuyVariant,
   quickBuyQty,
   onQuickBuyQtyChange,
+  reduxCartItems,
 }: {
   isQuickBuy: boolean;
   cartItems: CartItemDisplay[];
   quickBuyVariant: VariantDetails | null;
   quickBuyQty: number;
   onQuickBuyQtyChange: (n: number) => void;
+  reduxCartItems?: { productVariantId: string; quantity: number }[];
 }) {
   const isLoading = isQuickBuy && !quickBuyVariant;
+
+  // Live count: items that still have qty > 0 in Redux (fall back to total count)
+  const liveItemCount = reduxCartItems
+    ? cartItems.filter((item) => {
+        const qty = reduxCartItems.find(
+          (r) => r.productVariantId === item.product_variant_id
+        )?.quantity ?? item.quantity;
+        return qty > 0;
+      }).length
+    : cartItems.length;
 
   return (
     <Card className="rounded-2xl border border-gray-100 shadow-sm">
@@ -37,7 +49,7 @@ export function ItemListPanel({
             <span>
               {ITEM_LIST_PANEL_TEXT.CART_ITEMS}
               <span className="ml-1.5 text-theme-xxs font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
-                {cartItems.length}
+                {liveItemCount}
               </span>
             </span>
           )}

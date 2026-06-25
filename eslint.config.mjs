@@ -1,48 +1,30 @@
-// @ts-check
-import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
-import tsParser from '@typescript-eslint/parser';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
-import { fixupPluginRules } from '@eslint/compat';
-import * as drizzlePlugin from 'eslint-plugin-drizzle';
-export default tseslint.config(
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals.js";
+import nextTs from "eslint-config-next/typescript.js";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+     
+  ]),
   {
-    ignores: ['eslint.config.mjs', 'dist/', 'node_modules/'],
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  {
-    languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-      sourceType: 'module',
-      parser: tsParser,
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-  {
-    plugins: {
-      '@typescript-eslint': tsPlugin,
-      drizzle: fixupPluginRules(drizzlePlugin),
-    },
+    // ── PR hygiene rules ─────────────────────────────────────────────────
     rules: {
-      '@typescript-eslint/interface-name-prefix': 'off',
-      'drizzle/enforce-delete-with-where': 'error',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-unsafe-call': 'error',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      'prettier/prettier': ['error', { endOfLine: 'auto' }],
+      /** Warn on any console.* call so stray debug logs surface in CI. */
+      "no-console": ["warn", { allow: ["warn", "error", "info"] }],
+      /** Hard-fail on leftover debugger statements. */
+      "no-debugger": "error",
+      /** Warn on alert / confirm / prompt (uncommon in Next.js but good to catch). */
+      "no-alert": "warn",
     },
   },
-  eslintPluginPrettierRecommended,
-);
+]);
+
+export default eslintConfig;

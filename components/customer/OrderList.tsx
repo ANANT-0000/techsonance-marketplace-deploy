@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useReducer } from "react";
-import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
+import { OrderStatus } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
 import AxiosAPI from "@/lib/axios";
 import { formatCurrency } from "@/lib/utils";
@@ -483,10 +483,10 @@ export function OrdersList({
         </Button>
         <Button
           variant={
-            status === OrderStatusEnum.DELIVERED ? "default" : "secondary"
+            status === OrderStatus.DELIVERED ? "default" : "secondary"
           }
-          className={`rounded-full h-8 text-[11px] font-semibold px-4 shrink-0 cursor-pointer ${status === OrderStatusEnum.DELIVERED ? "bg-foreground text-background hover:bg-foreground/90 shadow-sm" : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"}`}
-          onClick={() => setStatus(OrderStatusEnum.DELIVERED)}
+          className={`rounded-full h-8 text-[11px] font-semibold px-4 shrink-0 cursor-pointer ${status === OrderStatus.DELIVERED ? "bg-foreground text-background hover:bg-foreground/90 shadow-sm" : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"}`}
+          onClick={() => setStatus(OrderStatus.DELIVERED)}
         >
           {ORDER_LIST_TEXT.DELIVERED}
         </Button>

@@ -59,6 +59,10 @@ interface ProductVariantResponseType {
   product_id: string;
   product: Product;
   images: ProductImage[];
+  weight_kg?: string;
+  length_cm?: number;
+  width_cm?: number;
+  height_cm?: number;
 }
 const getExistVariant = async (
   variantId: string,
@@ -148,6 +152,10 @@ export default function ProductVariantFormPage() {
             variant_id: img.variant_id,
           })),
         status: existVariant.status,
+        weight_kg: existVariant.weight_kg || "",
+        length_cm: existVariant.length_cm?.toString() || "",
+        width_cm: existVariant.width_cm?.toString() || "",
+        height_cm: existVariant.height_cm?.toString() || "",
       }
     : undefined;
 

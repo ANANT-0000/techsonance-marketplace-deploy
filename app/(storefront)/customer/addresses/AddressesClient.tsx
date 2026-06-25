@@ -11,7 +11,7 @@ import {
   fetchGetUserAddresses,
   fetchSetDefaultAddress,
 } from "@/utils/customerApiClient";
-import { AddressOperationEnum, Address } from "@/utils/Types";
+import { AddressOperation, Address } from "@/utils/Types";
 import { fetchDeleteUserAddress } from "@/utils/customerApiClient-SA";
 import { authToken } from "@/utils/authToken";
 import {
@@ -23,7 +23,7 @@ import { ADDRESSES_PAGE_TEXT } from "@/constants/customerText";
 // [Reducer code remains 100% UNTOUCHED as requested]
 interface State {
   isModalOpen: boolean;
-  modalMode: AddressOperationEnum;
+  modalMode: AddressOperation;
   selectedId: string | undefined;
   addressList: Address[];
   confirmModalConfig: {
@@ -49,7 +49,7 @@ export enum AddressActionType {
 type Action =
   | {
       type: AddressActionType.OPEN_MODAL;
-      payload: { mode: AddressOperationEnum; id?: string };
+      payload: { mode: AddressOperation; id?: string };
     }
   | { type: AddressActionType.CLOSE_MODAL }
   | { type: AddressActionType.SET_ADDRESS_LIST; payload: Address[] }
@@ -95,7 +95,7 @@ export default function AddressesClient() {
 
   const [state, dispatch] = useReducer(reducer, {
     isModalOpen: false,
-    modalMode: AddressOperationEnum.ADD,
+    modalMode: AddressOperation.ADD,
     selectedId: undefined,
     addressList: [],
     confirmModalConfig: {
@@ -127,14 +127,14 @@ export default function AddressesClient() {
   const openAdd = () => {
     dispatch({
       type: AddressActionType.OPEN_MODAL,
-      payload: { mode: AddressOperationEnum.ADD },
+      payload: { mode: AddressOperation.ADD },
     });
   };
 
   const openEdit = (id: string) => {
     dispatch({
       type: AddressActionType.OPEN_MODAL,
-      payload: { mode: AddressOperationEnum.EDIT, id },
+      payload: { mode: AddressOperation.EDIT, id },
     });
   };
 

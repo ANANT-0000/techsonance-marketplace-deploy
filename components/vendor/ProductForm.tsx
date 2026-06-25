@@ -14,7 +14,7 @@ import { generateSKU } from "@/utils/generateSku";
 import {
   FileOrProductImage,
   ProductImage,
-  ProductStatusEnum,
+  ProductStatus,
   VendorUser,
 } from "@/utils/Types";
 import {
@@ -77,9 +77,13 @@ export function ProductForm({
       productMedia: [],
       featureMedia: [],
       category: "",
-      status: ProductStatusEnum.INACTIVE,
+      status: ProductStatus.INACTIVE,
       warehouseId: "",
       taxSlabId: "",
+      weight_kg: "",
+      length_cm: "",
+      width_cm: "",
+      height_cm: "",
     },
   });
   const productName = watch("productName");
@@ -155,10 +159,14 @@ export function ProductForm({
       featureMedia: [],
       category: existingData.category || "",
       status:
-        (existingData.status as ProductStatusEnum) ||
-        ProductStatusEnum.INACTIVE,
+        (existingData.status as ProductStatus) ||
+        ProductStatus.INACTIVE,
       warehouseId: existingData.warehouseId || "",
       taxSlabId: existingData.taxSlabId || "",
+      weight_kg: existingData.weight_kg !== undefined && existingData.weight_kg !== null ? String(existingData.weight_kg) : "",
+      length_cm: existingData.length_cm !== undefined && existingData.length_cm !== null ? String(existingData.length_cm) : "",
+      width_cm: existingData.width_cm !== undefined && existingData.width_cm !== null ? String(existingData.width_cm) : "",
+      height_cm: existingData.height_cm !== undefined && existingData.height_cm !== null ? String(existingData.height_cm) : "",
     });
 
     const initialProductFiles =
@@ -243,6 +251,10 @@ export function ProductForm({
       warehouse_id: data.warehouseId,
       tax_slab_id: data.taxSlabId,
       variant_name: data.productName,
+      weight_kg: String(data.weight_kg),
+      length_cm: Number(data.length_cm),
+      width_cm: Number(data.width_cm),
+      height_cm: Number(data.height_cm),
     };
 
     const payload = isUpdate
@@ -531,6 +543,100 @@ export function ProductForm({
                     )}
                   </div>
                 ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── LOGISTICS & DIMENSIONS ── */}
+        <div className="section">
+          <div className="section_header">
+            <DynamicIcon
+              fallback={() => <p></p>}
+              name="truck"
+              size={18}
+              className="text-amber-500"
+            />
+            <h2 className="text-theme-body font-semibold text-slate-800">
+              Logistics & Dimensions
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6 border border-slate-200 rounded-xl bg-slate-50">
+              {/* Weight */}
+              <div>
+                <label className="form_label">
+                  Weight (kg) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form_input"
+                  placeholder="e.g. 0.5"
+                  {...register("weight_kg")}
+                />
+                {errors.weight_kg && (
+                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
+                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    {errors.weight_kg.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* Length */}
+              <div>
+                <label className="form_label">
+                  Length (cm) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form_input"
+                  placeholder="e.g. 15"
+                  {...register("length_cm")}
+                />
+                {errors.length_cm && (
+                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
+                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    {errors.length_cm.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* Width */}
+              <div>
+                <label className="form_label">
+                  Width (cm) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form_input"
+                  placeholder="e.g. 10"
+                  {...register("width_cm")}
+                />
+                {errors.width_cm && (
+                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
+                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    {errors.width_cm.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* Height */}
+              <div>
+                <label className="form_label">
+                  Height (cm) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form_input"
+                  placeholder="e.g. 8"
+                  {...register("height_cm")}
+                />
+                {errors.height_cm && (
+                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
+                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    {errors.height_cm.message as string}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

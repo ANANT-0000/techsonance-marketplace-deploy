@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { useHomepageData } from "@/hooks/useHomepageData";
@@ -47,6 +47,55 @@ function Sk({
     <div
       className={`${w} ${h} ${rounded} bg-gray-100 animate-pulse ${className}`}
     />
+  );
+}
+
+function DraggableScrollContainer({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => setIsDragging(false);
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  return (
+    <div
+      ref={scrollRef}
+      onMouseDown={handleMouseDown}
+      onMouseLeave={handleMouseLeave}
+      onMouseUp={handleMouseUp}
+      onMouseMove={handleMouseMove}
+      onDragStart={(e) => e.preventDefault()}
+      className={`flex overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${
+        isDragging
+          ? "cursor-grabbing snap-none select-none"
+          : "cursor-grab snap-x snap-mandatory select-none"
+      } ${className || ""}`}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -115,6 +164,7 @@ export default function Home() {
                 }))}
               />
             )}
+            <TrustStrip getField={getField} />
           </div>
         );
 
@@ -174,26 +224,32 @@ export default function Home() {
             key={LayoutSection.CATEGORIES}
             className="py-20 px-6 lg:px-16 xl:px-24 bg-white"
           >
-            <div className="max-w-screen-xl mx-auto">
+            <div className="max-w-screen-xl mx-auto select-none">
               <SectionHeader
                 eyebrow="Browse by Category"
                 title="Categories"
                 href="/store"
               />
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+              <DraggableScrollContainer className="gap-5 pb-4">
                 {isLoading
                   ? Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="flex flex-col gap-3">
-                        <div className="aspect-[3/4] w-full bg-gray-100 rounded-2xl animate-pulse" />
-                        <Sk w="w-2/3" h="h-3" />
+                      <div
+                        key={i}
+                        className="flex-shrink-0 w-[240px] sm:w-[280px] snap-start flex flex-col gap-3"
+                      >
+                        <div className="aspect-[3/4] w-full bg-gray-100 rounded-2xl animate-pulse pointer-events-none" />
+                        <Sk w="w-2/3" h="h-3 pointer-events-none" />
                       </div>
                     ))
-                  : categories
-                      .slice(0, 8)
-                      .map((cat, idx) => (
-                        <CategoryCard key={idx} cat={cat} idx={idx} />
-                      ))}
-              </div>
+                  : categories.slice(0, 8).map((cat, idx) => (
+                      <div
+                        key={idx}
+                        className="flex-shrink-0 w-[240px] sm:w-[280px] snap-start pointer-events-none *:pointer-events-auto"
+                      >
+                        <CategoryCard cat={cat} idx={idx} />
+                      </div>
+                    ))}
+              </DraggableScrollContainer>
             </div>
           </section>
         );
@@ -316,6 +372,7 @@ export default function Home() {
                 }))}
               />
             )}
+            <TrustStrip getField={getField} />
           </div>
         );
 
@@ -465,40 +522,16 @@ export default function Home() {
       }
 
       case LayoutSection.NEW_ARRIVALS:
-        if (!productsLoading && newArrivals.length === 0) return null;
-        return (
-          <section
+        return isLoading ? (
+          <div
             key={`m-${LayoutSection.NEW_ARRIVALS}`}
-            className="py-6 px-4"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-theme-caption-lg font-bold text-gray-900 uppercase tracking-widest">
-                New Arrivals
-              </h2>
-              <Link
-                href="/store"
-                className="text-theme-xxs font-semibold text-theme-primary flex items-center gap-0.5"
-              >
-                Discover <ChevronRight size={12} />
-              </Link>
-            </div>
-            <div className="flex gap-3 overflow-x-auto scrollbar-none pb-2 snap-x">
-              {productsLoading
-                ? Array.from({ length: 3 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="min-w-[148px] flex flex-col bg-white rounded-2xl p-2.5 gap-2 border border-gray-100"
-                    >
-                      <div className="h-32 w-full bg-gray-100 rounded-xl animate-pulse" />
-                      <Sk w="w-full" h="h-3" />
-                      <Sk w="w-1/2" h="h-4" />
-                    </div>
-                  ))
-                : newArrivals.map((arr) => (
-                    <MobileNewArrivalCard key={arr.id} arr={arr} />
-                  ))}
-            </div>
-          </section>
+            className="w-full h-44 bg-gray-100 animate-pulse rounded-2xl mx-4 my-6"
+          />
+        ) : (
+          <NewArrivalsDesktop
+            key={`m-${LayoutSection.NEW_ARRIVALS}`}
+            getField={getField}
+          />
         );
 
       default:
@@ -518,7 +551,6 @@ export default function Home() {
         {/* Always-rendered supplementary sections (only if not already placed via layout key) */}
         {!layout.includes("social_proof") && (
           <>
-            <TrustStrip getField={getField} />
             <TestimonialsDesktop getField={getField} />
           </>
         )}
@@ -530,7 +562,6 @@ export default function Home() {
         {layout.map((key) => renderMobile(key))}
         {!layout.includes("social_proof") && (
           <>
-            <TrustStrip getField={getField} />
             <TestimonialsMobile getField={getField} />
           </>
         )}

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { BASE_API_URL } from "@/constants";
+import { BASE_API_URL, COLOR_DARK_CHARCOAL } from "@/constants";
 import { renderPdfInIframe } from "@/lib/renderPdf";
 import AxiosAPI from "@/lib/axios";
 
@@ -81,7 +81,7 @@ function buildWarrantyHtml(p: WarrantyPayload): string {
     ? fmtDate(policy.endDate)
     : "Lifetime / No Expiry";
 
-  const primaryColor = p.branding.primaryColor || "#131921";
+  const primaryColor = p.branding.primaryColor || COLOR_DARK_CHARCOAL;
   const secondaryColor = p.branding.secondaryColor || "#555555";
   const accentColor = p.branding.accentColor || "#ff9900";
   const fontFamily = p.branding.fontFamily || "Arial, sans-serif";

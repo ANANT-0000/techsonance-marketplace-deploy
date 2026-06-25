@@ -2,10 +2,27 @@ import Image from "next/image";
 import Link from "next/link";
 import { useImageColors } from "@/hooks/useImageColors";
 
-export function MobileNewArrivalCard({ arr }: { arr: any }) {
+interface MobileNewArrivalCardProps {
+  arr: {
+    id: string;
+    name: string;
+    base_price: string | number;
+    variants?: Array<{
+      images?: Array<{
+        image_url: string;
+      }>;
+    }>;
+  };
+}
+
+const CARD_CONFIG = {
+  PLACEHOLDER_IMAGE: "https://placehold.net/400x500.png",
+  CURRENCY_SYMBOL: "₹",
+} as const;
+
+export function MobileNewArrivalCard({ arr }: MobileNewArrivalCardProps) {
   const imageUrl =
-    arr.variants?.[0]?.images?.[0]?.image_url ||
-    "https://placehold.net/400x500.png";
+    arr.variants?.[0]?.images?.[0]?.image_url || CARD_CONFIG.PLACEHOLDER_IMAGE;
   const { bg: bgColor } = useImageColors(imageUrl);
 
   return (
@@ -26,11 +43,12 @@ export function MobileNewArrivalCard({ arr }: { arr: any }) {
           loading="eager"
         />
       </div>
-      <h3 className=" text-theme-body-sm font-bold text-gray-800 line-clamp-2 leading-snug mb-1">
+      <h3 className="text-theme-body-sm font-bold text-gray-800 line-clamp-2 leading-snug mb-1">
         {arr.name}
       </h3>
       <span className="text-md font-black text-gray-900">
-        ₹{Number(arr.base_price).toLocaleString("en-IN")}
+        {CARD_CONFIG.CURRENCY_SYMBOL}
+        {Number(arr.base_price).toLocaleString("en-IN")}
       </span>
     </Link>
   );

@@ -26,7 +26,8 @@ export function ScarcityBlock({
   btn_link,
 }: ScarcityBlockProps) {
   const bg = alert_bg ?? SCARCITY_BLOCK_DEFAULTS.alert_bg;
-  const textColor = alert_text_color ?? SCARCITY_BLOCK_DEFAULTS.alert_text_color;
+  const textColor =
+    alert_text_color ?? SCARCITY_BLOCK_DEFAULTS.alert_text_color;
   const buttonText = btn_text ?? SCARCITY_BLOCK_DEFAULTS.btn_text;
   const buttonLink = btn_link ?? SCARCITY_BLOCK_DEFAULTS.btn_link;
   const title = timer_title ?? SCARCITY_BLOCK_DEFAULTS.timer_title;
@@ -76,7 +77,7 @@ export function ScarcityBlock({
   }, [expires_at]);
 
   const padZero = (num: number) => String(num).padStart(2, "0");
-  if (!alert_text || !title || !expires_at) {
+  if (!alert_text || !title || !expires_at || !timeLeft.isExpired) {
     return null;
   }
   return (

@@ -1,5 +1,6 @@
 'use client';
 import { Heart } from 'lucide-react';
+import { COLOR_PINK } from "@/constants";
 import { addToWishlist, removeFromWishlist } from '@/lib/features/Wishlist';
 import { useMediaQuery } from 'react-responsive';
 import { useRouter } from 'next/navigation';
@@ -153,8 +154,8 @@ export function WishListBtn({
                 >
                     <Heart
                         size={iconSizeValue}
-                        color={isWishlisted ? '#ec4899' : 'currentColor'}
-                        fill={isWishlisted ? '#ec4899' : 'none'}
+                        color={isWishlisted ? COLOR_PINK : 'currentColor'}
+                        fill={isWishlisted ? COLOR_PINK : 'none'}
                     />
                 </motion.div>
             </AnimatePresence>

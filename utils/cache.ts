@@ -1,4 +1,18 @@
-import { ENV_DEVELOPMENT } from "@/constants";
+import { ENV_DEVELOPMENT, ENV_PRODUCTION } from "@/constants";
+
+export const getCacheConfig = (revalidate: number = 300, tags?: string[]) => {
+  return process.env.NODE_ENV === ENV_PRODUCTION
+    ? { 
+        cache: "force-cache" as const, 
+        next: { 
+          revalidate,
+          ...(tags ? { tags } : {})
+        } 
+      }
+    : { cache: "no-store" as const };
+};
+
+
 
 const LANG_KEY = "techsonance_locale";
 const LARGE_DATA_THRESHOLD = 15360; // 15KB

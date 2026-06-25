@@ -2,25 +2,26 @@ import {
   CategoryFilterType,
   DeleteMode,
 } from "@/components/vendor/category/CategoryManager";
-import { VendorRegisterSchema } from "./validation";
 import type { LucideIcon } from "lucide-react";
-export enum UserStatusEnum {
+import type { VendorRegisterSchema } from "./validation";
+export enum UserStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
   PENDING = "pending",
   SUSPENDED = "suspended",
+  REJECTED = "rejected",
 }
 export enum UserRole {
-  Admin = "admin",
-  Vendor = "vendor",
-  Customer = "customer",
+  ADMIN = "admin",
+  VENDOR = "vendor",
+  CUSTOMER = "customer",
 }
-export enum UserAddressTypeEnum {
+export enum UserAddressType {
   HOME = "home",
   WORK = "work",
   OTHER = "other",
 }
-export enum OrderStatusEnum {
+export enum OrderStatus {
   PENDING = "pending",
   PROCESSING = "processing",
   SHIPPED = "shipped",
@@ -37,8 +38,7 @@ export enum ActivityType {
   REVIEW = "review",
   SECURITY = "security",
 }
-export type OrderStatus =
-  (typeof OrderStatusEnum)[keyof typeof OrderStatusEnum];
+// OrderStatus type is directly represented by the OrderStatus enum
 export enum ProductVariantStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
@@ -57,27 +57,90 @@ export enum ReturnStatus {
   SHIPPED = "shipped",
   DELIVERED = "delivered",
 }
-export enum PermissionEnum {
+export enum Permission {
   READ = "read",
   CREATE = "create",
   DELETE = "delete",
   UPDATE = "update",
 }
-export enum InventoryItemStatusEnum {
+export enum InventoryItemStatus {
   IN_STOCK = "in stock",
   LOW_STOCK = "low stock",
   OUT_OF_STOCK = "out of stock",
 }
 // used in multiple places
-export enum AddressOperationEnum {
+export enum AddressOperation {
   ADD = "add",
   EDIT = "edit",
 }
 //used in multiple places
-export enum AddressForEnum {
+export enum AddressFor {
   HOME = "home",
   WORK = "work",
   OTHER = "other",
+}
+
+/**
+ * Represents the configuration modes for logistics management.
+ *
+ * @enum {string}
+ *
+ * @remarks
+ * **Exception:** This enum deviates from the general codebase convention of using lowercase members.
+ * It is defined in UPPERCASE to ensure alignment with:
+ * 1. Third-party logistics API integrations.
+ * 2. Database schemas and custom postgres enums where they are stored as 'STANDALONE' or 'PLATFORM_PROXY'.
+ */
+export enum LogisticsMode {
+  STANDALONE = "STANDALONE",
+  PLATFORM_PROXY = "PLATFORM_PROXY",
+}
+
+/**
+ * Represents which billing account is used for shipping label creation and charges.
+ *
+ * @enum {string}
+ *
+ * @remarks
+ * **Exception:** This enum deviates from the general codebase convention of using lowercase members.
+ * It is defined in UPPERCASE to ensure alignment with:
+ * 1. Database constraints where the column is restricted to 'VENDOR_OWN' or 'PLATFORM_MASTER'.
+ * 2. Third-party integrations requesting uppercase billing configurations.
+ */
+export enum BillingAccountUsed {
+  VENDOR_OWN = "VENDOR_OWN",
+  PLATFORM_MASTER = "PLATFORM_MASTER",
+}
+
+/**
+ * Represents the external logistics providers integrated with the system.
+ *
+ * @enum {string}
+ *
+ * @remarks
+ * **Exception:** This enum deviates from the general codebase convention of using lowercase members.
+ * It is defined in UPPERCASE to match external shipping APIs (e.g. Shiprocket) and database varchar limits/defaults.
+ */
+export enum LogisticsProvider {
+  SHIPROCKET = "SHIPROCKET",
+}
+/**
+ * Represents the shipping status of an order.
+ *
+ * @enum {string}
+ *
+ * @remarks
+ * **Exception:** This enum deviates from the general codebase convention of using lowercase members.
+ * It is defined in UPPERCASE to ensure alignment with:
+ * 1. External logistics API payloads (such as Shiprocket webhooks) which return uppercase statuses.
+ * 2. Database constraints and defaults (`shipping_status` column in `shipping_details` table defaults to `'PENDING'`).
+ */
+export enum ShippingStatus {
+  PENDING = "PENDING",
+  SHIPPED = "SHIPPED",
+  DELIVERED = "DELIVERED",
+  RETURNED = "RETURNED",
+  CANCELLED = "CANCELLED",
 }
 // used in multiple places
 export enum BuyBtnMode {
@@ -352,7 +415,7 @@ export interface User {
   country_code: string | null;
   phone_number: string | null;
   password_hash: string;
-  user_status: UserStatusEnum | null;
+  user_status: UserStatus | null;
   created_at: Date;
   updated_at: Date;
   company_id: string | null;
@@ -424,27 +487,27 @@ export interface Order {
 }
 
 export interface RoleDefinition {
-  can: PermissionEnum[];
+  can: Permission[];
 }
 export const role: Record<UserRole, RoleDefinition> = {
-  [UserRole.Admin]: {
+  [UserRole.ADMIN]: {
     can: [
-      PermissionEnum.CREATE,
-      PermissionEnum.READ,
-      PermissionEnum.UPDATE,
-      PermissionEnum.DELETE,
+      Permission.CREATE,
+      Permission.READ,
+      Permission.UPDATE,
+      Permission.DELETE,
     ],
   },
-  [UserRole.Vendor]: {
+  [UserRole.VENDOR]: {
     can: [
-      PermissionEnum.CREATE,
-      PermissionEnum.READ,
-      PermissionEnum.UPDATE,
-      PermissionEnum.DELETE,
+      Permission.CREATE,
+      Permission.READ,
+      Permission.UPDATE,
+      Permission.DELETE,
     ],
   },
-  [UserRole.Customer]: {
-    can: [PermissionEnum.READ],
+  [UserRole.CUSTOMER]: {
+    can: [Permission.READ],
   },
 };
 
@@ -533,14 +596,17 @@ export interface Feedback {
   rating: number;
 }
 
-export enum ProductStatusEnum {
+export enum ProductStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
+  DISCONTINUED = "discontinued",
+  DRAFT = "draft",
 }
 
 export enum ProductImageType {
   MAIN = "main",
   GALLERY = "gallery",
+  THUMBNAIL = "thumbnail",
 }
 
 export interface Feature {
@@ -664,13 +730,13 @@ export interface AuditLogEntryType {
   timestamp: string;
   actor: string;
   tenant: string;
-  actionType: UserStatusEnum;
+  actionType: UserStatus;
   targetEntity: string;
   details: string;
   ipAddress: string;
 }
 
-export enum TicketMessageTypeEnum {
+export enum TicketMessageSender {
   VENDOR = "vendor",
   SYSTEM = "system",
   SUPER_ADMIN = "super_admin",
@@ -682,7 +748,7 @@ export interface TicketMessageType {
   role: string;
   text: string;
   time: string;
-  type: TicketMessageTypeEnum;
+  type: TicketMessageSender;
 }
 
 export enum SupportTicketStatus {
@@ -700,7 +766,7 @@ export interface SupportTicketType {
   time: string;
   messages: TicketMessageType[];
 }
-export enum VendorApplicationStatusEnum {
+export enum VendorApplicationStatus {
   PENDING = "pending",
   REJECTED = "rejected",
   ACCEPTED = "accepted",
@@ -712,7 +778,7 @@ export interface VendorApplicationType {
     owner_name: string;
     owner_email: string;
     submission_date: string;
-    status: VendorApplicationStatusEnum;
+    status: VendorApplicationStatus;
   };
   submitted_documents: {
     file_name: string;
@@ -860,7 +926,7 @@ export interface InventoryProduct {
   stock: number;
   price: number;
   warehouse: InventoryWarehouse;
-  status: InventoryItemStatusEnum;
+  status: InventoryItemStatus;
   imageUrl: string;
 }
 
@@ -919,7 +985,7 @@ export interface InventoryItem {
   stock: number;
   reorderLevel: number;
   price: number;
-  status: InventoryItemStatusEnum;
+  status: InventoryItemStatus;
 }
 
 export interface VendorOrder {
@@ -959,6 +1025,10 @@ export type VariantFormValues = {
   status: string;
   productId: string;
   warehouseId?: string;
+  weight_kg?: string;
+  length_cm?: string;
+  width_cm?: string;
+  height_cm?: string;
 };
 
 export type ProductAttributes = {
@@ -974,7 +1044,7 @@ export type Variant = {
   product_id: string;
   price: string;
   stock_quantity: number;
-  status: ProductStatusEnum;
+  status: ProductStatus;
   seo_meta: string | null;
   created_at: string;
   updated_at: string;
@@ -990,7 +1060,7 @@ export type ProductResponseType = {
   base_price: string;
   discount_percent: string;
   stock_quantity: string;
-  status: ProductStatusEnum;
+  status: ProductStatus;
   has_variants: boolean;
   created_at: string;
   updated_at: string;

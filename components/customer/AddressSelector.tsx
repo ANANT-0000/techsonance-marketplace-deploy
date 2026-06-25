@@ -6,7 +6,6 @@ import { Dispatch, SetStateAction, useEffect, useReducer } from "react";
 import { motion } from "motion/react";
 import { authToken } from "@/utils/authToken";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "../ui/button";
@@ -83,7 +82,7 @@ export function AddressSelector({
 
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
-    <Card className="rounded-2xl border border-gray-100 shadow-sm">
+    <Card className="rounded-2xl border border-gray-100 shadow-sm overflow-y-scroll ">
       <CardHeader className="pb-2 pt-4 px-4 lg:px-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -163,11 +162,19 @@ export function AddressSelector({
                   BADGE_VARIANTS.other;
 
                 return (
-                  <motion.button
+                  <motion.div
                     key={addr.id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onSelect(addr.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelect(addr.id);
+                      }
+                    }}
                     whileTap={{ scale: 0.99 }}
-                    className={`w-full text-left flex items-start gap-3 p-3 rounded-xl border transition-all duration-150 ${
+                    className={`w-full cursor-pointer text-left flex items-start gap-3 p-3 rounded-xl border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary/50 ${
                       isSelected
                         ? "border-theme-primary/30 bg-theme-primary/5 shadow-sm shadow-theme-primary/5"
                         : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/60"
@@ -187,23 +194,23 @@ export function AddressSelector({
                     </div>
 
                     {/* Address content */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 overflow-hidden">
                       <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                        <span className="text-theme-caption-lg font-semibold text-gray-900">
+                        <span className="text-theme-caption-lg font-semibold text-gray-900 truncate max-w-[120px]">
                           {addr.name}
                         </span>
                         <span
-                          className={`text-[9px] font-bold px-2 py-0.5 rounded-full capitalize ${badgeClass}`}
+                          className={`text-[9px] font-bold px-2 py-0.5 rounded-full capitalize shrink-0 ${badgeClass}`}
                         >
                           {addr.address_type}
                         </span>
                         {addr.is_default && (
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100 shrink-0">
                             {ADDRESS_SELECTOR_TEXT.BADGE_DEFAULT}
                           </span>
                         )}
                       </div>
-                      <p className="text-theme-caption text-gray-500 leading-relaxed">
+                      <p className="text-theme-caption text-gray-500 leading-relaxed break-words line-clamp-3">
                         {[addr.address_line1, addr.address_line2, addr.street]
                           .filter(Boolean)
                           .join(", ")}
@@ -211,12 +218,12 @@ export function AddressSelector({
                         {addr.city}, {addr.state} — {addr.postal_code}
                       </p>
                       {addr.number && (
-                        <p className="text-theme-xxs text-gray-400 mt-1">
+                        <p className="text-theme-xxs text-gray-400 mt-1 truncate">
                           {addr.number}
                         </p>
                       )}
                     </div>
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 shrink-0 ml-2">
                       <Button
                         className="rounded-md flex px-2 border-gray-200 border"
                         variant="default"
@@ -239,7 +246,7 @@ export function AddressSelector({
                         />
                       )}
                     </span>
-                  </motion.button>
+                  </motion.div>
                 );
               })}
             </div>

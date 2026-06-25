@@ -1,5 +1,5 @@
 import { UiText } from "@/constants/ui-text";
-import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
+import { OrderStatus } from "@/utils/Types";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { StatusBadge } from "./StatusBadge";
@@ -76,7 +76,7 @@ export function StatusEditor({
         onChange={(e) => setDraft(e.target.value as OrderStatus)}
         className="text-theme-caption border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
       >
-        {(Object.keys(STATUS_CONFIG) as OrderStatusEnum[]).map((s) => (
+        {(Object.keys(STATUS_CONFIG) as OrderStatus[]).map((s) => (
           <option key={s} value={s}>
             {
               statusLabels[

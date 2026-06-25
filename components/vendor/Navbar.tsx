@@ -13,9 +13,9 @@ import { RootState } from "@/lib/store";
 
 // 2. Enums
 export enum UserRole {
-  VENDOR = "vendor",
   ADMIN = "admin",
-  USER = "user",
+  VENDOR = "vendor",
+  CUSTOMER = "customer",
 }
 
 export enum NavbarActionType {

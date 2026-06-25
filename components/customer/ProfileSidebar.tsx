@@ -23,14 +23,16 @@ export function ProfileSidebar() {
 
   if (currentPath && currentPath.includes("checkout")) return null;
 
-  const hasUserSession = typeof window !== "undefined" && !!window.localStorage.getItem("isAuthenticated");
+  const hasUserSession =
+    typeof window !== "undefined" &&
+    !!window.localStorage.getItem("isAuthenticated");
 
   // Hide sidebar for guests — only show once mounted to avoid SSR/hydration flicker.
   // Do not hide if there's an active session but the redux store is still hydrating.
   if (mounted && !user && !hasUserSession) return null;
 
   const handleNavigation = (linkPath: string) => {
-    if (linkPath === "/logout") {
+    if (linkPath.includes("logout")) {
       dispatch(logOut());
       router.push("/");
     } else {
@@ -40,12 +42,6 @@ export function ProfileSidebar() {
 
   const activePath = mounted ? currentPath : "";
   const showUserProfile = mounted && user;
-  const isOnOverviewPage = mounted && activePath === `/customer`;
-
-  const mobileLinks = ProfileSidebarLink.filter(
-    (link) => link.path !== "/customer" && link.path !== "/logout",
-  );
-
   return (
     <>
       {/* Desktop View */}

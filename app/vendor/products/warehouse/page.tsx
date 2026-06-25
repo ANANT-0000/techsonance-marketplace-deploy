@@ -2,11 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  LocationForEnum,
-  AddressSchema,
-  AddressType,
-} from "@/utils/validation";
+import { LocationFor, AddressSchema, AddressType } from "@/utils/validation";
 import {
   fetchCreateWarehouseLocation,
   fetchDeleteWarehouseLocation,
@@ -211,7 +207,7 @@ export default function LocationsPage() {
     if (isEditing && selectedLocation) {
       reset({
         name: selectedLocation.warehouse_name,
-        address_for: selectedLocation.address.address_type as LocationForEnum,
+        address_for: selectedLocation.address.address_type as LocationFor,
         is_default: selectedLocation.address.is_default || false,
         phone: selectedLocation.address.number || "",
         address_line_1: selectedLocation.address.address_line_1 || "",

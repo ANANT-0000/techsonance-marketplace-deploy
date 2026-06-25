@@ -1,4 +1,4 @@
-import { CATEGORY_CART_TEXT } from "@/constants";
+import { CATEGORY_CART_TEXT, COLOR_WHITE } from "@/constants";
 import { useImageColors } from "@/hooks/useImageColors";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -18,7 +18,7 @@ export function CategoryCard({
       className="group flex flex-col"
     >
       <div
-        style={{ background: bgColor }}
+        style={{ background: COLOR_WHITE }}
         className={`relative aspect-3/4 p-2   shadow-md border border-gray-200/50  overflow-hidden rounded-2xl transition-colors duration-500 h-[20vh]`}
       >
         {cat.url && (

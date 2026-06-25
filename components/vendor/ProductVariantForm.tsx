@@ -2,7 +2,7 @@
 import {
   FileOrProductImage,
   ProductImage,
-  ProductStatusEnum,
+  ProductStatus,
   Product,
   VariantFormValues,
 } from "@/utils/Types";
@@ -70,7 +70,11 @@ export const ProductVariantForm = ({
       variantMediaMain: [],
       variantMediaGallery: [],
       warehouseId: "",
-      status: ProductStatusEnum.INACTIVE,
+      status: ProductStatus.INACTIVE,
+      weight_kg: "",
+      length_cm: "",
+      width_cm: "",
+      height_cm: "",
     },
   });
   const {
@@ -126,8 +130,12 @@ export const ProductVariantForm = ({
       variantMediaGallery: existVariant.variantMediaGallery ?? [],
       warehouseId: existVariant.warehouseId || "",
       status:
-        (existVariant.status as ProductStatusEnum) ??
-        ProductStatusEnum.INACTIVE,
+        (existVariant.status as ProductStatus) ??
+        ProductStatus.INACTIVE,
+      weight_kg: existVariant.weight_kg || "",
+      length_cm: existVariant.length_cm || "",
+      width_cm: existVariant.width_cm || "",
+      height_cm: existVariant.height_cm || "",
     });
 
     const initialProductFiles =
@@ -214,6 +222,10 @@ export const ProductVariantForm = ({
       stock_quantity: String(data.stocks) ?? 0,
       sku: data.sku,
       warehouse_id: data.warehouseId,
+      weight_kg: data.weight_kg,
+      length_cm: data.length_cm,
+      width_cm: data.width_cm,
+      height_cm: data.height_cm,
     };
 
     const formData = new FormData();
@@ -450,7 +462,101 @@ export const ProductVariantForm = ({
           </div>
         </div>
 
-        {/* ── 3. MEDIA ── */}
+        {/* ── 3. LOGISTICS & DIMENSIONS ── */}
+        <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
+            <DynamicIcon
+              fallback={() => <p></p>}
+              name="truck"
+              size={18}
+              className="text-amber-500"
+            />
+            <h2 className="text-theme-body font-semibold text-slate-800">
+              Logistics & Dimensions
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6 border border-slate-200 rounded-xl bg-slate-50">
+              {/* Weight */}
+              <div>
+                <label className="block text-theme-body-sm font-semibold text-slate-700 mb-1">
+                  Weight (kg) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full border rounded-lg px-4 py-2.5 text-theme-body-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  placeholder="e.g. 0.5"
+                  {...register("weight_kg")}
+                />
+                {errors.weight_kg && (
+                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
+                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    {errors.weight_kg.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* Length */}
+              <div>
+                <label className="block text-theme-body-sm font-semibold text-slate-700 mb-1">
+                  Length (cm) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full border rounded-lg px-4 py-2.5 text-theme-body-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  placeholder="e.g. 15"
+                  {...register("length_cm")}
+                />
+                {errors.length_cm && (
+                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
+                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    {errors.length_cm.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* Width */}
+              <div>
+                <label className="block text-theme-body-sm font-semibold text-slate-700 mb-1">
+                  Width (cm) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full border rounded-lg px-4 py-2.5 text-theme-body-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  placeholder="e.g. 10"
+                  {...register("width_cm")}
+                />
+                {errors.width_cm && (
+                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
+                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    {errors.width_cm.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* Height */}
+              <div>
+                <label className="block text-theme-body-sm font-semibold text-slate-700 mb-1">
+                  Height (cm) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full border rounded-lg px-4 py-2.5 text-theme-body-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  placeholder="e.g. 8"
+                  {...register("height_cm")}
+                />
+                {errors.height_cm && (
+                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
+                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    {errors.height_cm.message as string}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 4. MEDIA ── */}
         <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
             <DynamicIcon

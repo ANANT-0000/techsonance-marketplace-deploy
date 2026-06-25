@@ -9,7 +9,7 @@ import {
   getMinOrderAmount,
 } from "@/lib/utils";
 import { SelectedPaymentMethod } from "@/components/customer/SelectedPaymentMethod";
-import { PAYMENT_METHODS_FIELDS } from "@/constants";
+import { CartItem, PAYMENT_METHODS_FIELDS } from "@/constants";
 import {
   checkAddressExistence,
   fetchGetCartList,
@@ -24,6 +24,7 @@ import {
   ShieldCheck,
   ChevronUp,
   ChevronDown,
+  Truck,
 } from "lucide-react";
 import { AddressSelector } from "@/components/customer/AddressSelector";
 import { fetchProductVariantDetails } from "@/utils/commonAPiClient";
@@ -40,7 +41,7 @@ import {
 } from "@/components/customer/TaxBreakdownPanel";
 import { clearCart } from "@/lib/features/Cart";
 import {
-  AddressOperationEnum,
+  AddressOperation,
   AppliedPromotion,
   CartItemDisplay,
   VariantDetails,
@@ -52,12 +53,13 @@ import { AddressModal } from "@/components/customer/AddressModel";
 import { ItemListPanel } from "@/components/customer/ItemListPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { RootState } from "@/lib/store";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export enum CheckoutActionType {
+  SET_CART_ITEMS = "SET_CART_ITEMS",
   SET_ADDRESS_ADDED = "SET_ADDRESS_ADDED",
   OPEN_ADDRESS_MODAL = "OPEN_ADDRESS_MODAL",
   CLOSE_ADDRESS_MODAL = "CLOSE_ADDRESS_MODAL",
@@ -93,7 +95,7 @@ export interface CartItemForTaxPayload {
 interface State {
   isAddressAdded: boolean;
   isModalOpen: boolean;
-  modalMode: AddressOperationEnum;
+  modalMode: AddressOperation;
   editAddressId: string | null;
   selectedPaymentMethodState: string;
   isProcessing: boolean;
@@ -119,7 +121,7 @@ type Action =
   | { type: CheckoutActionType.SET_ADDRESS_ADDED; payload: boolean }
   | {
       type: CheckoutActionType.OPEN_ADDRESS_MODAL;
-      payload: { mode: AddressOperationEnum; editId: string | null };
+      payload: { mode: AddressOperation; editId: string | null };
     }
   | { type: CheckoutActionType.CLOSE_ADDRESS_MODAL }
   | { type: CheckoutActionType.SET_PAYMENT_METHOD; payload: string }
@@ -143,6 +145,7 @@ type Action =
         productIds: string[];
       };
     }
+  | { type: CheckoutActionType.SET_CART_ITEMS; payload: CartItemDisplay[] }
   | { type: CheckoutActionType.LOAD_ORDER_ERROR; payload: string }
   | { type: CheckoutActionType.SET_LOADING_ORDER; payload: boolean }
   | {
@@ -166,6 +169,8 @@ type Action =
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
+    case CheckoutActionType.SET_CART_ITEMS:
+      return { ...state, cartItems: action.payload };
     case CheckoutActionType.SET_ADDRESS_ADDED:
       return { ...state, isAddressAdded: action.payload };
     case CheckoutActionType.OPEN_ADDRESS_MODAL:
@@ -285,6 +290,7 @@ function MobileSummarySheet({
   quickBuyQty,
   isQuickBuy,
   reduxCartItems,
+  shippingInfo,
 }: {
   isExpanded: boolean;
   onToggle: () => void;
@@ -312,6 +318,7 @@ function MobileSummarySheet({
   quickBuyQty: number;
   isQuickBuy: boolean;
   reduxCartItems: any[];
+  shippingInfo: any;
 }) {
   return (
     <div className="fixed bottom-[calc(48px+env(safe-area-inset-bottom))] left-0 right-0 z-40 lg:hidden">
@@ -446,29 +453,38 @@ function MobileSummarySheet({
                 {/* Line items */}
                 <div className="space-y-2">
                   {!isQuickBuy &&
-                    cartItems.map((item) => {
-                      const liveQty =
-                        reduxCartItems.find(
-                          (i: any) =>
-                            i.productVariantId === item.product_variant_id,
-                        )?.quantity ?? item.quantity;
-                      return (
-                        <div
-                          key={item.id}
-                          className="flex justify-between text-theme-xxs text-gray-500"
-                        >
-                          <span className="line-clamp-1 max-w-[60%]">
-                            {item.productVariant.variant_name} ×{liveQty}
-                          </span>
-                          <span className="font-medium text-gray-700">
-                            ₹
-                            {formatCurrency(
-                              Number(item.productVariant.price) * liveQty,
-                            )}
-                          </span>
-                        </div>
-                      );
-                    })}
+                    cartItems
+                      .filter((item) => {
+                        const qty =
+                          reduxCartItems.find(
+                            (i: any) =>
+                              i.productVariantId === item.product_variant_id,
+                          )?.quantity ?? item.quantity;
+                        return qty > 0;
+                      })
+                      .map((item) => {
+                        const liveQty =
+                          reduxCartItems.find(
+                            (i: any) =>
+                              i.productVariantId === item.product_variant_id,
+                          )?.quantity ?? item.quantity;
+                        return (
+                          <div
+                            key={item.id}
+                            className="flex justify-between text-theme-xxs text-gray-500"
+                          >
+                            <span className="line-clamp-1 max-w-[60%]">
+                              {item.productVariant.variant_name} ×{liveQty}
+                            </span>
+                            <span className="font-medium text-gray-700">
+                              ₹
+                              {formatCurrency(
+                                Number(item.productVariant.price) * liveQty,
+                              )}
+                            </span>
+                          </div>
+                        );
+                      })}
                   {isQuickBuy && quickBuyVariant && (
                     <div className="flex justify-between text-theme-xxs text-gray-500">
                       <span className="line-clamp-1 max-w-[60%]">
@@ -482,16 +498,45 @@ function MobileSummarySheet({
                       </span>
                     </div>
                   )}
+                  {shippingInfo?.isFreeShippingEnabled &&
+                    !shippingInfo.isFreeShipping &&
+                    shippingInfo.nudgeAmount > 0 && (
+                      <div className="bg-blue-50 border border-blue-100 text-blue-700 text-[11px] rounded-xl p-3 flex items-center gap-2 mb-3">
+                        <Truck className="w-4 h-4 shrink-0 text-blue-600 animate-pulse" />
+                        <span>
+                          Spend{" "}
+                          <strong>
+                            ₹{formatCurrency(shippingInfo.nudgeAmount)}
+                          </strong>{" "}
+                          more to unlock <strong>Free Shipping!</strong>
+                        </span>
+                      </div>
+                    )}
+                  {shippingInfo?.isFreeShippingEnabled &&
+                    shippingInfo.isFreeShipping && (
+                      <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-[11px] rounded-xl p-3 flex items-center gap-2 mb-3">
+                        <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                        <span>
+                          🎉 <strong>Free Shipping</strong> unlocked!
+                        </span>
+                      </div>
+                    )}
                   <div className="flex justify-between text-theme-caption text-gray-600 pt-1">
                     <span>Subtotal</span>
                     <span>₹{formatCurrency(subtotal)}</span>
                   </div>
-                  {delivery > 0 && (
-                    <div className="flex justify-between text-theme-caption text-gray-600">
-                      <span>Delivery</span>
-                      <span>₹{formatCurrency(delivery)}</span>
-                    </div>
-                  )}
+                  <div className="flex justify-between text-theme-caption text-gray-600">
+                    <span>Delivery</span>
+                    <span
+                      className={
+                        delivery === 0
+                          ? "text-emerald-600 font-semibold animate-fadeIn"
+                          : "font-medium"
+                      }
+                    >
+                      {delivery === 0 ? "Free" : `₹${formatCurrency(delivery)}`}
+                    </span>
+                  </div>
                   {couponApplied &&
                     couponDiscount === 0 &&
                     (() => {
@@ -610,7 +655,8 @@ function CheckoutSkeleton() {
 
 function CheckoutClientInner() {
   const { user } = useAppSelector((state) => state.auth);
-  const { items: reduxCartItems } = useAppSelector((s) => s.cart);
+  const { items: reduxCartItems } = useAppSelector((s: RootState) => s.cart);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const { clearSession } = useCheckoutSession(`/customer/cart`);
@@ -638,7 +684,7 @@ function CheckoutClientInner() {
   const [state, dispatch] = useReducer(reducer, {
     isAddressAdded: false,
     isModalOpen: false,
-    modalMode: AddressOperationEnum.ADD,
+    modalMode: AddressOperation.ADD,
     editAddressId: null,
     selectedPaymentMethodState: "UPI",
     isProcessing: false,
@@ -660,17 +706,73 @@ function CheckoutClientInner() {
     lastTaxAddressId: "",
   });
 
+  const [deliveryFee, setDeliveryFee] = useState<number>(0);
+  const [shippingInfo, setShippingInfo] = useState<{
+    isFreeShippingEnabled: boolean;
+    freeDeliveryThreshold: number;
+    isFreeShipping: boolean;
+    nudgeAmount: number;
+  } | null>(null);
+  const [isShippingLoading, setIsShippingLoading] = useState<boolean>(false);
+
+  const fetchShippingRate = async (addressId: string) => {
+    if (!addressId || !token || !id) return;
+    setIsShippingLoading(true);
+    try {
+      const body: any = { addressId };
+      if (isQuickBuy) {
+        body.productVariantId = id;
+        body.qty = state.quickBuyQty;
+      } else {
+        body.cartId = id;
+      }
+
+      const res = await AxiosAPI.post(
+        `/v1/checkout/calculate-shipping/${user?.id || ""}`,
+        body,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const shippingData = res.data?.data;
+      if (shippingData) {
+        setDeliveryFee(Number(shippingData.shippingCost || 0));
+        setShippingInfo({
+          isFreeShippingEnabled: shippingData.isFreeShippingEnabled,
+          freeDeliveryThreshold: Number(
+            shippingData.freeDeliveryThreshold || 0,
+          ),
+          isFreeShipping: shippingData.isFreeShipping,
+          nudgeAmount: Number(shippingData.nudgeAmount || 0),
+        });
+      }
+    } catch {
+      toast.error("Failed to calculate shipping rates");
+    } finally {
+      setIsShippingLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (state.selectedAddressId && !state.isLoadingOrder) {
+      fetchShippingRate(state.selectedAddressId);
+    }
+  }, [
+    state.selectedAddressId,
+    state.quickBuyQty,
+    state.cartItemsForTax,
+    state.isLoadingOrder,
+  ]);
+
   const openAdd = () => {
     dispatch({
       type: CheckoutActionType.OPEN_ADDRESS_MODAL,
-      payload: { mode: AddressOperationEnum.ADD, editId: null },
+      payload: { mode: AddressOperation.ADD, editId: null },
     });
   };
 
   const openEdit = async (addressId: string) => {
     dispatch({
       type: CheckoutActionType.OPEN_ADDRESS_MODAL,
-      payload: { mode: AddressOperationEnum.EDIT, editId: addressId },
+      payload: { mode: AddressOperation.EDIT, editId: addressId },
     });
   };
   const subtotal = isQuickBuy
@@ -679,11 +781,22 @@ function CheckoutClientInner() {
         const liveQty =
           reduxCartItems.find(
             (i) => i.productVariantId === item.product_variant_id,
-          )?.quantity ?? item.quantity;
+          )?.quantity ?? 0; // 0 when removed from Redux (spliced out)
         return acc + Number(item.productVariant.price) * liveQty;
       }, 0);
 
-  const delivery = 0;
+  // Items that still have qty > 0 in Redux — drives both the UI and redirect logic
+  const liveCartItems = isQuickBuy
+    ? state.cartItems
+    : state.cartItems.filter((item) => {
+        const qty =
+          reduxCartItems.find(
+            (i) => i.productVariantId === item.product_variant_id,
+          )?.quantity ?? 0; // 0 when removed from Redux
+        return qty > 0;
+      });
+
+  const delivery = deliveryFee;
   const couponDiscount = calculateCouponDiscount(state.couponApplied, subtotal);
   const displayedTotal = Math.max(0, subtotal + delivery - couponDiscount);
 
@@ -763,6 +876,41 @@ function CheckoutClientInner() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, checkoutType, isQuickBuy, user?.id, token]);
+
+  // ─── Auto-redirect when cart becomes completely empty ──────────────────────
+  useEffect(() => {
+    dispatch({
+      type: CheckoutActionType.SET_CART_ITEMS,
+      payload: state.cartItems.filter((item) =>
+        reduxCartItems.some(
+          (i) => i.productVariantId === item.product_variant_id,
+        ),
+      ),
+    });
+  }, [reduxCartItems]);
+
+  useEffect(() => {
+    // Only apply for cart checkout (not quick-buy), and only after initial load
+    if (isQuickBuy || state.isLoadingOrder || state.cartItems.length === 0)
+      return;
+
+    const allEmpty = state.cartItems.every((item) => {
+      const qty =
+        reduxCartItems.find(
+          (i) => i.productVariantId === item.product_variant_id,
+        )?.quantity ?? item.quantity;
+      return qty === 0;
+    });
+
+    if (allEmpty) {
+      toast("Your cart is empty — going back.", { icon: "🛒" });
+      clearSession();
+      // Small delay so the toast is visible before navigation
+      const t = setTimeout(() => router.back(), 900);
+      return () => clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduxCartItems, state.cartItems, state.isLoadingOrder, isQuickBuy]);
 
   useEffect(() => {
     if (isQuickBuy || state.cartItems.length === 0) return;
@@ -1064,16 +1212,6 @@ function CheckoutClientInner() {
               Secure Checkout
             </span>
           </div>
-          <Badge
-            variant="secondary"
-            className={`text-theme-xxs font-semibold px-2.5 py-1 rounded-full ${
-              isQuickBuy
-                ? "bg-amber-50 text-amber-700 border border-amber-200"
-                : "bg-blue-50 text-blue-700 border border-blue-200"
-            }`}
-          >
-            {isQuickBuy ? "⚡ Quick Buy" : "🛒 Cart Checkout"}
-          </Badge>
         </div>
       </div>
 
@@ -1082,19 +1220,22 @@ function CheckoutClientInner() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6 items-start">
           {/* ── Left column ─────────────────────────────────────────────────── */}
           <div className="space-y-4">
-            {/* Items panel */}
-            <ItemListPanel
-              isQuickBuy={isQuickBuy}
-              cartItems={state.cartItems}
-              quickBuyVariant={state.quickBuyVariant}
-              quickBuyQty={state.quickBuyQty}
-              onQuickBuyQtyChange={(qty) =>
-                dispatch({
-                  type: CheckoutActionType.SET_QUICK_BUY_QTY,
-                  payload: qty,
-                })
-              }
-            />
+            {/* Items panel — only shown while there are live items */}
+            {(!isQuickBuy ? liveCartItems.length > 0 : true) && (
+              <ItemListPanel
+                isQuickBuy={isQuickBuy}
+                cartItems={liveCartItems}
+                quickBuyVariant={state.quickBuyVariant}
+                quickBuyQty={state.quickBuyQty}
+                reduxCartItems={reduxCartItems}
+                onQuickBuyQtyChange={(qty) =>
+                  dispatch({
+                    type: CheckoutActionType.SET_QUICK_BUY_QTY,
+                    payload: qty,
+                  })
+                }
+              />
+            )}
 
             {/* Address selector */}
             <AddressSelector
@@ -1227,92 +1368,41 @@ function CheckoutClientInner() {
                   )}
                 </div>
 
+                {shippingInfo?.isFreeShippingEnabled &&
+                  !shippingInfo.isFreeShipping &&
+                  shippingInfo.nudgeAmount > 0 && (
+                    <div className="bg-blue-50 border border-blue-100 text-blue-700 text-theme-caption rounded-xl p-3 flex items-center gap-2 animate-fadeIn">
+                      <Truck className="w-4 h-4 shrink-0 text-blue-600 animate-pulse" />
+                      <span>
+                        Spend{" "}
+                        <strong>
+                          ₹{formatCurrency(shippingInfo.nudgeAmount)}
+                        </strong>{" "}
+                        more to unlock <strong>Free Shipping!</strong>
+                      </span>
+                    </div>
+                  )}
+                {shippingInfo?.isFreeShippingEnabled &&
+                  shippingInfo.isFreeShipping && (
+                    <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-theme-caption rounded-xl p-3 flex items-center gap-2 animate-fadeIn">
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                      <span>
+                        🎉 <strong>Free Shipping</strong> unlocked!
+                      </span>
+                    </div>
+                  )}
+
                 <Separator className="bg-gray-100" />
 
                 {/* Line items */}
-                <div className="space-y-2">
-                  {!isQuickBuy &&
-                    state.cartItems.map((item) => {
-                      const liveQty =
-                        reduxCartItems.find(
-                          (i) => i.productVariantId === item.product_variant_id,
-                        )?.quantity ?? item.quantity;
-                      return (
-                        <div
-                          key={item.id}
-                          className="flex justify-between text-theme-xxs text-gray-500"
-                        >
-                          <span className="line-clamp-1 max-w-[60%]">
-                            {item.productVariant.variant_name} ×{liveQty}
-                          </span>
-                          <span className="font-medium text-gray-700">
-                            ₹
-                            {formatCurrency(
-                              Number(item.productVariant.price) * liveQty,
-                            )}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  {isQuickBuy && state.quickBuyVariant && (
-                    <div className="flex justify-between text-theme-xxs text-gray-500">
-                      <span className="line-clamp-1 max-w-[60%]">
-                        {state.quickBuyVariant.variant_name} ×
-                        {state.quickBuyQty}
-                      </span>
-                      <span className="font-medium text-gray-700">
-                        ₹
-                        {formatCurrency(
-                          Number(state.quickBuyVariant.price) *
-                            state.quickBuyQty,
-                        )}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between text-theme-body-sm text-gray-600 pt-1">
-                    <span>Subtotal</span>
-                    <span className="font-medium">
-                      ₹{formatCurrency(subtotal)}
-                    </span>
-                  </div>
-
-                  {delivery > 0 && (
-                    <div className="flex justify-between text-theme-body-sm text-gray-600">
-                      <span>Delivery</span>
-                      <span>₹{formatCurrency(delivery)}</span>
-                    </div>
-                  )}
-
-                  {state.couponApplied &&
-                    couponDiscount === 0 &&
-                    (() => {
-                      const minOrder = getMinOrderAmount(state.couponApplied);
-                      return minOrder !== null ? (
-                        <div className="flex items-center gap-1.5 text-theme-xxs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-                          <AlertCircle size={11} className="shrink-0" />
-                          Min. order ₹{formatCurrency(minOrder)} required.
-                        </div>
-                      ) : null;
-                    })()}
-
-                  <div>
-                    {state.isTaxLoading ? (
-                      <TaxLoadingSkeleton />
-                    ) : (
-                      <TaxBreakdownPanel
-                        tax={state.taxBreakdown}
-                        deliveryFee={delivery}
-                        discount={couponDiscount}
-                      />
-                    )}
-                    {state.taxError && (
-                      <p className="text-theme-xxs text-amber-600 mt-1">
-                        {state.taxError}
-                      </p>
-                    )}
-                  </div>
-                </div>
+                <LineItem
+                  state={state}
+                  reduxCartItems={reduxCartItems}
+                  isQuickBuy={isQuickBuy}
+                  subtotal={subtotal}
+                  couponDiscount={couponDiscount}
+                  delivery={delivery}
+                />
 
                 <Separator className="border-dashed border-gray-200" />
 
@@ -1414,6 +1504,7 @@ function CheckoutClientInner() {
         quickBuyQty={state.quickBuyQty}
         isQuickBuy={isQuickBuy}
         reduxCartItems={reduxCartItems}
+        shippingInfo={shippingInfo}
       />
 
       {/* Address modal */}
@@ -1448,3 +1539,97 @@ export default function CheckoutClient() {
     </Suspense>
   );
 }
+
+export const LineItem = ({
+  state,
+  reduxCartItems,
+  isQuickBuy,
+  subtotal,
+  couponDiscount,
+  delivery,
+}: {
+  state: State;
+  reduxCartItems: any[];
+  isQuickBuy: boolean;
+  subtotal: number;
+  couponDiscount: number;
+  delivery: number;
+}) => {
+  return (
+    <div className="space-y-2">
+      {!isQuickBuy &&
+        state.cartItems
+          .filter((item) => {
+            const qty =
+              reduxCartItems.find(
+                (i) => i.productVariantId === item.product_variant_id,
+              )?.quantity ?? item.quantity;
+            return qty > 0;
+          })
+          .map((item) => {
+            const liveQty =
+              reduxCartItems.find(
+                (i) => i.productVariantId === item.product_variant_id,
+              )?.quantity ?? item.quantity;
+            return (
+              <div
+                key={item.id}
+                className="flex justify-between text-theme-xxs text-gray-500"
+              >
+                <span className="line-clamp-1 max-w-[60%]">
+                  {item.productVariant.variant_name} ×{liveQty}
+                </span>
+                <span className="font-medium text-gray-700">
+                  ₹{formatCurrency(Number(item.productVariant.price) * liveQty)}
+                </span>
+              </div>
+            );
+          })}
+
+      <div className="flex justify-between text-theme-body-sm text-gray-600 pt-1">
+        <span>Subtotal</span>
+        <span className="font-medium">₹{formatCurrency(subtotal)}</span>
+      </div>
+
+      <div className="flex justify-between text-theme-body-sm text-gray-600">
+        <span>Delivery</span>
+        <span
+          className={
+            delivery === 0
+              ? "text-emerald-600 font-semibold animate-fadeIn"
+              : "font-medium"
+          }
+        >
+          {delivery === 0 ? "Free" : `₹${formatCurrency(delivery)}`}
+        </span>
+      </div>
+
+      {state.couponApplied &&
+        couponDiscount === 0 &&
+        (() => {
+          const minOrder = getMinOrderAmount(state.couponApplied);
+          return minOrder !== null ? (
+            <div className="flex items-center gap-1.5 text-theme-xxs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+              <AlertCircle size={11} className="shrink-0" />
+              Min. order ₹{formatCurrency(minOrder)} required.
+            </div>
+          ) : null;
+        })()}
+
+      <div>
+        {state.isTaxLoading ? (
+          <TaxLoadingSkeleton />
+        ) : (
+          <TaxBreakdownPanel
+            tax={state.taxBreakdown}
+            deliveryFee={delivery}
+            discount={couponDiscount}
+          />
+        )}
+        {state.taxError && (
+          <p className="text-theme-xxs text-amber-600 mt-1">{state.taxError}</p>
+        )}
+      </div>
+    </div>
+  );
+};

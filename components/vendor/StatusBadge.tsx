@@ -1,5 +1,5 @@
 import { UiText } from "@/constants/ui-text";
-import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
+import { OrderStatus } from "@/utils/Types";
 import React from "react";
 import { STATUS_CONFIG } from "@/constants/ui-labels";
 
@@ -12,7 +12,7 @@ export function StatusBadge({
   status: OrderStatus;
   uiText?: Record<string, string>;
 }) {
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG[OrderStatusEnum.PENDING];
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG[OrderStatus.PENDING];
   const displayLabel =
     (uiText ?? UiText.ORDER_DETAILS.STATUS_LABELS)[
       status.toUpperCase() as keyof typeof UiText.ORDER_DETAILS.STATUS_LABELS

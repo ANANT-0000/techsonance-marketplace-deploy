@@ -26,7 +26,7 @@ import {
   fetchUpdateOrderStatus,
   fetchVendorOrderDetails,
 } from "@/utils/vendorApiClient";
-import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
+import { OrderStatus } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
 import Image from "next/image";
 import { BASE_API_URL } from "@/constants";
@@ -285,7 +285,7 @@ export default function VendorOrderDetails({}) {
 
   const [order, setOrder] = useState<Order | null>(null);
   const [orderStatus, setOrderStatus] = useState<OrderStatus>(
-    OrderStatusEnum.PROCESSING,
+    OrderStatus.PROCESSING,
   );
   const [cancellingItemId, setCancellingItemId] = useState<string | null>(null);
 
@@ -608,8 +608,8 @@ export default function VendorOrderDetails({}) {
                       )}
 
                       {/* Cancel button */}
-                      {displayStatus !== OrderStatusEnum.CANCELLED &&
-                        displayStatus !== OrderStatusEnum.DELIVERED && (
+                      {displayStatus !== OrderStatus.CANCELLED &&
+                        displayStatus !== OrderStatus.DELIVERED && (
                           <div className="ml-[68px]">
                             <button
                               onClick={() => setCancellingItemId(item.id)}
@@ -869,8 +869,8 @@ export default function VendorOrderDetails({}) {
                   </div>
 
                   {/* Tracking URL */}
-                  {orderStatus === OrderStatusEnum.SHIPPED ||
-                  orderStatus === OrderStatusEnum.DELIVERED ? (
+                  {orderStatus === OrderStatus.SHIPPED ||
+                  orderStatus === OrderStatus.DELIVERED ? (
                     <div className="border-t border-slate-100 pt-4 space-y-2">
                       <p className="text-theme-caption font-semibold text-slate-500 uppercase tracking-wide">
                         {UiText.ORDER_DETAILS.TRACKING_URL}

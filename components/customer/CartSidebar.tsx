@@ -8,11 +8,10 @@ import { useMediaQuery } from "react-responsive";
 import { RootState } from "@/lib/store";
 import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
- 
+import { usePathname } from "next/navigation";
 import { BuyBtnMode } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
 import { X, ShoppingBag, ArrowRight, Package, Tag, ChevronRight } from "lucide-react";
-
 import { loadCart } from "@/lib/features/Cart";
 import { CartItemListResponse } from "@/app/(storefront)/customer/cart/CartClient";
 import { CART_SIDEBAR_TEXT } from "@/constants/customerText";
@@ -92,8 +91,17 @@ export function CartSidebar() {
     const { itemList, loading: isLoading, cartId } = useAppSelector((state: RootState) => state.cart);
     const dispatch = useAppDispatch();
     const token = authToken();
+    const pathname = usePathname();
 
+    const isCheckoutPage = !!pathname?.includes("/checkout");
 
+    // Close sidebar if it was open when user navigates to checkout
+    // (merged here so it runs unconditionally — no hooks after an early return)
+    useEffect(() => {
+        if (isCheckoutPage && isCartOpen) {
+            dispatch(toggleCartSidebar("close"));
+        }
+    }, [isCheckoutPage, isCartOpen, dispatch]);
 
     // Auto-dismiss mobile toast after 2.5 s
     useEffect(() => {
@@ -132,6 +140,9 @@ export function CartSidebar() {
     const itemCount = itemList.reduce((sum, i) => sum + (i.quantity ?? 0), 0);
     const lastAddedItem = itemList[itemList.length - 1];
 
+    // ── Now safe to bail out — all hooks have already been called ────────────
+    if (isCheckoutPage) return null;
+
     // ── Mobile: pill toast ────────────────────────────────────────────────────
     if (isMobile) {
         return (
@@ -140,6 +151,7 @@ export function CartSidebar() {
             </AnimatePresence>
         );
     }
+
 
     // ── Desktop: slide-in sidebar ─────────────────────────────────────────────
     return (

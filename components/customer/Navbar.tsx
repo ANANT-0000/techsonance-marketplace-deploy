@@ -398,6 +398,11 @@ export function Navbar({
   const { wishItems } = useAppSelector((state: RootState) => state.wishlist);
   const { user } = useAppSelector((state: RootState) => state.auth);
 
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Load configuration directly from the hook — transformation is done there.
   const { l1Config, l2Config, isLoading } = useNavbarData();
 
@@ -791,7 +796,7 @@ export function Navbar({
 
           {/* Utilities */}
           <div className="flex items-center gap-2">
-            {l1Config.utilities.showWishlist && user && (
+            {isMounted && l1Config.utilities.showWishlist && user && (
               <Link
                 href="/customer/wishlist"
                 className="p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors"
@@ -807,7 +812,7 @@ export function Navbar({
                 className="relative p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
                 aria-label={NAVBAR_UI_TEXT.CART_ARIA_LABEL}
               >
-                {items.length > 0 && (
+                {isMounted && items.length > 0 && (
                   <span className="absolute top-0 right-0 text-[9px] font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4.5 h-4.5 flex items-center justify-center border border-navbar">
                     {items.length}
                   </span>
@@ -984,10 +989,10 @@ export function Navbar({
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors text-left border-none bg-transparent cursor-pointer"
                   >
                     <User size={16} strokeWidth={1.7} />
-                    <span>{user?.id ? "My Profile" : "Sign In"}</span>
+                    <span>{isMounted && user?.id ? "My Profile" : "Sign In"}</span>
                   </button>
                 )}
-                {user?.id && (
+                {isMounted && user?.id && (
                   <button
                     onClick={() => {
                       dispatchMenuState({
@@ -1371,7 +1376,7 @@ export function Navbar({
                       onClick={handleAuthClick}
                       className="w-full flex items-center gap-3 px-4.5 py-2.5 text-sm font-bold hover:bg-theme-primary/5 transition-colors text-left border-none bg-transparent cursor-pointer"
                     >
-                      {user?.id ? (
+                      {isMounted && user?.id ? (
                         <>
                           <LogOut
                             size={24}
@@ -1402,7 +1407,7 @@ export function Navbar({
           )}
 
           {/* Wishlist Link */}
-          {l1Config.utilities.showWishlist && user && (
+          {isMounted && l1Config.utilities.showWishlist && user && (
             <Link
               href="/customer/wishlist"
               className="relative p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors"
@@ -1419,7 +1424,7 @@ export function Navbar({
               className="relative p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
               aria-label={NAVBAR_UI_TEXT.CART_ARIA_LABEL}
             >
-              {items.length > 0 && (
+              {isMounted && items.length > 0 && (
                 <span className="absolute top-0 right-0 text-tiny font-bold bg-theme-primary text-theme-primary-foreground rounded-full w-4.5 h-4.5 flex items-center justify-center border-2 border-navbar">
                   {items.length}
                 </span>

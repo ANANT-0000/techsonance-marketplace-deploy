@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { BASE_API_URL } from "@/constants";
+import { BASE_API_URL, COLOR_DARK_CHARCOAL } from "@/constants";
 import { renderPdfInIframe } from "@/lib/renderPdf";
 
 export interface InvoicePayload {
@@ -130,7 +130,7 @@ function buildInvoiceHtml(payload: InvoicePayload): string {
   };
   const hasCgst = totals.totalCgst > 0;
   const hasIgst = totals.totalIgst > 0;
-  const primaryColor = branding.primaryColor || "#131921";
+  const primaryColor = branding.primaryColor || COLOR_DARK_CHARCOAL;
   const fontFamily = branding.fontFamily || "Arial, sans-serif";
 
   return `<!DOCTYPE html>

@@ -1,7 +1,7 @@
 "use client";
 
 import { formatCurrency } from "@/lib/utils";
-import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
+import { OrderStatus } from "@/utils/Types";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -124,7 +124,7 @@ function OrderItemRow({
             <ReturnBadge returnRequest={item.return_request} />
           )}
         </div>
-        {item.order_status === OrderStatusEnum.DELIVERED &&
+        {item.order_status === OrderStatus.DELIVERED &&
           !item.return_request && (
             <motion.button
               whileTap={{ scale: 0.95 }}

@@ -113,7 +113,7 @@ interface OrderDetailType {
 // ─── Timeline Helper ──────────────────────────────────────────────────────────
 const TIMELINE_STEPS = [
   { key: "pending", label: "Order Placed", icon: Clock },
-  { key: "processing", label: "Packed", icon: Package },
+  { key: "processing", label: "Processing", icon: Package },
   { key: "shipped", label: "Shipped", icon: Truck },
   { key: "delivered", label: "Delivered", icon: CheckCircle2 },
 ];
@@ -137,7 +137,9 @@ function VerticalTimeline({
       <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-left">
         <XCircle className="text-destructive mt-0.5 shrink-0" size={20} />
         <div>
-          <p className="font-bold text-destructive">{ORDER_DETAILS_TEXT.ORDER_CANCELLED}</p>
+          <p className="font-bold text-destructive">
+            {ORDER_DETAILS_TEXT.ORDER_CANCELLED}
+          </p>
           <p className="text-xs text-destructive/80 mt-1 leading-relaxed">
             {ORDER_DETAILS_TEXT.ORDER_CANCELLED_DESC}
           </p>
@@ -313,16 +315,22 @@ export default function OrderDetailsPage() {
               className="bg-card border-border rounded-xl shadow-sm text-xs font-semibold cursor-pointer active:scale-95 transition-all"
             >
               <Download size={16} className="mr-2" />
-              {isGenerating ? ORDER_DETAILS_TEXT.BTN_INVOICE_LOADING : ORDER_DETAILS_TEXT.BTN_DOWNLOAD_INVOICE}
+              {isGenerating
+                ? ORDER_DETAILS_TEXT.BTN_INVOICE_LOADING
+                : ORDER_DETAILS_TEXT.BTN_DOWNLOAD_INVOICE}
             </Button>
             {order.shipping?.tracking_url && (
-              <Button className="rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer text-xs font-semibold shadow-sm active:scale-95" asChild>
+              <Button
+                className="rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer text-xs font-semibold shadow-sm active:scale-95"
+                asChild
+              >
                 <a
                   href={order.shipping.tracking_url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Truck size={16} className="mr-2" /> {ORDER_DETAILS_TEXT.BTN_TRACK_PACKAGE}
+                  <Truck size={16} className="mr-2" />{" "}
+                  {ORDER_DETAILS_TEXT.BTN_TRACK_PACKAGE}
                 </a>
               </Button>
             )}
@@ -337,7 +345,9 @@ export default function OrderDetailsPage() {
             {unifiedStatus && (
               <Card className="shadow-sm rounded-2xl border-border bg-card overflow-hidden">
                 <CardHeader className="pb-4 border-b border-border bg-transparent">
-                  <CardTitle className="text-sm font-bold text-foreground">{ORDER_DETAILS_TEXT.ORDER_STATUS}</CardTitle>
+                  <CardTitle className="text-sm font-bold text-foreground">
+                    {ORDER_DETAILS_TEXT.ORDER_STATUS}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6">
                   <VerticalTimeline
@@ -360,7 +370,8 @@ export default function OrderDetailsPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Truck size={16} className="mr-2" /> {ORDER_DETAILS_TEXT.BTN_TRACK_SHORT}
+                    <Truck size={16} className="mr-2" />{" "}
+                    {ORDER_DETAILS_TEXT.BTN_TRACK_SHORT}
                   </a>
                 </Button>
               )}
@@ -384,7 +395,10 @@ export default function OrderDetailsPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-start gap-3">
-                  <MapPin className="text-muted-foreground mt-1 shrink-0" size={20} />
+                  <MapPin
+                    className="text-muted-foreground mt-1 shrink-0"
+                    size={20}
+                  />
                   <div className="text-xs text-muted-foreground leading-relaxed">
                     <p className="font-bold text-foreground mb-1">
                       {order.address.name}
@@ -510,7 +524,9 @@ export default function OrderDetailsPage() {
             {/* Payment Summary Card */}
             <Card className="shadow-sm rounded-2xl border-border bg-card overflow-hidden">
               <CardHeader className="pb-4 border-b border-border bg-transparent">
-                <CardTitle className="text-sm font-bold text-foreground">{ORDER_DETAILS_TEXT.PAYMENT_SUMMARY}</CardTitle>
+                <CardTitle className="text-sm font-bold text-foreground">
+                  {ORDER_DETAILS_TEXT.PAYMENT_SUMMARY}
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
@@ -540,7 +556,10 @@ export default function OrderDetailsPage() {
                   {/* Right: Line Items */}
                   <div className="space-y-3 text-xs text-muted-foreground flex flex-col justify-center">
                     <div className="flex justify-between">
-                      <span>{ORDER_DETAILS_TEXT.LABEL_SUBTOTAL} ({order.items.length} items)</span>
+                      <span>
+                        {ORDER_DETAILS_TEXT.LABEL_SUBTOTAL} (
+                        {order.items.length} items)
+                      </span>
                       <span className="font-medium text-foreground">
                         ₹{formatCurrency(itemsTotal)}
                       </span>

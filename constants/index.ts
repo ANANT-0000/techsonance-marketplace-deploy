@@ -9,6 +9,7 @@ export * from "./authText";
 export * from "./vendorText";
 export const DEFAULT_LANG = "en";
 export const ENV_DEVELOPMENT = "development";
+export const ENV_PRODUCTION = "production";
 export const REACT_SCAN_SCRIPT_URL =
   "https://unpkg.com/react-scan/dist/auto.global.js";
 export const SCRIPT_STRATEGY = "beforeInteractive";

@@ -30,13 +30,13 @@ export const AddressCard = ({
       className="h-full"
     >
       <Card
-        className={`h-full flex flex-col rounded-2xl border   transition-colors border-border ${address.is_default ? "border-theme-primary/10 bg-theme-primary/2 shadow-md" : "hover:border-border/80 shadow-md"}`}
+        className={`h-full  flex flex-col rounded-2xl border   transition-colors border-border ${address.is_default ? "border-theme-primary/10 bg-theme-primary/2 shadow-md" : "hover:border-border/80 shadow-md"}`}
       >
-        <CardContent className="p-6 flex flex-col flex-1">
+        <CardContent className="p-6 flex flex-col flex-1 w-full">
           {/* Header: Icon, Title, and Default Badge */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-primary">
-              <Icon size={20} strokeWidth={2.5} />
+              <Icon size={20} strokeWidth={2.5} color="black" />
               <h3 className="font-bold text-theme-h6 text-foreground tracking-tight">
                 {title.trim()}
               </h3>
@@ -44,7 +44,7 @@ export const AddressCard = ({
             {address.is_default && (
               <Badge
                 variant="default"
-                className="bg-white hover:bg-white text-black rounded-full px-3 text-theme-tiny font-bold tracking-wide uppercase"
+                className="bg-theme-primary hover:bg-theme-primary/70 text-theme-primary-foreground rounded-full px-3 text-theme-tiny font-bold tracking-wide uppercase shadow-sm"
               >
                 {ADDRESS_CARD_TEXT.BADGE_DEFAULT}
               </Badge>
@@ -79,7 +79,7 @@ export const AddressCard = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+          <div className="mt-4 pt-4 border-t border-border flex flex-col gap-3 w-full">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => onEdit(address.id)}
@@ -99,7 +99,7 @@ export const AddressCard = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-full h-8 px-4 text-theme-caption font-semibold text-theme-secondary border-theme-primary-foreground/90 hover:bg-theme-primary-foreground/10"
+                className="w-full rounded-full text-theme-body-sm font-semibold text-theme-secondary border-theme-primary/20 hover:bg-theme-primary/5 hover:text-theme-primary transition-colors mt-1"
                 onClick={() => onSetDefault(address.user_id, address.id)}
               >
                 {ADDRESS_CARD_TEXT.BTN_SET_DEFAULT}

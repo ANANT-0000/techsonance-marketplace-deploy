@@ -1,7 +1,7 @@
 import { SendHorizontal } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
 import { useEffect, useState } from "react";
-import { SupportTicketType, TicketMessageType, TicketMessageTypeEnum } from "@/utils/Types";
+import { SupportTicketType, TicketMessageType, TicketMessageSender } from "@/utils/Types";
 import { CHAT_WINDOW_TEXT } from "@/constants/commonText";
 
 export const ChatWindow = ({ ticket }: { ticket: SupportTicketType }) => {
@@ -20,7 +20,7 @@ export const ChatWindow = ({ ticket }: { ticket: SupportTicketType }) => {
             role: CHAT_WINDOW_TEXT.SUPER_ADMIN,
             text: inputText,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            type: TicketMessageTypeEnum.SUPER_ADMIN,
+            type: TicketMessageSender.SUPER_ADMIN,
         };
         setMessages([...messages, newMessage]);
         setInputText("");

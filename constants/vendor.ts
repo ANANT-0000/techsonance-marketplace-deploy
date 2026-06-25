@@ -383,6 +383,11 @@ export const getVendorInnerSidebarLinks = (
               path: `/vendor/settings/locations`,
               icon: "map-pin",
             },
+            {
+              title: "Shipping & Logistics",
+              path: `/vendor/settings/shipping`,
+              icon: "truck",
+            },
             // { title: 'Business Hours', path: `/vendor/settings/business-hours`, icon: 'clock' },
           ],
         },

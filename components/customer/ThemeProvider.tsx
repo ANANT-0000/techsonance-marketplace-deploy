@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useMemo, useState, useEffect } from "react";
 import { StorefrontTheme, useThemeData } from "@/hooks/useThemeData";
+import { COLOR_WHITE } from "@/constants";
 
 // Helper to convert hex to RGB
 function hexToRgb(hex: string) {
@@ -115,7 +116,7 @@ export function ThemeProvider({
       styles["--theme-primary"] = correctedTheme.primary_color;
       styles["--theme-primary-foreground"] = getSafeContrastTextColor(
         correctedTheme.primary_color,
-        "#ffffff",
+        COLOR_WHITE,
       );
     }
     if (correctedTheme.secondary_color)
@@ -132,7 +133,7 @@ export function ThemeProvider({
       styles["--brand-primary"] = correctedTheme.primary_color;
       styles["--brand-primary-foreground"] = getSafeContrastTextColor(
         correctedTheme.primary_color,
-        "#ffffff",
+        COLOR_WHITE,
       );
     }
     if (correctedTheme.secondary_color)
@@ -244,7 +245,7 @@ export function ThemeSection({
       styles["--theme-primary"] = correctedTheme.primary_color;
       styles["--theme-primary-foreground"] = getSafeContrastTextColor(
         correctedTheme.primary_color,
-        "#ffffff",
+        COLOR_WHITE,
       );
     }
     if (correctedTheme.secondary_color)
@@ -261,7 +262,7 @@ export function ThemeSection({
       styles["--brand-primary"] = correctedTheme.primary_color;
       styles["--brand-primary-foreground"] = getSafeContrastTextColor(
         correctedTheme.primary_color,
-        "#ffffff",
+        COLOR_WHITE,
       );
     }
     if (correctedTheme.secondary_color)

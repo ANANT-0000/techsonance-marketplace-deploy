@@ -2,6 +2,7 @@
 import { BASE_API_URL } from "@/constants";
 import { revalidatePath } from "next/cache";
 import { getCompanyDomain } from "@/lib/get-domain";
+import { getCacheConfig } from "./cache";
 import {
   CompanyComplianceField,
   ComplianceDocument,
@@ -26,8 +27,7 @@ export const fetchVendorsProductsCategory = async (token: string) => {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/categories`, {
       method: "GET",
-      // cache: 'force-cache',
-      // next: { revalidate: 360 },
+      ...getCacheConfig(360, ["categories"]),
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -66,7 +66,7 @@ export const createVendorProductCategory = async (
     if (response.status !== 201) {
       return { data: {}, message: "Failed to create product category" };
     }
-    // revalidatePath('/vendor/products/categories');
+    revalidatePath("/vendor/products/categories");
     return await response.json();
   } catch (error) {
     return { data: {}, message: "Error creating product category" };
@@ -533,14 +533,24 @@ export const fetchVendorOrderList = async (
   offset: number = 0,
   limit: number = 10,
   token: string,
-  status?: OrderStatus | undefined,
+  status?: OrderStatus | "",
   sortBy?: string,
 ) => {
   try {
     const companyDomain = await getCompanyDomain();
 
+    const queryParams = new URLSearchParams();
+    queryParams.append("offset", String(offset));
+    queryParams.append("limit", String(limit));
+    if (status && (status as string) !== "undefined") {
+      queryParams.append("status", status);
+    }
+    if (sortBy && sortBy !== "undefined") {
+      queryParams.append("sortBy", sortBy);
+    }
+
     const response = await fetch(
-      `${BASE_API_URL}/v1/orders?offset=${offset}&limit=${limit}&status=${status || undefined}&sortBy=${sortBy || undefined}`,
+      `${BASE_API_URL}/v1/orders?${queryParams.toString()}`,
       {
         method: "GET",
         cache: "no-cache",
@@ -736,8 +746,7 @@ export const fetchVendorWarehouse = async (token: string) => {
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/warehouse/options`, {
       method: "GET",
-      cache: "force-cache",
-      next: { revalidate: 3600 },
+      ...getCacheConfig(3600),
       headers: {
         "company-domain": companyDomain,
         Authorization: `Bearer ${token}`,
@@ -968,8 +977,7 @@ export const fetchCompanyCustomers = async (
     const response = await fetch(
       `${BASE_API_URL}/v1/company/customers?offset=${offset}&limit=${limit}&status=${status}&sortBy=${sortBy}`,
       {
-        cache: "no-store",
-        // next: { revalidate: 3600 },
+        ...getCacheConfig(3600),
         headers: {
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
@@ -1101,6 +1109,7 @@ export const fetchTaxSlabOptions = async (token: string) => {
       `${BASE_API_URL}/v1/finances/tax-slab-options`,
       {
         method: "GET",
+        ...getCacheConfig(3600),
         headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
@@ -1523,8 +1532,7 @@ export const fetchCompanyDocumentConfig = async (token: string) => {
     const res = await fetch(
       `${BASE_API_URL}/v1/company-identity/document-config`,
       {
-        //   cache: 'force-cache',
-        //   revalidate: 3600,
+        ...getCacheConfig(3600),
         headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
       },
     );
@@ -2335,3 +2343,44 @@ export const reorderNavbarItems = async (
     return { success: false, message: "Error reordering nav items" };
   }
 };
+
+// ==========================================
+// SHIPPING LOGISTICS API ENDPOINTS
+// ==========================================
+
+export const fetchShippingSettings = async (token: string) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(`${BASE_API_URL}/v1/shipping/settings`, {
+      cache: "no-store",
+      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return { data: null };
+    return res.json();
+  } catch (error) {
+    return { data: null, message: "Error fetching shipping settings" };
+  }
+};
+
+export const updateShippingSettings = async (payload: any, token: string) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(`${BASE_API_URL}/v1/shipping/settings`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "company-domain": domain,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/vendor");
+    return res.json();
+  } catch (error) {
+    return {
+      success: false,
+      message: "Error updating shipping settings",
+    };
+  }
+};
+

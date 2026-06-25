@@ -1,6 +1,7 @@
 // 'use server';
 import { BASE_API_URL, CUSTOMER_BASE_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
+import { getCacheConfig } from "./cache";
 
 export const fetchcustomer = async (token: string) => {
   try {
@@ -28,6 +29,7 @@ export const fetchCustomerWishlist = async (
     const companyDomain = await getCompanyDomain();
     const response = await fetch(`${BASE_API_URL}/v1/wishlist/${customerId} `, {
       method: "GET",
+      cache: "no-cache",
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -35,9 +37,12 @@ export const fetchCustomerWishlist = async (
       },
     });
     if (response.status !== 200) {
+      return { success: false, data: [] };
     }
     return await response.json();
-  } catch (error) {}
+  } catch (error) {
+    return { success: false, data: [] };
+  }
 };
 export const fetchAddWishList = async (
   productId: string,
@@ -176,6 +181,7 @@ export const fetchGetUserAddresses = async (
       `${BASE_API_URL}/v1/address/customer/${customerId}`,
       {
         method: "GET",
+        cache: "no-cache",
         headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
@@ -184,10 +190,12 @@ export const fetchGetUserAddresses = async (
       },
     );
     if (response.status !== 200) {
-      return [];
+      return { success: false, status: response.status, data: [] };
     }
     return await response.json();
-  } catch (error) {}
+  } catch (error) {
+    return { success: false, status: 500, data: [] };
+  }
 };
 
 export const fetchGetAddressById = async (
@@ -230,6 +238,7 @@ export const checkAddressExistence = async (
       `${BASE_API_URL}/v1/address/customer/${customerId}/addresses-exist`,
       {
         method: "GET",
+        cache: "no-cache",
         headers: {
           "Content-Type": "application/json",
           "company-domain": await getCompanyDomain(),
@@ -291,6 +300,7 @@ export const fetchUserOrderHistory = async (
       `${BASE_API_URL}/v1/orders-items/user/${customerId}`,
       {
         method: "GET",
+        cache: "no-cache",
         headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
@@ -308,6 +318,7 @@ export const fetchOrderDetails = async (orderId: string, token: string) => {
   try {
     const response = await fetch(`${BASE_API_URL}/v1/orders/${orderId}`, {
       method: "GET",
+      cache: "no-cache",
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -329,6 +340,7 @@ export const fetchOrderItemDetails = async (
       `${BASE_API_URL}/v1/order-items/${orderItemId}`,
       {
         method: "GET",
+        cache: "no-cache",
         headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
@@ -398,6 +410,7 @@ export const fetchUserReturns = async (userId: string, token: string) => {
   try {
     const response = await fetch(`${BASE_API_URL}/v1/returns/user/${userId}`, {
       method: "GET",
+      cache: "no-cache",
       headers: {
         "Content-Type": "application/json",
         "company-domain": domain,
@@ -438,6 +451,7 @@ export const fetchReviews = async (productId: string) => {
       `${BASE_API_URL}/v1/product-review/product/${productId}`,
       {
         method: "GET",
+        ...getCacheConfig(300),
         headers: {
           "Content-Type": "application/json",
           "company-domain": await getCompanyDomain(),

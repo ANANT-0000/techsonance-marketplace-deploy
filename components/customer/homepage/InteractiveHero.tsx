@@ -17,12 +17,12 @@ import { useImageColors } from "@/hooks/useImageColors";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   VIDEO_HERO_DEFAULT,
-  COLOR_WHITE,
   COLOR_WHITE_MUTED,
   COLOR_SLATE_MUTED,
   COLOR_SLATE_DARK,
 } from "@/constants/storefront";
 import { INTERACTIVE_HERO_TEXT } from "@/constants/customerText";
+import { COLOR_WHITE } from "@/constants";
 
 export enum HeroLayout {
   CENTER_OVERLAY = "center-overlay",

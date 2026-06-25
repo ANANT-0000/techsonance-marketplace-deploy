@@ -2,7 +2,7 @@ import {
   ActiveInstanceType,
   AuditLogEntryType,
   SupportTicketType,
-  VendorApplicationStatusEnum,
+  VendorApplicationStatus,
   VendorApplicationType,
   VendorManagementEntryType,
   VendorRequestEntryType,
@@ -11,7 +11,7 @@ import {
   VendorManagementStatus,
   VendorRequestStatus,
   SupportTicketStatus,
-  TicketMessageTypeEnum,
+  TicketMessageSender,
 } from "@/utils/Types";
 
 // ============================================================
@@ -124,10 +124,10 @@ export const SUPPORT_TICKETS: SupportTicketType[] = [
     status: SupportTicketStatus.ACTIVE,
     time: "2m ago",
     messages: [
-      { id: 1, sender: "John Doe", role: "Vendor Admin", text: "Hi, we are trying to process payments but getting a 500 error on checkout. It says 'API Key Invalid'. Can you check?", time: "10:30 AM", type: TicketMessageTypeEnum.VENDOR },
-      { id: 2, sender: "System Bot", role: "Bot", text: "Thank you for reaching out. A Super Admin has been notified and will review your configuration shortly.", time: "10:31 AM", type: TicketMessageTypeEnum.SYSTEM },
-      { id: 3, sender: "You", role: "Super Admin", text: "Hello John, I checked your configuration. It seems your API Secret Key was rotated yesterday. Please update it in Settings > Payments.", time: "10:45 AM", type: TicketMessageTypeEnum.SUPER_ADMIN },
-      { id: 4, sender: "John Doe", role: "Vendor Admin", text: "Ah, I missed that. Updating it now... verify in a moment.", time: "10:48 AM", type: TicketMessageTypeEnum.VENDOR },
+      { id: 1, sender: "John Doe", role: "Vendor Admin", text: "Hi, we are trying to process payments but getting a 500 error on checkout. It says 'API Key Invalid'. Can you check?", time: "10:30 AM", type: TicketMessageSender.VENDOR },
+      { id: 2, sender: "System Bot", role: "Bot", text: "Thank you for reaching out. A Super Admin has been notified and will review your configuration shortly.", time: "10:31 AM", type: TicketMessageSender.SYSTEM },
+      { id: 3, sender: "You", role: "Super Admin", text: "Hello John, I checked your configuration. It seems your API Secret Key was rotated yesterday. Please update it in Settings > Payments.", time: "10:45 AM", type: TicketMessageSender.SUPER_ADMIN },
+      { id: 4, sender: "John Doe", role: "Vendor Admin", text: "Ah, I missed that. Updating it now... verify in a moment.", time: "10:48 AM", type: TicketMessageSender.VENDOR },
     ],
   },
   {
@@ -138,8 +138,8 @@ export const SUPPORT_TICKETS: SupportTicketType[] = [
     status: SupportTicketStatus.PENDING,
     time: "15m ago",
     messages: [
-      { id: 1, sender: "Alice Wang", role: "Vendor Admin", text: "We added the CNAME record but domain verification is still showing as failed. Our DNS provider confirmed it is propagated.", time: "11:00 AM", type: TicketMessageTypeEnum.VENDOR },
-      { id: 2, sender: "System Bot", role: "Bot", text: "Domain verification request received. Checking DNS records...", time: "11:01 AM", type: TicketMessageTypeEnum.SYSTEM },
+      { id: 1, sender: "Alice Wang", role: "Vendor Admin", text: "We added the CNAME record but domain verification is still showing as failed. Our DNS provider confirmed it is propagated.", time: "11:00 AM", type: TicketMessageSender.VENDOR },
+      { id: 2, sender: "System Bot", role: "Bot", text: "Domain verification request received. Checking DNS records...", time: "11:01 AM", type: TicketMessageSender.SYSTEM },
     ],
   },
   {
@@ -150,9 +150,9 @@ export const SUPPORT_TICKETS: SupportTicketType[] = [
     status: SupportTicketStatus.CLOSED,
     time: "1h ago",
     messages: [
-      { id: 1, sender: "Neha Gupta", role: "Vendor Admin", text: "We need to increase our product listing limit from 500 to 2000. Our catalog has grown significantly.", time: "09:00 AM", type: TicketMessageTypeEnum.VENDOR },
-      { id: 2, sender: "You", role: "Super Admin", text: "Hi Neha, I've upgraded your plan to Premium which allows up to 5000 listings. The changes are effective immediately.", time: "09:15 AM", type: TicketMessageTypeEnum.SUPER_ADMIN },
-      { id: 3, sender: "Neha Gupta", role: "Vendor Admin", text: "Thank you so much! I can see the new limit now. Closing this ticket.", time: "09:20 AM", type: TicketMessageTypeEnum.VENDOR },
+      { id: 1, sender: "Neha Gupta", role: "Vendor Admin", text: "We need to increase our product listing limit from 500 to 2000. Our catalog has grown significantly.", time: "09:00 AM", type: TicketMessageSender.VENDOR },
+      { id: 2, sender: "You", role: "Super Admin", text: "Hi Neha, I've upgraded your plan to Premium which allows up to 5000 listings. The changes are effective immediately.", time: "09:15 AM", type: TicketMessageSender.SUPER_ADMIN },
+      { id: 3, sender: "Neha Gupta", role: "Vendor Admin", text: "Thank you so much! I can see the new limit now. Closing this ticket.", time: "09:20 AM", type: TicketMessageSender.VENDOR },
     ],
   },
   {
@@ -163,8 +163,8 @@ export const SUPPORT_TICKETS: SupportTicketType[] = [
     status: SupportTicketStatus.ACTIVE,
     time: "30m ago",
     messages: [
-      { id: 1, sender: "Ravi Kumar", role: "Vendor Admin", text: "Images larger than 2MB are failing to upload with a timeout error. This started happening since the last platform update.", time: "10:00 AM", type: TicketMessageTypeEnum.VENDOR },
-      { id: 2, sender: "System Bot", role: "Bot", text: "Upload issue detected. Escalating to engineering team.", time: "10:01 AM", type: TicketMessageTypeEnum.SYSTEM },
+      { id: 1, sender: "Ravi Kumar", role: "Vendor Admin", text: "Images larger than 2MB are failing to upload with a timeout error. This started happening since the last platform update.", time: "10:00 AM", type: TicketMessageSender.VENDOR },
+      { id: 2, sender: "System Bot", role: "Bot", text: "Upload issue detected. Escalating to engineering team.", time: "10:01 AM", type: TicketMessageSender.SYSTEM },
     ],
   },
   {
@@ -175,7 +175,7 @@ export const SUPPORT_TICKETS: SupportTicketType[] = [
     status: SupportTicketStatus.PENDING,
     time: "45m ago",
     messages: [
-      { id: 1, sender: "Deepak Verma", role: "Vendor Admin", text: "The monthly revenue report for February shows ₹0 revenue, but we had over 200 orders. Please investigate.", time: "09:30 AM", type: TicketMessageTypeEnum.VENDOR },
+      { id: 1, sender: "Deepak Verma", role: "Vendor Admin", text: "The monthly revenue report for February shows ₹0 revenue, but we had over 200 orders. Please investigate.", time: "09:30 AM", type: TicketMessageSender.VENDOR },
     ],
   },
 ];
@@ -212,7 +212,7 @@ export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
       owner_name: "marcus vance",
       owner_email: "vance.logistics@provider.net",
       submission_date: "january 22, 2026",
-      status: VendorApplicationStatusEnum.ACCEPTED,
+      status: VendorApplicationStatus.ACCEPTED,
     },
     submitted_documents: [
       { file_name: "fleet_insurance_2026.pdf", size: "4.2 mb", uploaded_at: "10 minutes ago" },
@@ -230,7 +230,7 @@ export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
       owner_name: "elena rodriguez",
       owner_email: "elena@urbangreen.co",
       submission_date: "january 25, 2026",
-      status: VendorApplicationStatusEnum.PENDING,
+      status: VendorApplicationStatus.PENDING,
     },
     submitted_documents: [
       { file_name: "health_dept_cert.pdf", size: "2.8 mb", uploaded_at: "1 day ago" },
@@ -248,7 +248,7 @@ export const VENDOR_APPLICATIONS: VendorApplicationType[] = [
       owner_name: "hiroshi tanaka",
       owner_email: "h.tanaka@quantumlabs.io",
       submission_date: "january 27, 2026",
-      status: VendorApplicationStatusEnum.REJECTED,
+      status: VendorApplicationStatus.REJECTED,
     },
     submitted_documents: [
       { file_name: "ip_declaration.pdf", size: "0.5 mb", uploaded_at: "45 minutes ago" },

@@ -22,7 +22,7 @@ import {
 } from "@/utils/vendorApiClient";
 import {
   OrderStatus as OrderStatusType,
-  OrderStatusEnum,
+  OrderStatus,
   ReturnType,
 } from "@/utils/Types";
 import { redirect, useRouter } from "next/navigation";
@@ -106,7 +106,7 @@ const getStatusBadges = (statuses: string | string[]) => {
   );
   const renderBadge = (status: string, index: number) => {
     switch (status) {
-      case OrderStatusEnum.PENDING:
+      case OrderStatus.PENDING:
         return (
           <span
             key={index}
@@ -115,7 +115,7 @@ const getStatusBadges = (statuses: string | string[]) => {
             ● Pending
           </span>
         );
-      case OrderStatusEnum.DELIVERED:
+      case OrderStatus.DELIVERED:
         return (
           <span
             key={index}
@@ -133,7 +133,7 @@ const getStatusBadges = (statuses: string | string[]) => {
             ● Active
           </span>
         );
-      case OrderStatusEnum.CANCELLED:
+      case OrderStatus.CANCELLED:
         return (
           <span
             key={index}
@@ -142,7 +142,7 @@ const getStatusBadges = (statuses: string | string[]) => {
             ● {status}
           </span>
         );
-      case OrderStatusEnum.SHIPPED:
+      case OrderStatus.SHIPPED:
         return (
           <span
             key={index}
@@ -386,7 +386,7 @@ export default function DashboardPage() {
       offset,
       itemsPerPage,
       token,
-      OrderStatusEnum.PROCESSING,
+      OrderStatus.PROCESSING,
     )
       .then((res) => {
         reducerDispatch({
@@ -831,7 +831,7 @@ export default function DashboardPage() {
                   }
                 >
                   <option value="">{UiText.DASHBOARD.SELECT_STATUS}</option>
-                  {Object.values(OrderStatusEnum).map((status) => (
+                  {Object.values(OrderStatus).map((status) => (
                     <option key={status} value={status}>
                       {status}
                     </option>

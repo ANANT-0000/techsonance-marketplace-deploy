@@ -1,4 +1,5 @@
-﻿'use client';
+'use client';
+import { COLOR_BLACK } from "@/constants";
 import { Field } from "./Field";
 import { Input } from "./Input";
 
@@ -11,19 +12,19 @@ export function ColorField({ label, value, onChange, error }: {
         <div className="relative">
           <input
             type="color"
-            value={value || '#000000'}
+            value={value || COLOR_BLACK}
             onChange={(e) => onChange(e.target.value)}
             className="absolute inset-0 opacity-0 w-10 h-10 cursor-pointer"
           />
           <div
             className="w-10 h-10 rounded-lg border-2 border-gray-200 cursor-pointer shadow-sm"
-            style={{ backgroundColor: value || '#000000' }}
+            style={{ backgroundColor: value || COLOR_BLACK }}
           />
         </div>
         <Input
           value={value || ''}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="#000000"
+          placeholder={COLOR_BLACK}
           maxLength={7}
           className="font-mono uppercase w-32"
         />

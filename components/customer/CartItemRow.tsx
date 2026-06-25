@@ -9,14 +9,24 @@ import { CART_ITEM_ROW_TEXT } from "@/constants/customerText";
 
 export function CartItemRow({ item }: { item: CartItemDisplay }) {
   const { items } = useAppSelector((s) => s.cart);
-  const liveQty = items.find(i => i.productVariantId === item.product_variant_id)?.quantity ?? item.quantity;
+
+  // If the item has been removed from Redux (qty hit 0 and was spliced out),
+  // find() returns undefined. We treat that as qty=0 — NOT the server-loaded
+  // quantity — so the row correctly disappears.
+  const reduxEntry = items.find(i => i.productVariantId === item.product_variant_id);
+  const liveQty = reduxEntry?.quantity ?? 0;
   const subtotal = Number(item.productVariant.price) * liveQty;
+
+  // When quantity reaches 0 (or item removed from Redux), hide the row
+  if (liveQty === 0) return null;
 
   return (
     <motion.div
       layout
+      key={item.id}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -20, height: 0, marginBottom: 0, padding: 0, overflow: 'hidden' }}
       transition={{ duration: 0.2 }}
       className="flex items-center gap-3 bg-gray-50/60 border border-gray-100 rounded-xl p-3"
     >
@@ -54,4 +64,4 @@ export function CartItemRow({ item }: { item: CartItemDisplay }) {
       </div>
     </motion.div>
   );
-}
+}

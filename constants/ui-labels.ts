@@ -1,4 +1,4 @@
-import { OrderStatus, OrderStatusEnum } from "@/utils/Types";
+import { OrderStatus } from "@/utils/Types";
 import { CheckCircle2, Clock, Package, Truck, XCircle } from "lucide-react";
 
 export const UILabels = {
@@ -173,31 +173,31 @@ export const STATUS_CONFIG: Partial<
     }
   >
 > = {
-  [OrderStatusEnum.PENDING]: {
+  [OrderStatus.PENDING]: {
     label: "Pending",
     className: "bg-amber-50 text-amber-700 border border-amber-200",
     icon: Clock,
     dot: "bg-amber-400",
   },
-  [OrderStatusEnum.PROCESSING]: {
+  [OrderStatus.PROCESSING]: {
     label: "Processing",
     className: "bg-blue-50 text-blue-700 border border-blue-200",
     icon: Package,
     dot: "bg-blue-400",
   },
-  [OrderStatusEnum.SHIPPED]: {
+  [OrderStatus.SHIPPED]: {
     label: "Shipped",
     className: "bg-violet-50 text-violet-700 border border-violet-200",
     icon: Truck,
     dot: "bg-violet-400",
   },
-  [OrderStatusEnum.DELIVERED]: {
+  [OrderStatus.DELIVERED]: {
     label: "Delivered",
     className: "bg-emerald-50 text-emerald-700 border border-emerald-200",
     icon: CheckCircle2,
     dot: "bg-emerald-400",
   },
-  [OrderStatusEnum.CANCELLED]: {
+  [OrderStatus.CANCELLED]: {
     label: "Cancelled",
     className: "bg-red-50 text-red-700 border border-red-200",
     icon: XCircle,

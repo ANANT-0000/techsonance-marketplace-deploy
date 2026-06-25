@@ -1,13 +1,13 @@
 import { BASE_API_URL } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
+import { getCacheConfig } from "./cache";
 
 export const fetchProduct = async (productId: string) => {
   const companyDomain = await getCompanyDomain();
   try {
     const response = await fetch(`${BASE_API_URL}/v1/products/${productId}`, {
       method: "GET",
-      cache: "force-cache",
-      next: { revalidate: 60 },
+      ...getCacheConfig(300),
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -27,8 +27,7 @@ export const fetchProductVariantDetails = async (id: string) => {
       `${BASE_API_URL}/v1/product-variant/details/${id}`,
       {
         method: "GET",
-        cache: "force-cache",
-        next: { revalidate: 60 },
+        ...getCacheConfig(300),
         headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
@@ -224,8 +223,7 @@ export const fetchHomepageProducts = async (
       `${BASE_API_URL}/v1/products/homepage?limit=${limit}`,
       {
         method: "GET",
-        cache: "force-cache",
-        next: { revalidate: 60 },
+        ...getCacheConfig(300),
         headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
@@ -246,8 +244,7 @@ export const fetchCategory = async (category: string) => {
   try {
     const response = await fetch(`${BASE_API_URL}/v1/categories/${category}`, {
       method: "GET",
-      cache: "force-cache",
-      next: { revalidate: 60 },
+      ...getCacheConfig(300),
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -270,8 +267,7 @@ export const fetchCategories = async (): Promise<any[]> => {
   try {
     const response = await fetch(`${BASE_API_URL}/v1/categories?limit=100`, {
       method: "GET",
-      cache: "force-cache",
-      next: { revalidate: 300 },
+      ...getCacheConfig(300),
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
