@@ -487,7 +487,9 @@ export default function CartClient() {
 
     setSyncingItemId(item.id);
     try {
-      const response = await AxiosAPI.delete(`/v1/cart/item/${item.id}`);
+      const response = await AxiosAPI.delete(
+        `/v1/cart/item/${user.id}/${item.id}`,
+      );
     } catch (err) {
       dispatchRedux(
         addToCart({

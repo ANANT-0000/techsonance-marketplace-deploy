@@ -106,7 +106,12 @@ interface OrderDetailType {
   address: Address;
   payment: Payment;
   invoice: Invoice;
-  shipping: { tracking_url: string } | null;
+  shipping: {
+    tracking_url: string;
+    shipping_status?: string;
+    awb_number?: string;
+    courier_name?: string;
+  } | null;
   gstInvoice: GstInvoice | null;
 }
 
@@ -204,27 +209,47 @@ export default function OrderDetailsPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const { downloadInvoice, isGenerating } = useInvoiceDownload();
   const [order, setOrder] = useState<OrderDetailType | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const router = useRouter();
   const token = authToken();
 
-  useEffect(() => {
-    let isMounted = true;
+  const loadOrderDetails = (showRefreshLoader = false) => {
     if (!orderId || !token) return;
+    if (showRefreshLoader) setIsRefreshing(true);
     fetchOrderDetails(orderId, token)
       .then((data) => {
-        if (isMounted) {
-          setOrder(data.data);
-        }
+        setOrder(data.data);
       })
       .catch(() => {
-        if (isMounted) {
-          toast.error("Error fetching order details:");
-        }
+        toast.error("Error fetching order details:");
+      })
+      .finally(() => {
+        if (showRefreshLoader) setIsRefreshing(false);
       });
-    return () => {
-      isMounted = false;
-    };
+  };
+
+  const isOrderTerminal = (orderData: OrderDetailType | null) => {
+    if (!orderData) return true;
+    const terminalStatuses = ["delivered", "cancelled", "returned", "refunded", "replaced", "rto"];
+    return orderData.items.every((item) =>
+      terminalStatuses.includes(item.order_status.toLowerCase())
+    );
+  };
+
+  useEffect(() => {
+    loadOrderDetails();
   }, [orderId, token]);
+
+  useEffect(() => {
+    if (!orderId || !token || !order) return;
+    if (isOrderTerminal(order)) return;
+
+    const interval = setInterval(() => {
+      loadOrderDetails(false);
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [orderId, token, order ? isOrderTerminal(order) : true]);
 
   const handleCancelItem = (id: string) =>
     router.push(`/customer/orders/${orderId}/cancel/${id}`);
@@ -310,6 +335,36 @@ export default function OrderDetailsPage() {
           <div className="hidden md:flex items-center gap-3">
             <Button
               variant="outline"
+              onClick={() => loadOrderDetails(true)}
+              disabled={isRefreshing}
+              className="bg-card border-border rounded-xl shadow-sm text-xs font-semibold cursor-pointer active:scale-95 transition-all"
+            >
+              <motion.div
+                animate={{ rotate: isRefreshing ? 360 : 0 }}
+                transition={{ repeat: isRefreshing ? Infinity : 0, duration: 1, ease: "linear" }}
+                className="mr-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                  <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                  <path d="M16 16h5v5" />
+                </svg>
+              </motion.div>
+              {isRefreshing ? "Refreshing..." : "Refresh Status"}
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => downloadInvoice(order.id, token!)}
               disabled={isGenerating}
               className="bg-card border-border rounded-xl shadow-sm text-xs font-semibold cursor-pointer active:scale-95 transition-all"
@@ -350,6 +405,22 @@ export default function OrderDetailsPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6">
+                  {order.shipping?.shipping_status &&
+                    ["OUT_FOR_DELIVERY_EXCEPTION", "UNDELIVERED"].includes(
+                      order.shipping.shipping_status
+                    ) && (
+                      <div className="mb-6 flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-left">
+                        <Clock className="text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" size={20} />
+                        <div>
+                          <p className="font-bold text-amber-800 dark:text-amber-400 text-xs sm:text-sm">
+                            Delivery Delay / Exception
+                          </p>
+                          <p className="text-[11px] text-amber-700/95 dark:text-amber-300/80 mt-1 leading-relaxed">
+                            Our courier partner reported an issue delivering your package. They will automatically re-attempt delivery.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   <VerticalTimeline
                     currentStatus={unifiedStatus}
                     date={order.created_at}
@@ -359,30 +430,62 @@ export default function OrderDetailsPage() {
             )}
 
             {/* Mobile Order Actions */}
-            <div className="flex md:hidden gap-3 w-full">
-              {order.shipping?.tracking_url && (
-                <Button
-                  className="flex-1 bg-foreground text-background hover:bg-foreground/90 h-12 rounded-xl text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
-                  asChild
-                >
-                  <a
-                    href={order.shipping.tracking_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+            <div className="flex flex-col md:hidden gap-3 w-full">
+              <div className="flex gap-3 w-full">
+                {order.shipping?.tracking_url && (
+                  <Button
+                    className="flex-1 bg-foreground text-background hover:bg-foreground/90 h-12 rounded-xl text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
+                    asChild
                   >
-                    <Truck size={16} className="mr-2" />{" "}
-                    {ORDER_DETAILS_TEXT.BTN_TRACK_SHORT}
-                  </a>
+                    <a
+                      href={order.shipping.tracking_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Truck size={16} className="mr-2" />{" "}
+                      {ORDER_DETAILS_TEXT.BTN_TRACK_SHORT}
+                    </a>
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  className="flex-1 bg-card border-border h-12 rounded-xl text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
+                  onClick={() => downloadInvoice(order.id, token!)}
+                  disabled={isGenerating}
+                >
+                  <Download size={16} className="mr-2" />
+                  {ORDER_DETAILS_TEXT.BTN_INVOICE_SHORT}
                 </Button>
-              )}
+              </div>
               <Button
                 variant="outline"
-                className="flex-1 bg-card border-border h-12 rounded-xl text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
-                onClick={() => downloadInvoice(order.id, token!)}
-                disabled={isGenerating}
+                className="w-full bg-card border-border h-12 rounded-xl text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
+                onClick={() => loadOrderDetails(true)}
+                disabled={isRefreshing}
               >
-                <Download size={16} className="mr-2" />
-                {ORDER_DETAILS_TEXT.BTN_INVOICE_SHORT}
+                <motion.div
+                  animate={{ rotate: isRefreshing ? 360 : 0 }}
+                  transition={{ repeat: isRefreshing ? Infinity : 0, duration: 1, ease: "linear" }}
+                  className="mr-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                    <path d="M3 3v5h5" />
+                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                    <path d="M16 16h5v5" />
+                  </svg>
+                </motion.div>
+                {isRefreshing ? "Refreshing..." : "Refresh Status"}
               </Button>
             </div>
 
