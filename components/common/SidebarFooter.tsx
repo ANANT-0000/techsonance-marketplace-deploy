@@ -1,10 +1,10 @@
-'use client';
+"use client";
 import { User, VendorUser } from "@/constants";
 import { useAppDispatch } from "@/hooks/reduxHooks";
 import { logOut } from "@/lib/features/auth/authSlice";
 import { useEffect, useRef, useState } from "react";
 import { SIDEBAR_FOOTER_TEXT } from "@/constants/commonText";
-
+import { toggleSidebar } from "@/lib/features/sidebar";
 
 export const UserMenu = ({
   user,
@@ -14,13 +14,12 @@ export const UserMenu = ({
   user: Partial<User | VendorUser>;
   role: string;
   expanded: boolean;
- 
 }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
-const onLogout = () => {
-  dispatch(logOut());
+  const onLogout = () => {
+    dispatch(logOut());
   };
   // Close on outside click
   useEffect(() => {
@@ -41,6 +40,7 @@ const onLogout = () => {
   return (
     <div
       ref={ref}
+      // onClick={() => dispatch(toggleSidebar())}
       className="mt-auto border-t border-white/[0.07] pt-2.5 relative"
     >
       {/* ── Dropdown panel — opens upward ── */}
@@ -60,33 +60,64 @@ const onLogout = () => {
       >
         {/* Header */}
         <div className="px-3.5 pt-3.5 pb-3 border-b border-white/[0.08]">
- {  user.first_name &&       <div className="flex items-center gap-2.5 mb-2.5">
-            {/* Avatar */}
-            <div className="h-9 w-9 shrink-0 rounded-[10px] bg-gradient-to-br from-[#2ecc8a] to-[#1aab6d] flex items-center justify-center text-theme-caption font-bold text-white">
-              {user.first_name?.[0]}{user.last_name?.[0]}
+          {user.first_name && (
+            <div className="flex items-center gap-2.5 mb-2.5">
+              {/* Avatar */}
+              <div className="h-9 w-9 shrink-0 rounded-[10px] bg-gradient-to-br from-[#2ecc8a] to-[#1aab6d] flex items-center justify-center text-theme-caption font-bold text-white">
+                {user.first_name?.[0]}
+                {user.last_name?.[0]}
+              </div>
+              <div className="min-w-0">
+                <p className="text-theme-caption-lg font-semibold text-white truncate leading-snug">
+                  {user.first_name} {user.last_name}
+                </p>
+                <p className="text-theme-xxs text-white/35 flex items-center gap-1 mt-0.5">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  {SIDEBAR_FOOTER_TEXT.ACTIVE_WORKSPACE}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-theme-caption-lg font-semibold text-white truncate leading-snug">
-                {user.first_name} {user.last_name}
-              </p>
-              <p className="text-theme-xxs text-white/35 flex items-center gap-1 mt-0.5">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                {SIDEBAR_FOOTER_TEXT.ACTIVE_WORKSPACE}
-              </p>
-            </div>
-          </div>}
+          )}
 
           {/* Meta rows */}
           {user.email && (
             <div className="flex items-center gap-2 py-[3px] text-[11.5px] text-white/85">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/25 shrink-0"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-white/25 shrink-0"
+              >
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
               <span className="truncate">{user.email}</span>
             </div>
           )}
           {user.company_id && (
             <div className="flex items-center gap-2 py-[3px] text-[11.5px] text-white/85">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/75 shrink-0"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21V12h6v9"/></svg>
-              <span className="font-mono text-theme-xxs text-white/80">{user.company_id}</span>
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-white/75 shrink-0"
+              >
+                <path d="M3 21V7l9-4 9 4v14" />
+                <path d="M9 21V12h6v9" />
+              </svg>
+              <span className="font-mono text-theme-xxs text-white/80">
+                {user.company_id}
+              </span>
             </div>
           )}
         </div>
@@ -115,8 +146,18 @@ const onLogout = () => {
             onClick={onLogout}
             className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-theme-caption-lg text-red-400 transition-colors hover:bg-red-400/[0.10]"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400/70 shrink-0">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9"/>
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-red-400/70 shrink-0"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9" />
             </svg>
             {SIDEBAR_FOOTER_TEXT.SIGN_OUT}
           </button>
@@ -125,7 +166,10 @@ const onLogout = () => {
 
       {/* ── Trigger row ── */}
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          setOpen((v) => !v);
+          dispatch(toggleSidebar());
+        }}
         className={`
           flex w-full items-center gap-2.5 overflow-hidden rounded-[10px]
           px-2.5 py-2 transition-colors duration-150
@@ -135,7 +179,8 @@ const onLogout = () => {
       >
         {/* Avatar */}
         <div className="ml-1 relative h-[30px] w-[30px] shrink-0 rounded-[9px] bg-gradient-to-br from-[#2ecc8a] to-[#1aab6d] flex items-center justify-center text-theme-xxs font-bold text-white">
-          {user.first_name?.[0]}{user.last_name?.[0]}
+          {user.first_name?.[0]}
+          {user.last_name?.[0]}
           <span className="absolute -bottom-px -right-px h-[9px] w-[9px] rounded-full bg-emerald-400 border-2 border-[#0f1117]" />
         </div>
 
@@ -150,14 +195,13 @@ const onLogout = () => {
           <p className="truncate text-[12.5px] font-semibold text-white leading-snug">
             {user.first_name} {user.last_name}
           </p>
-          <p className="truncate text-[10.5px] text-white/85">
-            {role}
-          </p>
+          <p className="truncate text-[10.5px] text-white/85">{role}</p>
         </div>
 
         {/* Chevron — hidden when collapsed */}
         <svg
-          width="13" height="13"
+          width="13"
+          height="13"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -176,4 +220,4 @@ const onLogout = () => {
       </button>
     </div>
   );
-}
+};

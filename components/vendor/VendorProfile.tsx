@@ -33,15 +33,12 @@ function Badge({
   color,
 }: {
   children: React.ReactNode;
-  color: 'green' | 'amber' | 'slate';
+  color: "green" | "amber" | "slate";
 }) {
   const styles = {
-    green:
-      'bg-emerald-50 text-emerald-700 border-emerald-100',
-    amber:
-      'bg-amber-50 text-amber-700 border-amber-100',
-    slate:
-      'bg-slate-50 text-slate-700 border-slate-100',
+    green: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    amber: "bg-amber-50 text-amber-700 border-amber-100",
+    slate: "bg-slate-50 text-slate-700 border-slate-100",
   };
 
   return (
@@ -53,13 +50,7 @@ function Badge({
   );
 }
 
-function InfoCard({
-  label,
-  value,
-}: {
-  label: string;
-  value?: string;
-}) {
+function InfoCard({ label, value }: { label: string; value?: string }) {
   return (
     <div className="rounded-[28px] bg-white p-7 shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
       <p className="text-theme-body-sm uppercase tracking-widest text-slate-400">
@@ -67,20 +58,16 @@ function InfoCard({
       </p>
 
       <p className="mt-4 text-theme-h6 font-semibold text-slate-900 capitalize break-all">
-        {value || '-'}
+        {value || "-"}
       </p>
     </div>
   );
 }
-export function VendorProfile({
-  data,
-}: {
-  data: CompanyProfile | null;
-}) {
+export function VendorProfile({ data }: { data: CompanyProfile | null }) {
   const profile = data;
 
   return (
-    <main className="w-full p-6 lg:p-8 bg-gradient-to-b  min-h-screen">
+    <main className="w-full p-6 lg:p-8   max-h-screen min-h-screen overflow-y-scroll">
       {/* Hero */}
       <section className="relative overflow-hidden rounded-[32px] bg-white shadow-[0_10px_40px_rgba(15,23,42,0.06)] border border-white/70">
         <div
@@ -125,13 +112,9 @@ export function VendorProfile({
               </p>
 
               <div className="flex flex-wrap gap-3 mt-5">
-                <Badge color="green">
-                  {profile?.vendor?.vendor_status}
-                </Badge>
+                <Badge color="green">{profile?.vendor?.vendor_status}</Badge>
 
-                <Badge color="amber">
-                  {profile?.company_status}
-                </Badge>
+                <Badge color="amber">{profile?.company_status}</Badge>
 
                 <Badge color="slate">
                   {profile?.vendor?.is_verified
@@ -159,9 +142,7 @@ export function VendorProfile({
                     }}
                   />
 
-                  <p className="text-theme-xxs mt-2 text-slate-500">
-                    {color}
-                  </p>
+                  <p className="text-theme-xxs mt-2 text-slate-500">{color}</p>
                 </div>
               ))}
           </div>
@@ -191,7 +172,7 @@ export function VendorProfile({
           </p>
 
           <h3 className="text-theme-h5 font-semibold mt-4 text-slate-900 capitalize">
-            {profile?.vendor?.store_owner_first_name}{' '}
+            {profile?.vendor?.store_owner_first_name}{" "}
             {profile?.vendor?.store_owner_last_name}
           </h3>
 
@@ -220,19 +201,15 @@ export function VendorProfile({
         <p>
           {VENDOR_PROFILE_TEXT.INFO.CREATED}
           {profile?.created_at
-            ? new Date(
-                profile.created_at
-              ).toLocaleDateString()
-            : '-'}
+            ? new Date(profile.created_at).toLocaleDateString()
+            : "-"}
         </p>
 
         <p>
           {VENDOR_PROFILE_TEXT.INFO.UPDATED}
           {profile?.updated_at
-            ? new Date(
-                profile.updated_at
-              ).toLocaleDateString()
-            : '-'}
+            ? new Date(profile.updated_at).toLocaleDateString()
+            : "-"}
         </p>
       </section>
     </main>

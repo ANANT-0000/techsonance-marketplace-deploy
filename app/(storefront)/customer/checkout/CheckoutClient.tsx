@@ -56,6 +56,22 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { RootState } from "@/lib/store";
 
+// ─── Razorpay Script Loader ──────────────────────────────────────────────────
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof window !== "undefined" && (window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export enum CheckoutActionType {
@@ -1112,6 +1128,127 @@ function CheckoutClientInner() {
         window.location.href = initData.data.paymentUrl;
         return;
       }
+
+      // If Razorpay order details are returned, initiate overlay checkout
+      if (initData.data?.razorpayOrderId) {
+        const loaded = await loadRazorpayScript();
+        if (!loaded) {
+          toast.error(
+            "Failed to load Razorpay SDK. Please check your network connection.",
+          );
+          dispatch({ type: CheckoutActionType.SET_PROCESSING, payload: false });
+          return;
+        }
+
+        const options = {
+          key: initData.data.razorpayKeyId,
+          amount: Math.round(displayedTotal * 100),
+          currency: "INR",
+          name: "Techsonance Marketplace",
+          description: "Secure Order Payment",
+          order_id: initData.data.razorpayOrderId,
+          handler: async (response: any) => {
+            dispatch({
+              type: CheckoutActionType.SET_PROCESSING,
+              payload: true,
+            });
+            try {
+              const result = await fetchVerifyPayment(
+                user?.id || "",
+                {
+                  discountApplied: couponDiscount,
+                  promotionId: state.couponApplied?.promotion_id,
+                  orderId: initData.data.orderId,
+                  isSuccess: true,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpaySignature: response.razorpay_signature,
+                  ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
+                },
+                token,
+              );
+              clearSession();
+              if (result?.data?.success || result?.success) {
+                dispatchRedux(clearCart());
+                router.push(
+                  `/customer/checkout/${initData.data.orderId}?status=success`,
+                );
+              } else {
+                const errorMsg =
+                  result?.data?.message ||
+                  result?.message ||
+                  "Payment verification failed.";
+                router.push(
+                  `/customer/checkout/${initData.data.orderId}?status=failed&message=${encodeURIComponent(errorMsg)}`,
+                );
+              }
+            } catch (err: any) {
+              toast.error(
+                "Payment verification failed. Please contact support.",
+              );
+              router.push(
+                `/customer/checkout/${initData.data.orderId}?status=failed&message=${encodeURIComponent(err.message || "Verification failed")}`,
+              );
+            } finally {
+              dispatch({
+                type: CheckoutActionType.SET_PROCESSING,
+                payload: false,
+              });
+            }
+          },
+          prefill: {
+            name: `${user?.first_name || ""} ${user?.last_name || ""}`,
+            email: user?.email || "",
+          },
+          theme: {
+            color: "#000000",
+          },
+          modal: {
+            ondismiss: async () => {
+              dispatch({
+                type: CheckoutActionType.SET_PROCESSING,
+                payload: true,
+              });
+              try {
+                const result = await fetchVerifyPayment(
+                  user?.id || "",
+                  {
+                    discountApplied: couponDiscount,
+                    promotionId: state.couponApplied?.promotion_id,
+                    orderId: initData.data.orderId,
+                    isSuccess: false,
+                    ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
+                  },
+                  token,
+                );
+                clearSession();
+                const errorMsg =
+                  result?.data?.message ||
+                  result?.message ||
+                  "Payment cancelled by user.";
+                router.push(
+                  `/customer/checkout/${initData.data.orderId}?status=failed&message=${encodeURIComponent(errorMsg)}`,
+                );
+              } catch (err) {
+                router.push(
+                  `/customer/checkout/${initData.data.orderId}?status=failed&message=Payment cancelled`,
+                );
+              } finally {
+                dispatch({
+                  type: CheckoutActionType.SET_PROCESSING,
+                  payload: false,
+                });
+              }
+            },
+          },
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+        return;
+      }
+
+      // COD or Simulation Flow
       const userClickedSuccess = window.confirm(
         `SIMULATION: Pay ₹${formatCurrency(displayedTotal)}\n\nOK = Success | Cancel = Failure`,
       );

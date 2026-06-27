@@ -63,6 +63,12 @@ export default function PolicyFormPage({
       claim_process_description: "",
       generates_document: false,
       is_active: true,
+      // Return & Replacement defaults
+      is_returnable: false,
+      is_replaceable: false,
+      return_window_days: undefined,
+      replacement_window_days: undefined,
+      return_conditions: "",
     },
   });
 
@@ -70,6 +76,8 @@ export default function PolicyFormPage({
   const [isFetchingEdit, setIsFetchingEdit] = useState(false);
   const token = authToken();
   const selectedType = watch("policy_type");
+  const isReturnable = watch("is_returnable");
+  const isReplaceable = watch("is_replaceable");
   const requiresDuration = [
     PolicyType.WARRANTY,
     PolicyType.GUARANTEE,
@@ -99,6 +107,12 @@ export default function PolicyFormPage({
           claim_process_description: data.claim_process_description ?? "",
           generates_document: data.generates_document ?? false,
           is_active: data.is_active ?? true,
+          // Return & Replacement
+          is_returnable: data.is_returnable ?? false,
+          is_replaceable: data.is_replaceable ?? false,
+          return_window_days: data.return_window_days ?? undefined,
+          replacement_window_days: data.replacement_window_days ?? undefined,
+          return_conditions: data.return_conditions ?? "",
         });
       })
       .catch(() => setGlobalError(labels.POLICY_LOAD_EDIT_ERROR))
@@ -131,7 +145,7 @@ export default function PolicyFormPage({
 
   return (
     <>
-      <main className="px-1 py-4 w-full max-w-5xl mx-auto">
+      <main className="px-1 py-4 w-full max-h-screen min-h-screen overflow-y-scroll mx-auto">
         <header className="my-6">
           <h1 className="font-bold text-theme-h4 text-gray-800">
             {editId ? labels.EDIT_POLICY : labels.CREATE_NEW_POLICY}
@@ -326,6 +340,152 @@ export default function PolicyFormPage({
                   </p>
                 )}
               </div>
+            </div>
+          </section>
+
+          {/* ─── Return & Replacement Settings ───────────────────────────── */}
+          <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <h2 className="text-theme-h6 font-bold text-gray-800 mb-1 border-b pb-2">
+              Return &amp; Replacement
+            </h2>
+            <p className="text-theme-caption text-gray-400 mb-4">
+              Control whether customers can return or replace products covered by
+              this policy.
+            </p>
+
+            {/* Toggle row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+              <label className="flex items-start gap-3 cursor-pointer p-4 border border-gray-200 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 transition-colors">
+                <input
+                  type="checkbox"
+                  id="is_returnable"
+                  className="w-5 h-5 accent-emerald-600 mt-0.5 shrink-0"
+                  {...register("is_returnable")}
+                />
+                <div>
+                  <span className="text-theme-body-sm font-semibold text-gray-800 block">
+                    Allow Returns
+                  </span>
+                  <span className="text-theme-caption text-gray-400">
+                    Customer can return product for a refund
+                  </span>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer p-4 border border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-colors">
+                <input
+                  type="checkbox"
+                  id="is_replaceable"
+                  className="w-5 h-5 accent-blue-600 mt-0.5 shrink-0"
+                  {...register("is_replaceable")}
+                />
+                <div>
+                  <span className="text-theme-body-sm font-semibold text-gray-800 block">
+                    Allow Replacements
+                  </span>
+                  <span className="text-theme-caption text-gray-400">
+                    Customer can request a replacement unit
+                  </span>
+                </div>
+              </label>
+            </div>
+
+            {/* Window fields — shown only when the relevant toggle is on */}
+            {(isReturnable || isReplaceable) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                {isReturnable && (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-theme-body-sm font-semibold text-gray-600">
+                      Return Window
+                      <span className="ml-1 font-normal text-gray-400">(days)</span>
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={365}
+                      placeholder="e.g. 7"
+                      className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 outline-none"
+                      {...register("return_window_days", { valueAsNumber: true })}
+                    />
+                    {errors.return_window_days && (
+                      <p className="text-theme-caption text-red-500">
+                        {errors.return_window_days.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {isReplaceable && (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-theme-body-sm font-semibold text-gray-600">
+                      Replacement Window
+                      <span className="ml-1 font-normal text-gray-400">(days)</span>
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={365}
+                      placeholder="e.g. 10"
+                      className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
+                      {...register("replacement_window_days", {
+                        valueAsNumber: true,
+                      })}
+                    />
+                    {errors.replacement_window_days && (
+                      <p className="text-theme-caption text-red-500">
+                        {errors.replacement_window_days.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Conditions — shown whenever at least one toggle is on */}
+            {(isReturnable || isReplaceable) && (
+              <div className="flex flex-col gap-2">
+                <label className="text-theme-body-sm font-semibold text-gray-600">
+                  Return / Replacement Conditions
+                  <span className="ml-1 font-normal text-gray-400">(optional)</span>
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="e.g. Item must be unused, sealed, with all original accessories and invoice."
+                  className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-gray-300 outline-none"
+                  {...register("return_conditions")}
+                />
+                {errors.return_conditions && (
+                  <p className="text-theme-caption text-red-500">
+                    {errors.return_conditions.message}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Mode summary chip */}
+            <div className="mt-5 pt-4 border-t border-gray-100 flex items-center gap-2">
+              <span className="text-theme-caption text-gray-500 font-medium">
+                Effective mode:
+              </span>
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-theme-caption font-bold ${
+                  isReturnable && isReplaceable
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    : isReturnable
+                      ? "bg-amber-50 text-amber-700 border border-amber-200"
+                      : isReplaceable
+                        ? "bg-blue-50 text-blue-700 border border-blue-200"
+                        : "bg-red-50 text-red-600 border border-red-200"
+                }`}
+              >
+                {isReturnable && isReplaceable
+                  ? "✅ Returns & Replacements"
+                  : isReturnable
+                    ? "↩ Returns Only"
+                    : isReplaceable
+                      ? "🔄 Replacements Only"
+                      : "🚫 No Returns / Replacements (Final Sale)"}
+              </span>
             </div>
           </section>
 

@@ -124,7 +124,7 @@ export default function AssignPolicyPage({
 
   return (
     <>
-      <main className="px-1 py-4 w-full max-w-3xl mx-auto">
+      <main className="px-1 py-4 w-full max-h-screen min-h-screen overflow-y-scroll mx-auto">
         <header className="my-6">
           <h1 className="font-bold text-theme-h4 text-gray-800">
             {labels.ASSIGN.TITLE}

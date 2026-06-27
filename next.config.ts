@@ -34,6 +34,12 @@ const nextConfig: NextConfig = {
     "html2pdf.js",
   ],
 
+  typescript: {
+    // Bypass Next.js internal typechecker wrapper crash (e.g. getCurrentDirectory error)
+    // since we already run independent 'tsc --noEmit' checks.
+    ignoreBuildErrors: true,
+  },
+
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },

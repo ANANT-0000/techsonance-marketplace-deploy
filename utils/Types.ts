@@ -68,6 +68,45 @@ export enum ReturnStatus {
   SHIPPED = "shipped",
   DELIVERED = "delivered",
 }
+
+/**
+ * Derived from (is_returnable, is_replaceable) on a policy.
+ * Matches the return_replace_mode_enum in the Drizzle schema.
+ */
+export enum ReturnReplaceMode {
+  NONE = "none",           // Final Sale — no return, no replace
+  RETURN_ONLY = "return_only",   // Refund accepted; no replacement
+  REPLACE_ONLY = "replace_only", // Exchange / replacement only
+  BOTH = "both",           // Customer can choose return OR replacement
+}
+
+/**
+ * The resolved return/replacement/warranty info attached to a product
+ * by the API after resolving category + product-override policy.
+ * Used by the storefront product detail page and listing cards.
+ */
+export interface ProductPolicyInfo {
+  /** Internal policy record id */
+  policy_id: string;
+  policy_name: string;
+  policy_type: string; // PolicyType enum value
+  is_active: boolean;
+
+  // ─── Return / Replacement ────────────────────────────────────
+  is_returnable: boolean;
+  is_replaceable: boolean;
+  return_window_days: number | null;
+  replacement_window_days: number | null;
+  /** Human-readable conditions e.g. "Item must be in original packaging" */
+  return_conditions: string | null;
+  return_replace_mode: ReturnReplaceMode;
+
+  // ─── Warranty ────────────────────────────────────────────────
+  /** True when policy_type is warranty, guarantee, or extended_support */
+  has_warranty: boolean;
+  /** Ready-to-display label e.g. "1 Year", "6 Months", "Lifetime" */
+  warranty_duration_label: string | null;
+}
 export enum Permission {
   READ = "read",
   CREATE = "create",
@@ -682,6 +721,11 @@ export interface Product {
   category_id: string;
   variants: Variant[];
   category: Category;
+  /**
+   * Resolved policy for this product (category default or product-level override).
+   * Populated by the API. Null when no policy is assigned.
+   */
+  policy: ProductPolicyInfo | null;
 }
 
 export interface Vendor {
@@ -1089,6 +1133,11 @@ export type ProductResponseType = {
   images: ProductImage[];
   variants: Variant[];
   tax_profile: string;
+  /**
+   * Resolved policy for this product (category default or product-level override).
+   * Populated by the API. Null when no policy is assigned.
+   */
+  policy: ProductPolicyInfo | null;
 };
 // USED
 export interface ComplianceFieldPayload {

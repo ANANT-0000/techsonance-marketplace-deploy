@@ -1,3 +1,5 @@
+import { OrderStatus } from "@/utils/Types";
+
 export const ACCOUNT_REACTIVATION_TEXT = {
   HEADER_INFO: "Account Deactivated",
   DESC_INFO:
@@ -693,6 +695,125 @@ export const ADDRESSES_PAGE_TEXT = {
   DELETE_CONFIRM_YES: "Yes, Delete",
   CANCEL: "Cancel",
 };
+export const TERMINAL_STATUSES = [
+  OrderStatus.DELIVERED,
+  OrderStatus.CANCELLED,
+  OrderStatus.RETURNED,
+  OrderStatus.REFUNDED,
+  OrderStatus.REPLACED,
+  OrderStatus.RTO,
+  OrderStatus.FAILED,
+];
+
+export const EXCEPTION_STATUSES = [
+  OrderStatus.OUT_FOR_DELIVERY_EXCEPTION,
+  OrderStatus.UNDELIVERED,
+  OrderStatus.FAILED,
+  OrderStatus.RTO,
+];
+
+// Production UI State Mapping for the Timeline
+export const STATUS_UI_CONFIG: Record<
+  string,
+  { label: string; description: string; color: string; stepIndex: number }
+> = {
+  [OrderStatus.PENDING]: {
+    label: "Order Placed",
+    description: "We have received your order.",
+    color: "text-primary",
+    stepIndex: 0,
+  },
+  [OrderStatus.PROCESSING]: {
+    label: "Processing",
+    description: "Your items are being gathered.",
+    color: "text-primary",
+    stepIndex: 1,
+  },
+  [OrderStatus.DRAFTING]: {
+    label: "Preparing Shipment",
+    description: "Your items are being packed securely.",
+    color: "text-primary",
+    stepIndex: 1,
+  },
+  [OrderStatus.AWB_ASSIGNED]: {
+    label: "Label Created",
+    description: "Tracking details generated. Awaiting courier pickup.",
+    color: "text-primary",
+    stepIndex: 1,
+  },
+  [OrderStatus.SHIPPED]: {
+    label: "Shipped",
+    description: "Handed over to our delivery partner.",
+    color: "text-primary",
+    stepIndex: 2,
+  },
+  [OrderStatus.IN_TRANSIT]: {
+    label: "In Transit",
+    description: "Your package is on the move.",
+    color: "text-primary",
+    stepIndex: 2,
+  },
+  [OrderStatus.OUT_FOR_DELIVERY]: {
+    label: "Out for Delivery",
+    description: "Arriving today. Keep your phone handy.",
+    color: "text-primary",
+    stepIndex: 3,
+  },
+  [OrderStatus.OUT_FOR_DELIVERY_EXCEPTION]: {
+    label: "Delivery Exception",
+    description: "Courier faced an issue. Re-attempt scheduled.",
+    color: "text-amber-500",
+    stepIndex: 3,
+  },
+  [OrderStatus.DELIVERED]: {
+    label: "Delivered",
+    description: "Package was delivered successfully.",
+    color: "text-emerald-500",
+    stepIndex: 4,
+  },
+  [OrderStatus.CANCELLED]: {
+    label: "Cancelled",
+    description: "This order has been cancelled.",
+    color: "text-destructive",
+    stepIndex: 4,
+  },
+  [OrderStatus.RETURNED]: {
+    label: "Returned",
+    description: "Items have been returned to our facility.",
+    color: "text-primary",
+    stepIndex: 4,
+  },
+  [OrderStatus.REFUNDED]: {
+    label: "Refunded",
+    description: "Refund has been processed to original payment method.",
+    color: "text-emerald-500",
+    stepIndex: 4,
+  },
+  [OrderStatus.REPLACED]: {
+    label: "Replaced",
+    description: "A replacement has been issued.",
+    color: "text-primary",
+    stepIndex: 4,
+  },
+  [OrderStatus.UNDELIVERED]: {
+    label: "Undelivered",
+    description: "Failed to deliver after multiple attempts.",
+    color: "text-destructive",
+    stepIndex: 4,
+  },
+  [OrderStatus.RTO]: {
+    label: "Returning to Origin",
+    description: "Package is being returned to our warehouse.",
+    color: "text-amber-500",
+    stepIndex: 4,
+  },
+  [OrderStatus.FAILED]: {
+    label: "Delivery Failed",
+    description: "Could not deliver the package.",
+    color: "text-destructive",
+    stepIndex: 4,
+  },
+};
 
 export const ORDER_DETAILS_TEXT = {
   BREADCRUMB_ORDERS: "Orders",
@@ -704,8 +825,6 @@ export const ORDER_DETAILS_TEXT = {
   BTN_TRACK_SHORT: "Track",
   BTN_INVOICE_SHORT: "Invoice",
   ORDER_STATUS: "Order Status",
-  ORDER_CANCELLED: "Order Cancelled",
-  ORDER_CANCELLED_DESC: "This order was cancelled and will not be delivered.",
   IN_TRANSIT: "In Transit",
   SHIPPING_ADDRESS: "Shipping Address",
   ITEMS_IN_ORDER: "Items In This Order",
@@ -720,6 +839,10 @@ export const ORDER_DETAILS_TEXT = {
   LABEL_FREE: "Free",
   LABEL_TAX: "Estimated Tax",
   LABEL_TOTAL: "Order Total",
+  BTN_REFRESH: "Refresh Status",
+  BTN_REFRESHING: "Refreshing...",
+  BTN_VIEW_DETAILS: "View Tracking Details",
+  BTN_HIDE_DETAILS: "Hide Details",
 };
 
 export const NAVBAR_TEXT = {

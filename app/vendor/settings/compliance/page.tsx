@@ -71,7 +71,11 @@ function getStatusConfig(
   icon: string;
 } {
   if (!isActive)
-    return { label: COMPLIANCE_TEXT.STATUS_INACTIVE, color: "gray", icon: "circle-off" };
+    return {
+      label: COMPLIANCE_TEXT.STATUS_INACTIVE,
+      color: "gray",
+      icon: "circle-off",
+    };
   switch (status?.toLowerCase()) {
     case "verified":
       return {
@@ -104,7 +108,11 @@ function getStatusConfig(
         icon: "alert-triangle",
       };
     default:
-      return { label: COMPLIANCE_TEXT.STATUS_SUBMITTED, color: "blue", icon: "circle-dot" };
+      return {
+        label: COMPLIANCE_TEXT.STATUS_SUBMITTED,
+        color: "blue",
+        icon: "circle-dot",
+      };
   }
 }
 
@@ -358,7 +366,11 @@ function ComplianceCard({
                 className={`ti ti-${expired ? "alert-circle" : expiring ? "alert-triangle" : "calendar"} text-theme-xxs`}
                 aria-hidden="true"
               />
-              {expired ? COMPLIANCE_TEXT.CARD.EXPIRED : expiring ? COMPLIANCE_TEXT.CARD.EXPIRES_SOON : COMPLIANCE_TEXT.CARD.VALID_UNTIL}{" "}
+              {expired
+                ? COMPLIANCE_TEXT.CARD.EXPIRED
+                : expiring
+                  ? COMPLIANCE_TEXT.CARD.EXPIRES_SOON
+                  : COMPLIANCE_TEXT.CARD.VALID_UNTIL}{" "}
               {formatDate(field.valid_until)}
             </span>
           )}
@@ -377,7 +389,9 @@ function ComplianceCard({
               aria-hidden="true"
             />
             <p className="text-theme-caption text-red-700 leading-relaxed">
-              <span className="font-semibold">{COMPLIANCE_TEXT.CARD.REJECTION_REASON}</span>
+              <span className="font-semibold">
+                {COMPLIANCE_TEXT.CARD.REJECTION_REASON}
+              </span>
               {field.rejection_reason}
             </p>
           </div>
@@ -461,7 +475,9 @@ function ComplianceCard({
                     className="ti ti-loader-2 animate-spin text-theme-body"
                     aria-hidden="true"
                   />
-                  <span className="text-theme-caption">{COMPLIANCE_TEXT.CARD.UPLOADING}</span>
+                  <span className="text-theme-caption">
+                    {COMPLIANCE_TEXT.CARD.UPLOADING}
+                  </span>
                 </div>
               ) : (
                 <>
@@ -473,7 +489,9 @@ function ComplianceCard({
                   </div>
                   <p className="text-theme-caption text-stone-500">
                     {COMPLIANCE_TEXT.CARD.DROP_FILE}{" "}
-                    <span className="text-blue-600 font-medium">{COMPLIANCE_TEXT.CARD.BROWSE}</span>
+                    <span className="text-blue-600 font-medium">
+                      {COMPLIANCE_TEXT.CARD.BROWSE}
+                    </span>
                   </p>
                   <p className="text-theme-tiny text-stone-400 mt-1">
                     {COMPLIANCE_TEXT.CARD.FILE_LIMIT}
@@ -773,7 +791,7 @@ export default function CompliancePage() {
   });
 
   return (
-    <div className="min-h-screen w-full">
+    <div className="max-h-screen min-h-screen overflow-y-scroll w-full">
       <div className="w-full  mx-auto px-4 sm:px-6 py-8 flex flex-col gap-8">
         {/* ── Page header ── */}
         <div className="flex flex-col gap-1.5">

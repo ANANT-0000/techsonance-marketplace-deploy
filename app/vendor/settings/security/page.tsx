@@ -46,12 +46,16 @@ export default function SecurityPage() {
   };
   return (
     <>
-      <main className={` mt-6   ml-70  `}>
+      <main
+        className={` mt-6   ml-70 max-h-screen min-h-screen overflow-y-scroll `}
+      >
         <form
           className="vendor_settings_content   mt-0  px-6 py-6 bg-white border-2 border-gray-300 rounded-lg"
           onSubmit={handleSubmit((data) => {})}
         >
-          <h2 className="text-theme-h4 font-bold mb-4">{SECURITY_SETTINGS_TEXT.TITLE}</h2>
+          <h2 className="text-theme-h4 font-bold mb-4">
+            {SECURITY_SETTINGS_TEXT.TITLE}
+          </h2>
           <section className="space-y-5">
             <div>
               <label className="block text-gray-700 mb-2 font-bold">
@@ -60,7 +64,9 @@ export default function SecurityPage() {
               <input
                 type="password"
                 className="w-full border border-gray-300 rounded-lg py-2 px-4"
-                placeholder={SECURITY_SETTINGS_TEXT.PLACEHOLDERS.CURRENT_PASSWORD}
+                placeholder={
+                  SECURITY_SETTINGS_TEXT.PLACEHOLDERS.CURRENT_PASSWORD
+                }
                 {...register("current_password")}
               />
             </div>
@@ -82,7 +88,9 @@ export default function SecurityPage() {
               <input
                 type="password"
                 className="w-full border border-gray-300 rounded-lg py-2 px-4"
-                placeholder={SECURITY_SETTINGS_TEXT.PLACEHOLDERS.CONFIRM_PASSWORD}
+                placeholder={
+                  SECURITY_SETTINGS_TEXT.PLACEHOLDERS.CONFIRM_PASSWORD
+                }
                 {...register("confirm_password")}
               />
             </div>
@@ -140,7 +148,9 @@ export default function SecurityPage() {
           </div>
           <h1></h1>
           <div className="mt-10">
-            <h2 className="text-theme-h4 font-bold mb-4">{SECURITY_SETTINGS_TEXT.SESSIONS.TITLE}</h2>
+            <h2 className="text-theme-h4 font-bold mb-4">
+              {SECURITY_SETTINGS_TEXT.SESSIONS.TITLE}
+            </h2>
             <p className="text-gray-600 mb-4">
               {SECURITY_SETTINGS_TEXT.SESSIONS.DESC}
             </p>

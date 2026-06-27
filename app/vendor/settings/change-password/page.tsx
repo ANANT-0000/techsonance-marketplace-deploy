@@ -118,7 +118,7 @@ export default function ChangePasswordPage() {
     return pass.length >= 8;
   };
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     reducerDispatch({
       type: ChangePasswordActionType.SET_ERROR_MSG,

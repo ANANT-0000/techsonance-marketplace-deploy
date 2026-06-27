@@ -63,7 +63,7 @@ export default function CompanyIdentityPage() {
   const token = authToken() || "";
 
   return (
-    <div className="w-full mx-auto px-4 py-8">
+    <div className="w-full mx-auto px-4 py-8 max-h-screen min-h-screen overflow-y-scroll">
       {/* Page header */}
       <div className="mb-8">
         <h1 className="text-theme-h4 font-bold text-gray-900 tracking-tight">

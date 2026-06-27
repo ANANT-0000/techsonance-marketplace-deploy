@@ -32,6 +32,13 @@ interface PolicyCoverageItem {
     duration_unit: string | null;
     is_active: boolean;
     generates_document: boolean;
+    // Return & Replacement fields
+    is_returnable: boolean;
+    is_replaceable: boolean;
+    return_window_days: number | null;
+    replacement_window_days: number | null;
+    return_conditions: string | null;
+    return_replace_mode: "none" | "return_only" | "replace_only" | "both";
   };
   categories: {
     id: string;
@@ -159,7 +166,7 @@ export default function PolicyCoverageDetailPage({
     TYPE_PALETTE[data.policy.policy_type] ?? TYPE_PALETTE[PolicyType.NONE];
 
   return (
-    <main className="w-full mx-auto py-6 px-1">
+    <main className="w-full mx-auto py-6 px-1 max-h-screen min-h-screen overflow-y-scroll">
       {/* ── Header ── */}
       <div className="mb-8">
         <Link
@@ -261,6 +268,52 @@ export default function PolicyCoverageDetailPage({
                       ? labels.COVERAGE_DETAIL_PAGE.GENERATES_PDF
                       : labels.COVERAGE_DETAIL_PAGE.NO_PDF_GENERATED}
                   </p>
+                </div>
+              </div>
+
+              {/* Return & Replacement Summary */}
+              <div className="flex items-start gap-3">
+                <div
+                  className={`p-2 rounded-lg shrink-0 ${
+                    data.policy.return_replace_mode === "none"
+                      ? "bg-red-50 text-red-500"
+                      : "bg-emerald-50 text-emerald-600"
+                  }`}
+                >
+                  <ShieldCheck size={18} />
+                </div>
+                <div>
+                  <p className="text-theme-caption font-semibold text-gray-500 uppercase tracking-wider mb-0.5">
+                    Return &amp; Replacement
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {data.policy.is_returnable && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-theme-caption font-semibold">
+                        ↩{" "}
+                        {data.policy.return_window_days
+                          ? `${data.policy.return_window_days}-Day Returns`
+                          : "Returns Accepted"}
+                      </span>
+                    )}
+                    {data.policy.is_replaceable && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-theme-caption font-semibold">
+                        🔄{" "}
+                        {data.policy.replacement_window_days
+                          ? `${data.policy.replacement_window_days}-Day Replace`
+                          : "Replacement Accepted"}
+                      </span>
+                    )}
+                    {!data.policy.is_returnable && !data.policy.is_replaceable && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-full text-theme-caption font-semibold">
+                        🚫 Final Sale
+                      </span>
+                    )}
+                  </div>
+                  {data.policy.return_conditions && (
+                    <p className="mt-2 text-theme-caption text-gray-500 leading-relaxed">
+                      {data.policy.return_conditions}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

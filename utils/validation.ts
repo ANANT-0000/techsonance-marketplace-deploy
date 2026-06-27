@@ -780,6 +780,48 @@ export const policyFormSchema = z.object({
 
   generates_document: z.boolean({ error: "Required" }),
   is_active: z.boolean({ error: "Required" }),
+
+  // ─── Return & Replacement Fields ─────────────────────────────────────────
+  /** Whether customers can return this product for a refund. */
+  is_returnable: z.boolean().default(false),
+
+  /** Whether customers can request a replacement unit. */
+  is_replaceable: z.boolean().default(false),
+
+  /**
+   * Days from delivery within which a return can be initiated.
+   * Only relevant when is_returnable = true. Max 365 days.
+   */
+  return_window_days: z
+    .number()
+    .int("Must be a whole number")
+    .min(1, "Must be at least 1 day")
+    .max(365, "Cannot exceed 365 days")
+    .optional()
+    .or(z.nan().transform(() => undefined)),
+
+  /**
+   * Days from delivery within which a replacement can be requested.
+   * Only relevant when is_replaceable = true. Max 365 days.
+   */
+  replacement_window_days: z
+    .number()
+    .int("Must be a whole number")
+    .min(1, "Must be at least 1 day")
+    .max(365, "Cannot exceed 365 days")
+    .optional()
+    .or(z.nan().transform(() => undefined)),
+
+  /**
+   * Freetext eligibility conditions displayed to the customer.
+   * e.g. "Item must be unused, sealed, with all original accessories."
+   */
+  return_conditions: z
+    .string()
+    .trim()
+    .max(1000, "Cannot exceed 1000 characters")
+    .optional(),
+  // ─────────────────────────────────────────────────────────────────────────
 });
 
 export type PolicyFormSchemaType = z.infer<typeof policyFormSchema>;

@@ -328,7 +328,7 @@ export default function VendorAddressesPage() {
   };
 
   return (
-    <main className="w-full mx-auto mt-6 px-2 py-4 relative">
+    <main className="w-full mx-auto mt-6 px-2 py-4 relative max-h-screen min-h-screen overflow-y-scroll">
       {/* Header */}
       <header className="flex flex-wrap justify-between items-center mb-6 gap-4">
         <div className="flex items-center gap-3 text-gray-700">

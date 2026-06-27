@@ -13,6 +13,8 @@ import {
   Coupon,
   Product,
   ProductImage,
+  ProductPolicyInfo,
+  ReturnReplaceMode,
   Variant,
 } from "@/utils/Types";
 import { formatCurrency } from "@/lib/utils";
@@ -50,14 +52,83 @@ import { AxiosError, AxiosResponse } from "axios";
 import { PageLoader } from "@/components/customer/PageLoader";
 import { ProductClientConfig } from "@/constants";
 
-// ─── Trust Badges ────────────────────────────────────────────────────────────
-const trustBadges = [
-  { icon: Truck, label: "Free Delivery" },
-  { icon: RotateCcw, label: "7-Day Returns" },
-  { icon: Shield, label: "1 Year Warranty" },
-  { icon: Banknote, label: "Cash on Delivery" },
-  { icon: FileSpreadsheet, label: "GST Billing" },
-];
+// ─── Trust Badges (dynamic, policy-driven) ───────────────────────────────────
+function buildTrustBadges(policy: ProductPolicyInfo | null | undefined) {
+  const base = [
+    { icon: Truck, label: "Free Delivery" },
+    { icon: Banknote, label: "Cash on Delivery" },
+    { icon: FileSpreadsheet, label: "GST Billing" },
+  ];
+
+  if (policy?.is_returnable) {
+    base.splice(1, 0, {
+      icon: RotateCcw,
+      label: policy.return_window_days
+        ? `${policy.return_window_days}-Day Returns`
+        : "Returns Accepted",
+    });
+  }
+
+  if (policy?.has_warranty) {
+    base.splice(policy?.is_returnable ? 2 : 1, 0, {
+      icon: Shield,
+      label: policy.warranty_duration_label ?? "Warranty Included",
+    });
+  }
+
+  return base;
+}
+
+// ─── Policy Info Card ─────────────────────────────────────────────────────────
+function PolicyInfoCard({ policy }: { policy: ProductPolicyInfo | null }) {
+  if (!policy) return null;
+
+  const hasReturnOrReplace =
+    policy.return_replace_mode !== ReturnReplaceMode.NONE;
+
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3">
+      <p className="text-theme-caption font-bold text-gray-500 uppercase tracking-wider mb-2.5">
+        Return &amp; Warranty
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {policy.is_returnable && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-full text-theme-caption font-semibold">
+            <RotateCcw size={12} />
+            {policy.return_window_days
+              ? `${policy.return_window_days}-Day Returns`
+              : "Returns Accepted"}
+          </span>
+        )}
+        {policy.is_replaceable && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-100 text-blue-700 rounded-full text-theme-caption font-semibold">
+            <Package size={12} />
+            {policy.replacement_window_days
+              ? `${policy.replacement_window_days}-Day Replacement`
+              : "Replacement Accepted"}
+          </span>
+        )}
+        {policy.has_warranty && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 border border-purple-100 text-purple-700 rounded-full text-theme-caption font-semibold">
+            <Shield size={12} />
+            {policy.warranty_duration_label ?? "Warranty Included"}
+          </span>
+        )}
+        {!hasReturnOrReplace && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-100 text-red-600 rounded-full text-theme-caption font-semibold">
+            <AlertCircle size={12} />
+            No Returns / Final Sale
+          </span>
+        )}
+      </div>
+      {policy.return_conditions && hasReturnOrReplace && (
+        <p className="mt-2.5 text-theme-caption text-gray-500 leading-relaxed">
+          {policy.return_conditions}
+        </p>
+      )}
+    </div>
+  );
+}
 
 // ─── Skeleton Components ──────────────────────────────────────────────────────
 const SkeletonBox = ({ className }: { className?: string }) => (
@@ -859,21 +930,38 @@ export default function ProductClient({ id }: { id: string }) {
                   hidden: { opacity: 0, y: 16 },
                   visible: { opacity: 1, y: 0 },
                 }}
-                className="grid grid-cols-5 gap-2 pt-2 border-t border-gray-100"
+                className="grid gap-2 pt-2 border-t border-gray-100"
+                style={{
+                  gridTemplateColumns: `repeat(${buildTrustBadges(state.product?.policy).length}, minmax(0, 1fr))`,
+                }}
               >
-                {trustBadges.map(({ icon: Icon, label }) => (
-                  <div
-                    key={label}
-                    className="flex flex-col items-center gap-1.5 text-center"
-                  >
-                    <div className="p-2 bg-gray-50 rounded-xl">
-                      <Icon size={16} className="text-gray-600" />
+                {buildTrustBadges(state.product?.policy).map(
+                  ({ icon: Icon, label }) => (
+                    <div
+                      key={label}
+                      className="flex flex-col items-center gap-1.5 text-center"
+                    >
+                      <div className="p-2 bg-gray-50 rounded-xl">
+                        <Icon size={16} className="text-gray-600" />
+                      </div>
+                      <span className="text-theme-tiny font-semibold text-gray-500 leading-tight">
+                        {label}
+                      </span>
                     </div>
-                    <span className="text-theme-tiny font-semibold text-gray-500 leading-tight">
-                      {label}
-                    </span>
-                  </div>
-                ))}
+                  ),
+                )}
+              </motion.div>
+            )}
+
+            {/* Policy info card — desktop */}
+            {!isMobile && state.product?.policy && (
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: 16 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+              >
+                <PolicyInfoCard policy={state.product.policy} />
               </motion.div>
             )}
           </motion.div>

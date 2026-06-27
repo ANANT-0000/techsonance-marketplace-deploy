@@ -47,6 +47,14 @@ export interface ProductPolicy {
   duration_value?: number;
   duration_unit?: string;
   is_active: boolean;
+  // Return & Replacement fields
+  is_returnable: boolean;
+  is_replaceable: boolean;
+  return_window_days?: number | null;
+  replacement_window_days?: number | null;
+  return_conditions?: string | null;
+  /** Computed from is_returnable + is_replaceable */
+  return_replace_mode: "none" | "return_only" | "replace_only" | "both";
 }
 
 const POLICY_TYPE_COLORS: Record<
@@ -160,7 +168,7 @@ export default function PoliciesPage({ labels = UiText }: PoliciesPageProps) {
 
   return (
     <>
-      <main className="w-full px-1 py-4">
+      <main className="w-full px-1 py-4 max-h-screen min-h-screen overflow-y-scroll">
         {/* ── Header ── */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center my-6 gap-4">
           <div className="flex items-center gap-3 text-gray-700">
@@ -341,10 +349,28 @@ export default function PoliciesPage({ labels = UiText }: PoliciesPageProps) {
                       </span>
                     </div>
                     {policy.duration_value && (
-                      <p className="text-theme-caption text-gray-500 mb-3">
+                      <p className="text-theme-caption text-gray-500 mb-2">
                         ⏱ {policy.duration_value} {policy.duration_unit}
                       </p>
                     )}
+                    {/* Return / Replace mode chip */}
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {policy.is_returnable && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-theme-tiny font-semibold">
+                          ↩ Returns
+                        </span>
+                      )}
+                      {policy.is_replaceable && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-theme-tiny font-semibold">
+                          🔄 Replace
+                        </span>
+                      )}
+                      {!policy.is_returnable && !policy.is_replaceable && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-600 border border-red-100 rounded-full text-theme-tiny font-semibold">
+                          🚫 Final Sale
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 mt-auto pt-3 border-t border-gray-100">
                       <Link
                         href={`/vendor/configDocuments/coverage/${policy.id}`}
@@ -388,6 +414,9 @@ export default function PoliciesPage({ labels = UiText }: PoliciesPageProps) {
                   </th>
                   <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">
                     {labels.TABLE_HEADER_DURATION}
+                  </th>
+                  <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">
+                    Return / Replace
                   </th>
                   <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">
                     {labels.TABLE_HEADER_STATUS}
@@ -444,6 +473,25 @@ export default function PoliciesPage({ labels = UiText }: PoliciesPageProps) {
                           {policy.duration_value
                             ? `${policy.duration_value} ${policy.duration_unit}`
                             : "—"}
+                        </td>
+                        <td className="p-4">
+                          <div className="flex flex-wrap gap-1.5">
+                            {policy.is_returnable && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full text-theme-tiny font-semibold">
+                                ↩ Returns
+                              </span>
+                            )}
+                            {policy.is_replaceable && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-theme-tiny font-semibold">
+                                🔄 Replace
+                              </span>
+                            )}
+                            {!policy.is_returnable && !policy.is_replaceable && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-600 border border-red-100 rounded-full text-theme-tiny font-semibold">
+                                🚫 Final Sale
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="p-4">
                           <span

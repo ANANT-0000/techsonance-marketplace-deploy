@@ -42,12 +42,16 @@ export default function BusinessProfilePage() {
   });
   return (
     <>
-      <main className={`w-full mx-auto mt-6 `}>
+      <main
+        className={`w-full mx-auto mt-6 max-h-screen min-h-screen overflow-y-scroll `}
+      >
         <form
           className="vendor_settings_content p-6 bg-white rounded-lg border-2 border-gray-300 "
           onSubmit={handleSubmit((data) => {})}
         >
-          <h2 className="text-theme-h4 font-bold mb-4">{BUSINESS_PROFILE_TEXT.TITLE}</h2>
+          <h2 className="text-theme-h4 font-bold mb-4">
+            {BUSINESS_PROFILE_TEXT.TITLE}
+          </h2>
           <section className="space-y-5">
             <span className="flex  gap-12 justify-between">
               <div className="flex-1">

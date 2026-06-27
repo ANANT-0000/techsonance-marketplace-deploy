@@ -183,7 +183,7 @@ export default function PolicyCoveragePage({
   }
 
   return (
-    <main className="w-full   mx-auto py-6 px-1">
+    <main className="w-full   mx-auto py-6 px-1 max-h-screen min-h-screen overflow-y-scroll">
       {/* ── Header ── */}
       <div className="mb-6">
         <Link
