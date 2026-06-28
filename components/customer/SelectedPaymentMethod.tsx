@@ -1,5 +1,5 @@
 "use client";
-import { CreditCard, Smartphone, Package } from "lucide-react";
+import { CreditCard, Smartphone, Package, Landmark } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { SELECTED_PAYMENT_METHOD_TEXT } from "@/constants/customerText";
 
@@ -18,6 +18,9 @@ const METHOD_ICONS: Record<string, React.ReactNode> = {
   [SELECTED_PAYMENT_METHOD_TEXT.CREDIT_DEBIT]: (
     <CreditCard size={14} className="text-theme-primary" />
   ),
+  [SELECTED_PAYMENT_METHOD_TEXT.NET_BANKING]: (
+    <Landmark size={14} className="text-indigo-600" />
+  ),
   [SELECTED_PAYMENT_METHOD_TEXT.COD]: (
     <Package size={14} className="text-amber-500" />
   ),
@@ -26,6 +29,7 @@ const METHOD_ICONS: Record<string, React.ReactNode> = {
 const METHOD_ICON_BG: Record<string, string> = {
   [SELECTED_PAYMENT_METHOD_TEXT.UPI]: "bg-purple-50 border-purple-100",
   [SELECTED_PAYMENT_METHOD_TEXT.CREDIT_DEBIT]: "bg-blue-50   border-blue-100",
+  [SELECTED_PAYMENT_METHOD_TEXT.NET_BANKING]: "bg-indigo-50 border-indigo-100",
   [SELECTED_PAYMENT_METHOD_TEXT.COD]: "bg-amber-50  border-amber-100",
 };
 

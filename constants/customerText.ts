@@ -231,6 +231,7 @@ export const SEARCH_OVERLAY_TEXT = {
 export const SELECTED_PAYMENT_METHOD_TEXT = {
   UPI: "UPI",
   CREDIT_DEBIT: "Credit or Debit Card",
+  NET_BANKING: "Net Banking",
   COD: "Cash on Delivery/Pay on Delivery",
 };
 
@@ -720,43 +721,43 @@ export const STATUS_UI_CONFIG: Record<
   [OrderStatus.PENDING]: {
     label: "Order Placed",
     description: "We have received your order.",
-    color: "text-primary",
+    color: "text-primary-foreground/70",
     stepIndex: 0,
   },
   [OrderStatus.PROCESSING]: {
     label: "Processing",
     description: "Your items are being gathered.",
-    color: "text-primary",
+    color: "text-primary-foreground/70",
     stepIndex: 1,
   },
   [OrderStatus.DRAFTING]: {
     label: "Preparing Shipment",
     description: "Your items are being packed securely.",
-    color: "text-primary",
+    color: "text-primary-foreground/70",
     stepIndex: 1,
   },
   [OrderStatus.AWB_ASSIGNED]: {
     label: "Label Created",
     description: "Tracking details generated. Awaiting courier pickup.",
-    color: "text-primary",
+    color: "text-primary-foreground/70",
     stepIndex: 1,
   },
   [OrderStatus.SHIPPED]: {
     label: "Shipped",
     description: "Handed over to our delivery partner.",
-    color: "text-primary",
+    color: "text-primary-foreground/70",
     stepIndex: 2,
   },
   [OrderStatus.IN_TRANSIT]: {
     label: "In Transit",
     description: "Your package is on the move.",
-    color: "text-primary",
+    color: "text-primary-foreground/70",
     stepIndex: 2,
   },
   [OrderStatus.OUT_FOR_DELIVERY]: {
     label: "Out for Delivery",
     description: "Arriving today. Keep your phone handy.",
-    color: "text-primary",
+    color: "text-primary-foreground/70",
     stepIndex: 3,
   },
   [OrderStatus.OUT_FOR_DELIVERY_EXCEPTION]: {
@@ -780,7 +781,7 @@ export const STATUS_UI_CONFIG: Record<
   [OrderStatus.RETURNED]: {
     label: "Returned",
     description: "Items have been returned to our facility.",
-    color: "text-primary",
+    color: "text-primary-foreground/70",
     stepIndex: 4,
   },
   [OrderStatus.REFUNDED]: {
@@ -792,7 +793,7 @@ export const STATUS_UI_CONFIG: Record<
   [OrderStatus.REPLACED]: {
     label: "Replaced",
     description: "A replacement has been issued.",
-    color: "text-primary",
+    color: "text-primary-foreground/70",
     stepIndex: 4,
   },
   [OrderStatus.UNDELIVERED]: {

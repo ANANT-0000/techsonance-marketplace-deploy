@@ -434,7 +434,7 @@ export const WAREHOUSE_ADDRESS_FIELDS: {
 
 export const PAYMENT_METHODS_FIELDS = [
   {
-    id: "UPI",
+    id: "upi",
     label: "UPI",
     placeholder: "Enter your UPI ID",
     type: "text",
@@ -442,12 +442,19 @@ export const PAYMENT_METHODS_FIELDS = [
       "We will redirect you to your UPI app to complete the payment.",
   },
   {
-    id: "CreditCard",
+    id: "card",
     label: "Credit or Debit Card",
     placeholder: "Card Number",
     type: "text",
     description:
       "We accept all major credit and debit cards. Your card details are processed securely.",
+  },
+  {
+    id: "netbanking",
+    label: "Net Banking",
+    placeholder: "Select Bank",
+    type: "text",
+    description: "Secure payment through your bank account.",
   },
   {
     id: "cod",

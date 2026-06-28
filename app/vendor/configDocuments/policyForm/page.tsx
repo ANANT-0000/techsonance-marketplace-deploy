@@ -132,7 +132,6 @@ export default function PolicyFormPage({
       const result = editId
         ? await updateProductPolicy(editId, data, token!)
         : await createProductPolicy(data, token!);
-
       if (result?.error || result?.statusCode >= 400) {
         setGlobalError(result?.message ?? labels.POLICY_SAVE_ERROR);
         return;
@@ -349,8 +348,8 @@ export default function PolicyFormPage({
               Return &amp; Replacement
             </h2>
             <p className="text-theme-caption text-gray-400 mb-4">
-              Control whether customers can return or replace products covered by
-              this policy.
+              Control whether customers can return or replace products covered
+              by this policy.
             </p>
 
             {/* Toggle row */}
@@ -397,7 +396,9 @@ export default function PolicyFormPage({
                   <div className="flex flex-col gap-2">
                     <label className="text-theme-body-sm font-semibold text-gray-600">
                       Return Window
-                      <span className="ml-1 font-normal text-gray-400">(days)</span>
+                      <span className="ml-1 font-normal text-gray-400">
+                        (days)
+                      </span>
                     </label>
                     <input
                       type="number"
@@ -405,7 +406,9 @@ export default function PolicyFormPage({
                       max={365}
                       placeholder="e.g. 7"
                       className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 outline-none"
-                      {...register("return_window_days", { valueAsNumber: true })}
+                      {...register("return_window_days", {
+                        valueAsNumber: true,
+                      })}
                     />
                     {errors.return_window_days && (
                       <p className="text-theme-caption text-red-500">
@@ -419,7 +422,9 @@ export default function PolicyFormPage({
                   <div className="flex flex-col gap-2">
                     <label className="text-theme-body-sm font-semibold text-gray-600">
                       Replacement Window
-                      <span className="ml-1 font-normal text-gray-400">(days)</span>
+                      <span className="ml-1 font-normal text-gray-400">
+                        (days)
+                      </span>
                     </label>
                     <input
                       type="number"
@@ -446,7 +451,9 @@ export default function PolicyFormPage({
               <div className="flex flex-col gap-2">
                 <label className="text-theme-body-sm font-semibold text-gray-600">
                   Return / Replacement Conditions
-                  <span className="ml-1 font-normal text-gray-400">(optional)</span>
+                  <span className="ml-1 font-normal text-gray-400">
+                    (optional)
+                  </span>
                 </label>
                 <textarea
                   rows={3}

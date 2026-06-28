@@ -9,7 +9,13 @@ import {
   getMinOrderAmount,
 } from "@/lib/utils";
 import { SelectedPaymentMethod } from "@/components/customer/SelectedPaymentMethod";
-import { CartItem, PAYMENT_METHODS_FIELDS } from "@/constants";
+import {
+  CartItem,
+  PAYMENT_METHODS_FIELDS,
+  RAZORPAY_CURRENCY,
+  RAZORPAY_MERCHANT_NAME,
+  RAZORPAY_PAYMENT_DESCRIPTION,
+} from "@/constants";
 import {
   checkAddressExistence,
   fetchGetCartList,
@@ -101,7 +107,12 @@ export enum CheckoutActionType {
   SET_TAX_BREAKDOWN = "SET_TAX_BREAKDOWN",
   SET_TAX_ERROR = "SET_TAX_ERROR",
 }
-
+export enum PaymentMethod {
+  COD = "cod",
+  NET_BANKING = "netbanking",
+  UPI = "upi",
+  CARD = "card",
+}
 export interface CartItemForTaxPayload {
   variantId: string;
   quantity: number;
@@ -113,7 +124,7 @@ interface State {
   isModalOpen: boolean;
   modalMode: AddressOperation;
   editAddressId: string | null;
-  selectedPaymentMethodState: string;
+  selectedPaymentMethodState: PaymentMethod;
   isProcessing: boolean;
   checkoutError: string | null;
   selectedAddressId: string | null;
@@ -140,7 +151,7 @@ type Action =
       payload: { mode: AddressOperation; editId: string | null };
     }
   | { type: CheckoutActionType.CLOSE_ADDRESS_MODAL }
-  | { type: CheckoutActionType.SET_PAYMENT_METHOD; payload: string }
+  | { type: CheckoutActionType.SET_PAYMENT_METHOD; payload: PaymentMethod }
   | { type: CheckoutActionType.SET_PROCESSING; payload: boolean }
   | { type: CheckoutActionType.SET_CHECKOUT_ERROR; payload: string | null }
   | { type: CheckoutActionType.SET_SELECTED_ADDRESS; payload: string | null }
@@ -687,6 +698,11 @@ function CheckoutClientInner() {
   const [isMobileSummaryExpanded, setIsMobileSummaryExpanded] = useState(false);
 
   useEffect(() => {
+    // Preload Razorpay script on mount
+    loadRazorpayScript();
+  }, []);
+
+  useEffect(() => {
     if (isMobileSummaryExpanded) {
       const originalStyle = window.getComputedStyle(document.body).overflow;
       document.body.style.overflow = "hidden";
@@ -702,7 +718,7 @@ function CheckoutClientInner() {
     isModalOpen: false,
     modalMode: AddressOperation.ADD,
     editAddressId: null,
-    selectedPaymentMethodState: "UPI",
+    selectedPaymentMethodState: PaymentMethod.UPI,
     isProcessing: false,
     checkoutError: null,
     selectedAddressId: null,
@@ -729,11 +745,9 @@ function CheckoutClientInner() {
     isFreeShipping: boolean;
     nudgeAmount: number;
   } | null>(null);
-  const [isShippingLoading, setIsShippingLoading] = useState<boolean>(false);
 
   const fetchShippingRate = async (addressId: string) => {
     if (!addressId || !token || !id) return;
-    setIsShippingLoading(true);
     try {
       const body: any = { addressId };
       if (isQuickBuy) {
@@ -762,8 +776,6 @@ function CheckoutClientInner() {
       }
     } catch {
       toast.error("Failed to calculate shipping rates");
-    } finally {
-      setIsShippingLoading(false);
     }
   };
 
@@ -1142,10 +1154,10 @@ function CheckoutClientInner() {
 
         const options = {
           key: initData.data.razorpayKeyId,
-          amount: Math.round(displayedTotal * 100),
-          currency: "INR",
-          name: "Techsonance Marketplace",
-          description: "Secure Order Payment",
+          amount: Math.round(Number(initData.data.totalAmount) * 100),
+          currency: RAZORPAY_CURRENCY,
+          name: RAZORPAY_MERCHANT_NAME,
+          description: RAZORPAY_PAYMENT_DESCRIPTION,
           order_id: initData.data.razorpayOrderId,
           handler: async (response: any) => {
             dispatch({
@@ -1248,10 +1260,13 @@ function CheckoutClientInner() {
         return;
       }
 
-      // COD or Simulation Flow
-      const userClickedSuccess = window.confirm(
-        `SIMULATION: Pay ₹${formatCurrency(displayedTotal)}\n\nOK = Success | Cancel = Failure`,
-      );
+      // COD
+      const isCod = state.selectedPaymentMethodState === PaymentMethod.COD;
+      const userClickedSuccess = isCod
+        ? true
+        : window.confirm(
+            `SIMULATION: Pay ₹${formatCurrency(displayedTotal)}\n\nOK = Success | Cancel = Failure`,
+          );
       const result = await fetchVerifyPayment(
         user?.id || "",
         {
@@ -1404,11 +1419,15 @@ function CheckoutClientInner() {
                   <SelectedPaymentMethod
                     key={method.id}
                     method={method.label}
-                    selectedMethod={state.selectedPaymentMethodState}
-                    onSelect={(m) =>
+                    selectedMethod={
+                      method.id === state.selectedPaymentMethodState
+                        ? method.label
+                        : ""
+                    }
+                    onSelect={() =>
                       dispatch({
                         type: CheckoutActionType.SET_PAYMENT_METHOD,
-                        payload: m,
+                        payload: method.id as PaymentMethod,
                       })
                     }
                     description={method.description}

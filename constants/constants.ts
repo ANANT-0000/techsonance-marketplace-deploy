@@ -28,6 +28,11 @@ export const COLOR_PINK = "#ec4899";
 export const COLOR_DARK_CHARCOAL = "#131921";
 export const COLOR_LIGHT_GRAY = "#f3f4f6";
 
+// Razorpay Gateway Configurations
+export const RAZORPAY_CURRENCY = "INR";
+export const RAZORPAY_MERCHANT_NAME = "Techsonance Marketplace";
+export const RAZORPAY_PAYMENT_DESCRIPTION = "Secure Order Payment";
+
 
 
 

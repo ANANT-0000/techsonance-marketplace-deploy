@@ -279,7 +279,11 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
             </div>
 
             <div className="w-[180px] flex flex-col gap-2 justify-center">
-              <Button variant="outline" asChild className="rounded-xl border border-border bg-transparent hover:bg-secondary text-xs font-semibold text-foreground transition-all w-full cursor-pointer">
+              <Button
+                variant="outline"
+                asChild
+                className="rounded-xl border border-border bg-transparent hover:bg-secondary text-xs font-semibold text-foreground transition-all w-full cursor-pointer"
+              >
                 <Link href={`/customer/orders/${item.order.id}`}>
                   {ORDER_LIST_TEXT.VIEW_DETAILS}
                 </Link>
@@ -359,7 +363,11 @@ const OrderItemCard = ({ item }: { item: OrderItemAPIResponse }) => {
 
         {/* Actions */}
         <div className="grid grid-cols-2 gap-2 mt-4">
-          <Button variant="outline" asChild className="rounded-xl border border-border bg-transparent hover:bg-secondary text-xs font-semibold text-foreground transition-all cursor-pointer">
+          <Button
+            variant="outline"
+            asChild
+            className="rounded-xl border border-border bg-transparent hover:bg-secondary text-xs font-semibold text-foreground transition-all cursor-pointer"
+          >
             <Link href={`/customer/orders/${item.order.id}`}>
               {ORDER_LIST_TEXT.VIEW_DETAILS}
             </Link>
@@ -452,15 +460,19 @@ export function OrdersList({
 
   return (
     <div className="w-full flex flex-col gap-6 text-left">
-      {/* Filter Pills Header */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      {/* Filter Pills Header — Displayed on mobile viewports, hidden seamlessly on desktop screens */}
+      <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
         <Button
           variant={
             status === null && state.dateFilter === "all"
               ? "default"
               : "secondary"
           }
-          className={`rounded-full h-8 text-[11px] font-semibold px-4 shrink-0 cursor-pointer ${status === null && state.dateFilter === "all" ? "bg-foreground text-background hover:bg-foreground/90 shadow-sm" : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"}`}
+          className={`rounded-full h-8 text-[11px] font-semibold px-4 shrink-0 cursor-pointer ${
+            status === null && state.dateFilter === "all"
+              ? "bg-foreground text-background hover:bg-foreground/90 shadow-sm"
+              : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"
+          }`}
           onClick={() => {
             setStatus(null);
             dispatch({ type: OrderActionType.SET_DATE_FILTER, payload: "all" });
@@ -468,9 +480,14 @@ export function OrdersList({
         >
           {ORDER_LIST_TEXT.ALL_ORDERS}
         </Button>
+
         <Button
           variant={state.dateFilter === "last30" ? "default" : "secondary"}
-          className={`rounded-full h-8 text-[11px] font-semibold px-4 shrink-0 cursor-pointer ${state.dateFilter === "last30" ? "bg-foreground text-background hover:bg-foreground/90 shadow-sm" : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"}`}
+          className={`rounded-full h-8 text-[11px] font-semibold px-4 shrink-0 cursor-pointer ${
+            state.dateFilter === "last30"
+              ? "bg-foreground text-background hover:bg-foreground/90 shadow-sm"
+              : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"
+          }`}
           onClick={() => {
             setStatus(null);
             dispatch({
@@ -481,11 +498,14 @@ export function OrdersList({
         >
           {ORDER_LIST_TEXT.LAST_30_DAYS}
         </Button>
+
         <Button
-          variant={
-            status === OrderStatus.DELIVERED ? "default" : "secondary"
-          }
-          className={`rounded-full h-8 text-[11px] font-semibold px-4 shrink-0 cursor-pointer ${status === OrderStatus.DELIVERED ? "bg-foreground text-background hover:bg-foreground/90 shadow-sm" : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"}`}
+          variant={status === OrderStatus.DELIVERED ? "default" : "secondary"}
+          className={`rounded-full h-8 text-[11px] font-semibold px-4 shrink-0 cursor-pointer ${
+            status === OrderStatus.DELIVERED
+              ? "bg-foreground text-background hover:bg-foreground/90 shadow-sm"
+              : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"
+          }`}
           onClick={() => setStatus(OrderStatus.DELIVERED)}
         >
           {ORDER_LIST_TEXT.DELIVERED}
@@ -503,7 +523,10 @@ export function OrdersList({
           ))}
         </div>
       ) : (
-        <div className="space-y-4 w-full pb-24 md:pb-8">
+        /* OPTIMIZATION FIX: Removed max-h-screen and overflow-y-auto attributes. 
+           The layout now expands naturally downward, eliminating double scrollbars 
+           and scroll chaining while guaranteeing the button is visible at the absolute bottom. */
+        <div className="space-y-4 w-full pb-12 md:pb-6">
           {state.items.map((item, index) => (
             <OrderItemCard
               key={item.id ?? `${item.order.id}-${item.variant.id}-${index}`}
@@ -529,18 +552,26 @@ export function OrdersList({
             </motion.div>
           )}
 
-          {/* Load More Button */}
-          {state.items.length >= state.limit && (
-            <div className="flex justify-center mt-6 pt-4">
-              <Button
-                onClick={() => dispatch({ type: OrderActionType.LOAD_MORE })}
-                className="w-full md:w-auto px-8 h-10 rounded-xl bg-secondary text-foreground hover:bg-secondary/80 font-semibold border border-border shadow-sm transition-all active:scale-95 cursor-pointer text-xs"
-                disabled={state.isLoading}
-              >
-                {state.isLoading
-                  ? ORDER_LIST_TEXT.LOADING
-                  : ORDER_LIST_TEXT.LOAD_PREVIOUS}
-              </Button>
+          {/* Load More Button Container */}
+          {/* Load More Button Container */}
+          {!state.isLoading &&
+            state.items.length > 0 &&
+            state.items.length % state.limit === 0 && (
+              <div className="flex justify-center mt-8 pt-4 w-full">
+                <Button
+                  onClick={() => dispatch({ type: OrderActionType.LOAD_MORE })}
+                  className="w-full md:w-auto px-8 h-10 rounded-xl bg-secondary text-foreground hover:bg-secondary/80 font-semibold border border-border shadow-sm transition-all active:scale-95 cursor-pointer text-xs"
+                  disabled={state.isLoading}
+                >
+                  {ORDER_LIST_TEXT.LOAD_PREVIOUS}
+                </Button>
+              </div>
+            )}
+
+          {/* Optional Inline Loading Indicator so users know data is fetching */}
+          {state.isLoading && state.offset > 0 && (
+            <div className="flex justify-center py-4 w-full text-xs text-muted-foreground font-medium animate-pulse">
+              {ORDER_LIST_TEXT.LOADING}...
             </div>
           )}
         </div>
