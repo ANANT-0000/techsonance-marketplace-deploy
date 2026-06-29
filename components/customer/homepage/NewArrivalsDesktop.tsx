@@ -18,6 +18,8 @@ import { WishListBtn } from "@/components/customer/WishListBtn";
 import { AddToCart } from "@/components/customer/AddToCart";
 import { BuyBtn } from "@/components/customer/BuyBtn";
 import { BuyBtnMode } from "@/utils/Types";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import type { RootState } from "@/lib/store";
 import { fetchProducts } from "@/utils/commonAPiClient";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -275,6 +277,10 @@ function ProductCard({
   const { rating, reviewCount } = getProductRating(product);
   const { price, mrp, discountPercent, hasDiscount } = getPricing(product);
 
+  const { items } = useAppSelector((state: RootState) => state.cart);
+  const cartItem = items?.find((item) => item.productVariantId === variantId);
+  const isInCart = !!(cartItem && cartItem.quantity > 0);
+
   const badgeStyles: Record<string, string> = {
     NEW: "bg-indigo-50 text-indigo-600 border border-indigo-100",
     "BEST SELLER": "bg-orange-50 text-orange-600 border border-orange-100",
@@ -365,20 +371,28 @@ function ProductCard({
         </div>
 
         {/* Actions Row */}
-        <div className="flex gap-2.5 mt-auto pt-3 border-t border-gray-100">
+        <div className="flex gap-2.5 items-center mt-auto pt-3 border-t border-gray-100">
           {variantId && (
             <AddToCart
               productVariantId={variantId}
               productVariant={product.variants?.[0]}
-              styles="w-12 h-10 rounded-lg bg-theme-primary hover:bg-theme-secondary text-theme-primary-foreground flex items-center justify-center shrink-0 [&_span]:hidden transition-colors cursor-pointer"
+              styles="w-full flex-1 h-10 min-w-[110px] rounded-lg bg-theme-primary hover:bg-theme-secondary text-theme-primary-foreground flex items-center justify-center shrink-0 [&_.add-to-cart-btn-text]:hidden transition-colors cursor-pointer"
             />
           )}
           <button
             onClick={() => onQuickView(product)}
-            className="flex-1 h-10 border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            className={`border h-10 border-gray-200 hover:bg-gray-50 text-gray-700 font-bold text-xs rounded-lg flex items-center justify-center transition-all duration-300 cursor-pointer ${
+              isInCart
+                ? "w-10 aspect-square shrink-0"
+                : "flex-1 min-w-[110px] gap-1.5 px-3"
+            }`}
           >
-            <Eye size={16} />
-            <span>{NEW_ARRIVALS_CONFIG.QUICK_VIEW_BTN_TEXT}</span>
+            <Eye size={16} className="shrink-0" />
+            {!isInCart && (
+              <span className="whitespace-nowrap">
+                {NEW_ARRIVALS_CONFIG.QUICK_VIEW_BTN_TEXT}
+              </span>
+            )}
           </button>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getUIConfig, normalizeStatus } from "@/lib/utils";
 import {
   Map,
   Download,
@@ -19,13 +19,11 @@ import {
   RotateCcw,
   RefreshCw,
   Ban,
-  Info,
-  RefreshCcwDot,
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchOrderDetails } from "@/utils/customerApiClient";
-import { OrderStatus } from "@/utils/Types";
+import { OrderStatus, ReturnReplaceMode } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
 import toast, { Toaster } from "react-hot-toast";
 import { useInvoiceDownload } from "@/hooks/useInvoiceDownload";
@@ -43,8 +41,13 @@ import {
   STATUS_UI_CONFIG,
   TERMINAL_STATUSES,
 } from "@/constants/customerText";
+import { TrackingTimeline } from "@/components/customer/TrackingTimeline";
+import { ItemActionButtons } from "@/components/customer/ItemActionButtons";
 
-interface GstInvoice {
+/**
+ * used in order detal page gstInvoice feilds are taken from the frontend perspective
+ */
+export interface GstInvoice {
   cgst_amount: string;
   company_id: string;
   created_at: string;
@@ -59,11 +62,16 @@ interface GstInvoice {
   updated_at: string;
 }
 
-interface OrderImage {
+/**
+ * used in order detal page orderImage feilds are taken from the frontend perspective
+ */
+export interface OrderImage {
   image_url: string;
 }
-
-interface ProductVariant {
+/**
+ * used in order detal page productVariant feilds are taken from the frontend perspective
+ */
+export interface ProductVariant {
   id: string;
   variant_name: string;
   price: string;
@@ -71,15 +79,20 @@ interface ProductVariant {
   product_id: string;
 }
 
-interface ReturnRequest {
+/**
+ * used in order detal page returnRequest feilds are taken from the frontend perspective
+ */
+export interface ReturnRequest {
   id: string;
   status: string;
   store_owner_note: string;
   tracking_id: string | null;
   type: string;
 }
-
-interface OrderItem {
+/**
+ * used in order detal page orderItem feilds are taken from the frontend perspective
+ */
+export interface OrderItem {
   id: string;
   quantity: number;
   price: string;
@@ -93,11 +106,13 @@ interface OrderItem {
     is_replaceable: boolean;
     return_window_days: number | null;
     replacement_window_days: number | null;
-    return_replace_mode: "none" | "return_only" | "replace_only" | "both";
+    return_replace_mode: ReturnReplaceMode;
   } | null;
 }
-
-interface Address {
+/**
+ * used in order detal page address feilds are taken from the frontend perspective
+ */
+export interface Address {
   name: string;
   address_line_1: string;
   city: string;
@@ -106,22 +121,29 @@ interface Address {
   country: string;
 }
 
-interface Payment {
+/**
+ * used in order detal page payment feilds are taken from the frontend perspective
+ */
+export interface Payment {
   id: string;
   payment_method: string;
   payment_status: string;
   transaction_ref: string;
   amount: string;
 }
-
-interface Invoice {
+/**
+ * used in order detal page order Invoice feilds are taken from the frontend perspective
+ */
+export interface Invoice {
   company_id: string;
   order_id: string;
   invoice_url: string;
   invoice_number?: string;
 }
-
-interface OrderDetailType {
+/**
+ * OrderDetailType for order detal page - feilds are taken from the frontend perspective
+ */
+export interface OrderDetail {
   id: string;
   user_id: string;
   total_amount: string;
@@ -139,316 +161,11 @@ interface OrderDetailType {
   gstInvoice: GstInvoice | null;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const normalizeStatus = (status?: string | null): string => {
-  return (status || "pending").toLowerCase();
-};
-
-const getUIConfig = (status: string) => {
-  const normStatus = normalizeStatus(status);
-  return (
-    STATUS_UI_CONFIG[normStatus as OrderStatus] || {
-      label: normStatus.replace(/_/g, " "),
-      description: "Order updated.",
-      color: "text-primary",
-      stepIndex: 0,
-    }
-  );
-};
-
-// ─── Dynamic Timeline (State Machine) ─────────────────────────────────────────
-function TrackingTimeline({
-  currentStatus,
-  date,
-}: {
-  currentStatus: string;
-  date: string;
-}) {
-  const normStatus = normalizeStatus(currentStatus);
-  const currentConfig = getUIConfig(normStatus);
-
-  const buildSteps = () => {
-    // 1. Cancelled Flow
-    if (normStatus === "cancelled") {
-      return [
-        {
-          icon: Clock,
-          label: "Order Placed",
-          isActive: true,
-          isCurrent: false,
-        },
-        { icon: XCircle, label: "Cancelled", isActive: true, isCurrent: true },
-      ];
-    }
-
-    // 2. Post-Delivery Flows (Return, Replace, Refund)
-    if (["returned", "refunded", "replaced"].includes(normStatus)) {
-      return [
-        {
-          icon: Clock,
-          label: "Order Placed",
-          isActive: true,
-          isCurrent: false,
-        },
-        { icon: Truck, label: "Shipped", isActive: true, isCurrent: false },
-        {
-          icon: CheckCircle2,
-          label: "Delivered",
-          isActive: true,
-          isCurrent: false,
-        },
-        {
-          icon: normStatus === "refunded" ? CreditCard : RotateCcw,
-          label: currentConfig.label,
-          isActive: true,
-          isCurrent: true,
-        },
-      ];
-    }
-
-    // 3. Exception Flows (RTO, Failed, Undelivered)
-    if (
-      ["rto", "failed", "undelivered", "out_for_delivery_exception"].includes(
-        normStatus,
-      )
-    ) {
-      return [
-        {
-          icon: Clock,
-          label: "Order Placed",
-          isActive: true,
-          isCurrent: false,
-        },
-        { icon: Truck, label: "Shipped", isActive: true, isCurrent: false },
-        {
-          icon: AlertTriangle,
-          label: "Exception",
-          isActive: true,
-          isCurrent: false,
-        },
-        {
-          icon: XCircle,
-          label: currentConfig.label,
-          isActive: true,
-          isCurrent: true,
-        },
-      ];
-    }
-
-    // 4. Standard Delivery Flow
-    const activeIndex = currentConfig.stepIndex ?? 0;
-    const standardSteps = [
-      { index: 0, icon: Clock, label: "Order Placed" },
-      { index: 1, icon: Package, label: "Processing" },
-      { index: 2, icon: Truck, label: "Shipped" },
-      { index: 3, icon: Map, label: "Out for Delivery" },
-      { index: 4, icon: CheckCircle2, label: "Delivered" },
-    ];
-
-    return standardSteps.map((step, idx) => {
-      let icon = step.icon;
-      let label = step.label;
-
-      if (idx === activeIndex) {
-        label = currentConfig.label;
-      }
-
-      return {
-        icon,
-        label,
-        isActive: activeIndex >= idx,
-        isCurrent: activeIndex === idx,
-      };
-    });
-  };
-
-  const steps = buildSteps();
-  const activeStepIndex =
-    steps.findIndex((s) => s.isCurrent) !== -1
-      ? steps.findIndex((s) => s.isCurrent)
-      : steps.length - 1;
-  const isNegativeState = [
-    "cancelled",
-    "failed",
-    "undelivered",
-    "rto",
-  ].includes(normStatus);
-
-  return (
-    <div className="relative space-y-2 pt-1 text-left px-2">
-      <div className="absolute left-[20px] top-4 bottom-6 w-[2px] bg-secondary z-0 rounded-full" />
-      <motion.div
-        initial={{ height: 0 }}
-        animate={{ height: `${(activeStepIndex / (steps.length - 1)) * 100}%` }}
-        transition={{ duration: 0.6, ease: "easeInOut" }}
-        className={`absolute left-[20px] top-4 w-[2px] z-0 rounded-full ${
-          isNegativeState ? "bg-destructive" : "bg-primary"
-        }`}
-      />
-
-      {steps.map((step, idx) => {
-        let iconBg = "bg-secondary text-muted-foreground";
-        let iconBorder = "border-secondary";
-
-        if (step.isActive && !step.isCurrent) {
-          iconBg = "bg-primary text-primary-foreground";
-          iconBorder = "border-primary";
-        } else if (step.isCurrent) {
-          iconBg =
-            isNegativeState ||
-            EXCEPTION_STATUSES.includes(normStatus as OrderStatus)
-              ? "bg-destructive text-destructive-foreground"
-              : "bg-primary text-primary-foreground";
-          iconBorder =
-            isNegativeState ||
-            EXCEPTION_STATUSES.includes(normStatus as OrderStatus)
-              ? "border-destructive shadow-sm scale-110"
-              : "border-primary shadow-sm scale-110";
-        }
-
-        const StepIcon = step.icon;
-
-        return (
-          <div
-            key={idx}
-            className={`relative z-10 flex gap-3.5 items-start ${!step.isActive ? "opacity-50" : "opacity-100"}`}
-          >
-            <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 border-2 transition-all duration-300 ${iconBg} ${iconBorder}`}
-            >
-              <StepIcon size={18} strokeWidth={step.isCurrent ? 2.5 : 2} />
-            </div>
-
-            <div className="flex flex-col pt-[1px]">
-              <span
-                className={`md:text-md text-sm tracking-tight transition-all ${step.isCurrent ? "text-foreground" : step.isActive ? "text-foreground/90" : "text-muted-foreground"}`}
-              >
-                {step.label}
-              </span>
-
-              {step.isCurrent && currentConfig.description && (
-                <motion.p
-                  initial={{ opacity: 0, y: -2 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`text-[11px] mt-0.5 font-medium ${currentConfig.color} leading-tight`}
-                >
-                  {currentConfig.description}
-                </motion.p>
-              )}
-
-              {idx === 0 && (
-                <span className="text-[10px] text-muted-foreground mt-0.5">
-                  {new Date(date).toLocaleString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── Item Action Buttons (guard-driven) ───────────────────────────────────────
-function ItemActionButtons({
-  guardItem,
-  onCancel,
-  onReturn,
-  onReplace,
-}: {
-  guardItem: GuardOrderItem;
-  onCancel: () => void;
-  onReturn: () => void;
-  onReplace: () => void;
-}) {
-  const { canCancel, canReturn, canReplace, hasAnyAction } =
-    useOrderEligibilityGuard(guardItem);
-  const status = normalizeStatus(guardItem.order_status);
-
-  if (
-    !hasAnyAction &&
-    !canCancel.eligible &&
-    !canReturn.eligible &&
-    !canReplace.eligible
-  ) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-wrap items-start gap-1.5 mt-0.5 w-full">
-      {(canCancel.eligible || ["pending", "processing"].includes(status)) && (
-        <div className="flex flex-col gap-1">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!canCancel.eligible}
-            onClick={canCancel.eligible ? onCancel : undefined}
-            className={`h-7 text-[10px] font-bold px-2.5 rounded-md transition-all ${
-              canCancel.eligible
-                ? "text-destructive border-destructive/30 hover:bg-destructive/10"
-                : "text-muted-foreground border-border/40 cursor-not-allowed opacity-50"
-            }`}
-            title={canCancel.reason ?? "Cancel this item"}
-          >
-            <Ban size={10} className="mr-1" />
-            Cancel
-          </Button>
-        </div>
-      )}
-
-      {(canReturn.eligible || status === "delivered") && (
-        <div className="flex flex-col gap-1">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!canReturn.eligible}
-            onClick={canReturn.eligible ? onReturn : undefined}
-            className={`h-7 text-[10px] font-bold px-2.5 rounded-md transition-all ${
-              canReturn.eligible
-                ? "text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10"
-                : "text-muted-foreground border-border/40 cursor-not-allowed opacity-50"
-            }`}
-            title={canReturn.reason ?? "Return this item"}
-          >
-            <RotateCcw size={10} className="mr-1" />
-            Return
-          </Button>
-        </div>
-      )}
-
-      {(canReplace.eligible || status === "delivered") && (
-        <div className="flex flex-col gap-1">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!canReplace.eligible}
-            onClick={canReplace.eligible ? onReplace : undefined}
-            className={`h-7 text-[10px] font-bold px-2.5 rounded-md transition-all ${
-              canReplace.eligible
-                ? "text-blue-600 border-blue-400/30 hover:bg-blue-500/10"
-                : "text-muted-foreground border-border/40 cursor-not-allowed opacity-50"
-            }`}
-            title={canReplace.reason ?? "Request a replacement"}
-          >
-            <RefreshCw size={10} className="mr-1" />
-            Replace
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Main Page Component ──────────────────────────────────────────────────────
 export default function OrderDetailsPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const { downloadInvoice, isGenerating } = useInvoiceDownload();
-  const [order, setOrder] = useState<OrderDetailType | null>(null);
+  const [order, setOrder] = useState<OrderDetail | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [mobileTrackingOpen, setMobileTrackingOpen] = useState(false);
 
@@ -490,7 +207,8 @@ export default function OrderDetailsPage() {
   const handleReplaceItem = (id: string) =>
     router.push(`/customer/support/return/${id}?type=replacement`);
 
-  // Compute the overarching status. We prioritize the item's order_status if it's terminal (e.g. Returned/Cancelled).
+  /** Compute the overarching status. We prioritize the item's order_status if it's terminal (e.g. Returned/Cancelled).
+   */
   const itemStatus = normalizeStatus(order?.items?.[0]?.order_status);
   const shippingStatus = normalizeStatus(order?.shipping?.shipping_status);
   const isItemTerminal = TERMINAL_STATUSES.includes(itemStatus as OrderStatus);

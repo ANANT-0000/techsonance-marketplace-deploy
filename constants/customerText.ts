@@ -844,6 +844,9 @@ export const ORDER_DETAILS_TEXT = {
   BTN_REFRESHING: "Refreshing...",
   BTN_VIEW_DETAILS: "View Tracking Details",
   BTN_HIDE_DETAILS: "Hide Details",
+  CANCEL: "Cancel",
+  RETURN: "Return",
+  REPLACE: "Replace",
 };
 
 export const NAVBAR_TEXT = {

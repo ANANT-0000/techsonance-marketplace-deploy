@@ -266,7 +266,6 @@ export default function Home() {
                 eyebrow="Hand-picked for You"
                 title="Featured Masterpieces"
                 href="/store"
-                centered
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
                 {productsLoading

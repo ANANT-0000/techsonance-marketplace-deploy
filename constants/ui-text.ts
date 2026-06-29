@@ -335,6 +335,7 @@ export const UiText = {
   CUSTOMER_ORDERS: {
     MY_ORDERS: "My Orders",
     STATUS_LABELS: {
+      SHIPPING: "shipping",
       PROCESSING: "Not Shipped Yet",
       DELIVERED: "Delivered",
       CANCELLED: "Cancelled",

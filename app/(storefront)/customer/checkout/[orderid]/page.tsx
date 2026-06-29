@@ -48,7 +48,6 @@ export default function OrderDetailPage() {
 
   const status = searchParams.get("status") || "success";
   const queryMessage = searchParams.get("message");
-  const isSuccess = status === "success";
 
   const [state, dispatch] = useReducer(reducer, {
     loading: true,
@@ -57,7 +56,9 @@ export default function OrderDetailPage() {
     suggestions: [],
     copied: false,
   });
-
+  const isSuccess = state.order
+    ? state.order.items?.[0]?.order_status?.toLowerCase() !== "cancelled"
+    : status === "success";
   useEffect(() => {
     if (!orderid) return;
 

@@ -19,11 +19,12 @@ export default function OrdersPage({ uiText }: OrdersPageProps) {
   const { user } = useAppSelector((state: RootState) => state.auth);
   const userId = user && "id" in user ? user.id : null;
 
-  // FIX 1: Set default initialization state to PROCESSING ("Not Shipped Yet")
-  // so a matching tab is selected on initial page render.
   const [orderStatus, setOrderStatus] = useState<
     OrderStatus | "returns" | null
   >(OrderStatus.PROCESSING);
+
+  /** Status map for the order status tabs.
+   * @returns {Array<OrderStatus | "returns">} The status map.*/
 
   const ordersStatusMap: Array<OrderStatus | "returns"> = [
     OrderStatus.PROCESSING,
@@ -33,10 +34,11 @@ export default function OrdersPage({ uiText }: OrdersPageProps) {
     "returns",
   ];
 
-  // FIX 2: Added missing Shipped label alignment to match UI schema formatting
+  /** Default status labels for the order status tabs.
+   * @returns {Record<OrderStatus | "returns", string>} The default status labels.*/
   const defaultStatusLabels: Record<string, string> = {
     [OrderStatus.PROCESSING]: UiText.CUSTOMER_ORDERS.STATUS_LABELS.PROCESSING,
-    [OrderStatus.SHIPPED]: "Shipped",
+    [OrderStatus.SHIPPED]: UiText.CUSTOMER_ORDERS.STATUS_LABELS.SHIPPING,
     [OrderStatus.DELIVERED]: UiText.CUSTOMER_ORDERS.STATUS_LABELS.DELIVERED,
     [OrderStatus.CANCELLED]: UiText.CUSTOMER_ORDERS.STATUS_LABELS.CANCELLED,
     returns: UiText.CUSTOMER_ORDERS.STATUS_LABELS.RETURNS,

@@ -327,7 +327,7 @@ export function AddToCart({
             ) : (
               <ShoppingCart className="w-4 h-4 shrink-0" />
             )}
-            <span className="text-theme-caption sm:text-xs-plus font-semibold tracking-wide whitespace-nowrap">
+            <span className="add-to-cart-btn-text text-theme-caption sm:text-xs-plus font-semibold tracking-wide whitespace-nowrap">
               {ADD_TO_CART_TEXT.ADD}
             </span>
           </motion.button>

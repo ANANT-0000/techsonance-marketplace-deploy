@@ -65,10 +65,30 @@ import { RootState } from "@/lib/store";
 // ─── Razorpay Script Loader ──────────────────────────────────────────────────
 const loadRazorpayScript = (): Promise<boolean> => {
   return new Promise((resolve) => {
-    if (typeof window !== "undefined" && (window as any).Razorpay) {
-      resolve(true);
+    if (typeof window === "undefined") {
+      resolve(false);
       return;
     }
+
+    const existingScript = document.querySelector(
+      'script[src="https://checkout.razorpay.com/v1/checkout.js"]',
+    );
+
+    if (existingScript) {
+      const handleLoad = () => resolve(true);
+      const handleError = () => resolve(false);
+
+      existingScript.addEventListener("load", handleLoad);
+      existingScript.addEventListener("error", handleError);
+
+      if ((window as any).Razorpay) {
+        resolve(true);
+        existingScript.removeEventListener("load", handleLoad);
+        existingScript.removeEventListener("error", handleError);
+      }
+      return;
+    }
+
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
@@ -1116,33 +1136,34 @@ function CheckoutClientInner() {
         initPayload,
         token,
       );
-      if (!initData?.success && initData?.status === 500) {
+      if (
+        !initData ||
+        !initData.success ||
+        initData.statusCode ||
+        initData.error
+      ) {
+        const errorMsg =
+          initData?.message || initData?.error || "Failed to initiate order.";
         dispatch({
           type: CheckoutActionType.SET_CHECKOUT_ERROR,
-          payload: initData?.message ?? "Failed to initiate order.",
+          payload: errorMsg,
         });
+        toast.error(errorMsg);
         return;
       }
-      if (initData?.status === 400) {
-        dispatch({
-          type: CheckoutActionType.SET_CHECKOUT_ERROR,
-          payload:
-            initData?.message ??
-            "Invalid request. Please check your order details.",
-        });
-        toast.error(
-          initData?.message ??
-            "Invalid request. Please check your order details.",
-        );
-        return;
-      }
-      if (initData.data?.paymentUrl) {
-        window.location.href = initData.data.paymentUrl;
+      // Unwrap nested data if wrapped by ResponseInterceptor
+      const paymentData =
+        initData.data && initData.data.data
+          ? initData.data.data
+          : initData.data;
+
+      if (paymentData?.paymentUrl) {
+        window.location.href = paymentData.paymentUrl;
         return;
       }
 
       // If Razorpay order details are returned, initiate overlay checkout
-      if (initData.data?.razorpayOrderId) {
+      if (paymentData?.razorpayOrderId) {
         const loaded = await loadRazorpayScript();
         if (!loaded) {
           toast.error(
@@ -1153,12 +1174,12 @@ function CheckoutClientInner() {
         }
 
         const options = {
-          key: initData.data.razorpayKeyId,
-          amount: Math.round(Number(initData.data.totalAmount) * 100),
+          key: paymentData.razorpayKeyId,
+          amount: Math.round(Number(paymentData.totalAmount) * 100),
           currency: RAZORPAY_CURRENCY,
           name: RAZORPAY_MERCHANT_NAME,
           description: RAZORPAY_PAYMENT_DESCRIPTION,
-          order_id: initData.data.razorpayOrderId,
+          order_id: paymentData.razorpayOrderId,
           handler: async (response: any) => {
             dispatch({
               type: CheckoutActionType.SET_PROCESSING,
@@ -1170,7 +1191,7 @@ function CheckoutClientInner() {
                 {
                   discountApplied: couponDiscount,
                   promotionId: state.couponApplied?.promotion_id,
-                  orderId: initData.data.orderId,
+                  orderId: paymentData.orderId,
                   isSuccess: true,
                   razorpayPaymentId: response.razorpay_payment_id,
                   razorpayOrderId: response.razorpay_order_id,
@@ -1183,7 +1204,7 @@ function CheckoutClientInner() {
               if (result?.data?.success || result?.success) {
                 dispatchRedux(clearCart());
                 router.push(
-                  `/customer/checkout/${initData.data.orderId}?status=success`,
+                  `/customer/checkout/${paymentData.orderId}?status=success`,
                 );
               } else {
                 const errorMsg =
@@ -1191,7 +1212,7 @@ function CheckoutClientInner() {
                   result?.message ||
                   "Payment verification failed.";
                 router.push(
-                  `/customer/checkout/${initData.data.orderId}?status=failed&message=${encodeURIComponent(errorMsg)}`,
+                  `/customer/checkout/${paymentData.orderId}?status=failed&message=${encodeURIComponent(errorMsg)}`,
                 );
               }
             } catch (err: any) {
@@ -1199,7 +1220,7 @@ function CheckoutClientInner() {
                 "Payment verification failed. Please contact support.",
               );
               router.push(
-                `/customer/checkout/${initData.data.orderId}?status=failed&message=${encodeURIComponent(err.message || "Verification failed")}`,
+                `/customer/checkout/${paymentData.orderId}?status=failed&message=${encodeURIComponent(err.message || "Verification failed")}`,
               );
             } finally {
               dispatch({
@@ -1227,7 +1248,7 @@ function CheckoutClientInner() {
                   {
                     discountApplied: couponDiscount,
                     promotionId: state.couponApplied?.promotion_id,
-                    orderId: initData.data.orderId,
+                    orderId: paymentData.orderId,
                     isSuccess: false,
                     ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
                   },
@@ -1239,11 +1260,11 @@ function CheckoutClientInner() {
                   result?.message ||
                   "Payment cancelled by user.";
                 router.push(
-                  `/customer/checkout/${initData.data.orderId}?status=failed&message=${encodeURIComponent(errorMsg)}`,
+                  `/customer/checkout/${paymentData.orderId}?status=failed&message=${encodeURIComponent(errorMsg)}`,
                 );
               } catch (err) {
                 router.push(
-                  `/customer/checkout/${initData.data.orderId}?status=failed&message=Payment cancelled`,
+                  `/customer/checkout/${paymentData.orderId}?status=failed&message=Payment cancelled`,
                 );
               } finally {
                 dispatch({
@@ -1262,42 +1283,43 @@ function CheckoutClientInner() {
 
       // COD
       const isCod = state.selectedPaymentMethodState === PaymentMethod.COD;
-      const userClickedSuccess = isCod
-        ? true
-        : window.confirm(
-            `SIMULATION: Pay ₹${formatCurrency(displayedTotal)}\n\nOK = Success | Cancel = Failure`,
-          );
-      const result = await fetchVerifyPayment(
-        user?.id || "",
-        {
-          discountApplied: couponDiscount,
-          promotionId: state.couponApplied?.promotion_id,
-          orderId: initData.data.orderId,
-          isSuccess: userClickedSuccess,
-          ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
-        },
-        token,
-      );
-      clearSession();
-      const isPaymentSuccess = userClickedSuccess && result?.data?.success;
-      if (isPaymentSuccess) {
-        dispatchRedux(clearCart());
-        router.push(
-          `/customer/checkout/${initData.data.orderId}?status=success`,
+      if (isCod) {
+        const result = await fetchVerifyPayment(
+          user?.id || "",
+          {
+            discountApplied: couponDiscount,
+            promotionId: state.couponApplied?.promotion_id,
+            orderId: paymentData.orderId,
+            isSuccess: true,
+            ...(isQuickBuy ? { productVariantId: id } : { cartId: id }),
+          },
+          token,
         );
+        clearSession();
+        if (result?.data?.success || result?.success) {
+          dispatchRedux(clearCart());
+          router.push(
+            `/customer/checkout/${paymentData.orderId}?status=success`,
+          );
+        } else {
+          const errorMsg =
+            result?.data?.message ||
+            result?.message ||
+            "Failed to complete Cash on Delivery order.";
+          router.push(
+            `/customer/checkout/${paymentData.orderId}?status=failed&message=${encodeURIComponent(errorMsg)}`,
+          );
+        }
       } else {
-        const errorMsg =
-          result?.data?.message ||
-          result?.message ||
-          "Payment failed. Your order has been cancelled.";
-        router.push(
-          `/customer/checkout/${initData.data.orderId}?status=failed&message=${encodeURIComponent(errorMsg)}`,
+        throw new Error(
+          "Payment gateway failed to initialize. Please try again or choose a different payment method.",
         );
       }
-    } catch {
+    } catch (err: any) {
       dispatch({
         type: CheckoutActionType.SET_CHECKOUT_ERROR,
-        payload: "An unexpected error occurred. Please try again.",
+        payload:
+          err?.message || "An unexpected error occurred. Please try again.",
       });
     } finally {
       dispatch({ type: CheckoutActionType.SET_PROCESSING, payload: false });

@@ -31,11 +31,10 @@ export default function RootLayout({
             crossOrigin={CROSS_ORIGIN}
           />
         )}
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       </head>
       <body>
-        <ReduxProviders>
-          {children}
-        </ReduxProviders>
+        <ReduxProviders>{children}</ReduxProviders>
       </body>
     </html>
   );

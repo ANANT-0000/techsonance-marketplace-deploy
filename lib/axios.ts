@@ -7,6 +7,12 @@ import {
   BASE_API_URL,
 } from "@/constants";
 import { getCompanyDomain } from "./get-domain";
+import { SecureErrorHandler } from "@/utils/error/error.handler";
+import {
+  ClientActionCode,
+  SanitizedErrorResponse,
+} from "@/utils/error/error.types";
+import toast from "react-hot-toast";
 
 // Create a base Axios instance
 const AxiosAPI = axios.create({
@@ -78,6 +84,29 @@ AxiosAPI.interceptors.response.use(
         }
         // For public routes just let the calling code handle the error
       }
+    }
+    if (error.response && error.response.data) {
+      const { message, action, errorCode, statusCode } = error.response
+        .data as SanitizedErrorResponse;
+      switch (action) {
+        case ClientActionCode.RETRY:
+          toast.error(`${message} Click to retry.`);
+          break;
+        case ClientActionCode.UPDATE_INPUT:
+          toast.error(message || "Please check your entries.");
+          break;
+        case ClientActionCode.NAVIGATE_HOME:
+          toast.error(message);
+          window.location.href = "/";
+          break;
+        case ClientActionCode.CONTACT_SUPPORT:
+          toast.error(`${message} (Error Ref: ${errorCode})`);
+          break;
+        default:
+          toast.error("An unexpected error occurred. Please try again.");
+      }
+    } else {
+      toast.error("Network connectivity issue. Please try again.");
     }
     return Promise.reject(error);
   },
