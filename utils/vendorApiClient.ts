@@ -2384,3 +2384,44 @@ export const updateShippingSettings = async (payload: any, token: string) => {
   }
 };
 
+// ==========================================
+// VENDOR PAYMENTS CONFIG API ENDPOINTS
+// ==========================================
+
+export const fetchVendorPaymentConfig = async (token: string) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(`${BASE_API_URL}/v1/vendor/payment/config`, {
+      cache: "no-store",
+      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch (error) {
+    return null;
+  }
+};
+
+export const updateVendorPaymentConfig = async (payload: any, token: string) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(`${BASE_API_URL}/v1/vendor/payment/config`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "company-domain": domain,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/vendor");
+    return res.json();
+  } catch (error) {
+    return {
+      success: false,
+      message: "Error updating payment configuration",
+    };
+  }
+};
+
+

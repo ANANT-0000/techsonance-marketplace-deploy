@@ -2079,3 +2079,45 @@ export const WAREHOUSE_LOCATIONS_TEXT = {
     SAVE: "Save Address",
   },
 };
+export const PAYMENT_PAGE_STRINGS = {
+  TITLE: "Secure Vendor Payment Gateway",
+  SUBTITLE:
+    "Manage your multi-tenant Razorpay integration, dynamic split-payment routing, and storefront shipping fees.",
+  FULFILLMENT_HEADER: "Fulfillment & Payment Routing Mode",
+  FULFILLMENT_DESC:
+    "Choose whether to receive payments directly into your account or split shipping costs dynamically with the platform.",
+
+  STANDALONE_TITLE: "Standalone Direct Mode",
+  STANDALONE_DESC:
+    "Process 100% of order totals (Products + Shipping) into your own verified Razorpay account.",
+
+  PROXY_TITLE: "Platform Proxy Mode",
+  PROXY_DESC:
+    "Fulfillment costs go to Platform's wallet. Razorpay automatically routes product price to you and shipping fee to the platform.",
+
+  INTEGRATION_HEADER: "Razorpay Integration Details",
+  INTEGRATION_STANDALONE_DESC:
+    "Provide your Razorpay API Credentials. These secrets are encrypted with AES-256-GCM in our credentials vault.",
+  INTEGRATION_PROXY_DESC:
+    "Provide your Razorpay Account ID (linked sub-merchant account identifier starting with 'acc_').",
+
+  LABEL_KEY_ID: "Razorpay Key ID",
+  LABEL_ACCOUNT_ID: "Razorpay Account ID",
+  LABEL_KEY_SECRET: "Razorpay Key Secret",
+
+  SHIPPING_HEADER: "Storefront Shipping Strategies",
+  SHIPPING_DESC:
+    "Select the dynamic billing calculations to use for estimating shipping fees at checkout.",
+
+  FLAT_RATE_TITLE: "Standard Flat Rate",
+  FLAT_RATE_DESC:
+    "Charges a standardized fixed delivery fee configured in your general logistics panel.",
+
+  DYNAMIC_RATE_TITLE: "Dynamic Customer Rate",
+  DYNAMIC_RATE_DESC:
+    "Calculates real-time delivery charges based on courier API calculations during checkout.",
+
+  SUCCESS_MSG: "Payment configuration vaulted successfully.",
+  ERROR_FALLBACK: "Failed to update payment configuration",
+  SAVE_BUTTON: "Save Configuration",
+};

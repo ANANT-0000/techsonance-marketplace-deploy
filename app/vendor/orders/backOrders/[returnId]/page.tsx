@@ -312,7 +312,7 @@ export default function BackOrderDetailPage() {
         </div>
       )}
 
-      <div className="w-full px-1 py-6 max-w-6xl mx-auto">
+      <div className="w-full px-1 min-h-screen max-h-screen overflow-y-scroll mx-auto">
         {/* ── Back + Header ── */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <button

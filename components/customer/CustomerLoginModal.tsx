@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { closeLoginModal } from "@/lib/features/auth/authSlice";
+import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import CustomerLoginForm from "./CustomerLoginForm";
 
 export function CustomerLoginModal() {
@@ -14,14 +15,16 @@ export function CustomerLoginModal() {
   const router = useRouter();
   const { isLoginModalOpen } = useAppSelector((state: RootState) => state.auth);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isLoginModalOpen) {
+      dispatch(toggleCartSidebar("close"));
       const originalStyle = window.getComputedStyle(document.body).overflow;
       document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = originalStyle;
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoginModalOpen]);
 
   const handleClose = () => {
@@ -38,7 +41,7 @@ export function CustomerLoginModal() {
   return (
     <AnimatePresence>
       {isLoginModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}

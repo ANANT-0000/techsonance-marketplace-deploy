@@ -74,10 +74,10 @@ export enum ReturnStatus {
  * Matches the return_replace_mode_enum in the Drizzle schema.
  */
 export enum ReturnReplaceMode {
-  NONE = "none",           // Final Sale — no return, no replace
-  RETURN_ONLY = "return_only",   // Refund accepted; no replacement
+  NONE = "none", // Final Sale — no return, no replace
+  RETURN_ONLY = "return_only", // Refund accepted; no replacement
   REPLACE_ONLY = "replace_only", // Exchange / replacement only
-  BOTH = "both",           // Customer can choose return OR replacement
+  BOTH = "both", // Customer can choose return OR replacement
 }
 
 /**
@@ -144,6 +144,17 @@ export enum AddressFor {
 export enum LogisticsMode {
   STANDALONE = "STANDALONE",
   PLATFORM_PROXY = "PLATFORM_PROXY",
+}
+
+export enum ShippingChargeStrategy {
+  DYNAMIC_CUSTOMER_RATE = "DYNAMIC_CUSTOMER_RATE",
+  STANDARD_FLAT_RATE = "STANDARD_FLAT_RATE",
+}
+
+export enum PaymentRoutingStatus {
+  VAULTED = "VAULTED",
+  ROTATED = "ROTATED",
+  SUSPENDED = "SUSPENDED",
 }
 
 /**

@@ -27,7 +27,7 @@ export function MobileSideDrawer({
   const currentPath = usePathname();
   const { themeData } = useThemeData();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       const originalStyle = window.getComputedStyle(document.body).overflow;
       document.body.style.overflow = "hidden";

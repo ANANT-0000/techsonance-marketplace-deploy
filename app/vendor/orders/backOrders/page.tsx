@@ -211,7 +211,7 @@ export default function BackOrdersListPage() {
     );
 
   return (
-    <main className="w-full px-1">
+    <main className="w-full px-1 min-h-screen max-h-screen overflow-y-scroll">
       {/* Header */}
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">

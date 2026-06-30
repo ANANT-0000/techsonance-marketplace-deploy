@@ -438,7 +438,7 @@ export default function VendorOrderDetails({}) {
     );
 
   return (
-    <div className="min-h-screen  p-4 md:p-6 font-sans text-slate-800">
+    <div className="min-h-screen max-h-screen overflow-y-scroll p-4 md:p-6 font-sans text-slate-800">
       {cancellingItemId && (
         <CancelModal
           onConfirm={handleCancelItem}

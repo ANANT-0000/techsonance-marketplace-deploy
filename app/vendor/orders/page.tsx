@@ -164,9 +164,7 @@ export default function OrdersPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [orderStatus, setOrderStatus] = useState<OrderStatusType | "">(
-    "",
-  );
+  const [orderStatus, setOrderStatus] = useState<OrderStatusType | "">("");
   const [sortBy, setSortBy] = useState<string>("desc");
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
@@ -277,7 +275,7 @@ export default function OrdersPage() {
     }
   };
   return (
-    <main className="w-full px-1">
+    <main className="w-full px-1 min-h-screen max-h-screen overflow-y-scroll">
       {/* Header */}
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">
@@ -320,15 +318,11 @@ export default function OrdersPage() {
             value={orderStatus}
           >
             <option value="">{UiText.ORDERS.ALL}</option>
-            <option value={OrderStatus.PENDING}>
-              {UiText.ORDERS.PENDING}
-            </option>
+            <option value={OrderStatus.PENDING}>{UiText.ORDERS.PENDING}</option>
             <option value={OrderStatus.PROCESSING}>
               {UiText.ORDERS.PROCESSING}
             </option>
-            <option value={OrderStatus.SHIPPED}>
-              {UiText.ORDERS.SHIPPED}
-            </option>
+            <option value={OrderStatus.SHIPPED}>{UiText.ORDERS.SHIPPED}</option>
             <option value={OrderStatus.DELIVERED}>
               {UiText.ORDERS.DELIVERED}
             </option>

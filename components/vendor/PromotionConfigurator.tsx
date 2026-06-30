@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useMemo, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -9,12 +9,12 @@ import {
 } from "@/components/ui/select";
 import { Input } from "./Input";
 import { Textarea } from "./TextArea";
-import { PromotionType } from '@/utils/Types';
-import { authToken } from '@/utils/authToken';
-import { RootState } from '@/lib/store';
-import { useAppSelector } from '@/hooks/reduxHooks';
-import { fetchVendorProductsOptions } from '@/utils/vendorApiClient';
-import { PROMO_CONFIG_TEXT } from '@/constants/vendorText';
+import { PromotionType } from "@/utils/Types";
+import { authToken } from "@/utils/authToken";
+import { RootState } from "@/lib/store";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { fetchVendorProductsOptions } from "@/utils/vendorApiClient";
+import { PROMO_CONFIG_TEXT } from "@/constants/vendorText";
 
 // ── Reusable Styles ──
 const fieldBase =
@@ -39,13 +39,17 @@ const SectionLabel = ({ icon, label }: { icon: string; label: string }) => (
 );
 
 const PROMOTION_TYPE_OPTIONS = [
-  { value: PromotionType.PERCENTAGE,      label: "Percentage (%)",       icon: "%" },
-  { value: PromotionType.FIXED_AMOUNT,    label: "Fixed Amount (₹)",     icon: "₹" },
-  { value: PromotionType.BUY_X_GET_Y,    label: "Buy X Get Y",          icon: "🎁" },
-  { value: PromotionType.BOGO,            label: "Buy 1 Get 1 (BOGO)",   icon: "2×" },
-  { value: PromotionType.FREE_SHIPPING,   label: "Free Shipping",        icon: "🚚" },
-  { value: PromotionType.TIERED_DISCOUNT, label: "Tiered Discount",      icon: "📊" },
-  { value: PromotionType.BUNDLE_DEAL,     label: "Bundle Deal",          icon: "📦" },
+  { value: PromotionType.PERCENTAGE, label: "Percentage (%)", icon: "%" },
+  { value: PromotionType.FIXED_AMOUNT, label: "Fixed Amount (₹)", icon: "₹" },
+  { value: PromotionType.BUY_X_GET_Y, label: "Buy X Get Y", icon: "🎁" },
+  { value: PromotionType.BOGO, label: "Buy 1 Get 1 (BOGO)", icon: "2×" },
+  { value: PromotionType.FREE_SHIPPING, label: "Free Shipping", icon: "🚚" },
+  {
+    value: PromotionType.TIERED_DISCOUNT,
+    label: "Tiered Discount",
+    icon: "📊",
+  },
+  { value: PromotionType.BUNDLE_DEAL, label: "Bundle Deal", icon: "📦" },
 ];
 
 interface VariantOption {
@@ -135,7 +139,9 @@ function MultiVariantSelect({
                       : "bg-red-50 text-red-500"
                   }`}
                 >
-                  {opt.stock > 0 ? `${opt.stock} ${PROMO_CONFIG_TEXT.COMMON.LEFT}` : PROMO_CONFIG_TEXT.COMMON.OUT}
+                  {opt.stock > 0
+                    ? `${opt.stock} ${PROMO_CONFIG_TEXT.COMMON.LEFT}`
+                    : PROMO_CONFIG_TEXT.COMMON.OUT}
                 </span>
               )}
             </label>
@@ -144,7 +150,10 @@ function MultiVariantSelect({
       </div>
       {selectedIds.length > 0 && (
         <p className="mt-1.5 text-theme-caption text-blue-500 font-medium">
-          {selectedIds.length} {selectedIds.length > 1 ? PROMO_CONFIG_TEXT.COMMON.VARIANTS_S : PROMO_CONFIG_TEXT.COMMON.VARIANT_S}{" "}
+          {selectedIds.length}{" "}
+          {selectedIds.length > 1
+            ? PROMO_CONFIG_TEXT.COMMON.VARIANTS_S
+            : PROMO_CONFIG_TEXT.COMMON.VARIANT_S}{" "}
           {PROMO_CONFIG_TEXT.COMMON.SELECTED_VARIANTS}
         </p>
       )}
@@ -169,16 +178,13 @@ function TieredDiscountBuilder({
   tiers: Tier[];
   onChange: (tiers: Tier[]) => void;
 }) {
-  const addTier = () =>
-    onChange([...tiers, { min_cart: "", percent: "" }]);
+  const addTier = () => onChange([...tiers, { min_cart: "", percent: "" }]);
 
   const removeTier = (i: number) =>
     onChange(tiers.filter((_, idx) => idx !== i));
 
   const updateTier = (i: number, key: keyof Tier, val: string) => {
-    const next = tiers.map((t, idx) =>
-      idx === i ? { ...t, [key]: val } : t
-    );
+    const next = tiers.map((t, idx) => (idx === i ? { ...t, [key]: val } : t));
     onChange(next);
   };
 
@@ -190,7 +196,9 @@ function TieredDiscountBuilder({
           className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end bg-gray-50 rounded-xl p-3 border border-gray-100"
         >
           <div>
-            <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MIN_CART}</label>
+            <label className={labelBase}>
+              {PROMO_CONFIG_TEXT.LABELS.MIN_CART}
+            </label>
             <Input
               type="number"
               value={tier.min_cart}
@@ -200,7 +208,9 @@ function TieredDiscountBuilder({
             />
           </div>
           <div>
-            <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.DISCOUNT_PCT}</label>
+            <label className={labelBase}>
+              {PROMO_CONFIG_TEXT.LABELS.DISCOUNT_PCT}
+            </label>
             <Input
               type="number"
               value={tier.percent ?? ""}
@@ -283,13 +293,19 @@ function VariantSelect({
       </Select>
       {selected && (
         <div className="mt-1.5 flex gap-3 text-theme-caption text-gray-500">
-          {selected.sku && <span>{PROMO_CONFIG_TEXT.COMMON.SKU}: {selected.sku}</span>}
-          {selected.price !== undefined && <span>{PROMO_CONFIG_TEXT.COMMON.PRICE}: ₹{selected.price}</span>}
+          {selected.sku && (
+            <span>
+              {PROMO_CONFIG_TEXT.COMMON.SKU}: {selected.sku}
+            </span>
+          )}
+          {selected.price !== undefined && (
+            <span>
+              {PROMO_CONFIG_TEXT.COMMON.PRICE}: ₹{selected.price}
+            </span>
+          )}
           {selected.stock !== undefined && (
             <span
-              className={
-                selected.stock > 0 ? "text-green-600" : "text-red-500"
-              }
+              className={selected.stock > 0 ? "text-green-600" : "text-red-500"}
             >
               {selected.stock > 0
                 ? `${selected.stock} ${PROMO_CONFIG_TEXT.COMMON.IN_STOCK}`
@@ -312,13 +328,14 @@ export function PromotionConfigurator({
 }: PromotionConfiguratorProps) {
   const { user } = useAppSelector((state: RootState) => state.auth);
   const token = authToken();
-  const [variantOptions, setVariantOptions] = React.useState<VariantOption[]>([]);
-  const [loadingVariants, setLoadingVariants] = React.useState(false);
+  const [variantOptions, setVariantOptions] = useState<VariantOption[]>([]);
+  const [loadingVariants, setLoadingVariants] = useState(false);
 
   // Parse tiers from JSON string or array
-  const parsedTiers: Tier[] = React.useMemo(() => {
+  const parsedTiers: Tier[] = useMemo(() => {
     if (!discountFields.tiers_json) return [];
-    if (Array.isArray(discountFields.tiers_json)) return discountFields.tiers_json;
+    if (Array.isArray(discountFields.tiers_json))
+      return discountFields.tiers_json;
     try {
       return JSON.parse(discountFields.tiers_json);
     } catch {
@@ -330,11 +347,11 @@ export function PromotionConfigurator({
     (tiers: Tier[]) => {
       updateField("tiers_json", tiers);
     },
-    [updateField]
+    [updateField],
   );
 
   // Parse bundle variant IDs from comma string or array
-  const bundleIds: string[] = React.useMemo(() => {
+  const bundleIds: string[] = useMemo(() => {
     if (!discountFields.bundle_variant_ids) return [];
     if (Array.isArray(discountFields.bundle_variant_ids))
       return discountFields.bundle_variant_ids;
@@ -373,7 +390,9 @@ export function PromotionConfigurator({
     <div className="space-y-5">
       {/* ── Type Selector ── */}
       <div className="max-w-xs">
-        <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.PROMO_TYPE}</label>
+        <label className={labelBase}>
+          {PROMO_CONFIG_TEXT.LABELS.PROMO_TYPE}
+        </label>
         <Select
           value={promoType}
           onValueChange={(v) => setPromoType(v as PromotionType)}
@@ -394,14 +413,18 @@ export function PromotionConfigurator({
 
       {/* ── Dynamic Config Fields ── */}
       <div className="grid grid-cols-2 gap-4">
-
         {/* ──────────── PERCENTAGE ──────────── */}
         {promoType === PromotionType.PERCENTAGE && (
           <>
-            <SectionLabel icon="%" label={PROMO_CONFIG_TEXT.LABELS.DISCOUNT_VAL} />
+            <SectionLabel
+              icon="%"
+              label={PROMO_CONFIG_TEXT.LABELS.DISCOUNT_VAL}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.DISCOUNT_PCT_AST}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.DISCOUNT_PCT_AST}
+              </label>
               <div className="relative">
                 <Input
                   type="number"
@@ -420,7 +443,9 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_CAP}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_CAP}
+              </label>
               <div className="relative">
                 <Input
                   type="number"
@@ -436,10 +461,15 @@ export function PromotionConfigurator({
               <HelperText>{PROMO_CONFIG_TEXT.HINTS.NO_CAP}</HelperText>
             </div>
 
-            <SectionLabel icon="🛒" label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY} />
+            <SectionLabel
+              icon="🛒"
+              label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}
+              </label>
               <div className="relative">
                 <Input
                   type="number"
@@ -457,7 +487,9 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_CART_VAL}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_CART_VAL}
+              </label>
               <div className="relative">
                 <Input
                   type="number"
@@ -474,10 +506,15 @@ export function PromotionConfigurator({
               </div>
             </div>
 
-            <SectionLabel icon="🔁" label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS} />
+            <SectionLabel
+              icon="🔁"
+              label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_USES}
+              </label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
@@ -488,7 +525,9 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}
+              </label>
               <Input
                 type="number"
                 value={discountFields.max_uses_per_customer ?? ""}
@@ -505,17 +544,20 @@ export function PromotionConfigurator({
         {/* ──────────── FIXED AMOUNT ──────────── */}
         {promoType === PromotionType.FIXED_AMOUNT && (
           <>
-            <SectionLabel icon="₹" label={PROMO_CONFIG_TEXT.LABELS.DISCOUNT_VAL} />
+            <SectionLabel
+              icon="₹"
+              label={PROMO_CONFIG_TEXT.LABELS.DISCOUNT_VAL}
+            />
 
             <div className="col-span-2">
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.AMOUNT_OFF}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.AMOUNT_OFF}
+              </label>
               <div className="relative max-w-xs">
                 <Input
                   type="number"
                   value={discountFields.fixed_amount ?? ""}
-                  onChange={(e) =>
-                    updateField("fixed_amount", e.target.value)
-                  }
+                  onChange={(e) => updateField("fixed_amount", e.target.value)}
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_100}
                   className={fieldBase + " pl-7"}
                 />
@@ -525,10 +567,15 @@ export function PromotionConfigurator({
               </div>
             </div>
 
-            <SectionLabel icon="🛒" label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY} />
+            <SectionLabel
+              icon="🛒"
+              label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}
+              </label>
               <div className="relative">
                 <Input
                   type="number"
@@ -546,7 +593,9 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_CART_VAL}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_CART_VAL}
+              </label>
               <div className="relative">
                 <Input
                   type="number"
@@ -563,10 +612,15 @@ export function PromotionConfigurator({
               </div>
             </div>
 
-            <SectionLabel icon="🔁" label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS} />
+            <SectionLabel
+              icon="🔁"
+              label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_USES}
+              </label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
@@ -577,7 +631,9 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}
+              </label>
               <Input
                 type="number"
                 value={discountFields.max_uses_per_customer ?? ""}
@@ -594,17 +650,20 @@ export function PromotionConfigurator({
         {/* ──────────── BUY X GET Y ──────────── */}
         {promoType === PromotionType.BUY_X_GET_Y && (
           <>
-            <SectionLabel icon="🎁" label={PROMO_CONFIG_TEXT.LABELS.QUANTITIES} />
+            <SectionLabel
+              icon="🎁"
+              label={PROMO_CONFIG_TEXT.LABELS.QUANTITIES}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.BUY_QTY}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.BUY_QTY}
+              </label>
               <Input
                 type="number"
                 min={1}
                 value={discountFields.bxgy_buy_qty ?? ""}
-                onChange={(e) =>
-                  updateField("bxgy_buy_qty", e.target.value)
-                }
+                onChange={(e) => updateField("bxgy_buy_qty", e.target.value)}
                 placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_2}
                 className={fieldBase}
               />
@@ -612,21 +671,24 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.GET_QTY}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.GET_QTY}
+              </label>
               <Input
                 type="number"
                 min={1}
                 value={discountFields.bxgy_get_qty ?? ""}
-                onChange={(e) =>
-                  updateField("bxgy_get_qty", e.target.value)
-                }
+                onChange={(e) => updateField("bxgy_get_qty", e.target.value)}
                 placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_1}
                 className={fieldBase}
               />
               <HelperText>{PROMO_CONFIG_TEXT.HINTS.GIVEN_FREE}</HelperText>
             </div>
 
-            <SectionLabel icon="📦" label={PROMO_CONFIG_TEXT.LABELS.FREE_PRODUCT} />
+            <SectionLabel
+              icon="📦"
+              label={PROMO_CONFIG_TEXT.LABELS.FREE_PRODUCT}
+            />
 
             <div className="col-span-2">
               <VariantSelect
@@ -634,9 +696,7 @@ export function PromotionConfigurator({
                 helperText={PROMO_CONFIG_TEXT.HINTS.FREE_VARIANT_DESC}
                 value={discountFields.bxgy_variant_id ?? ""}
                 variantOptions={variantOptions}
-                onValueChange={(val) =>
-                  updateField("bxgy_variant_id", val)
-                }
+                onValueChange={(val) => updateField("bxgy_variant_id", val)}
                 fieldBase={fieldBase}
                 labelBase={labelBase}
               />
@@ -666,7 +726,9 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_REDEMPTIONS}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_REDEMPTIONS}
+              </label>
               <Input
                 type="number"
                 value={discountFields.bxgy_max_redemptions ?? ""}
@@ -678,10 +740,15 @@ export function PromotionConfigurator({
               />
             </div>
 
-            <SectionLabel icon="🛒" label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY} />
+            <SectionLabel
+              icon="🛒"
+              label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}
+              </label>
               <div className="relative">
                 <Input
                   type="number"
@@ -699,7 +766,9 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_USES}
+              </label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
@@ -714,40 +783,44 @@ export function PromotionConfigurator({
         {/* ──────────── BOGO ──────────── */}
         {promoType === PromotionType.BOGO && (
           <>
-            <SectionLabel icon="2×" label={PROMO_CONFIG_TEXT.LABELS.BOGO_CONFIG} />
+            <SectionLabel
+              icon="2×"
+              label={PROMO_CONFIG_TEXT.LABELS.BOGO_CONFIG}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.BUY_QTY}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.BUY_QTY}
+              </label>
               <Input
                 type="number"
                 min={1}
                 value={discountFields.bogo_buy_qty ?? ""}
-                onChange={(e) =>
-                  updateField("bogo_buy_qty", e.target.value)
-                }
+                onChange={(e) => updateField("bogo_buy_qty", e.target.value)}
                 placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_1}
                 className={fieldBase}
               />
-              <HelperText>
-                {PROMO_CONFIG_TEXT.HINTS.BOGO_QTY}
-              </HelperText>
+              <HelperText>{PROMO_CONFIG_TEXT.HINTS.BOGO_QTY}</HelperText>
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.FREE_ITEM_QTY}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.FREE_ITEM_QTY}
+              </label>
               <Input
                 type="number"
                 min={1}
                 value={discountFields.bogo_free_qty ?? "1"}
-                onChange={(e) =>
-                  updateField("bogo_free_qty", e.target.value)
-                }
+                onChange={(e) => updateField("bogo_free_qty", e.target.value)}
                 placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_1}
                 className={fieldBase}
               />
             </div>
 
-            <SectionLabel icon="📦" label={PROMO_CONFIG_TEXT.LABELS.FREE_PRODUCT} />
+            <SectionLabel
+              icon="📦"
+              label={PROMO_CONFIG_TEXT.LABELS.FREE_PRODUCT}
+            />
 
             <div className="col-span-2">
               <VariantSelect
@@ -755,9 +828,7 @@ export function PromotionConfigurator({
                 helperText={PROMO_CONFIG_TEXT.HINTS.FREE_VARIANT_BOGO}
                 value={discountFields.bogo_variant_id ?? ""}
                 variantOptions={variantOptions}
-                onValueChange={(val) =>
-                  updateField("bogo_variant_id", val)
-                }
+                onValueChange={(val) => updateField("bogo_variant_id", val)}
                 fieldBase={fieldBase}
                 labelBase={labelBase}
               />
@@ -787,13 +858,11 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.SAME_PRODUCT}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.SAME_PRODUCT}
+              </label>
               <Select
-                value={
-                  discountFields.bogo_same_product
-                    ? "yes"
-                    : "no"
-                }
+                value={discountFields.bogo_same_product ? "yes" : "no"}
                 onValueChange={(v) =>
                   updateField("bogo_same_product", v === "yes")
                 }
@@ -815,7 +884,9 @@ export function PromotionConfigurator({
             <SectionLabel icon="🔁" label="Usage limits" />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_USES}
+              </label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
@@ -826,7 +897,9 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}
+              </label>
               <Input
                 type="number"
                 value={discountFields.max_uses_per_customer ?? ""}
@@ -843,10 +916,15 @@ export function PromotionConfigurator({
         {/* ──────────── FREE SHIPPING ──────────── */}
         {promoType === PromotionType.FREE_SHIPPING && (
           <>
-            <SectionLabel icon="🚚" label={PROMO_CONFIG_TEXT.LABELS.SHIPPING_CONFIG} />
+            <SectionLabel
+              icon="🚚"
+              label={PROMO_CONFIG_TEXT.LABELS.SHIPPING_CONFIG}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_SHIPPING_WAIVED}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_SHIPPING_WAIVED}
+              </label>
               <div className="relative">
                 <Input
                   type="number"
@@ -867,7 +945,9 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.APPLICABLE_CARRIERS}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.APPLICABLE_CARRIERS}
+              </label>
               <Input
                 value={discountFields.shipping_carriers ?? ""}
                 onChange={(e) =>
@@ -876,15 +956,18 @@ export function PromotionConfigurator({
                 placeholder="e.g. Delhivery, Bluedart (optional)"
                 className={fieldBase}
               />
-              <HelperText>
-                {PROMO_CONFIG_TEXT.HINTS.CARRIERS_HINT}
-              </HelperText>
+              <HelperText>{PROMO_CONFIG_TEXT.HINTS.CARRIERS_HINT}</HelperText>
             </div>
 
-            <SectionLabel icon="🛒" label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY} />
+            <SectionLabel
+              icon="🛒"
+              label={PROMO_CONFIG_TEXT.LABELS.CART_ELIGIBILITY}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MIN_CART_VAL}
+              </label>
               <div className="relative">
                 <Input
                   type="number"
@@ -919,21 +1002,26 @@ export function PromotionConfigurator({
         {/* ──────────── TIERED DISCOUNT ──────────── */}
         {promoType === PromotionType.TIERED_DISCOUNT && (
           <>
-            <SectionLabel icon="📊" label={PROMO_CONFIG_TEXT.LABELS.TIER_CONFIG} />
+            <SectionLabel
+              icon="📊"
+              label={PROMO_CONFIG_TEXT.LABELS.TIER_CONFIG}
+            />
 
             <div className="col-span-2">
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.TIERS}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.TIERS}
+              </label>
               <TieredDiscountBuilder
                 tiers={parsedTiers}
                 onChange={handleTiersChange}
               />
-              <HelperText>
-                {PROMO_CONFIG_TEXT.HINTS.TIER_HINT}
-              </HelperText>
+              <HelperText>{PROMO_CONFIG_TEXT.HINTS.TIER_HINT}</HelperText>
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.TIER_TYPE}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.TIER_TYPE}
+              </label>
               <Select
                 value={discountFields.tier_type ?? "percentage"}
                 onValueChange={(v) => updateField("tier_type", v)}
@@ -953,11 +1041,11 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.STACKABLE}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.STACKABLE}
+              </label>
               <Select
-                value={
-                  discountFields.tier_stackable ? "yes" : "no"
-                }
+                value={discountFields.tier_stackable ? "yes" : "no"}
                 onValueChange={(v) =>
                   updateField("tier_stackable", v === "yes")
                 }
@@ -976,10 +1064,15 @@ export function PromotionConfigurator({
               </Select>
             </div>
 
-            <SectionLabel icon="🔁" label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS} />
+            <SectionLabel
+              icon="🔁"
+              label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_USES}
+              </label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
@@ -1007,7 +1100,10 @@ export function PromotionConfigurator({
         {/* ──────────── BUNDLE DEAL ──────────── */}
         {promoType === PromotionType.BUNDLE_DEAL && (
           <>
-            <SectionLabel icon="📦" label={PROMO_CONFIG_TEXT.LABELS.BUNDLE_PRODUCTS} />
+            <SectionLabel
+              icon="📦"
+              label={PROMO_CONFIG_TEXT.LABELS.BUNDLE_PRODUCTS}
+            />
 
             <div className="col-span-2">
               <MultiVariantSelect
@@ -1023,17 +1119,20 @@ export function PromotionConfigurator({
               />
             </div>
 
-            <SectionLabel icon="₹" label={PROMO_CONFIG_TEXT.LABELS.BUNDLE_PRICING} />
+            <SectionLabel
+              icon="₹"
+              label={PROMO_CONFIG_TEXT.LABELS.BUNDLE_PRICING}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.BUNDLE_PRICE}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.BUNDLE_PRICE}
+              </label>
               <div className="relative">
                 <Input
                   type="number"
                   value={discountFields.bundle_price ?? ""}
-                  onChange={(e) =>
-                    updateField("bundle_price", e.target.value)
-                  }
+                  onChange={(e) => updateField("bundle_price", e.target.value)}
                   placeholder={PROMO_CONFIG_TEXT.PLACEHOLDERS.EG_499}
                   className={fieldBase + " pl-7"}
                 />
@@ -1041,16 +1140,18 @@ export function PromotionConfigurator({
                   ₹
                 </span>
               </div>
-              <HelperText>{PROMO_CONFIG_TEXT.HINTS.BUNDLE_PRICE_HINT}</HelperText>
+              <HelperText>
+                {PROMO_CONFIG_TEXT.HINTS.BUNDLE_PRICE_HINT}
+              </HelperText>
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.BUNDLE_DISC_TYPE}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.BUNDLE_DISC_TYPE}
+              </label>
               <Select
                 value={discountFields.bundle_discount_type ?? "fixed_price"}
-                onValueChange={(v) =>
-                  updateField("bundle_discount_type", v)
-                }
+                onValueChange={(v) => updateField("bundle_discount_type", v)}
               >
                 <SelectTrigger className={`${fieldBase} w-full`}>
                   <SelectValue />
@@ -1071,7 +1172,9 @@ export function PromotionConfigurator({
 
             {discountFields.bundle_discount_type === "percentage_off" && (
               <div>
-                <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.BUNDLE_DISC_PCT}</label>
+                <label className={labelBase}>
+                  {PROMO_CONFIG_TEXT.LABELS.BUNDLE_DISC_PCT}
+                </label>
                 <div className="relative">
                   <Input
                     type="number"
@@ -1092,12 +1195,12 @@ export function PromotionConfigurator({
             )}
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.REQUIRE_ALL}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.REQUIRE_ALL}
+              </label>
               <Select
                 value={
-                  discountFields.bundle_require_all !== false
-                    ? "yes"
-                    : "no"
+                  discountFields.bundle_require_all !== false ? "yes" : "no"
                 }
                 onValueChange={(v) =>
                   updateField("bundle_require_all", v === "yes")
@@ -1117,10 +1220,15 @@ export function PromotionConfigurator({
               </Select>
             </div>
 
-            <SectionLabel icon="🔁" label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS} />
+            <SectionLabel
+              icon="🔁"
+              label={PROMO_CONFIG_TEXT.LABELS.USAGE_LIMITS}
+            />
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_USES}
+              </label>
               <Input
                 type="number"
                 value={discountFields.max_uses ?? ""}
@@ -1131,7 +1239,9 @@ export function PromotionConfigurator({
             </div>
 
             <div>
-              <label className={labelBase}>{PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}</label>
+              <label className={labelBase}>
+                {PROMO_CONFIG_TEXT.LABELS.MAX_USES_USER}
+              </label>
               <Input
                 type="number"
                 value={discountFields.max_uses_per_customer ?? ""}

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useReducer, useCallback } from "react";
+import React, {
+  useEffect,
+  useReducer,
+  useCallback,
+  useState,
+  useRef,
+} from "react";
 import {
   fetchCompanyCompliance,
   uploadComplianceProofDocument,
@@ -289,10 +295,10 @@ function ComplianceCard({
   const expiring = isExpiringSoon(field.valid_until);
   const expired = isExpired(field.valid_until);
 
-  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
-  const [uploading, setUploading] = React.useState(false);
-  const [dragOver, setDragOver] = React.useState(false);
-  const fileRef = React.useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
     setUploading(true);

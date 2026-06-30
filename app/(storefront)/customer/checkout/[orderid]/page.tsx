@@ -246,7 +246,7 @@ export default function OrderDetailPage() {
                 <p className="text-theme-caption uppercase tracking-widest font-semibold text-gray-400">
                   Total Amount
                 </p>
-                <p className="font-extrabold text-theme-h5 text-blue-600">
+                <p className="font-extrabold text-theme-h5 text-black">
                   ₹{formatCurrency(totalAmount)}
                 </p>
               </div>
@@ -373,7 +373,7 @@ export default function OrderDetailPage() {
             <>
               <Button
                 asChild
-                className="flex-1 bg-blue-600 text-white hover:bg-blue-700 h-12 rounded-xl text-theme-body-sm font-bold transition-all shadow-sm"
+                className="flex-1 bg-black  text-stone-50 hover:bg-black/70 h-12 rounded-xl  font-bold transition-all shadow-sm"
               >
                 <Link href="/customer/checkout">Try Again</Link>
               </Button>
