@@ -28,6 +28,8 @@ import {
 } from "@/lib/features/auth/authSlice";
 import { authToken } from "@/utils/authToken";
 import { VendorUser } from "@/utils/Types";
+import { CookieConsentBanner } from "@/components/common/CookieConsentBanner";
+import { AUTH_TEXT, COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE } from "@/constants";
 
 interface LoginFormData {
   email: string;
@@ -216,6 +218,7 @@ export default function VendorLoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [redirectPct, setRedirectPct] = useState(100);
   const [countdown, setCountdown] = useState(3);
+  const [cookiesBlocked, setCookiesBlocked] = useState(false);
 
   const {
     reset,
@@ -228,6 +231,7 @@ export default function VendorLoginPage() {
   });
 
   useEffect(() => {
+    setCookiesBlocked(!navigator.cookieEnabled);
     if (token) {
       router.replace(`/vendor`);
     }
@@ -252,6 +256,7 @@ export default function VendorLoginPage() {
   };
 
   const onSubmit = async (data: LoginFormData) => {
+    localStorage.setItem(COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE);
     dispatch(loginStart());
     setUiState("loading");
     setSteps(["active", "pending", "pending"]);
@@ -367,6 +372,7 @@ export default function VendorLoginPage() {
                 onSubmit={handleSubmit(onSubmit)}
                 className="flex flex-col gap-4"
               >
+                <CookieConsentBanner />
                 {/* Email */}
                 <div>
                   <label className="block text-theme-caption font-semibold text-gray-600 mb-1.5 tracking-wide">
@@ -457,7 +463,7 @@ export default function VendorLoginPage() {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || cookiesBlocked}
                   className="w-full mt-1 bg-[#1a56db] hover:bg-[#1648c0] active:scale-[.98] disabled:opacity-60 text-white font-semibold text-theme-body-sm rounded-xl py-3.5 transition flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
@@ -473,6 +479,10 @@ export default function VendorLoginPage() {
                   )}
                 </button>
               </form>
+
+              <p className="text-center text-theme-caption text-gray-400 mt-5 px-2 leading-relaxed">
+                {AUTH_TEXT.CONSENT.DISCLAIMER}
+              </p>
 
               <p className="text-center text-theme-body-sm text-gray-500 mt-5">
                 Don't have a business account?{" "}

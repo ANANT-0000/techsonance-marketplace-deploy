@@ -495,7 +495,6 @@ export interface User {
 // used in multiple places
 export interface Address {
   address_line1: string;
-  address_line2: string;
   address_type: string;
   city: string;
   company_id: string | null;
@@ -1614,4 +1613,20 @@ export interface MegaMenuColumnData {
   promotion?: PromotionData;
 }
 
-// duplicate declaration removed
+export interface FieldOption {
+  label: string;
+  value: string;
+}
+
+export interface LocationFormField {
+  name: string;
+  label: string;
+  type: FieldType;
+  required?: boolean;
+  placeholder?: string;
+  colSpan?: "full" | "half";
+  options?: FieldOption[]; // for select
+  checkboxLabel?: string; // for checkbox
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  className?: string;
+}

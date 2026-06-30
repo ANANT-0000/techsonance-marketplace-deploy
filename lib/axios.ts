@@ -1,6 +1,5 @@
 import axios from "axios";
 import {
-  ACCESS_TOKEN_KEY,
   USER_STORAGE_KEY,
   IS_AUTHENTICATED_KEY,
   CART_KEY,
@@ -31,11 +30,6 @@ AxiosAPI.interceptors.request.use(
   async (config) => {
     // Only access localStorage if we are on the client side (browser)
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-      // If a token exists, attach it to the Authorization header
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
       if (!domainCache) {
         domainCache = await getCompanyDomain();
       }
@@ -70,7 +64,6 @@ AxiosAPI.interceptors.response.use(
 
         if (isProtectedRoute) {
           // Nuke all auth data from storage
-          localStorage.removeItem(ACCESS_TOKEN_KEY);
           localStorage.removeItem(USER_STORAGE_KEY);
           localStorage.removeItem(IS_AUTHENTICATED_KEY);
           localStorage.removeItem(CART_KEY);
@@ -85,28 +78,32 @@ AxiosAPI.interceptors.response.use(
         // For public routes just let the calling code handle the error
       }
     }
-    if (error.response && error.response.data) {
-      const { message, action, errorCode, statusCode } = error.response
-        .data as SanitizedErrorResponse;
-      switch (action) {
-        case ClientActionCode.RETRY:
-          toast.error(`${message} Click to retry.`);
-          break;
-        case ClientActionCode.UPDATE_INPUT:
-          toast.error(message || "Please check your entries.");
-          break;
-        case ClientActionCode.NAVIGATE_HOME:
-          toast.error(message);
-          window.location.href = "/";
-          break;
-        case ClientActionCode.CONTACT_SUPPORT:
-          toast.error(`${message} (Error Ref: ${errorCode})`);
-          break;
-        default:
-          toast.error("An unexpected error occurred. Please try again.");
+    const suppressToast = error.config?.headers?.['x-suppress-toast'] === 'true' || error.config?.headers?.['x-suppress-toast'] === true;
+
+    if (!suppressToast) {
+      if (error.response && error.response.data) {
+        const { message, action, errorCode, statusCode } = error.response
+          .data as SanitizedErrorResponse;
+        switch (action) {
+          case ClientActionCode.RETRY:
+            toast.error(`${message} Click to retry.`);
+            break;
+          case ClientActionCode.UPDATE_INPUT:
+            toast.error(message || "Please check your entries.");
+            break;
+          case ClientActionCode.NAVIGATE_HOME:
+            toast.error(message);
+            window.location.href = "/";
+            break;
+          case ClientActionCode.CONTACT_SUPPORT:
+            toast.error(`${message} (Error Ref: ${errorCode})`);
+            break;
+          default:
+            toast.error(message || "An unexpected error occurred. Please try again.");
+        }
+      } else {
+        toast.error("Network connectivity issue. Please try again.");
       }
-    } else {
-      toast.error("Network connectivity issue. Please try again.");
     }
     return Promise.reject(error);
   },

@@ -1,8 +1,12 @@
 import { Building2, FileArchive, Globe2, ShieldCheck } from "lucide-react";
 import { BusinessStructure, categoryOptions, COUNTRY_CODES } from "./common";
 import { VendorRegisterSchema } from "@/utils/validation";
-import { FieldConfig, FieldType } from "@/utils/Types";
-import { TAX_PROFILE_FORM_TEXT, TAX_RATES_FORM_TEXT } from "./vendorText";
+import { FieldConfig, FieldType, LocationFormField } from "@/utils/Types";
+import {
+  LOCATIONS_TEXT,
+  TAX_PROFILE_FORM_TEXT,
+  TAX_RATES_FORM_TEXT,
+} from "./vendorText";
 import { EDIT_PROFILE_TEXT } from "./customerText";
 export const STEPS = [
   { id: 0, label: "Organization", icon: Building2 },
@@ -341,7 +345,7 @@ export const ADDRESS_FIELDS: {
     type: "text",
     placeholder: "Enter postal code",
     required: true,
-  }, // Changed to text
+  },
 
   { id: "is_default", label: "Set as default address", type: "checkbox" },
 ] as const;
@@ -352,14 +356,14 @@ export const WAREHOUSE_ADDRESS_FIELDS: {
   type: string;
   placeholder?: string;
   required?: boolean;
-  options?: string[];
+  options?: any[];
 }[] = [
   {
     id: "address_for",
-    label: "Warehouse Type",
+    label: "Location Type",
     type: "select",
     options: ["warehouse", "hub", "other"],
-    placeholder: "Select warehouse type",
+    placeholder: "Select location type",
     required: true,
   },
   {
@@ -371,9 +375,9 @@ export const WAREHOUSE_ADDRESS_FIELDS: {
   },
   {
     id: "phone",
-    label: "Contact Number",
+    label: "Phone",
     type: "text",
-    placeholder: "Enter contact number for this warehouse",
+    placeholder: "Enter contact number for this location",
     required: true,
   },
   {
@@ -383,12 +387,18 @@ export const WAREHOUSE_ADDRESS_FIELDS: {
     placeholder: "Enter street address",
     required: true,
   },
-
   {
     id: "street",
     label: "Street",
     type: "text",
     placeholder: "Enter street name",
+    required: true,
+  },
+  {
+    id: "landmark",
+    label: "Landmark",
+    type: "text",
+    placeholder: "Enter nearby landmark",
     required: true,
   },
   {
@@ -422,15 +432,103 @@ export const WAREHOUSE_ADDRESS_FIELDS: {
     placeholder: "Enter postal code",
     required: true,
   },
-  {
-    id: "landmark",
-    label: "Landmark",
-    type: "text",
-    placeholder: "Enter nearby landmark",
-    required: true,
-  },
-  { id: "is_default", label: "Set as default warehouse", type: "checkbox" },
+  { id: "is_default", label: "Set as default address", type: "checkbox" },
 ] as const;
+export const LOCATION_FORM_FIELDS: LocationFormField[] = [
+  {
+    name: "address_type",
+    label: LOCATIONS_TEXT.FORM.ADDRESS_TYPE,
+    type: FieldType.SELECT,
+    required: true,
+    colSpan: "full",
+    options: [
+      {
+        label: LOCATIONS_TEXT.FORM.OPTIONS.REGISTERED,
+        value: "Registered Office",
+      },
+      { label: LOCATIONS_TEXT.FORM.OPTIONS.BILLING, value: "Billing Address" },
+      {
+        label: LOCATIONS_TEXT.FORM.OPTIONS.CORPORATE,
+        value: "Corporate Office",
+      },
+    ],
+  },
+  {
+    name: "name",
+    label: "Location Name",
+    type: FieldType.TEXT,
+    required: true,
+    colSpan: "half",
+    placeholder: "Enter location name",
+  },
+  {
+    name: "number",
+    label: "Contact Number",
+    type: FieldType.TEXT,
+    required: true,
+    colSpan: "half",
+    placeholder: "Enter contact number",
+  },
+  {
+    name: "address_line_1",
+    label: LOCATIONS_TEXT.FORM.ADDRESS_LINE_1,
+    type: FieldType.TEXT,
+    required: true,
+    colSpan: "full",
+    placeholder: LOCATIONS_TEXT.FORM.PLACEHOLDERS.LINE_1,
+  },
+
+  {
+    name: "city",
+    label: LOCATIONS_TEXT.FORM.CITY,
+    type: FieldType.TEXT,
+    required: true,
+    colSpan: "half",
+  },
+  {
+    name: "street",
+    label: LOCATIONS_TEXT.FORM.STREET,
+    type: FieldType.TEXT,
+    required: true,
+    colSpan: "half",
+  },
+  {
+    name: "state",
+    label: LOCATIONS_TEXT.FORM.STATE,
+    type: FieldType.TEXT,
+    required: true,
+    colSpan: "half",
+  },
+  {
+    name: "landmark",
+    label: LOCATIONS_TEXT.FORM.LANDMARK,
+    type: FieldType.TEXT,
+    colSpan: "half",
+  },
+  {
+    name: "postal_code",
+    label: LOCATIONS_TEXT.FORM.POSTAL_CODE,
+    type: FieldType.TEXT,
+    required: true,
+    colSpan: "half",
+    inputMode: "numeric",
+    className: "font-mono",
+  },
+  {
+    name: "country",
+    label: LOCATIONS_TEXT.FORM.COUNTRY,
+    type: FieldType.TEXT,
+    required: true,
+    colSpan: "half",
+  },
+  {
+    name: "is_default",
+    label: LOCATIONS_TEXT.FORM.DEFAULT_ADDRESS,
+    type: FieldType.CHECKBOX,
+    colSpan: "full",
+    checkboxLabel: LOCATIONS_TEXT.FORM.DEFAULT_CHECKBOX,
+  },
+];
 
 export const PAYMENT_METHODS_FIELDS = [
   {

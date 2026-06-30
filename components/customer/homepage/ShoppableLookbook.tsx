@@ -152,7 +152,7 @@ export function ShoppableLookbook({
               fill
               className="object-cover rounded-3xl"
               sizes="(max-width: 1280px) 100vw, 1280px"
-              quality={80}
+              quality={75}
               placeholder="blur"
               blurDataURL={LOOKBOOK_BLUR_DATA_URL}
             />

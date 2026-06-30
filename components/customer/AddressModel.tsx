@@ -42,6 +42,7 @@ export const AddressModal = ({
   user,
   addressId,
   addressList,
+  existingAddress: passedExistingAddress,
   operation,
   onClose,
   onSuccess,
@@ -49,6 +50,7 @@ export const AddressModal = ({
   user: Partial<User>;
   addressId?: string | null;
   addressList?: Address[];
+  existingAddress?: Address | null;
   operation: AddressOperation;
   onClose: () => void;
   onSuccess?: (val: boolean) => void;
@@ -59,7 +61,7 @@ export const AddressModal = ({
     success: null,
   });
 
-  const existingAddress = addressList?.find((addr) => addr.id === addressId);
+  const existingAddress = passedExistingAddress || addressList?.find((addr) => addr.id === addressId);
 
   // ─── React Hook Form (logic strictly preserved) ───────────────────────────
   const {

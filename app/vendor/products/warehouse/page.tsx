@@ -12,7 +12,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { authToken } from "@/utils/authToken";
 import { redirect } from "next/navigation";
-// 1. Import the new package
+import { MapPin, Building, Plus, Trash2, Edit, Package } from "lucide-react";
 import { Country, State, City } from "country-state-city";
 import { FormInput } from "@/components/common/FormInput";
 import { WAREHOUSE_ADDRESS_FIELDS } from "@/constants";
@@ -160,7 +160,19 @@ export default function LocationsPage() {
         data,
         token,
       )
-        .then((res) => {})
+        .then((res) => {
+          setLocationList((prevList) =>
+            prevList.map((loc) =>
+              loc.id === selectedLocation.id
+                ? {
+                    ...loc,
+                    warehouse_name: data.name,
+                    address: { ...loc.address, ...data },
+                  }
+                : loc
+            )
+          );
+        })
         .catch((error) => {});
     } else {
       const response = await fetchCreateWarehouseLocation(data, token)
@@ -211,7 +223,6 @@ export default function LocationsPage() {
         is_default: selectedLocation.address.is_default || false,
         phone: selectedLocation.address.number || "",
         address_line_1: selectedLocation.address.address_line_1 || "",
-
         city: selectedLocation.address.city || "",
         state: selectedLocation.address.state || "",
         street: selectedLocation.address.street || "",
@@ -338,108 +349,127 @@ export default function LocationsPage() {
         )}
       </AnimatePresence>
 
-      <section className="w-full p-6 bg-white rounded-lg border border-gray-200 shadow-sm mx-auto">
-        <div className="w-full flex justify-between items-center mb-6 border-b pb-4">
-          <h1 className="text-theme-h4 font-bold text-gray-800">
-            {WAREHOUSE_LOCATIONS_TEXT.HEADER.TITLE}
-          </h1>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-6 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
-            onClick={() => setClosedLocationForm(true)}
-          >
-            {WAREHOUSE_LOCATIONS_TEXT.HEADER.ADD_BTN}
-          </motion.button>
+      <header className="flex flex-wrap justify-between items-center mb-6 gap-4">
+        <div className="flex items-center gap-3 text-gray-700">
+          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+            <Package size={24} />
+          </div>
+          <div>
+            <h1 className="text-theme-h4 font-bold text-gray-800">
+              {WAREHOUSE_LOCATIONS_TEXT.HEADER.TITLE}
+            </h1>
+            <p className="text-gray-500 text-theme-body-sm mt-0.5">
+              Manage your warehouses and inventory hubs
+            </p>
+          </div>
         </div>
+        <button
+          onClick={() => setClosedLocationForm(true)}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
+        >
+          <Plus size={20} />
+          {WAREHOUSE_LOCATIONS_TEXT.HEADER.ADD_BTN}
+        </button>
+      </header>
 
-        <div className="space-y-4">
-          <AnimatePresence mode="popLayout">
-            {locationList.length === 0 ? (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-gray-500 text-center py-8"
-              >
+      <section className="w-full">
+        <AnimatePresence mode="wait">
+          {locationList.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex flex-col items-center justify-center py-16 bg-white border border-gray-200 rounded-2xl shadow-sm"
+            >
+              <Building size={48} className="text-gray-300 mb-4" />
+              <h2 className="text-theme-h5 font-bold text-gray-800 mb-2">
+                No Warehouses Yet
+              </h2>
+              <p className="text-gray-500 mb-6 max-w-md text-center text-theme-body-sm">
                 {WAREHOUSE_LOCATIONS_TEXT.EMPTY}
-              </motion.p>
-            ) : (
-              locationList.map((location, index) => (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{
-                    opacity: 0,
-                    scale: 0.95,
-                    transition: { duration: 0.2 },
-                  }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  key={location.id}
-                  className={`group border-2 p-5 rounded-xl transition-colors ${
-                    location.address.is_default
-                      ? "border-blue-500 bg-blue-50/50"
-                      : "border-gray-200 hover:border-blue-300 hover:shadow-md bg-white"
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
+              </p>
+              <button
+                onClick={() => setClosedLocationForm(true)}
+                className="text-theme-body-sm font-semibold text-blue-600 hover:underline"
+              >
+                Add Your First Warehouse
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="grid"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+            >
+              <AnimatePresence>
+                {locationList.map((location, index) => (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ duration: 0.2 }}
+                    key={location.id}
+                    className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+                  >
                     <div>
-                      {location.address.is_default && (
-                        <span className="inline-block py-1 px-3 rounded-full text-theme-caption font-bold text-blue-700 bg-blue-100 mb-3">
-                          {WAREHOUSE_LOCATIONS_TEXT.CARD.DEFAULT}
-                        </span>
-                      )}
-                      <h2 className="text-theme-h6 font-bold text-gray-900 flex items-center gap-2">
-                        {location.warehouse_name}
-                        <span className="text-theme-caption font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded border">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-theme-caption font-semibold">
                           {location.address.address_type &&
                             location.address.address_type
                               .charAt(0)
                               .toUpperCase() +
                               location.address.address_type.slice(1)}
                         </span>
-                      </h2>
-                      <p className="text-gray-600 text-theme-body-sm mt-1">
-                        {location.address.address_line_1},{" "}
-                        {location.address.city},<br />
-                        {location.address.state} ,{" "}
-                        {location.address.postal_code},{" "}
-                        {location.address.country}
-                      </p>
-
-                      <div className="flex gap-6 mt-3 text-theme-body-sm text-gray-500">
-                        {location.address.number && (
-                          <p>
-                            <span className="font-semibold text-gray-700">
-                              {WAREHOUSE_LOCATIONS_TEXT.CARD.CONTACT}
-                            </span>{" "}
-                            {location.address.number}
-                          </p>
+                        {location.address.is_default && (
+                          <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md text-theme-tiny uppercase font-bold tracking-wide border border-blue-100">
+                            {WAREHOUSE_LOCATIONS_TEXT.CARD.DEFAULT}
+                          </span>
                         )}
                       </div>
+                      <h3 className="font-bold text-gray-800 mb-1 line-clamp-1">
+                        {location.warehouse_name}
+                      </h3>
+                      <p className="text-theme-body-sm text-gray-600">
+                        {location.address.address_line_1},{" "}
+                        {location.address.city}, {location.address.state}{" "}
+                        {location.address.postal_code}
+                      </p>
+                      <p className="text-theme-body-sm text-gray-500 mt-1">
+                        {location.address.country}
+                      </p>
+                      {location.address.number && (
+                        <p className="text-theme-body-sm text-gray-500 mt-2">
+                          <span className="font-semibold text-gray-700">
+                            {WAREHOUSE_LOCATIONS_TEXT.CARD.CONTACT}
+                          </span>{" "}
+                          {location.address.number}
+                        </p>
+                      )}
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-gray-100">
                       <button
-                        className="px-4 py-1.5 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
                         onClick={() => handleEditLocation(location)}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       >
-                        {WAREHOUSE_LOCATIONS_TEXT.CARD.EDIT}
+                        <Edit size={16} />
                       </button>
                       <button
                         onClick={() => deleteLocation(location.id)}
-                        className="px-4 py-1.5 bg-red-50 text-red-600 font-semibold rounded-lg hover:bg-red-100 transition-colors"
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
-                        {WAREHOUSE_LOCATIONS_TEXT.CARD.DELETE}
+                        <Trash2 size={16} />
                       </button>
                     </div>
-                  </div>
-                </motion.div>
-              ))
-            )}
-          </AnimatePresence>
-        </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
     </main>
   );

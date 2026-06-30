@@ -22,14 +22,19 @@ export interface CuratedDiscoveryProps {
   bg_color?: string;
 }
 
-const getProducts = async (type: CuratedType) => {
+import { cache } from "react";
+
+const getProducts = cache(async (type: CuratedType) => {
   try {
     const res = await fetchHomepageProducts(4);
-    return res.data;
+    if (res && res.data) {
+      return res.data;
+    }
+    return [];
   } catch (error) {
     return [];
   }
-};
+});
 function SkeletonCard() {
   return (
     <div className="min-w-[240px] sm:min-w-[280px] flex flex-col bg-white border border-gray-100 rounded-2xl p-4 gap-3 animate-pulse shadow-sm">

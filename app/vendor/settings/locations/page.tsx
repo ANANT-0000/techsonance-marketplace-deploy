@@ -5,50 +5,39 @@ import { useRouter } from "next/navigation";
 import { MapPin, Plus, Save, Building, Trash2, Edit } from "lucide-react";
 import { authToken } from "@/utils/authToken";
 import { motion, AnimatePresence } from "motion/react";
+
+import { LOCATIONS_TEXT } from "@/constants/vendorText";
+import { LocationFormField } from "@/utils/Types";
+import { LOCATION_FORM_FIELDS } from "@/constants";
 import {
   fetchCreateCompanyLocation,
+  fetchDeleteCompanyLocation,
   fetchGetCompanyLocations,
+  fetchUpdateCompanyLocation,
 } from "@/utils/vendorApiClient";
-import { LOCATIONS_TEXT } from "@/constants/vendorText";
 
 interface AddressType {
   id: string;
+  name: string;
+  number: string;
   address_type: string;
   address_line_1: string;
-
+  street: string;
   city: string;
   state: string;
   postal_code: string;
   country: string;
+  landmark: string;
   is_default: boolean;
 }
 
 // ─── Dynamic Field Schema ────────────────────────────────────────────────────
 
-type FieldType = "text" | "select" | "checkbox";
-
-interface FieldOption {
-  label: string;
-  value: string;
-}
-
-interface FormField {
-  name: keyof typeof INITIAL_FORM;
-  label: string;
-  type: FieldType;
-  required?: boolean;
-  placeholder?: string;
-  colSpan?: "full" | "half";
-  options?: FieldOption[]; // for select
-  checkboxLabel?: string; // for checkbox
-  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
-  className?: string;
-}
-
-const INITIAL_FORM = {
-  address_for: "Registered Office",
+export const INITIAL_LOCATION_FORM = {
+  address_type: "Registered Office",
+  name: "",
+  number: "",
   address_line_1: "",
-
   street: "",
   city: "",
   state: "",
@@ -58,87 +47,7 @@ const INITIAL_FORM = {
   is_default: false as boolean,
 };
 
-type FormData = typeof INITIAL_FORM;
-
-const FORM_FIELDS: FormField[] = [
-  {
-    name: "address_for",
-    label: LOCATIONS_TEXT.FORM.ADDRESS_TYPE,
-    type: "select",
-    required: true,
-    colSpan: "full",
-    options: [
-      {
-        label: LOCATIONS_TEXT.FORM.OPTIONS.REGISTERED,
-        value: "Registered Office",
-      },
-      { label: LOCATIONS_TEXT.FORM.OPTIONS.BILLING, value: "Billing Address" },
-      {
-        label: LOCATIONS_TEXT.FORM.OPTIONS.CORPORATE,
-        value: "Corporate Office",
-      },
-    ],
-  },
-  {
-    name: "address_line_1",
-    label: LOCATIONS_TEXT.FORM.ADDRESS_LINE_1,
-    type: "text",
-    required: true,
-    colSpan: "full",
-    placeholder: LOCATIONS_TEXT.FORM.PLACEHOLDERS.LINE_1,
-  },
-
-  {
-    name: "city",
-    label: LOCATIONS_TEXT.FORM.CITY,
-    type: "text",
-    required: true,
-    colSpan: "half",
-  },
-  {
-    name: "street",
-    label: LOCATIONS_TEXT.FORM.STREET,
-    type: "text",
-    required: true,
-    colSpan: "half",
-  },
-  {
-    name: "state",
-    label: LOCATIONS_TEXT.FORM.STATE,
-    type: "text",
-    required: true,
-    colSpan: "half",
-  },
-  {
-    name: "landmark",
-    label: LOCATIONS_TEXT.FORM.LANDMARK,
-    type: "text",
-    colSpan: "half",
-  },
-  {
-    name: "postal_code",
-    label: LOCATIONS_TEXT.FORM.POSTAL_CODE,
-    type: "text",
-    required: true,
-    colSpan: "half",
-    inputMode: "numeric",
-    className: "font-mono",
-  },
-  {
-    name: "country",
-    label: LOCATIONS_TEXT.FORM.COUNTRY,
-    type: "text",
-    required: true,
-    colSpan: "half",
-  },
-  {
-    name: "is_default",
-    label: LOCATIONS_TEXT.FORM.DEFAULT_ADDRESS,
-    type: "checkbox",
-    colSpan: "full",
-    checkboxLabel: LOCATIONS_TEXT.FORM.DEFAULT_CHECKBOX,
-  },
-];
+type LocationFormData = typeof INITIAL_LOCATION_FORM;
 
 // ─── Render Helpers ──────────────────────────────────────────────────────────
 
@@ -146,13 +55,13 @@ const inputBase =
   "w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 mt-1.5 focus:border-blue-400 focus:bg-white focus:outline-none transition-colors text-theme-body-sm";
 
 function renderField(
-  field: FormField,
-  formData: FormData,
+  field: LocationFormField,
+  formData: LocationFormData,
   handleChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => void,
 ) {
-  const value = formData[field.name];
+  const value = formData[field.name as keyof LocationFormData];
 
   switch (field.type) {
     case "select":
@@ -216,6 +125,7 @@ enum LocationsActionType {
   SET_SHOW_MODAL = "SET_SHOW_MODAL",
   SET_SAVING = "SET_SAVING",
   SET_FORM_DATA = "SET_FORM_DATA",
+  SET_EDITING_ID = "SET_EDITING_ID",
   RESET_FORM = "RESET_FORM",
 }
 
@@ -224,7 +134,8 @@ interface LocationsState {
   loading: boolean;
   showModal: boolean;
   saving: boolean;
-  formData: FormData;
+  formData: LocationFormData;
+  editingId: string | null;
 }
 
 const initialState: LocationsState = {
@@ -232,7 +143,8 @@ const initialState: LocationsState = {
   loading: true,
   showModal: false,
   saving: false,
-  formData: INITIAL_FORM,
+  formData: INITIAL_LOCATION_FORM,
+  editingId: null,
 };
 
 type LocationsAction =
@@ -240,7 +152,8 @@ type LocationsAction =
   | { type: LocationsActionType.SET_LOADING; payload: boolean }
   | { type: LocationsActionType.SET_SHOW_MODAL; payload: boolean }
   | { type: LocationsActionType.SET_SAVING; payload: boolean }
-  | { type: LocationsActionType.SET_FORM_DATA; payload: FormData }
+  | { type: LocationsActionType.SET_FORM_DATA; payload: LocationFormData }
+  | { type: LocationsActionType.SET_EDITING_ID; payload: string | null }
   | { type: LocationsActionType.RESET_FORM };
 
 function locationsReducer(
@@ -257,9 +170,11 @@ function locationsReducer(
     case LocationsActionType.SET_SAVING:
       return { ...state, saving: action.payload };
     case LocationsActionType.SET_FORM_DATA:
-      return { ...state, formData: action.payload };
+      return { ...state, formData: action.payload as LocationFormData };
+    case LocationsActionType.SET_EDITING_ID:
+      return { ...state, editingId: action.payload as string | null };
     case LocationsActionType.RESET_FORM:
-      return { ...state, formData: INITIAL_FORM };
+      return { ...state, formData: INITIAL_LOCATION_FORM, editingId: null };
     default:
       return state;
   }
@@ -270,7 +185,7 @@ function locationsReducer(
 export default function VendorAddressesPage() {
   const router = useRouter();
   const [state, dispatch] = useReducer(locationsReducer, initialState);
-  const { addresses, loading, showModal, saving, formData } = state;
+  const { addresses, loading, showModal, saving, formData, editingId } = state;
 
   const token = authToken();
 
@@ -303,7 +218,7 @@ export default function VendorAddressesPage() {
     const value = target.type === "checkbox" ? target.checked : target.value;
     dispatch({
       type: LocationsActionType.SET_FORM_DATA,
-      payload: { ...formData, [target.name]: value },
+      payload: { ...formData, [target.name as keyof LocationFormData]: value },
     });
   };
 
@@ -311,7 +226,15 @@ export default function VendorAddressesPage() {
     e.preventDefault();
     dispatch({ type: LocationsActionType.SET_SAVING, payload: true });
     try {
-      await fetchCreateCompanyLocation(formData, token || "");
+      if (state.editingId) {
+        await fetchUpdateCompanyLocation(
+          state.editingId,
+          formData,
+          token || "",
+        );
+      } else {
+        await fetchCreateCompanyLocation(formData, token || "");
+      }
       dispatch({ type: LocationsActionType.SET_SHOW_MODAL, payload: false });
       dispatch({ type: LocationsActionType.RESET_FORM });
       fetchAddresses();
@@ -319,6 +242,39 @@ export default function VendorAddressesPage() {
       alert(LOCATIONS_TEXT.FAILED_SAVE);
     } finally {
       dispatch({ type: LocationsActionType.SET_SAVING, payload: false });
+    }
+  };
+
+  const handleEdit = (address: AddressType) => {
+    dispatch({ type: LocationsActionType.SET_EDITING_ID, payload: address.id });
+    dispatch({
+      type: LocationsActionType.SET_FORM_DATA,
+      payload: {
+        address_type: address.address_type || "Registered Office",
+        name: address.name || "",
+        number: address.number || "",
+        address_line_1: address.address_line_1 || "",
+        street: address.street || "",
+        city: address.city || "",
+        state: address.state || "",
+        landmark: address.landmark || "",
+        postal_code: address.postal_code || "",
+        country: address.country || "",
+        is_default: address.is_default || false,
+      },
+    });
+    dispatch({ type: LocationsActionType.SET_SHOW_MODAL, payload: true });
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this address?")) return;
+    dispatch({ type: LocationsActionType.SET_LOADING, payload: true });
+    try {
+      await fetchDeleteCompanyLocation(id, token || "");
+      fetchAddresses();
+    } catch (err) {
+      alert("Failed to delete location.");
+      dispatch({ type: LocationsActionType.SET_LOADING, payload: false });
     }
   };
 
@@ -440,10 +396,16 @@ export default function VendorAddressesPage() {
                     </div>
 
                     <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-gray-100">
-                      <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                      <button
+                        onClick={() => handleEdit(address)}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
                         <Edit size={16} />
                       </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                      <button
+                        onClick={() => handleDelete(address.id)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -472,10 +434,12 @@ export default function VendorAddressesPage() {
               transition={{ duration: 0.2 }}
               className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
-              <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center z-10">
+              <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center z-10 rounded-t-2xl">
                 <h2 className="text-theme-h5 font-bold text-gray-800 flex items-center gap-2">
                   <Building className="text-blue-500" size={20} />{" "}
-                  {LOCATIONS_TEXT.ADD_TITLE}
+                  {editingId
+                    ? "Edit Location"
+                    : LOCATIONS_TEXT.ADD_TITLE || "Add New Location"}
                 </h2>
                 <button
                   onClick={closeModal}
@@ -488,7 +452,7 @@ export default function VendorAddressesPage() {
 
               <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {FORM_FIELDS.map((field) => {
+                  {LOCATION_FORM_FIELDS.map((field) => {
                     const isCheckbox = field.type === "checkbox";
                     const colClass =
                       field.colSpan === "full" || isCheckbox

@@ -8,7 +8,6 @@ import { useAppSelector } from "@/hooks/reduxHooks";
 import { useEffect } from "react";
 import { RootState } from "@/lib/store";
 import { UserRole } from "@/constants";
-import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import AxiosAPI from "@/lib/axios";
 import { TrialBanner } from "@/components/vendor/TrialBanner";
 
@@ -54,15 +53,10 @@ export default function VendorLayout({
     <>
       <main className={`flex w-full`}>
         <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={VENDOR_BASE_PATH} />
-        <ProtectedRoute
-          allowedRoles={[UserRole.VENDOR, UserRole.ADMIN]}
-          loginPath={VENDOR_LOGIN_PATH}
-        >
-          <div className="flex-1 flex flex-col min-h-screen">
-            <TrialBanner vendorId={vendorId as string} />
-            {children}
-          </div>
-        </ProtectedRoute>
+        <div className="flex-1 flex flex-col min-h-screen">
+          <TrialBanner vendorId={vendorId as string} />
+          {children}
+        </div>
       </main>
     </>
   );

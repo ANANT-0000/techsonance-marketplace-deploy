@@ -5,6 +5,8 @@ import { adminLogin } from "@/utils/authApiClient";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/hooks/reduxHooks";
 import { Eye, EyeOff } from "lucide-react";
+import { CookieConsentBanner } from "@/components/common/CookieConsentBanner";
+import { AUTH_TEXT, COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE } from "@/constants";
 
 type UiState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -26,10 +28,12 @@ export default function AdminLoginPage() {
   const [countdown, setCountdown] = useState(3);
   const [showPass, setShowPass] = useState(false);
   const [redirectProgress, setRedirectProgress] = useState(100);
+  const [cookiesBlocked, setCookiesBlocked] = useState(false);
   const router = useRouter();
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    setCookiesBlocked(!navigator.cookieEnabled);
     const storedData = typeof window !== 'undefined' ? localStorage.getItem("auth") : null;
     const auth = storedData ? JSON.parse(storedData) : null;
     if (auth && auth?.isAuthenticated && auth?.user?.user_role === "admin") {
@@ -43,6 +47,7 @@ export default function AdminLoginPage() {
 
   const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    localStorage.setItem(COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE);
     setError(null);
     setUiState('loading');
     setSteps(STEPS.map((s, i) => ({ ...s, status: i === 0 ? 'active' : 'pending' })));
@@ -132,6 +137,7 @@ export default function AdminLoginPage() {
         {/* IDLE — login form */}
         {uiState === 'idle' && (
           <form onSubmit={submitHandler} className="w-full px-8 py-6 flex flex-col gap-4">
+            <CookieConsentBanner />
             <div className="flex flex-col gap-1.5">
               <label className="text-md font-medium text-gray-600 tracking-wide">Admin ID / Email</label>
               <div className="relative">
@@ -172,12 +178,16 @@ export default function AdminLoginPage() {
             )}
             <button
               type="submit"
-              className="w-full bg-sky-500 hover:bg-sky-600 active:scale-[.98] text-white font-semibold text-theme-body-sm rounded-lg py-2.5 transition flex items-center justify-center gap-2"
+              disabled={cookiesBlocked}
+              className="w-full bg-sky-500 hover:bg-sky-600 active:scale-[.98] disabled:opacity-60 text-white font-semibold text-theme-body-sm rounded-lg py-2.5 transition flex items-center justify-center gap-2"
             >
               → Authenticate
             </button>
             <p className="text-center text-theme-caption text-gray-400 flex items-center justify-center gap-1 mt-1">
               All access attempts are logged and monitored
+            </p>
+            <p className="text-center text-[10px] text-gray-400 mt-2 px-2 leading-relaxed">
+              {AUTH_TEXT.CONSENT.DISCLAIMER}
             </p>
           </form>
         )}

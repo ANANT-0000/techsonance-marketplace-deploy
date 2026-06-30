@@ -8,6 +8,7 @@ export const fetchProduct = async (productId: string) => {
     const response = await fetch(`${BASE_API_URL}/v1/products/${productId}`, {
       method: "GET",
       ...getCacheConfig(300),
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -28,7 +29,8 @@ export const fetchProductVariantDetails = async (id: string) => {
       {
         method: "GET",
         ...getCacheConfig(300),
-        headers: {
+        credentials: "include",
+      headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
         },
@@ -100,6 +102,7 @@ export const fetchProducts = async (
     const response = await fetch(url, {
       method: "GET",
       cache: "no-store",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -150,6 +153,7 @@ export const fetchProductProducts = async (
     const response = await fetch(url, {
       method: "GET",
       cache: "no-store",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -184,6 +188,7 @@ export const fetchProductOptions = async (): Promise<
     const response = await fetch(`${BASE_API_URL}/v1/products/options`, {
       method: "GET",
       cache: "no-store",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -224,7 +229,8 @@ export const fetchHomepageProducts = async (
       {
         method: "GET",
         ...getCacheConfig(300),
-        headers: {
+        credentials: "include",
+      headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
         },
@@ -245,6 +251,7 @@ export const fetchCategory = async (category: string) => {
     const response = await fetch(`${BASE_API_URL}/v1/categories/${category}`, {
       method: "GET",
       ...getCacheConfig(300),
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,
@@ -268,6 +275,7 @@ export const fetchCategories = async (): Promise<any[]> => {
     const response = await fetch(`${BASE_API_URL}/v1/categories?limit=100`, {
       method: "GET",
       ...getCacheConfig(300),
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         "company-domain": companyDomain,

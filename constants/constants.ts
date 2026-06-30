@@ -13,6 +13,8 @@ export const CART_KEY = 'cart';
 export const IS_AUTHENTICATED_KEY = 'isAuthenticated';
 export const WISHLIST_KEY = 'wishlist';
 export const REFRESH_TOKEN_KEY = 'refresh_token';
+export const COOKIE_CONSENT_KEY = 'cookie_consent';
+export const COOKIE_CONSENT_VALUE = 'true';
 
 // Branding Default Colors
 export const BRANDING_DEFAULT_PRIMARY_COLOR = "#000000";

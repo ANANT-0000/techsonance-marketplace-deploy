@@ -47,7 +47,7 @@ export function AddressSelector({
   selectedAddressId: string | null;
   onSelect: (id: string) => void;
   addNewAddress: () => void;
-  onEditAddress: (id: string) => void;
+  onEditAddress: (id: string, address?: Address) => void;
   loadingAddresses?: boolean;
 }) {
   const token = authToken();
@@ -196,7 +196,7 @@ export function AddressSelector({
                     {/* Address content */}
                     <div className="flex-1 min-w-0 overflow-hidden">
                       <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                        <span className="text-theme-caption-lg font-semibold text-gray-900 truncate max-w-[120px]">
+                        <span className="text-theme-caption-lg font-semibold text-gray-900 break-words line-clamp-2 md:line-clamp-none">
                           {addr.name}
                         </span>
                         <span
@@ -230,7 +230,7 @@ export function AddressSelector({
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onEditAddress(addr.id);
+                          onEditAddress(addr.id, addr);
                         }}
                       >
                         <Edit size={14} />{" "}

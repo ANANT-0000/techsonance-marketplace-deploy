@@ -15,11 +15,12 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { loginSchema } from "@/utils/validation";
 import { CustomerLogin } from "@/utils/authApiClient";
-import { BASE_API_URL } from "@/constants";
+import { BASE_API_URL, AUTH_TEXT, COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE } from "@/constants";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { AccountReactivation } from "@/components/customer/AccountReactivationModel";
 import { Eye, EyeOff } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { CookieConsentBanner } from "@/components/common/CookieConsentBanner";
 
 interface LoginFormData {
   email: string;
@@ -43,6 +44,11 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isReactivationOpen, setIsReactivationOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [cookiesBlocked, setCookiesBlocked] = useState(false);
+
+  useEffect(() => {
+    setCookiesBlocked(!navigator.cookieEnabled);
+  }, []);
 
   const {
     register,
@@ -66,6 +72,7 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
   }, [searchParams, isModal]);
 
   const onSubmit = async (data: LoginFormData) => {
+    localStorage.setItem(COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE);
     setServerError(null);
     setSuccessMessage(null);
     dispatch(loginStart());
@@ -113,6 +120,7 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
   };
 
   const handleGoogleLogin = async () => {
+    localStorage.setItem(COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE);
     setIsGoogleLoading(true);
     setServerError(null);
     setSuccessMessage(null);
@@ -220,11 +228,13 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
         </div>
       )}
 
+      <CookieConsentBanner />
+
       {/* Google OAuth Button */}
       <button
         type="button"
         onClick={handleGoogleLogin}
-        disabled={isGoogleLoading || isSubmitting}
+        disabled={isGoogleLoading || isSubmitting || cookiesBlocked}
         className={`${isGoogleLoading || isSubmitting ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 border-slate-300 hover:border-slate-400"} w-full flex items-center justify-center gap-3 border-2 text-slate-700 py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-xs mb-5 cursor-pointer text-theme-body-sm`}
       >
         <svg className="w-4.5 h-4.5" viewBox="0 0 24 24">
@@ -358,7 +368,7 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
 
         <button
           type="submit"
-          disabled={isSubmitting || isGoogleLoading}
+          disabled={isSubmitting || isGoogleLoading || cookiesBlocked}
           className="w-full font-bold py-2.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md disabled:shadow-none bg-theme-primary text-theme-primary-foreground hover:bg-theme-secondary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-5 cursor-pointer text-theme-body-sm"
         >
           {isSubmitting ? (
@@ -389,6 +399,10 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
             "Sign In"
           )}
         </button>
+
+        <p className="text-center text-theme-caption text-slate-500 mt-3 px-2 leading-relaxed">
+          {AUTH_TEXT.CONSENT.DISCLAIMER}
+        </p>
 
         <p className="text-center text-theme-body-sm text-slate-600 pt-3">
           Don&apos;t have an account?{" "}

@@ -15,7 +15,7 @@ import {
   fetchShippingSettings,
   updateShippingSettings,
 } from "@/utils/vendorApiClient";
-import { LogisticsMode } from "@/utils/Types";
+import { LogisticsMode, ShippingChargeStrategy } from "@/utils/Types";
 
 interface ShippingFormValues {
   logistics_mode: LogisticsMode;
@@ -24,12 +24,14 @@ interface ShippingFormValues {
   is_free_shipping_enabled: boolean;
   free_delivery_threshold: string;
   standard_delivery_charge: string;
+  shipping_charge_strategy: ShippingChargeStrategy;
 }
 
 export default function ShippingSettingsPage() {
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isEditingFlatRate, setIsEditingFlatRate] = useState(false);
   const token = authToken() || "";
 
   const { register, handleSubmit, setValue, watch, reset } =
@@ -41,11 +43,13 @@ export default function ShippingSettingsPage() {
         is_free_shipping_enabled: false,
         free_delivery_threshold: "0.00",
         standard_delivery_charge: "50.00",
+        shipping_charge_strategy: ShippingChargeStrategy.STANDARD_FLAT_RATE,
       },
     });
 
   const logisticsMode = watch("logistics_mode");
   const isFreeShippingEnabled = watch("is_free_shipping_enabled");
+  const shippingStrategy = watch("shipping_charge_strategy");
 
   useEffect(() => {
     if (!token) return;
@@ -64,6 +68,8 @@ export default function ShippingSettingsPage() {
           standard_delivery_charge: Number(
             d.standard_delivery_charge || 50,
           ).toFixed(2),
+          shipping_charge_strategy:
+            d.shipping_charge_strategy || ShippingChargeStrategy.STANDARD_FLAT_RATE,
         });
       }
     };
@@ -79,6 +85,7 @@ export default function ShippingSettingsPage() {
         is_free_shipping_enabled: data.is_free_shipping_enabled,
         free_delivery_threshold: data.free_delivery_threshold,
         standard_delivery_charge: data.standard_delivery_charge,
+        shipping_charge_strategy: data.shipping_charge_strategy,
         logistics_api_key: data.logistics_api_key,
         logistics_api_secret: data.logistics_api_secret,
       };
@@ -86,6 +93,7 @@ export default function ShippingSettingsPage() {
       const res = await updateShippingSettings(payload, token);
       if (res?.success || res?.status === 200 || res?.status === 201) {
         setSaved(true);
+        setIsEditingFlatRate(false);
         setTimeout(() => setSaved(false), 3000);
       } else {
         setErrorMsg(res?.message || "Failed to update shipping settings");
@@ -236,29 +244,101 @@ export default function ShippingSettingsPage() {
             your storefront.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Standard flat delivery fee */}
-            <div>
-              <label className="block text-theme-body-sm font-bold text-gray-700 mb-1">
-                Standard Shipping Flat Rate (₹)
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm font-bold">
-                  ₹
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Standard flat rate */}
+            <label
+              className={`flex flex-col p-5 border rounded-xl cursor-pointer transition-all ${
+                shippingStrategy === ShippingChargeStrategy.STANDARD_FLAT_RATE
+                  ? "border-blue-500 bg-blue-50/10 shadow-sm"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-gray-800">
+                  Standard Flat Rate
                 </span>
                 <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  {...register("standard_delivery_charge")}
-                  className="w-full pl-7 pr-4 py-2 border border-gray-200 rounded-xl text-theme-body-sm focus:border-blue-500 focus:ring-blue-500"
+                  type="radio"
+                  value={ShippingChargeStrategy.STANDARD_FLAT_RATE}
+                  {...register("shipping_charge_strategy")}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                 />
               </div>
-              <p className="text-[11px] text-gray-400 mt-1">
-                Flat shipping fee charged if order amount does not reach the
-                free delivery threshold.
+              <p className="text-xs text-gray-500 mt-2">
+                Charge a fixed shipping amount for all orders below the threshold.
               </p>
-            </div>
+            </label>
+
+            {/* Dynamic Customer Rate */}
+            <label
+              className={`flex flex-col p-5 border rounded-xl cursor-pointer transition-all ${
+                shippingStrategy === ShippingChargeStrategy.DYNAMIC_CUSTOMER_RATE
+                  ? "border-blue-500 bg-blue-50/10 shadow-sm"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-gray-800">
+                  Dynamic Customer Rate
+                </span>
+                <input
+                  type="radio"
+                  value={ShippingChargeStrategy.DYNAMIC_CUSTOMER_RATE}
+                  {...register("shipping_charge_strategy")}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Automatically calculate and charge live shipping rates using Shiprocket.
+              </p>
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            {/* Standard flat delivery fee */}
+            {shippingStrategy === ShippingChargeStrategy.STANDARD_FLAT_RATE && (
+              <div>
+                <label className="block text-theme-body-sm font-bold text-gray-700 mb-1">
+                  Standard Shipping Flat Rate (₹)
+                </label>
+                <div className="relative">
+                  {watch("standard_delivery_charge") && !isEditingFlatRate ? (
+                    <div className="flex items-center justify-between w-full pl-4 pr-3 py-2 border border-emerald-200 bg-emerald-50 rounded-xl text-theme-body-sm">
+                      <div className="flex items-center gap-2 text-emerald-700 font-medium">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>
+                          ₹{watch("standard_delivery_charge")} Saved
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingFlatRate(true)}
+                        className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline focus:outline-none"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm font-bold">
+                        ₹
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        {...register("standard_delivery_charge")}
+                        className="w-full pl-7 pr-4 py-2 border border-gray-200 rounded-xl text-theme-body-sm focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </>
+                  )}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Flat shipping fee charged if order amount does not reach the
+                  free delivery threshold.
+                </p>
+              </div>
+            )}
 
             {/* Free shipping settings */}
             <div className="space-y-4">

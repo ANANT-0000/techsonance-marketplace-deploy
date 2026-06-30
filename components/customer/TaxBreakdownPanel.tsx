@@ -67,15 +67,6 @@ export function TaxBreakdownPanel({
       >
         <div className="flex items-center gap-2">
           <span className="text-theme-caption sm:text-theme-body-sm font-semibold text-gray-700">{TAX_BREAKDOWN_TEXT.TAX_GST}</span>
-          {tax.isIntraState ? (
-            <span className="text-xxs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-              {TAX_BREAKDOWN_TEXT.INTRA_STATE}
-            </span>
-          ) : (
-            <span className="text-xxs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-              {TAX_BREAKDOWN_TEXT.INTER_STATE}
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-theme-caption sm:text-theme-body-sm font-semibold text-gray-800 tabular-nums">

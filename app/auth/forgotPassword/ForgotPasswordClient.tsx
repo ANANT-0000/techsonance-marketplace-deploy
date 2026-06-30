@@ -1,6 +1,6 @@
 'use client';
 
-import { useReducer } from 'react';
+import { useReducer, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, KeyRound, Lock, ArrowRight, Loader2, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
@@ -15,6 +15,10 @@ interface State {
     otp: string;
     newPassword: string;
     showPassword: boolean;
+    resendCooldown: number;
+    otpAttempts: number;
+    isLockedOut: boolean;
+    otpExpiryTime: number | null;
 }
 
 export enum ForgotPasswordActionType {
@@ -27,6 +31,11 @@ export enum ForgotPasswordActionType {
   SET_NEW_PASSWORD = 'SET_NEW_PASSWORD',
   TOGGLE_PASSWORD_VISIBILITY = 'TOGGLE_PASSWORD_VISIBILITY',
   RESET_FORM = 'RESET_FORM',
+  DECREMENT_COOLDOWN = 'DECREMENT_COOLDOWN',
+  START_COOLDOWN = 'START_COOLDOWN',
+  INCREMENT_OTP_ATTEMPTS = 'INCREMENT_OTP_ATTEMPTS',
+  SET_LOCKED_OUT = 'SET_LOCKED_OUT',
+  SET_OTP_EXPIRY = 'SET_OTP_EXPIRY',
 }
 
 type Action =
@@ -38,7 +47,12 @@ type Action =
     | { type: ForgotPasswordActionType.SET_OTP; payload: string }
     | { type: ForgotPasswordActionType.SET_NEW_PASSWORD; payload: string }
     | { type: ForgotPasswordActionType.TOGGLE_PASSWORD_VISIBILITY }
-    | { type: ForgotPasswordActionType.RESET_FORM };
+    | { type: ForgotPasswordActionType.RESET_FORM }
+    | { type: ForgotPasswordActionType.DECREMENT_COOLDOWN }
+    | { type: ForgotPasswordActionType.START_COOLDOWN; payload: number }
+    | { type: ForgotPasswordActionType.INCREMENT_OTP_ATTEMPTS }
+    | { type: ForgotPasswordActionType.SET_LOCKED_OUT; payload: boolean }
+    | { type: ForgotPasswordActionType.SET_OTP_EXPIRY; payload: number | null };
 
 function reducer(state: State, action: Action): State {
     switch (action.type) {
@@ -50,7 +64,12 @@ function reducer(state: State, action: Action): State {
         case ForgotPasswordActionType.SET_OTP: return { ...state, otp: action.payload };
         case ForgotPasswordActionType.SET_NEW_PASSWORD: return { ...state, newPassword: action.payload };
         case ForgotPasswordActionType.TOGGLE_PASSWORD_VISIBILITY: return { ...state, showPassword: !state.showPassword };
-        case ForgotPasswordActionType.RESET_FORM: return { ...state, step: 1, otp: '', error: null, successMessage: null };
+        case ForgotPasswordActionType.RESET_FORM: return { ...state, step: 1, otp: '', error: null, successMessage: null, otpAttempts: 0, isLockedOut: false, otpExpiryTime: null };
+        case ForgotPasswordActionType.DECREMENT_COOLDOWN: return { ...state, resendCooldown: Math.max(0, state.resendCooldown - 1) };
+        case ForgotPasswordActionType.START_COOLDOWN: return { ...state, resendCooldown: action.payload };
+        case ForgotPasswordActionType.INCREMENT_OTP_ATTEMPTS: return { ...state, otpAttempts: state.otpAttempts + 1 };
+        case ForgotPasswordActionType.SET_LOCKED_OUT: return { ...state, isLockedOut: action.payload };
+        case ForgotPasswordActionType.SET_OTP_EXPIRY: return { ...state, otpExpiryTime: action.payload };
         default: return state;
     }
 }
@@ -66,8 +85,45 @@ export default function ForgotPasswordClient() {
         email: '',
         otp: '',
         newPassword: '',
-        showPassword: false
+        showPassword: false,
+        resendCooldown: 0,
+        otpAttempts: 0,
+        isLockedOut: false,
+        otpExpiryTime: null
     });
+
+    const [timeLeft, setTimeLeft] = useState<string>('15:00');
+
+    // Handle timer for resend debounce
+    useEffect(() => {
+        if (state.resendCooldown > 0) {
+            const timer = setTimeout(() => {
+                dispatch({ type: ForgotPasswordActionType.DECREMENT_COOLDOWN });
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [state.resendCooldown]);
+
+    // Handle 15-minute OTP expiry countdown
+    useEffect(() => {
+        if (state.otpExpiryTime && state.step === 2) {
+            const interval = setInterval(() => {
+                const now = Date.now();
+                const diff = state.otpExpiryTime! - now;
+                
+                if (diff <= 0) {
+                    clearInterval(interval);
+                    setTimeLeft('00:00');
+                    dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: 'OTP has expired. Please request a new one.' });
+                } else {
+                    const minutes = Math.floor(diff / 60000);
+                    const seconds = Math.floor((diff % 60000) / 1000);
+                    setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+                }
+            }, 1000);
+            return () => clearInterval(interval);
+        }
+    }, [state.otpExpiryTime, state.step]);
 
     const handleRequestOtp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -78,7 +134,9 @@ export default function ForgotPasswordClient() {
         try {
             await requestPasswordResetOTP(state.email);
             dispatch({ type: ForgotPasswordActionType.SET_STEP, payload: 2 });
-            dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: 'An OTP has been sent to your email.' });
+            dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: 'If this email matches an active profile, a secure 6-digit recovery code has been sent. The token will remain active for 15 minutes.' });
+            dispatch({ type: ForgotPasswordActionType.START_COOLDOWN, payload: 60 });
+            dispatch({ type: ForgotPasswordActionType.SET_OTP_EXPIRY, payload: Date.now() + 15 * 60 * 1000 }); // 15 minutes
         } catch (err) {
             dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: 'Failed to send OTP. Please check your email and try again.' });
         } finally {
@@ -100,7 +158,15 @@ export default function ForgotPasswordClient() {
                 router.push('/auth/customerLogin');
             }, 2000);
         } catch (err: any) {
-            dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: err.message || 'Invalid OTP or failed to reset password.' });
+            const newAttempts = state.otpAttempts + 1;
+            dispatch({ type: ForgotPasswordActionType.INCREMENT_OTP_ATTEMPTS });
+            
+            if (newAttempts >= 3) {
+                dispatch({ type: ForgotPasswordActionType.SET_LOCKED_OUT, payload: true });
+                dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: 'Maximum attempts reached. For your security, this session has been locked. Please reload the page to try again.' });
+            } else {
+                dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: err.message || `Invalid OTP or failed to reset password. (${3 - newAttempts} attempts remaining)` });
+            }
         } finally {
             dispatch({ type: ForgotPasswordActionType.SET_LOADING, payload: false });
         }
@@ -233,7 +299,7 @@ export default function ForgotPasswordClient() {
 
                                 <button
                                     type="submit"
-                                    disabled={state.isLoading || !state.email}
+                                    disabled={state.isLoading || !state.email || state.resendCooldown > 0}
                                     className="w-full flex items-center justify-center gap-2 bg-theme-primary text-theme-primary-foreground hover:bg-theme-secondary py-3.5 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none group cursor-pointer border-none"
                                 >
                                     {state.isLoading ? (
@@ -243,8 +309,8 @@ export default function ForgotPasswordClient() {
                                         </>
                                     ) : (
                                         <>
-                                            Send Verification Code
-                                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                            {state.resendCooldown > 0 ? `Wait ${state.resendCooldown}s to Resend` : 'Send Verification Code'}
+                                            {state.resendCooldown === 0 && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                                         </>
                                     )}
                                 </button>
@@ -260,7 +326,14 @@ export default function ForgotPasswordClient() {
                             >
                                 {/* Email Display */}
                                 <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                                    <p className="text-theme-caption text-slate-500 mb-1">Code sent to</p>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <p className="text-theme-caption text-slate-500">Code sent to</p>
+                                        {state.otpExpiryTime && (
+                                            <span className={`text-theme-caption font-bold ${timeLeft === '00:00' ? 'text-red-500' : 'text-amber-500'}`}>
+                                                Expires in: {timeLeft}
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-theme-body-sm font-medium text-slate-700 flex items-center gap-2">
                                         <Mail className="w-4 h-4 text-slate-400" />
                                         {state.email}
@@ -292,10 +365,15 @@ export default function ForgotPasswordClient() {
                                         </p>
                                         <button
                                             type="button"
-                                            onClick={() => dispatch({ type: ForgotPasswordActionType.RESET_FORM })}
-                                            className="text-theme-caption text-theme-primary hover:text-theme-secondary font-semibold bg-transparent border-none cursor-pointer"
+                                            disabled={state.resendCooldown > 0 || state.isLockedOut}
+                                            onClick={(e) => {
+                                                if (state.resendCooldown === 0 && !state.isLockedOut) {
+                                                    handleRequestOtp(e);
+                                                }
+                                            }}
+                                            className="text-theme-caption text-theme-primary hover:text-theme-secondary font-semibold bg-transparent border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            Resend code
+                                            {state.resendCooldown > 0 ? `Resend code in ${state.resendCooldown}s` : 'Resend code'}
                                         </button>
                                     </div>
                                 </div>
@@ -363,7 +441,7 @@ export default function ForgotPasswordClient() {
 
                                 <button
                                     type="submit"
-                                    disabled={state.isLoading || state.otp.length !== 6 || !state.newPassword || state.newPassword.length < 8}
+                                    disabled={state.isLoading || state.otp.length !== 6 || !state.newPassword || state.newPassword.length < 8 || state.isLockedOut || timeLeft === '00:00'}
                                     className="w-full flex items-center justify-center gap-2 bg-theme-primary text-theme-primary-foreground hover:bg-theme-secondary py-3.5 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none group cursor-pointer border-none"
                                 >
                                     {state.isLoading ? (

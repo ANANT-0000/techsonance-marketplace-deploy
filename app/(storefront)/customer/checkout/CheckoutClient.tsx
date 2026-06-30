@@ -47,6 +47,7 @@ import {
 } from "@/components/customer/TaxBreakdownPanel";
 import { clearCart } from "@/lib/features/Cart";
 import {
+  Address,
   AddressOperation,
   AppliedPromotion,
   CartItemDisplay,
@@ -144,6 +145,7 @@ interface State {
   isModalOpen: boolean;
   modalMode: AddressOperation;
   editAddressId: string | null;
+  editAddress: Address | null;
   selectedPaymentMethodState: PaymentMethod;
   isProcessing: boolean;
   checkoutError: string | null;
@@ -168,7 +170,11 @@ type Action =
   | { type: CheckoutActionType.SET_ADDRESS_ADDED; payload: boolean }
   | {
       type: CheckoutActionType.OPEN_ADDRESS_MODAL;
-      payload: { mode: AddressOperation; editId: string | null };
+      payload: {
+        mode: AddressOperation;
+        editId: string | null;
+        address?: Address | null;
+      };
     }
   | { type: CheckoutActionType.CLOSE_ADDRESS_MODAL }
   | { type: CheckoutActionType.SET_PAYMENT_METHOD; payload: PaymentMethod }
@@ -226,9 +232,10 @@ function reducer(state: State, action: Action): State {
         isModalOpen: true,
         modalMode: action.payload.mode,
         editAddressId: action.payload.editId,
+        editAddress: action.payload.address || null,
       };
     case CheckoutActionType.CLOSE_ADDRESS_MODAL:
-      return { ...state, isModalOpen: false };
+      return { ...state, isModalOpen: false, editAddress: null };
     case CheckoutActionType.SET_PAYMENT_METHOD:
       return { ...state, selectedPaymentMethodState: action.payload };
     case CheckoutActionType.SET_PROCESSING:
@@ -338,6 +345,7 @@ function MobileSummarySheet({
   isQuickBuy,
   reduxCartItems,
   shippingInfo,
+  checkoutError,
 }: {
   isExpanded: boolean;
   onToggle: () => void;
@@ -366,6 +374,7 @@ function MobileSummarySheet({
   isQuickBuy: boolean;
   reduxCartItems: any[];
   shippingInfo: any;
+  checkoutError: string | null;
 }) {
   return (
     <div className="fixed bottom-[calc(48px+env(safe-area-inset-bottom))] left-0 right-0 z-40 lg:hidden">
@@ -633,17 +642,27 @@ function MobileSummarySheet({
                     ✓ Inclusive of all applicable taxes
                   </p>
                 )}
+
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {checkoutError && (
+          <div className="px-5 pt-3 pb-0">
+            <div className="flex items-center gap-2 text-theme-caption text-red-600 bg-red-50 border border-red-100 rounded-xl px-3.5 py-2.5">
+              <AlertCircle size={13} className="shrink-0" />
+              {checkoutError}
+            </div>
+          </div>
+        )}
 
         {/* Pay button — always visible */}
         <div className="px-5 pt-3 pb-5 space-y-2.5">
           <button
             onClick={onPay}
             disabled={
-              selectedAddressId === null || isProcessing || isTaxLoading
+              selectedAddressId === null || isProcessing || isTaxLoading || !!taxError || !!checkoutError
             }
             className="w-full bg-black text-white font-semibold py-3.5 rounded-xl hover:bg-black hover:translate-y-1 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed text-theme-body-plus shadow-sm shadow--black"
           >
@@ -738,6 +757,7 @@ function CheckoutClientInner() {
     isModalOpen: false,
     modalMode: AddressOperation.ADD,
     editAddressId: null,
+    editAddress: null,
     selectedPaymentMethodState: PaymentMethod.UPI,
     isProcessing: false,
     checkoutError: null,
@@ -768,6 +788,7 @@ function CheckoutClientInner() {
 
   const fetchShippingRate = async (addressId: string) => {
     if (!addressId || !token || !id) return;
+    dispatch({ type: CheckoutActionType.SET_CHECKOUT_ERROR, payload: null });
     try {
       const body: any = { addressId };
       if (isQuickBuy) {
@@ -780,7 +801,7 @@ function CheckoutClientInner() {
       const res = await AxiosAPI.post(
         `/v1/checkout/calculate-shipping/${user?.id || ""}`,
         body,
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}`, "x-suppress-toast": "true" } },
       );
       const shippingData = res.data?.data;
       if (shippingData) {
@@ -794,8 +815,11 @@ function CheckoutClientInner() {
           nudgeAmount: Number(shippingData.nudgeAmount || 0),
         });
       }
-    } catch {
-      toast.error("Failed to calculate shipping rates");
+    } catch (err: any) {
+      dispatch({
+        type: CheckoutActionType.SET_CHECKOUT_ERROR,
+        payload: err?.response?.data?.message || err?.message || "Failed to calculate shipping rates.",
+      });
     }
   };
 
@@ -817,10 +841,10 @@ function CheckoutClientInner() {
     });
   };
 
-  const openEdit = async (addressId: string) => {
+  const openEdit = async (addressId: string, address?: Address) => {
     dispatch({
       type: CheckoutActionType.OPEN_ADDRESS_MODAL,
-      payload: { mode: AddressOperation.EDIT, editId: addressId },
+      payload: { mode: AddressOperation.EDIT, editId: addressId, address },
     });
   };
   const subtotal = isQuickBuy
@@ -1012,7 +1036,7 @@ function CheckoutClientInner() {
           customerAddressId: addressId,
           cartItems: state.cartItemsForTax,
         },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}`, "x-suppress-toast": "true" } },
       );
       const data = res.data?.data;
       dispatch({
@@ -1029,8 +1053,13 @@ function CheckoutClientInner() {
           customerState: data.customerState,
         },
       });
-    } catch {
+    } catch (err: any) {
       dispatch({ type: CheckoutActionType.SET_TAX_BREAKDOWN, payload: null });
+      dispatch({
+        type: CheckoutActionType.SET_TAX_ERROR,
+        payload:
+          err?.response?.data?.message || err?.message || "Failed to calculate taxes and shipping.",
+      });
     } finally {
       dispatch({
         type: CheckoutActionType.SET_TAX_LOADING_STATE,
@@ -1659,6 +1688,7 @@ function CheckoutClientInner() {
         taxBreakdown={state.taxBreakdown}
         isTaxLoading={state.isTaxLoading}
         taxError={state.taxError}
+        checkoutError={state.checkoutError}
         couponApplied={state.couponApplied}
         couponLabel={couponLabel}
         couponCode={state.couponCode}
@@ -1692,6 +1722,7 @@ function CheckoutClientInner() {
             user={user}
             operation={state.modalMode}
             addressId={state.editAddressId}
+            existingAddress={state.editAddress}
             onClose={() =>
               dispatch({ type: CheckoutActionType.CLOSE_ADDRESS_MODAL })
             }
