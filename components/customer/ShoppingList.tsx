@@ -3,7 +3,7 @@ import { useReducer, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 import { motion, AnimatePresence, LayoutGroup } from "motion/react";
-import { ChevronDown, PackageSearch } from "lucide-react";
+import { ChevronDown, Loader2, PackageSearch } from "lucide-react";
 
 import { ProductCard } from "./ProductCard";
 import { useStoreFrontCmsData } from "@/hooks/useStoreFrontCmsData";
@@ -121,7 +121,9 @@ interface ShoppingListProps {
   styles?: string;
 }
 
-export function ShoppingList({ styles }: ShoppingListProps) {
+import { Suspense } from "react";
+
+function ShoppingListContent({ styles }: ShoppingListProps) {
   useStoreFrontCmsData(); // keeps CMS subscription alive
 
   const router = useRouter();
@@ -441,5 +443,19 @@ export function ShoppingList({ styles }: ShoppingListProps) {
         </div>
       </LayoutGroup>
     </motion.section>
+  );
+}
+
+export function ShoppingList(props: ShoppingListProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-20 text-center">
+          <Loader2 className="animate-spin mx-auto text-blue-600" />
+        </div>
+      }
+    >
+      <ShoppingListContent {...props} />
+    </Suspense>
   );
 }

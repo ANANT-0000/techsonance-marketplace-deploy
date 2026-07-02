@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { searchImgDark } from "@/constants/common";
 import {
   ChevronDown,
@@ -65,16 +65,54 @@ const getCustomerStatusBadge = (
   }
 };
 
+export enum ActionType {
+  SET_DATE = 'SET_DATE',
+  SET_IS_OPEN = 'SET_IS_OPEN',
+  SET_STATUS_FILTER = 'SET_STATUS_FILTER',
+  SET_SORT_BY = 'SET_SORT_BY',
+  SET_CUSTOMERS = 'SET_CUSTOMERS',
+}
+
+type Action =
+  | { type: ActionType.SET_DATE; payload: Date | undefined }
+  | { type: ActionType.SET_IS_OPEN; payload: boolean }
+  | { type: ActionType.SET_STATUS_FILTER; payload: string }
+  | { type: ActionType.SET_SORT_BY; payload: string }
+  | { type: ActionType.SET_CUSTOMERS; payload: CustomerType[] };
+
+interface State {
+  date: Date | undefined;
+  isOpen: boolean;
+  statusFilter: string;
+  sortBy: string;
+  customers: CustomerType[];
+}
+
+const initialState: State = {
+  date: new Date(),
+  isOpen: false,
+  statusFilter: "",
+  sortBy: "desc",
+  customers: [],
+};
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case ActionType.SET_DATE: return { ...state, date: action.payload };
+    case ActionType.SET_IS_OPEN: return { ...state, isOpen: action.payload };
+    case ActionType.SET_STATUS_FILTER: return { ...state, statusFilter: action.payload };
+    case ActionType.SET_SORT_BY: return { ...state, sortBy: action.payload };
+    case ActionType.SET_CUSTOMERS: return { ...state, customers: action.payload };
+    default: return state;
+  }
+}
+
 export default function VendorCustomersPage({
   uiText = CUSTOMERS_TEXT,
 }: {
   uiText?: typeof CUSTOMERS_TEXT;
 }) {
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [isOpen, setIsOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("desc");
-  const [customers, setCustomers] = useState<CustomerType[]>([]);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const customerTableHeader = [
     uiText.TABLE.HEADERS.CUSTOMER_ID,
@@ -84,8 +122,8 @@ export default function VendorCustomersPage({
   ];
 
   const handleDateChange = (selectedDate: Date | undefined) => {
-    setDate(selectedDate);
-    setIsOpen(false);
+    dispatch({ type: ActionType.SET_DATE, payload: selectedDate });
+    dispatch({ type: ActionType.SET_IS_OPEN, payload: false });
   };
 
   const token = authToken();
@@ -96,14 +134,14 @@ export default function VendorCustomersPage({
     }
 
     const getCustomerList = async () => {
-      await fetchCompanyCustomers(0, 10, statusFilter, sortBy, token)
+      await fetchCompanyCustomers(0, 10, state.statusFilter, state.sortBy, token)
         .then((res) => {
-          setCustomers(res.data || []);
+          dispatch({ type: ActionType.SET_CUSTOMERS, payload: res.data || [] });
         })
         .catch((err) => {});
     };
     getCustomerList();
-  }, [statusFilter, sortBy]);
+  }, [state.statusFilter, state.sortBy]);
 
   return (
     <main className="w-full px-1">
@@ -114,9 +152,9 @@ export default function VendorCustomersPage({
           <h1 className="text-theme-h4 font-bold text-gray-800">
             {uiText.HEADER.TITLE}
           </h1>
-          {customers && customers.length > 0 && (
+          {state.customers && state.customers.length > 0 && (
             <span className="ml-2 bg-blue-100 text-blue-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
-              {customers.length}
+              {state.customers.length}
             </span>
           )}
         </div>
@@ -146,8 +184,8 @@ export default function VendorCustomersPage({
         <span className="flex flex-wrap gap-3 items-center">
           <select
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
-            onChange={(e) => setStatusFilter(e.target.value)}
-            value={statusFilter}
+            onChange={(e) => dispatch({ type: ActionType.SET_STATUS_FILTER, payload: e.target.value })}
+            value={state.statusFilter}
           >
             <option value="">{uiText.FILTERS.ALL_STATUSES}</option>
             <option value={AccessStatus.ACTIVE}>
@@ -160,36 +198,36 @@ export default function VendorCustomersPage({
 
           <select
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            value={state.sortBy}
+            onChange={(e) => dispatch({ type: ActionType.SET_SORT_BY, payload: e.target.value })}
           >
             <option value="desc">{uiText.FILTERS.SORT_NEWEST}</option>
             <option value="asc">{uiText.FILTERS.SORT_OLDEST}</option>
           </select>
 
-          {isOpen ? (
+          {state.isOpen ? (
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={() => dispatch({ type: ActionType.SET_IS_OPEN, payload: false })}
               className="flex items-center gap-2 text-theme-body-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
             >
-              {date ? date.toDateString() : uiText.FILTERS.SELECT_DATE}
+              {state.date ? state.date.toDateString() : uiText.FILTERS.SELECT_DATE}
               <ChevronUp size={16} />
             </button>
           ) : (
             <button
-              onClick={() => setIsOpen(true)}
+              onClick={() => dispatch({ type: ActionType.SET_IS_OPEN, payload: true })}
               className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
             >
-              {date ? date.toDateString() : uiText.FILTERS.SELECT_DATE}
+              {state.date ? state.date.toDateString() : uiText.FILTERS.SELECT_DATE}
               <ChevronDown size={16} />
             </button>
           )}
 
-          {isOpen && (
+          {state.isOpen && (
             <div className="absolute right-4 top-full mt-2 z-20 shadow-lg rounded-xl overflow-hidden border border-gray-200">
               <Calendar
                 mode="single"
-                selected={date}
+                selected={state.date}
                 onSelect={handleDateChange}
                 className="rounded-xl bg-white"
                 captionLayout="dropdown"
@@ -220,7 +258,7 @@ export default function VendorCustomersPage({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {!customers || customers.length === 0 ? (
+            {!state.customers || state.customers.length === 0 ? (
               <tr>
                 <td
                   colSpan={9}
@@ -231,8 +269,8 @@ export default function VendorCustomersPage({
                 </td>
               </tr>
             ) : (
-              customers &&
-              customers.map((customer) => (
+              state.customers &&
+              state.customers.map((customer) => (
                 <tr
                   key={customer.id}
                   className="hover:bg-gray-50 transition-colors group"

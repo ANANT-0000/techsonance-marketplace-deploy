@@ -43,6 +43,7 @@ import {
   NavMegaColumn,
   NavItemDisplayType,
   NavLayoutType,
+  L2MegaMenuPayload,
 } from "@/utils/Types";
 
 // UI Text Constants (strictly preventing hardcoded keys/texts in component logic)
@@ -428,7 +429,7 @@ export function Navbar({
 
   // Initialize mobile stack
   useEffect(() => {
-    if (l1Config.navigationItems) {
+    if (l1Config && "navigationItems" in l1Config) {
       dispatchMenuState({
         type: NavbarActionType.SET_MOBILE_STACK,
         payload: [
@@ -456,7 +457,7 @@ export function Navbar({
 
   // Reset mobile stack when menu closes
   useEffect(() => {
-    if (!isMobileMenuOpen && l1Config.navigationItems) {
+    if (!isMobileMenuOpen && l1Config && "navigationItems" in l1Config) {
       dispatchMenuState({
         type: NavbarActionType.SET_MOBILE_STACK,
         payload: [
@@ -750,13 +751,14 @@ export function Navbar({
 
   // Brand Logo URL Resolver
   const logoUrl =
-    l1Config.logo.src ||
+    (l1Config && l1Config.logo.src) ||
     themeData.logo_url ||
-    themeData.logo_dark_url ||
-    BRAND_LOGO;
+    themeData.logo_dark_url;
 
-  const isSticky = l1Config.navbar.position === NavMenuPosition.STICKY;
-  const isLogoLeft = l1Config.logo.alignment === NavMenuLogoAlignment.LEFT;
+  const isSticky =
+    l1Config && l1Config.navbar.position === NavMenuPosition.STICKY;
+  const isLogoLeft =
+    l1Config && l1Config.logo.alignment === NavMenuLogoAlignment.LEFT;
   if (menuDataLoading) {
     return <NavbarSkeleton />;
   }
@@ -785,28 +787,33 @@ export function Navbar({
 
           {/* Logo */}
           <div className="flex-1 flex justify-center">
-            <Link href={l1Config.logo.href}>
-              <img
-                src={logoUrl}
-                alt={l1Config.logo.alt || NAVBAR_UI_TEXT.LOGO_ALT}
-                className="h-9 object-contain rounded-2xl font-black"
-              />
-            </Link>
+            {l1Config && (
+              <Link href={l1Config.logo.href}>
+                <img
+                  src={logoUrl}
+                  alt={l1Config.logo.alt || NAVBAR_UI_TEXT.LOGO_ALT}
+                  className="h-9 object-contain rounded-2xl font-black"
+                />
+              </Link>
+            )}
           </div>
 
           {/* Utilities */}
           <div className="flex items-center gap-2">
-            {isMounted && l1Config.utilities.showWishlist && user && (
-              <Link
-                href="/customer/wishlist"
-                className="p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors"
-                aria-label={NAVBAR_UI_TEXT.WISH_ARIA_LABEL}
-              >
-                <Heart size={20} strokeWidth={1.7} />
-              </Link>
-            )}
+            {isMounted &&
+              l1Config &&
+              l1Config.utilities.showWishlist &&
+              user && (
+                <Link
+                  href="/customer/wishlist"
+                  className="p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors"
+                  aria-label={NAVBAR_UI_TEXT.WISH_ARIA_LABEL}
+                >
+                  <Heart size={20} strokeWidth={1.7} />
+                </Link>
+              )}
 
-            {l1Config.utilities.showCart && (
+            {l1Config && l1Config.utilities.showCart && (
               <button
                 onClick={() => dispatch(toggleCartSidebar("open"))}
                 className="relative p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
@@ -866,11 +873,13 @@ export function Navbar({
                     })
                   }
                 >
-                  <img
-                    src={logoUrl}
-                    alt={l1Config.logo.alt || NAVBAR_UI_TEXT.LOGO_ALT}
-                    className="h-8 object-contain rounded-xl font-black"
-                  />
+                  {l1Config && (
+                    <img
+                      src={logoUrl}
+                      alt={l1Config.logo.alt || NAVBAR_UI_TEXT.LOGO_ALT}
+                      className="h-8 object-contain rounded-xl font-black"
+                    />
+                  )}
                 </Link>
                 <button
                   onClick={() =>
@@ -887,7 +896,7 @@ export function Navbar({
               </div>
 
               {/* Mobile Search Bar inside Drawer */}
-              {l1Config.searchBar.isVisible && (
+              {l1Config && l1Config.searchBar.isVisible && (
                 <div className="py-4 border-b border-slate-100 shrink-0">
                   <SearchBar
                     value={searchQuery}
@@ -973,7 +982,7 @@ export function Navbar({
 
               {/* Drawer Footer / Account Link */}
               <div className="pt-4 border-t border-slate-150 flex flex-col gap-2 shrink-0">
-                {l1Config.utilities.showAccount && (
+                {l1Config && l1Config.utilities.showAccount && (
                   <button
                     onClick={() => {
                       dispatchMenuState({
@@ -989,7 +998,9 @@ export function Navbar({
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors text-left border-none bg-transparent cursor-pointer"
                   >
                     <User size={16} strokeWidth={1.7} />
-                    <span>{isMounted && user?.id ? "My Profile" : "Sign In"}</span>
+                    <span>
+                      {isMounted && user?.id ? "My Profile" : "Sign In"}
+                    </span>
                   </button>
                 )}
                 {isMounted && user?.id && (
@@ -1017,8 +1028,8 @@ export function Navbar({
       {/* DESKTOP HEADER (hidden lg:flex) */}
       <nav
         className={`hidden lg:flex relative bg-navbar text-navbar-foreground items-center justify-between xl:px-16 lg:px-8 py-3.5 storefront-nav w-full ${styles} ${
-          l1Config.navbar.showShadow ? "shadow-md" : "shadow-sm"
-        } ${l1Config.navbar.showBottomBorder ? "border-b border-border" : ""}`}
+          l1Config && l1Config.navbar.showShadow ? "shadow-md" : "shadow-sm"
+        } ${l1Config && l1Config.navbar.showBottomBorder ? "border-b border-border" : ""}`}
       >
         {/* LOGO (LEFT POSITION) */}
         {isLogoLeft && (
@@ -1040,257 +1051,260 @@ export function Navbar({
           }`}
           onMouseLeave={handleMouseLeave}
         >
-          {l1Config.navigationItems.map((item) => {
-            const isActive = path === item.href;
-            const hasMega = item.hasMegaMenu;
-            const rawColumns = l2Config?.[item.id];
-            const columns = Array.isArray(rawColumns) ? rawColumns : [];
-            const hasResolvedColumns = columns.length > 0;
-            const showMenuPanel =
-              hasMega &&
-              activeMenuId === item.id &&
-              (menuState.status === NavbarState.OPEN ||
-                menuState.status === NavbarState.CLOSING) &&
-              (menuDataLoading || hasResolvedColumns);
+          {l1Config &&
+            l1Config.navigationItems.map((item) => {
+              const isActive = path === item.href;
+              const hasMega = item.hasMegaMenu;
+              const rawColumns = l2Config?.[item.id];
+              const columns = Array.isArray(rawColumns) ? rawColumns : [];
+              const hasResolvedColumns = columns.length > 0;
+              const showMenuPanel =
+                hasMega &&
+                activeMenuId === item.id &&
+                (menuState.status === NavbarState.OPEN ||
+                  menuState.status === NavbarState.CLOSING) &&
+                (menuDataLoading || hasResolvedColumns);
 
-            const isDirectoryStyle = (columns?.length ?? 0) > 4;
-            const isVisual =
-              item.displayType === NavItemDisplayType.CATEGORY_LISTING_VISUAL;
-            const layoutType = item.layout_type || NavLayoutType.NONE;
+              const isDirectoryStyle = (columns?.length ?? 0) > 4;
+              const isVisual =
+                item.displayType === NavItemDisplayType.CATEGORY_LISTING_VISUAL;
+              const layoutType = item.layout_type || NavLayoutType.NONE;
 
-            return (
-              <li
-                key={item.id}
-                className="relative py-2"
-                onMouseEnter={() => handleMouseEnter(item.id, hasMega)}
-                onClick={() => handleMouseEnter(item.id, hasMega)}
-              >
-                <div className="flex items-center">
-                  <Link
-                    href={item.href}
-                    className={`relative z-10 transition-colors duration-200 text-sm font-semibold flex items-center gap-1 ${
-                      isActive
-                        ? "text-theme-primary"
-                        : "text-navbar-foreground/80 hover:text-theme-primary"
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    {hasMega && (
-                      <ChevronDown
-                        size={14}
-                        className={`transition-transform duration-200 ${
-                          activeMenuId === item.id
-                            ? "rotate-180 text-theme-primary"
-                            : ""
-                        }`}
+              return (
+                <li
+                  key={item.id}
+                  className="relative py-2"
+                  onMouseEnter={() => handleMouseEnter(item.id, hasMega)}
+                  onClick={() => handleMouseEnter(item.id, hasMega)}
+                >
+                  <div className="flex items-center">
+                    <Link
+                      href={item.href}
+                      className={`relative z-10 transition-colors duration-200 text-sm font-semibold flex items-center gap-1 ${
+                        isActive
+                          ? "text-theme-primary"
+                          : "text-navbar-foreground/80 hover:text-theme-primary"
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {hasMega && (
+                        <ChevronDown
+                          size={14}
+                          className={`transition-transform duration-200 ${
+                            activeMenuId === item.id
+                              ? "rotate-180 text-theme-primary"
+                              : ""
+                          }`}
+                        />
+                      )}
+                    </Link>
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-underline-desktop"
+                        className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-theme-primary rounded-full"
                       />
                     )}
-                  </Link>
-                  {isActive && (
-                    <motion.div
-                      layoutId="nav-underline-desktop"
-                      className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-theme-primary rounded-full"
-                    />
-                  )}
-                </div>
+                  </div>
 
-                {/* DYNAMIC L2 MEGA MENU (RENDERED LAZILY ON HOVER) */}
-                <AnimatePresence>
-                  {showMenuPanel && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute left-0 top-full mt-3 min-w-[320px] w-max max-w-[min(94vw,980px)] bg-white border border-slate-100 rounded-2xl shadow-[0_12px_40px_-8px_rgba(0,0,0,0.12)] z-50 overflow-hidden"
-                    >
-                      {menuDataLoading ? (
-                        <MegaMenuSkeleton />
-                      ) : layoutType === NavLayoutType.DIRECTORY ? (
-                        // DIRECTORY: Apple-style Grid of column headers & bulleted links
-                        <div className="flex flex-wrap gap-x-8 gap-y-6 py-6 px-7 max-h-[480px] overflow-y-auto max-w-[min(94vw,980px)]">
-                          {columns!.map((col, cIdx) => (
-                            <div
-                              key={col.id || `col-${cIdx}`}
-                              className="flex flex-col gap-2.5 text-left min-w-[140px] max-w-[200px]"
-                            >
-                              <Link
-                                href={col.href || "#"}
-                                className="text-xs font-extrabold tracking-wider uppercase pb-2 mb-1 border-b border-slate-100 text-slate-950 hover:text-theme-primary transition-colors"
-                              >
-                                {col.title}
-                              </Link>
-                              <ul className="flex flex-col gap-2 list-none p-0 m-0">
-                                {col.items?.map((l3) => (
-                                  <li key={l3.id}>
-                                    <Link
-                                      href={l3.href || "#"}
-                                      className="text-sm font-medium text-slate-650 hover:text-theme-primary transition-colors hover:translate-x-0.5 transform inline-block transition-transform duration-150"
-                                    >
-                                      {l3.label}
-                                    </Link>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      ) : layoutType === NavLayoutType.GRID ? (
-                        // VISUAL_MATRIX_ENGINE: boAt-style Grid of cards with fallback colored letter-circle, and tag pills
-                        <div className="flex flex-wrap gap-6 py-6 px-7 max-w-[min(94vw,980px)] max-h-[480px] overflow-y-auto">
-                          {columns!.map((col) => {
-                            const firstLetter = col.title
-                              ? col.title.charAt(0).toUpperCase()
-                              : "?";
-                            const colors = [
-                              "bg-red-100 text-red-700",
-                              "bg-blue-100 text-blue-700",
-                              "bg-green-100 text-green-700",
-                              "bg-yellow-100 text-yellow-700",
-                              "bg-purple-100 text-purple-700",
-                              "bg-pink-100 text-pink-700",
-                              "bg-indigo-100 text-indigo-700",
-                              "bg-emerald-100 text-emerald-700",
-                              "bg-rose-100 text-rose-700",
-                            ];
-                            const colorClass =
-                              colors[
-                                (col.id?.charCodeAt(0) || 0) % colors.length
-                              ] || "bg-gray-150 text-gray-700";
-
-                            return (
+                  {/* DYNAMIC L2 MEGA MENU (RENDERED LAZILY ON HOVER) */}
+                  <AnimatePresence>
+                    {showMenuPanel && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                        className="absolute left-0 top-full mt-3 min-w-[320px] w-max max-w-[min(94vw,980px)] bg-white border border-slate-100 rounded-2xl shadow-[0_12px_40px_-8px_rgba(0,0,0,0.12)] z-50 overflow-hidden"
+                      >
+                        {menuDataLoading ? (
+                          <MegaMenuSkeleton />
+                        ) : layoutType === NavLayoutType.DIRECTORY ? (
+                          // DIRECTORY: Apple-style Grid of column headers & bulleted links
+                          <div className="flex flex-wrap gap-x-8 gap-y-6 py-6 px-7 max-h-[480px] overflow-y-auto max-w-[min(94vw,980px)]">
+                            {columns!.map((col, cIdx) => (
                               <div
-                                key={col.id}
-                                className="flex flex-col p-4 bg-slate-50/70 hover:bg-white hover:shadow-lg rounded-2xl transition-all duration-300 border border-slate-100 hover:border-theme-primary/10 group min-w-[150px] max-w-[200px]"
+                                key={col.id || `col-${cIdx}`}
+                                className="flex flex-col gap-2.5 text-left min-w-[140px] max-w-[200px]"
                               >
                                 <Link
                                   href={col.href || "#"}
-                                  className="flex items-center gap-3.5 mb-3 cursor-pointer text-left"
+                                  className="text-xs font-extrabold tracking-wider uppercase pb-2 mb-1 border-b border-slate-100 text-slate-950 hover:text-theme-primary transition-colors"
                                 >
-                                  {col.iconUrl ? (
-                                    <img
-                                      src={col.iconUrl}
-                                      alt={col.title}
-                                      className="w-12 h-12 object-contain mix-blend-multiply flex-shrink-0 group-hover:scale-105 transition-transform duration-300 rounded-lg"
-                                    />
-                                  ) : (
-                                    <div
-                                      className={`w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-lg shadow-sm ${colorClass} group-hover:scale-105 transition-transform duration-300`}
-                                    >
-                                      {firstLetter}
-                                    </div>
-                                  )}
-                                  <span className="font-bold text-xs tracking-tight text-slate-800 group-hover:text-theme-primary transition-colors">
-                                    {col.title}
-                                  </span>
+                                  {col.title}
                                 </Link>
-                                {col.items && col.items.length > 0 && (
-                                  <div className="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-slate-100/50">
-                                    {col.items.map((l3) => (
+                                <ul className="flex flex-col gap-2 list-none p-0 m-0">
+                                  {col.items?.map((l3) => (
+                                    <li key={l3.id}>
                                       <Link
-                                        key={l3.id}
                                         href={l3.href || "#"}
-                                        className="text-[10px] font-semibold bg-white border border-slate-150 text-slate-650 hover:bg-theme-primary hover:text-white hover:border-theme-primary px-2.5 py-0.5 rounded-full transition-colors duration-150 shrink-0"
+                                        className="text-sm font-medium text-slate-650 hover:text-theme-primary transition-colors hover:translate-x-0.5 transform inline-block transition-transform duration-150"
                                       >
                                         {l3.label}
                                       </Link>
-                                    ))}
-                                  </div>
-                                )}
+                                    </li>
+                                  ))}
+                                </ul>
                               </div>
-                            );
-                          })}
-                        </div>
-                      ) : isVisual ? (
-                        <div className="flex flex-wrap gap-6 py-6 px-7 max-w-[min(94vw,980px)]">
-                          {columns!.map((col) => (
-                            <Link
-                              key={col.id}
-                              href={col.href || "#"}
-                              className="flex items-center gap-4 p-3 bg-gray-50/60 hover:bg-theme-primary/5 hover:text-theme-primary rounded-xl transition-all group/item border border-transparent hover:border-theme-primary/20 cursor-pointer min-w-[140px]"
-                            >
-                              {col.iconUrl ? (
-                                <img
-                                  src={col.iconUrl}
-                                  alt={col.title}
-                                  className="w-12 h-12 object-contain mix-blend-multiply flex-shrink-0 group-hover/item:scale-105 transition-transform"
+                            ))}
+                          </div>
+                        ) : layoutType === NavLayoutType.GRID ? (
+                          // VISUAL_MATRIX_ENGINE: boAt-style Grid of cards with fallback colored letter-circle, and tag pills
+                          <div className="flex flex-wrap gap-6 py-6 px-7 max-w-[min(94vw,980px)] max-h-[480px] overflow-y-auto">
+                            {columns!.map((col) => {
+                              const firstLetter = col.title
+                                ? col.title.charAt(0).toUpperCase()
+                                : "?";
+                              const colors = [
+                                "bg-red-100 text-red-700",
+                                "bg-blue-100 text-blue-700",
+                                "bg-green-100 text-green-700",
+                                "bg-yellow-100 text-yellow-700",
+                                "bg-purple-100 text-purple-700",
+                                "bg-pink-100 text-pink-700",
+                                "bg-indigo-100 text-indigo-700",
+                                "bg-emerald-100 text-emerald-700",
+                                "bg-rose-100 text-rose-700",
+                              ];
+                              const colorClass =
+                                colors[
+                                  (col.id?.charCodeAt(0) || 0) % colors.length
+                                ] || "bg-gray-150 text-gray-700";
+
+                              return (
+                                <div
+                                  key={col.id}
+                                  className="flex flex-col p-4 bg-slate-50/70 hover:bg-white hover:shadow-lg rounded-2xl transition-all duration-300 border border-slate-100 hover:border-theme-primary/10 group min-w-[150px] max-w-[200px]"
+                                >
+                                  <Link
+                                    href={col.href || "#"}
+                                    className="flex items-center gap-3.5 mb-3 cursor-pointer text-left"
+                                  >
+                                    {col.iconUrl ? (
+                                      <img
+                                        src={col.iconUrl}
+                                        alt={col.title}
+                                        className="w-12 h-12 object-contain mix-blend-multiply flex-shrink-0 group-hover:scale-105 transition-transform duration-300 rounded-lg"
+                                      />
+                                    ) : (
+                                      <div
+                                        className={`w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-lg shadow-sm ${colorClass} group-hover:scale-105 transition-transform duration-300`}
+                                      >
+                                        {firstLetter}
+                                      </div>
+                                    )}
+                                    <span className="font-bold text-xs tracking-tight text-slate-800 group-hover:text-theme-primary transition-colors">
+                                      {col.title}
+                                    </span>
+                                  </Link>
+                                  {col.items && col.items.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-slate-100/50">
+                                      {col.items.map((l3) => (
+                                        <Link
+                                          key={l3.id}
+                                          href={l3.href || "#"}
+                                          className="text-[10px] font-semibold bg-white border border-slate-150 text-slate-650 hover:bg-theme-primary hover:text-white hover:border-theme-primary px-2.5 py-0.5 rounded-full transition-colors duration-150 shrink-0"
+                                        >
+                                          {l3.label}
+                                        </Link>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : isVisual ? (
+                          <div className="flex flex-wrap gap-6 py-6 px-7 max-w-[min(94vw,980px)]">
+                            {columns!.map((col) => (
+                              <Link
+                                key={col.id}
+                                href={col.href || "#"}
+                                className="flex items-center gap-4 p-3 bg-gray-50/60 hover:bg-theme-primary/5 hover:text-theme-primary rounded-xl transition-all group/item border border-transparent hover:border-theme-primary/20 cursor-pointer min-w-[140px]"
+                              >
+                                {col.iconUrl ? (
+                                  <img
+                                    src={col.iconUrl}
+                                    alt={col.title}
+                                    className="w-12 h-12 object-contain mix-blend-multiply flex-shrink-0 group-hover/item:scale-105 transition-transform"
+                                  />
+                                ) : (
+                                  <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0" />
+                                )}
+                                <span className="font-semibold text-xs tracking-tight text-slate-800 group-hover/item:text-theme-primary">
+                                  {col.title}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        ) : isDirectoryStyle ? (
+                          <div className="grid grid-cols-3 gap-x-8 gap-y-6 py-6 px-7 max-h-[480px] overflow-y-auto">
+                            {columns!.map((col, cIdx) =>
+                              col.type === NavItemColType.PROMOTION &&
+                              col.promotion ? (
+                                <PromoCard
+                                  key={`col-${cIdx}`}
+                                  promo={col.promotion}
                                 />
                               ) : (
-                                <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0" />
-                              )}
-                              <span className="font-semibold text-xs tracking-tight text-slate-800 group-hover/item:text-theme-primary">
-                                {col.title}
-                              </span>
-                            </Link>
-                          ))}
-                        </div>
-                      ) : isDirectoryStyle ? (
-                        <div className="grid grid-cols-3 gap-x-8 gap-y-6 py-6 px-7 max-h-[480px] overflow-y-auto">
-                          {columns!.map((col, cIdx) =>
-                            col.type === NavItemColType.PROMOTION &&
-                            col.promotion ? (
-                              <PromoCard
-                                key={`col-${cIdx}`}
-                                promo={col.promotion}
-                              />
-                            ) : (
-                              <MegaMenuColumn
-                                key={`col-${cIdx}`}
-                                col={col}
-                                cIdx={cIdx}
-                                itemId={item.id}
-                                expandedColumns={expandedColumns}
-                                toggleColumnExpand={toggleColumnExpand}
-                              />
-                            ),
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex gap-6 py-6 px-7 divide-x divide-slate-100 max-h-[440px]">
-                          {columns!.map((col, cIdx) => (
-                            <div
-                              key={`col-${cIdx}`}
-                              className={`shrink-0 ${cIdx > 0 ? "pl-6" : ""}`}
-                            >
-                              {col.type === NavItemColType.PROMOTION &&
-                              col.promotion ? (
-                                <PromoCard promo={col.promotion} />
-                              ) : (
                                 <MegaMenuColumn
+                                  key={`col-${cIdx}`}
                                   col={col}
                                   cIdx={cIdx}
                                   itemId={item.id}
                                   expandedColumns={expandedColumns}
                                   toggleColumnExpand={toggleColumnExpand}
                                 />
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </li>
-            );
-          })}
+                              ),
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex gap-6 py-6 px-7 divide-x divide-slate-100 max-h-[440px]">
+                            {columns!.map((col, cIdx) => (
+                              <div
+                                key={`col-${cIdx}`}
+                                className={`shrink-0 ${cIdx > 0 ? "pl-6" : ""}`}
+                              >
+                                {col.type === NavItemColType.PROMOTION &&
+                                col.promotion ? (
+                                  <PromoCard promo={col.promotion} />
+                                ) : (
+                                  <MegaMenuColumn
+                                    col={col}
+                                    cIdx={cIdx}
+                                    itemId={item.id}
+                                    expandedColumns={expandedColumns}
+                                    toggleColumnExpand={toggleColumnExpand}
+                                  />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </li>
+              );
+            })}
         </ul>
 
         {/* LOGO (CENTER POSITION) */}
         {!isLogoLeft && (
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
-            <Link href={l1Config.logo.href}>
-              <img
-                src={logoUrl}
-                alt={l1Config.logo.alt || NAVBAR_UI_TEXT.LOGO_ALT}
-                className="h-10 object-contain rounded-2xl font-black"
-              />
-            </Link>
+            {l1Config && (
+              <Link href={l1Config.logo.href}>
+                <img
+                  src={logoUrl}
+                  alt={l1Config.logo.alt || NAVBAR_UI_TEXT.LOGO_ALT}
+                  className="h-10 object-contain rounded-2xl font-black"
+                />
+              </Link>
+            )}
           </div>
         )}
 
         {/* SEARCH BAR */}
-        {l1Config.searchBar.isVisible && (
+        {l1Config && l1Config.searchBar.isVisible && (
           <div className="flex-1 max-w-[440px] mx-6">
             <SearchBar
               value={searchQuery}
@@ -1315,7 +1329,7 @@ export function Navbar({
         {/* UTILITY ICONS & USER DROPDOWN (RIGHT) */}
         <div className="flex items-center gap-5 flex-shrink-0">
           {/* Account/Profile Dropdown */}
-          {l1Config.utilities.showAccount && (
+          {l1Config && l1Config.utilities.showAccount && (
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() =>
@@ -1407,7 +1421,7 @@ export function Navbar({
           )}
 
           {/* Wishlist Link */}
-          {isMounted && l1Config.utilities.showWishlist && user && (
+          {isMounted && l1Config && l1Config.utilities.showWishlist && user && (
             <Link
               href="/customer/wishlist"
               className="relative p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors"
@@ -1418,7 +1432,7 @@ export function Navbar({
           )}
 
           {/* Shopping Cart Sidebar Toggle */}
-          {l1Config.utilities.showCart && (
+          {l1Config && l1Config.utilities.showCart && (
             <button
               onClick={() => dispatch(toggleCartSidebar("open"))}
               className="relative p-2 text-navbar-foreground/80 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"

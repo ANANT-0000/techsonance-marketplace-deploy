@@ -660,7 +660,12 @@ export const BRANDING_TAB_TEXT = {
     {
       key: "social_proof",
       label: "Trust & Social Proof",
-      desc: "Customer testimonials slider and trust badges",
+      desc: "Customer testimonials slider",
+    },
+    {
+      key: "trust_badges",
+      label: "Trust Badges Strip",
+      desc: "Horizontal strip showing trust badges, policies, etc.",
     },
     {
       key: "curated",

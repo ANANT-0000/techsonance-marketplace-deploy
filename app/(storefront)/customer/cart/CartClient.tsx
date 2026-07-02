@@ -14,6 +14,7 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
+  Loader2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { formatCurrency } from "@/lib/utils";
@@ -391,7 +392,9 @@ function reducer(state: State, action: Action): State {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-export default function CartClient() {
+import { Suspense } from "react";
+
+function CartClientContent() {
   const { itemList, loading } = useAppSelector((state) => state.cart);
   const { user } = useAppSelector((state) => state.auth);
   const router = useRouter();
@@ -776,5 +779,19 @@ export default function CartClient() {
         onSelect={handleCouponSelect}
       />
     </main>
+  );
+}
+
+export default function CartClient() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-20 text-center">
+          <Loader2 className="animate-spin mx-auto text-blue-600" />
+        </div>
+      }
+    >
+      <CartClientContent />
+    </Suspense>
   );
 }

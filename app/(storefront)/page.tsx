@@ -100,7 +100,7 @@ function DraggableScrollContainer({
 }
 
 export default function Home() {
-  const { getField, banners, categories, heroSlides, isLoading } =
+  const { getField, banners, categories, heroSlides, isLoading, cmsContent } =
     useHomepageData();
   const { themeData } = useThemeData();
 
@@ -117,7 +117,7 @@ export default function Home() {
   const [newArrivals, setNewArrivals] = useState<any[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   useEffect(() => {
-    AxiosAPI.get("/v1/products/homepage?limit=8")
+    AxiosAPI.get("/v1/products/homepage?limit=8", { headers: { "x-suppress-toast": true } })
       .then((res) => {
         setProducts(res.data.data.slice(0, 4));
         setNewArrivals(res.data.data.slice(4, 7));
@@ -129,10 +129,32 @@ export default function Home() {
       .finally(() => setProductsLoading(false));
   }, []);
 
+  if (!isLoading && !cmsContent) {
+    return (
+      <div className="fixed inset-0 z-[99999] min-h-screen flex items-center justify-center bg-gray-50 p-6">
+        <div className="max-w-md w-full bg-white p-10 rounded-3xl shadow-sm border border-gray-100 text-center flex flex-col items-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">Store Not Available</h1>
+          <p className="text-gray-500 mb-8">This store is currently being set up and has no content published yet. Please check back later.</p>
+        </div>
+      </div>
+    );
+  }
+
   // ── Desktop Renderer ────────────────────────────────────────────────────────
   const renderDesktop = (key: string) => {
     switch (key) {
       case LayoutSection.HERO:
+        if (
+          !isLoading &&
+          heroSlides.length === 0 &&
+          !getField(CmsDataKey.HERO_VIDEO_URL)
+        )
+          return null;
         return (
           <div key={LayoutSection.HERO}>
             {isLoading ? (
@@ -164,11 +186,28 @@ export default function Home() {
                 }))}
               />
             )}
-            <TrustStrip getField={getField} />
           </div>
         );
 
+      case LayoutSection.TRUST_BADGES:
+        if (isLoading) {
+          return (
+            <div key={LayoutSection.TRUST_BADGES} className="w-full h-24 bg-gray-100 animate-pulse border-y border-gray-100" />
+          );
+        }
+        
+        const badges = getField(CmsDataKey.SOCIAL_PROOF_BADGES);
+        const hasValidCmsBadges =
+          Array.isArray(badges) &&
+          badges.length > 0 &&
+          badges.some((badge: any) => (badge.title || badge.label || "").trim() !== "");
+          
+        if (!hasValidCmsBadges) return null;
+
+        return <TrustStrip key={LayoutSection.TRUST_BADGES} getField={getField} />;
+
       case LayoutSection.LOOKBOOK:
+        if (!isLoading && !getField(CmsDataKey.LOOKBOOK_IMAGE_URL)) return null;
         return (
           <ShoppableLookbook
             key={LayoutSection.LOOKBOOK}
@@ -181,6 +220,12 @@ export default function Home() {
         );
 
       case LayoutSection.SCARCITY:
+        if (
+          !isLoading &&
+          !getField(CmsDataKey.SCARCITY_TIMER_TITLE) &&
+          !getField(CmsDataKey.SCARCITY_EXPIRES_AT)
+        )
+          return null;
         return (
           <ScarcityBlock
             key={LayoutSection.SCARCITY}
@@ -195,6 +240,10 @@ export default function Home() {
         );
 
       case LayoutSection.SOCIAL_PROOF:
+        if (!isLoading) {
+          const testimonials = getField(CmsDataKey.SOCIAL_PROOF_TESTIMONIALS);
+          if (!testimonials || testimonials.length === 0) return null;
+        }
         return (
           <TestimonialSlider
             key={LayoutSection.SOCIAL_PROOF}
@@ -324,6 +373,7 @@ export default function Home() {
         );
 
       case LayoutSection.NEWSLETTER:
+        if (!isLoading && !getField("newsletter_title")) return null;
         return (
           <NewsletterDesktop
             key={LayoutSection.NEWSLETTER}
@@ -340,6 +390,12 @@ export default function Home() {
   const renderMobile = (key: string) => {
     switch (key) {
       case LayoutSection.HERO:
+        if (
+          !isLoading &&
+          heroSlides.length === 0 &&
+          !getField(CmsDataKey.HERO_VIDEO_URL)
+        )
+          return null;
         return (
           <div key={`m-${LayoutSection.HERO}`}>
             {isLoading ? (
@@ -376,6 +432,7 @@ export default function Home() {
         );
 
       case LayoutSection.LOOKBOOK:
+        if (!isLoading && !getField(CmsDataKey.LOOKBOOK_IMAGE_URL)) return null;
         return (
           <ShoppableLookbook
             key={`m-${LayoutSection.LOOKBOOK}`}
@@ -388,6 +445,12 @@ export default function Home() {
         );
 
       case LayoutSection.SCARCITY:
+        if (
+          !isLoading &&
+          !getField(CmsDataKey.SCARCITY_TIMER_TITLE) &&
+          !getField(CmsDataKey.SCARCITY_EXPIRES_AT)
+        )
+          return null;
         return (
           <ScarcityBlock
             key={`m-${LayoutSection.SCARCITY}`}
@@ -402,6 +465,10 @@ export default function Home() {
         );
 
       case LayoutSection.SOCIAL_PROOF:
+        if (!isLoading) {
+          const testimonials = getField(CmsDataKey.SOCIAL_PROOF_TESTIMONIALS);
+          if (!testimonials || testimonials.length === 0) return null;
+        }
         return (
           <TestimonialSlider
             key={`m-${LayoutSection.SOCIAL_PROOF}`}
@@ -550,10 +617,18 @@ export default function Home() {
         {/* Always-rendered supplementary sections (only if not already placed via layout key) */}
         {!layout.includes("social_proof") && (
           <>
-            <TestimonialsDesktop getField={getField} />
+            {(isLoading ||
+              (getField(CmsDataKey.SOCIAL_PROOF_TESTIMONIALS) &&
+                getField(CmsDataKey.SOCIAL_PROOF_TESTIMONIALS).length > 0)) && (
+              <TestimonialsDesktop getField={getField} />
+            )}
           </>
         )}
-        <BrandHighlight getField={getField} />
+        {(isLoading ||
+          getField("brand_highlight_title") ||
+          getField("brand_highlight_image_url")) && (
+          <BrandHighlight getField={getField} />
+        )}
       </div>
 
       {/* ── MOBILE ──────────────────────────────────────────────────────────── */}
@@ -561,7 +636,11 @@ export default function Home() {
         {layout.map((key) => renderMobile(key))}
         {!layout.includes("social_proof") && (
           <>
-            <TestimonialsMobile getField={getField} />
+            {(isLoading ||
+              (getField(CmsDataKey.SOCIAL_PROOF_TESTIMONIALS) &&
+                getField(CmsDataKey.SOCIAL_PROOF_TESTIMONIALS).length > 0)) && (
+              <TestimonialsMobile getField={getField} />
+            )}
           </>
         )}
       </div>

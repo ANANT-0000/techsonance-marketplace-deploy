@@ -92,7 +92,7 @@ export const updateVendorProductCategory = async (
       {
         method: "PATCH",
         credentials: "include",
-      headers: {
+        headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           "company-domain": companyDomain,
@@ -117,7 +117,7 @@ export const deleteVendorProductCategory = async (
       {
         method: "DELETE",
         credentials: "include",
-      headers: {
+        headers: {
           Authorization: `Bearer ${token}`,
           "company-domain": companyDomain,
         },
@@ -203,7 +203,7 @@ export const updateProductVariantStatus = async (
         method: "PATCH",
         body: JSON.stringify({ status: nextStatus }),
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
@@ -238,7 +238,7 @@ export const fetchVendorProducts = async (
         // cache: 'force-cache',
         // next: { revalidate: 3600 },
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -379,7 +379,7 @@ export const createInventoryRecord = async (
   const response = await fetch(`${BASE_API_URL}/v1/inventory`, {
     method: "POST",
     credentials: "include",
-      headers: {
+    headers: {
       "Content-Type": "application/json",
       "company-domain": companyDomain,
     },
@@ -420,7 +420,7 @@ export const updateProductVariant = async (
         method: "PATCH",
         body: formData,
         credentials: "include",
-      headers: {
+        headers: {
           Authorization: `Bearer ${token}`,
           "company-domain": companyDomain,
         },
@@ -454,7 +454,7 @@ export const fetchProductVariants = async (
         cache: "no-cache",
         // next: { revalidate: 3600 },
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -481,7 +481,7 @@ export const deleteProductVariant = async (
       {
         method: "DELETE",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -508,7 +508,7 @@ export const fetchVariant = async (variantId: string, token: string) => {
       {
         method: "GET",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -575,7 +575,7 @@ export const fetchVendorOrderList = async (
         method: "GET",
         cache: "no-cache",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -601,7 +601,7 @@ export const fetchVendorOrderDetails = async (
         method: "GET",
         cache: "no-cache",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -627,7 +627,7 @@ export const fetchUpdateOrderStatus = async (
       {
         method: "PATCH",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -849,7 +849,7 @@ export const fetchUpdateCompanyLocation = async (
       {
         method: "PATCH",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
@@ -965,7 +965,7 @@ export const fetchGetVendorReturnById = async (
       `${BASE_API_URL}/v1/returns/vendor/${returnId}`,
       {
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
         },
@@ -992,7 +992,7 @@ export const FetchUpdateReturnStatus = async (
       {
         method: "PATCH",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
@@ -1041,7 +1041,7 @@ export const fetchCompanyCustomers = async (
       {
         ...getCacheConfig(3600),
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
         },
@@ -1063,7 +1063,7 @@ export const FetchSuspendCustomer = async (
       {
         method: "PATCH",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
         },
@@ -1158,7 +1158,7 @@ export const fetchTaxProfiles = async (
       {
         method: "GET",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -1179,7 +1179,7 @@ export const fetchTaxSlabOptions = async (token: string) => {
         method: "GET",
         ...getCacheConfig(3600),
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -1202,7 +1202,7 @@ export const fetchAssignProductTax = async (
       {
         method: "POST",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
@@ -1227,7 +1227,7 @@ export const fetchBulkAssignProductTax = async (
       {
         method: "POST",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
@@ -1255,7 +1255,7 @@ export const fetchProductTaxMappings = async (
         cache: "no-store",
         method: "GET",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -1282,7 +1282,7 @@ export const fetchGstInvoices = async (
       {
         method: "GET",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -1390,7 +1390,7 @@ export const fetchSingleTaxProfile = async (id: string, token: string) => {
       {
         method: "GET",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -1414,7 +1414,7 @@ export const fetchUpdateTaxProfile = async (
       {
         method: "PATCH",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
@@ -1495,7 +1495,7 @@ export const fetchCompanyLegalProfile = async (token: string) => {
         cache: "force-cache",
         //  revalidate: 3600,
         credentials: "include",
-      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+        headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
       },
     );
     if (!res.ok) return { data: null };
@@ -1516,7 +1516,7 @@ export const upsertCompanyLegalProfile = async (
       {
         method: "POST",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
@@ -1596,7 +1596,7 @@ export const deleteCompanyComplianceField = async (
       {
         method: "DELETE",
         credentials: "include",
-      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+        headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
       },
     );
     revalidatePath("/vendor");
@@ -1620,7 +1620,7 @@ export const fetchCompanyDocumentConfig = async (token: string) => {
       {
         ...getCacheConfig(3600),
         credentials: "include",
-      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+        headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
       },
     );
     if (!res.ok) return { data: null };
@@ -1641,7 +1641,7 @@ export const upsertCompanyDocumentConfig = async (
       {
         method: "POST",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
         },
@@ -1681,7 +1681,7 @@ export const fetchProductPolicyById = async (id: string, token: string) => {
   const res = await fetch(`${BASE_API_URL}/v1/product-policies/${id}`, {
     cache: "no-store",
     credentials: "include",
-      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+    headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
   });
   if (!res.ok) return { data: null };
   return res.json();
@@ -1692,7 +1692,7 @@ export const createProductPolicy = async (payload: any, token: string) => {
   const res = await fetch(`${BASE_API_URL}/v1/product-policies`, {
     method: "POST",
     credentials: "include",
-      headers: {
+    headers: {
       "Content-Type": "application/json",
       "company-domain": domain,
       Authorization: `Bearer ${token}`,
@@ -1763,7 +1763,7 @@ export const assignPolicyToCategory = async (
       {
         method: "POST",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
@@ -1797,7 +1797,7 @@ export const fetchAssignedProductPolicyOverride = async (
       {
         method: "POST",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
@@ -1827,7 +1827,7 @@ export const fetchCategoryPolicies = async (
       {
         cache: "no-store",
         credentials: "include",
-      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+        headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
       },
     );
     if (!res.ok) return { data: [] };
@@ -1848,7 +1848,7 @@ export const assignPolicyToCategories = async (
       {
         method: "POST",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
@@ -1878,7 +1878,7 @@ export const removePolicyFromCategory = async (
       {
         method: "DELETE",
         credentials: "include",
-      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+        headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
       },
     );
     revalidatePath("/vendor");
@@ -1905,7 +1905,7 @@ export const fetchProductPolicyOverrides = async (
       {
         cache: "no-store",
         credentials: "include",
-      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+        headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
       },
     );
     if (!res.ok) return { data: [] };
@@ -1930,7 +1930,7 @@ export const fetchCreateAssignedProductPolicyOverride = async (
       {
         method: "POST",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
@@ -1960,7 +1960,7 @@ export const removeProductPolicyOverride = async (
       {
         method: "DELETE",
         credentials: "include",
-      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+        headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
       },
     );
     revalidatePath("/vendor");
@@ -1984,7 +1984,7 @@ export const fetchPolicyCoverageOverview = async (token: string) => {
       {
         cache: "no-store",
         credentials: "include",
-      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+        headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
       },
     );
     if (!res.ok) return { data: [] };
@@ -2005,7 +2005,7 @@ export const fetchPolicyCoverageDetails = async (
       {
         cache: "no-store",
         credentials: "include",
-      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+        headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
       },
     );
     if (!res.ok) return { data: null };
@@ -2025,7 +2025,7 @@ export const fetchRevenueAnalytics = async (
       `${BASE_API_URL}/v1/orders/analytics/revenue?days=${days}`,
       {
         credentials: "include",
-      headers: {
+        headers: {
           Authorization: `Bearer ${token}`,
           "company-domain": companyDomain,
         },
@@ -2044,7 +2044,7 @@ export const fetchTopProducts = async (token: string) => {
       `${BASE_API_URL}/v1/orders/analytics/top-products`,
       {
         credentials: "include",
-      headers: {
+        headers: {
           Authorization: `Bearer ${token}`,
           "company-domain": companyDomain,
         },
@@ -2128,7 +2128,7 @@ export const uploadComplianceProofDocument = async (
       {
         method: "POST",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": domain,
           Authorization: `Bearer ${token}`,
         },
@@ -2155,7 +2155,7 @@ export const fetchStockManagerVariants = async (token: string) => {
       {
         method: "GET",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -2178,7 +2178,7 @@ export const quickUpdateStock = async (
       {
         method: "PATCH",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
@@ -2221,7 +2221,7 @@ export const fetchTaxSlabs = async (sortBy: string, token: string) => {
         cache: "no-store",
         method: "GET",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -2241,7 +2241,7 @@ export const fetchSingleTaxSlab = async (id: string, token: string) => {
       {
         method: "GET",
         credentials: "include",
-      headers: {
+        headers: {
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
         },
@@ -2265,7 +2265,7 @@ export const fetchUpdateTaxSlab = async (
       {
         method: "PATCH",
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
           Authorization: `Bearer ${token}`,
@@ -2506,6 +2506,97 @@ export const updateShippingSettings = async (payload: any, token: string) => {
   }
 };
 
+export const fetchLogisticCompanies = async (token: string) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(
+      `${BASE_API_URL}/v1/vendor/shipping/logistic-companies`,
+      {
+        cache: "no-store",
+        credentials: "include",
+        headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+      },
+    );
+
+    if (!res.ok) {
+      console.error(
+        "fetchLogisticCompanies failed:",
+        res.status,
+        await res.text(),
+      );
+      return { data: [] };
+    }
+    const json = await res.json();
+    console.log("fetchLogisticCompanies success:", json);
+    return json;
+  } catch (error) {
+    return { data: [], message: "Error fetching logistic companies" };
+  }
+};
+
+export const fetchVendorShippingPreferences = async (token: string) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(`${BASE_API_URL}/v1/vendor/shipping/preferences`, {
+      cache: "no-store",
+      credentials: "include",
+      headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return { data: null };
+    return res.json();
+  } catch (error) {
+    return { data: null, message: "Error fetching shipping preferences" };
+  }
+};
+
+export const updateVendorShippingPreferences = async (
+  payload: any,
+  token: string,
+) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(`${BASE_API_URL}/v1/vendor/shipping/preferences`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "company-domain": domain,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/vendor");
+    return res.json();
+  } catch (error) {
+    return { success: false, message: "Error updating shipping preferences" };
+  }
+};
+
+export const fetchCalculateShippingRates = async (
+  payload: any,
+  token: string,
+) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(
+      `${BASE_API_URL}/v1/vendor/shipping/calculate-rates`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "company-domain": domain,
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      },
+    );
+    return res.json();
+  } catch (error) {
+    return { data: null, message: "Error calculating shipping rates" };
+  }
+};
+
 // ==========================================
 // VENDOR PAYMENTS CONFIG API ENDPOINTS
 // ==========================================
@@ -2525,7 +2616,10 @@ export const fetchVendorPaymentConfig = async (token: string) => {
   }
 };
 
-export const updateVendorPaymentConfig = async (payload: any, token: string) => {
+export const updateVendorPaymentConfig = async (
+  payload: any,
+  token: string,
+) => {
   const domain = await getCompanyDomain();
   try {
     const res = await fetch(`${BASE_API_URL}/v1/vendor/payment/config`, {
@@ -2547,5 +2641,3 @@ export const updateVendorPaymentConfig = async (payload: any, token: string) => 
     };
   }
 };
-
-

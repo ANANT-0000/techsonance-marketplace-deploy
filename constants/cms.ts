@@ -102,4 +102,5 @@ export enum LayoutSection {
   SCARCITY = "scarcity",
   SOCIAL_PROOF = "social_proof",
   CURATED = "curated",
+  TRUST_BADGES = "trust_badges",
 }

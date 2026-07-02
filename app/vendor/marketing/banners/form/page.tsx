@@ -268,7 +268,9 @@ function ImageSlot({
 // ─────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────
-export default function BannerForm() {
+import { Suspense } from "react";
+
+function BannerFormContent() {
   const bannerId = useSearchParams().get("id");
   const router = useRouter();
   const isEdit = !!bannerId;
@@ -840,5 +842,17 @@ export default function BannerForm() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function BannerForm() {
+  return (
+    <Suspense fallback={
+      <div className="p-20 text-center">
+        <Loader2 className="animate-spin mx-auto text-blue-600" />
+      </div>
+    }>
+      <BannerFormContent />
+    </Suspense>
   );
 }

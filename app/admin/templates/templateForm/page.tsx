@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/common/Button";
-import { UploadCloud, FileText, X } from "lucide-react";
+import { UploadCloud, FileText, X, Loader2 } from "lucide-react";
 import {
   fetchCreateTemplate,
   fetchTemplateById,
@@ -352,8 +352,8 @@ export default function TemplateFormPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center h-screen w-full">
-          <p className="text-gray-500 font-medium">Loading form...</p>
+        <div className="p-20 text-center">
+          <Loader2 className="animate-spin mx-auto text-blue-600" />
         </div>
       }
     >

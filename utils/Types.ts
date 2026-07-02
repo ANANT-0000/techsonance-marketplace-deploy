@@ -60,15 +60,6 @@ export enum ReturnType {
   RETURN = "return",
   REPLACEMENT = "replacement",
 }
-export enum ReturnStatus {
-  PENDING = "pending",
-  APPROVED = "approved",
-  REJECTED = "rejected",
-  QC_FAILED = "qc_failed",
-  SHIPPED = "shipped",
-  DELIVERED = "delivered",
-}
-
 /**
  * Derived from (is_returnable, is_replaceable) on a policy.
  * Matches the return_replace_mode_enum in the Drizzle schema.
@@ -216,81 +207,7 @@ export enum BuyBtnMode {
   CART = "cart",
   QUICK_BUY = "quick-buy",
 }
-export enum PromotionType {
-  PERCENTAGE = "percentage",
-  FIXED_AMOUNT = "fixed_amount",
-  BUY_X_GET_Y = "buy_x_get_y",
-  BOGO = "bogo",
-  FREE_SHIPPING = "free_shipping",
-  TIERED_DISCOUNT = "tiered_discount",
-  BUNDLE_DEAL = "bundle_deal",
-}
 
-export enum PromotionStatus {
-  DRAFT = "draft",
-  PENDING_REVIEW = "pending_review",
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-  PAUSED = "paused",
-  SCHEDULED = "scheduled",
-  REJECTED = "rejected",
-  EXPIRED = "expired",
-}
-
-export enum PromotionTargetType {
-  ALL_PRODUCTS = "all_products",
-  CATEGORY = "category",
-  PRODUCT = "product",
-  VENDOR = "vendor",
-  PRODUCT_VARIANT = "product_variant",
-}
-
-export enum PromotionRuleType {
-  MIN_CART_VALUE = "min_cart_value",
-  MIN_QTY = "min_qty",
-  CUSTOMER_SEGMENT = "customer_segment",
-  FIRST_ORDER_ONLY = "first_order_only",
-  PRODUCT_IN_CART = "product_in_cart",
-  NEW_CUSTOMER = "new_customer",
-  DATE_RANGE = "date_range",
-  MAX_USES_PER_USER = "max_uses_per_user",
-}
-
-export enum BannerPlacement {
-  HOMEPAGE_HERO = "homepage_hero",
-  HOMEPAGE_SECONDARY = "homepage_secondary",
-  CATEGORY_TOP = "category_top",
-  PRODUCT_PAGE = "product_page",
-  CART_SIDEBAR = "cart_sidebar",
-  CHECKOUT_TOP = "checkout_top",
-  MY_OFFERS_PAGE = "my_offers_page",
-}
-
-export enum PromoEventType {
-  VIEWED = "viewed",
-  CLICKED = "clicked",
-  APPLIED = "applied",
-  REDEEMED = "redeemed",
-  REMOVED = "removed",
-  DISMISSED = "dismissed",
-}
-
-export enum SegmentCriteriaOperator {
-  AND = "AND",
-  OR = "OR",
-}
-
-export enum ChangelogAction {
-  CREATED = "created",
-  UPDATED = "updated",
-  SUBMITTED = "submitted",
-  APPROVED = "approved",
-  REJECTED = "rejected",
-  PAUSED = "paused",
-  RESUMED = "resumed",
-  EXPIRED = "expired",
-  DELETED = "deleted",
-}
 export type PercentageConfig = {
   value: number; // e.g. 20 (= 20%)
   cap?: number; // max discount in ₹; undefined = no cap
@@ -1629,4 +1546,225 @@ export interface LocationFormField {
   checkboxLabel?: string; // for checkbox
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   className?: string;
+}
+export enum PolicyDurationUnit {
+  DAYS = "days",
+  MONTHS = "months",
+  YEARS = "years",
+  LIFETIME = "lifetime",
+}
+export enum PolicyType {
+  WARRANTY = "warranty",
+  GUARANTEE = "guarantee",
+  EXCHANGE_ONLY = "exchange_only",
+  NO_RETURN = "no_return",
+  EXTENDED_SUPPORT = "extended_support",
+  NONE = "none",
+}
+export enum ReturnStatus {
+  PENDING = "pending",
+  APPROVED = "approved",
+  REJECTED = "rejected",
+  IN_TRANSIT = "in_transit",
+  DELIVERED = "delivered",
+  QC_PASSED = "qc_passed",
+  QC_FAILED = "qc_failed",
+  COMPLETED = "completed",
+}
+export type KeyValuePair = {
+  key: string;
+  value: string | number | boolean | null;
+};
+
+export enum VendorDocumentType {
+  BusinessRegistration = "business_registration",
+  FinancialStatements = "financial_statements",
+  InsuranceCoverage = "insurance_coverage",
+  ComplianceCertifications = "compliance_certifications",
+  SecurityDocumentation = "security_documentation",
+  ContractAgreements = "contract_agreements",
+  VendorInformation = "vendor_information",
+  BusinessContinuityPlan = "business_continuity_plan",
+}
+
+export enum CancelledBy {
+  USER = "customer",
+  VENDOR = "vendor",
+  SYSTEM = "system",
+}
+export enum RefundStatus {
+  PENDING = "pending",
+  PROCESSED = "processed",
+  REJECTED = "rejected",
+}
+export enum PromotionType {
+  PERCENTAGE = "percentage",
+  FIXED_AMOUNT = "fixed_amount",
+  BUY_X_GET_Y = "buy_x_get_y",
+  BOGO = "bogo",
+  FREE_SHIPPING = "free_shipping",
+  TIERED_DISCOUNT = "tiered_discount",
+  BUNDLE_DEAL = "bundle_deal",
+}
+
+export enum PromotionStatus {
+  DRAFT = "draft",
+  PENDING_REVIEW = "pending_review",
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  PAUSED = "paused",
+  SCHEDULED = "scheduled",
+  REJECTED = "rejected",
+  EXPIRED = "expired",
+}
+
+export enum PromotionTargetType {
+  ALL_PRODUCTS = "all_products",
+  CATEGORY = "category",
+  PRODUCT = "product",
+  VENDOR = "vendor",
+  PRODUCT_VARIANT = "product_variant",
+}
+
+export enum PromotionRuleType {
+  MIN_CART_VALUE = "min_cart_value",
+  MIN_QTY = "min_qty",
+  CUSTOMER_SEGMENT = "customer_segment",
+  FIRST_ORDER_ONLY = "first_order_only",
+  PRODUCT_IN_CART = "product_in_cart",
+  NEW_CUSTOMER = "new_customer",
+  DATE_RANGE = "date_range",
+  MAX_USES_PER_USER = "max_uses_per_user",
+}
+
+export enum BannerPlacement {
+  HOMEPAGE_HERO = "homepage_hero",
+  HOMEPAGE_SECONDARY = "homepage_secondary",
+  CATEGORY_TOP = "category_top",
+  PRODUCT_PAGE = "product_page",
+  CART_SIDEBAR = "cart_sidebar",
+  CHECKOUT_TOP = "checkout_top",
+  MY_OFFERS_PAGE = "my_offers_page",
+}
+
+export enum PromoEventType {
+  VIEWED = "viewed",
+  CLICKED = "clicked",
+  APPLIED = "applied",
+  REDEEMED = "redeemed",
+  REMOVED = "removed",
+  DISMISSED = "dismissed",
+}
+
+export enum SegmentCriteriaOperator {
+  AND = "AND",
+  OR = "OR",
+}
+
+export enum ChangelogAction {
+  CREATED = "created",
+  UPDATED = "updated",
+  SUBMITTED = "submitted",
+  APPROVED = "approved",
+  REJECTED = "rejected",
+  PAUSED = "paused",
+  RESUMED = "resumed",
+  EXPIRED = "expired",
+  DELETED = "deleted",
+}
+
+export enum SubscriptionStatus {
+  TRIAL = "trial",
+  ACTIVE = "active",
+  EXPIRED = "expired",
+  CANCELLED = "cancelled",
+  GRACE_PERIOD = "grace_period",
+}
+
+// ────────────────────────────────────────────────────────────────
+// PROMOTION EVALUATION RESULT TYPE
+// Returned by PromotionService.evaluateCart() to the frontend
+// ────────────────────────────────────────────────────────────────
+
+export type DiscountLine = {
+  promotion_id: string;
+  promotion_name: string;
+  promotion_type: string;
+  coupon_code: string | null;
+  discount_amount: number;
+  applied_to: "cart" | "item" | "shipping";
+  item_discounts?: Array<{
+    order_item_id: string;
+    product_variant_id: string;
+    unit_discount: number;
+    discounted_qty: number;
+  }>;
+};
+
+export type CartEvaluationResult = {
+  subtotal_before_discount: number;
+  total_discount: number;
+  subtotal_after_discount: number;
+  shipping_discount: number;
+  final_total: number;
+  applied_promotions: Array<{
+    promotion_id: string;
+    name: string;
+    promotion_type: string;
+    coupon_code: string | null;
+  }>;
+  eligible_but_not_applied: Array<{
+    promotion_id: string;
+    name: string;
+    reason_not_applied: string;
+    // e.g. "Exclusive promotion — removes other discounts"
+    // e.g. "Add ₹200 more to qualify"
+    shortfall?: number;
+  }>;
+  discount_lines: DiscountLine[];
+};
+export enum Role {
+  CUSTOMER = "customer",
+  ADMIN = "admin",
+  USER = "user",
+  VENDOR = "vendor",
+}
+
+export interface VendorType {
+  user_role: Role;
+  store_name: string;
+  phone_number: string;
+  store_owner_first_name: string;
+  store_owner_last_name: string;
+  company_structure: string;
+  company_domain: string;
+  store_description?: string;
+  category: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  hash_password: string;
+  country_code: string;
+}
+
+export enum ShippingStrategy {
+  PRIORITY = "priority",
+  LOWEST_COST = "lowest_cost",
+  FASTEST = "fastest",
+  HYBRID = "hybrid",
+  NONE = "none",
+}
+export enum CredentialType {
+  RAZORPAY_KEY_ID = "razorpay_key_id",
+  RAZORPAY_KEY_SECRET = "razorpay_key_secret",
+  RAZORPAY_WEBHOOK_SECRET = "razorpay_webhook_secret",
+  STRIPE_PUBLISHABLE_KEY = "stripe_publishable_key",
+  STRIPE_SECRET_KEY = "stripe_secret_key",
+  STRIPE_WEBHOOK_SECRET = "stripe_webhook_secret",
+  CUSTOM_API_KEY = "custom_api_key",
+  CUSTOM_API_SECRET = "custom_api_secret",
+}
+export enum PaymentGatewayProvider {
+  RAZORPAY = "razorpay",
+  STRIPE = "stripe",
 }

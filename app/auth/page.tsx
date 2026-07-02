@@ -1,5 +1,6 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { ShieldCheck, Store, User, ShieldHalf } from 'lucide-react';
+import { AUTH_CENTER_TEXT } from '@/constants/authText';
 
 export default function AuthCenter() {
     return (
@@ -10,17 +11,12 @@ export default function AuthCenter() {
                 <div className="mb-8">
                     <span className="inline-flex items-center gap-1.5 text-theme-xxs font-semibold uppercase tracking-widest text-muted-foreground bg-muted border border-border rounded-full px-3 py-1 mb-4">
                         <ShieldHalf size={12} />
-                        Auth center
+                        {AUTH_CENTER_TEXT.BADGE}
                     </span>
                     <h1 className="text-theme-h4 font-semibold text-foreground mb-1.5">
-                        Welcome to Techsonance
+                        {AUTH_CENTER_TEXT.TITLE}
                     </h1>
-                    {/* <p className="text-theme-body-sm text-muted-foreground">
-                        Select your portal to sign in or get started.
-                    </p> */}
                  </div>
-
-        
 
                     {/* Vendor */}
                    <div className="group bg-card border border-border hover:border-border/80 rounded-2xl p-6 flex flex-col transition-colors duration-150">
@@ -28,32 +24,29 @@ export default function AuthCenter() {
                             <Store size={20} />
                         </div>
                         <p className="text-theme-xxs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
-                            Seller
+                            {AUTH_CENTER_TEXT.ROLE_SELLER}
                         </p>
                         <h2 className="text-theme-body font-semibold text-foreground mb-2">
-                            Vendor portal
+                            {AUTH_CENTER_TEXT.PORTAL_VENDOR}
                         </h2>
                         <p className="text-theme-body-sm text-muted-foreground leading-relaxed mb-5 flex-1">
-                            Manage your listings, inventory, orders, and track your store's performance.
+                            {AUTH_CENTER_TEXT.PORTAL_VENDOR_DESC}
                         </p>
                         <div className="flex flex-col gap-2">
                             <Link
                                 href="/auth/vendorLogin"
                                 className="w-full py-2 px-4 bg-blue-700 hover:bg-blue-800 text-blue-50 text-theme-body-sm font-medium text-center rounded-lg transition-colors"
                             >
-                                Sign in as vendor
+                                {AUTH_CENTER_TEXT.BTN_VENDOR_LOGIN}
                             </Link>
                             <Link
                                 href="/auth/vendorRegister"
                                 className="w-full py-2 px-4 border border-border hover:bg-muted text-muted-foreground hover:text-foreground text-theme-body-sm font-medium text-center rounded-lg transition-colors"
                             >
-                                Become a vendor →
+                                {AUTH_CENTER_TEXT.BTN_VENDOR_REGISTER}
                             </Link>
                         </div>
                     </div>
-
-
- 
             </div>
         </div>
     );

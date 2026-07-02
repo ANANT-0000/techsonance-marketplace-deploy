@@ -76,3 +76,27 @@ export const VENDOR_CREATED_TOAST_TEXT = {
     DESCRIPTION_SUFFIX: " has been registered. Credentials will be sent to their email after review.",
     SUCCESS_MSG: "Registration submitted successfully"
 };
+
+export const ADMIN_LOGIN_TEXT = {
+    STEP_VALIDATING: "Validating credentials",
+    STEP_PERMISSIONS: "Checking access permissions",
+    STEP_INITIALISING: "Initialising admin session",
+    TITLE: "System Administration",
+    SUBTITLE: "Restricted access — authorised personnel only",
+    ID_LABEL: "Admin ID / Email",
+    ID_PLACEHOLDER: "admin@company.com",
+    PASS_LABEL: "Secure Key / Password",
+    HIDE_PASS: "Hide password",
+    SHOW_PASS: "Show password",
+    BTN_AUTH: "→ Authenticate",
+    MONITOR_MSG: "All access attempts are logged and monitored",
+    LOADING_TITLE: "Verifying identity",
+    LOADING_SUBTITLE: "Please wait…",
+    SUCCESS_TITLE: "Access granted",
+    SUCCESS_SUBTITLE: "Identity verified. Taking you to the admin panel…",
+    REDIRECT_PREFIX: "Redirecting in ",
+    REDIRECT_SUFFIX: "s",
+    ERROR_TITLE: "Access denied",
+    ERROR_DEFAULT_MSG: "Invalid credentials or insufficient permissions.",
+    BTN_TRY_AGAIN: "Try again"
+};

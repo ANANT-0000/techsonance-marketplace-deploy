@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useReducer, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch } from "@/hooks/reduxHooks";
 import { jwtDecode } from "jwt-decode";
@@ -11,22 +11,57 @@ import {
   UserRole,
 } from "@/constants";
 import { AccountReactivation } from "@/components/customer/AccountReactivationModel";
+import { AUTH_SUCCESS_TEXT } from "@/constants/authText";
+
 export enum LoginStatusEnum {
   PROCESSING = "processing",
   SUCCESS = "success",
   ERROR = "error",
 }
 
+export enum ActionType {
+  SET_STATUS = 'SET_STATUS',
+  SET_ERROR_MESSAGE = 'SET_ERROR_MESSAGE',
+  SET_IS_REACTIVATION_OPEN = 'SET_IS_REACTIVATION_OPEN',
+  SET_USER_EMAIL = 'SET_USER_EMAIL',
+}
+
+type Action =
+  | { type: ActionType.SET_STATUS; payload: LoginStatusEnum }
+  | { type: ActionType.SET_ERROR_MESSAGE; payload: string }
+  | { type: ActionType.SET_IS_REACTIVATION_OPEN; payload: boolean }
+  | { type: ActionType.SET_USER_EMAIL; payload: string };
+
+interface State {
+  status: LoginStatusEnum;
+  errorMessage: string;
+  isReactivationOpen: boolean;
+  userEmail: string;
+}
+
+const initialState: State = {
+  status: LoginStatusEnum.PROCESSING,
+  errorMessage: "",
+  isReactivationOpen: false,
+  userEmail: "",
+};
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case ActionType.SET_STATUS: return { ...state, status: action.payload };
+    case ActionType.SET_ERROR_MESSAGE: return { ...state, errorMessage: action.payload };
+    case ActionType.SET_IS_REACTIVATION_OPEN: return { ...state, isReactivationOpen: action.payload };
+    case ActionType.SET_USER_EMAIL: return { ...state, userEmail: action.payload };
+    default: return state;
+  }
+}
+
 function AuthSuccessHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  const [status, setStatus] = useState<LoginStatusEnum>(
-    LoginStatusEnum.PROCESSING,
-  );
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const [isReactivationOpen, setIsReactivationOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState<string>("");
+  
+  const [state, dispatchState] = useReducer(reducer, initialState);
 
   useEffect(() => {
     const handleAuthSuccess = async () => {
@@ -36,22 +71,17 @@ function AuthSuccessHandler() {
         const message = searchParams.get("message");
         const status = searchParams.get("status");
         const email = searchParams.get("email");
-        setUserEmail(email ? email : "");
+        
+        dispatchState({ type: ActionType.SET_USER_EMAIL, payload: email ? email : "" });
+        
         if (!accessToken) {
           if (status == "423") {
-            setIsReactivationOpen(true);
-            setErrorMessage(
-              message ? message : "Authentication token not found",
-            );
-            setUserEmail(email ? email : "");
+            dispatchState({ type: ActionType.SET_IS_REACTIVATION_OPEN, payload: true });
+            dispatchState({ type: ActionType.SET_ERROR_MESSAGE, payload: message ? message : AUTH_SUCCESS_TEXT.ERR_NO_TOKEN });
             return;
           }
-          setStatus(
-            status
-              ? LoginStatusEnum[status as keyof typeof LoginStatusEnum]
-              : LoginStatusEnum.ERROR,
-          );
-          setErrorMessage(message ? message : "Authentication token not found");
+          dispatchState({ type: ActionType.SET_STATUS, payload: status ? LoginStatusEnum[status as keyof typeof LoginStatusEnum] : LoginStatusEnum.ERROR });
+          dispatchState({ type: ActionType.SET_ERROR_MESSAGE, payload: message ? message : AUTH_SUCCESS_TEXT.ERR_NO_TOKEN });
           setTimeout(() => router.push("/auth/customerLogin"), 2000);
           return;
         }
@@ -86,7 +116,7 @@ function AuthSuccessHandler() {
             }),
           );
 
-          setStatus(LoginStatusEnum.SUCCESS);
+          dispatchState({ type: ActionType.SET_STATUS, payload: LoginStatusEnum.SUCCESS });
 
           setTimeout(() => {
             const oauthRedirect = sessionStorage.getItem("oauth_redirect");
@@ -98,29 +128,29 @@ function AuthSuccessHandler() {
             }
           }, 1000);
         } catch (decodeError) {
-          setStatus(LoginStatusEnum.ERROR);
-          setErrorMessage("Invalid authentication token");
+          dispatchState({ type: ActionType.SET_STATUS, payload: LoginStatusEnum.ERROR });
+          dispatchState({ type: ActionType.SET_ERROR_MESSAGE, payload: AUTH_SUCCESS_TEXT.ERR_INVALID_TOKEN });
           setTimeout(() => router.push("/auth/customerLogin"), 2000);
         }
       } catch (error) {
-        setStatus(LoginStatusEnum.ERROR);
-        setErrorMessage("Authentication failed. Please try again.");
+        dispatchState({ type: ActionType.SET_STATUS, payload: LoginStatusEnum.ERROR });
+        dispatchState({ type: ActionType.SET_ERROR_MESSAGE, payload: AUTH_SUCCESS_TEXT.ERR_AUTH_FAILED });
         setTimeout(() => router.push("/auth/customerLogin"), 2000);
       }
     };
 
     handleAuthSuccess();
   }, [searchParams, router, dispatch]);
+
   const handleReactivationSuccess = () => {
-    setIsReactivationOpen(false);
-    // The account is now active! Log them in and redirect to dashboard.
+    dispatchState({ type: ActionType.SET_IS_REACTIVATION_OPEN, payload: false });
     router.push("/auth/customerLogin");
-    // alert("Redirecting to dashboard...");
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center ">
       <div className="bg-white p-8 rounded-2xl shadow-2xl  w-full mx-4">
-        {status === LoginStatusEnum.PROCESSING && (
+        {state.status === LoginStatusEnum.PROCESSING && (
           <div className="text-center animate-in fade-in duration-300">
             <div className="mb-6">
               <svg
@@ -145,15 +175,15 @@ function AuthSuccessHandler() {
               </svg>
             </div>
             <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">
-              Completing Sign In...
+              {AUTH_SUCCESS_TEXT.TITLE_PROCESSING}
             </h2>
             <p className="text-slate-600">
-              Please wait while we set up your account
+              {AUTH_SUCCESS_TEXT.DESC_PROCESSING}
             </p>
           </div>
         )}
 
-        {status === LoginStatusEnum.SUCCESS && (
+        {state.status === LoginStatusEnum.SUCCESS && (
           <div className="text-center animate-in fade-in zoom-in duration-300">
             <div className="mb-6">
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
@@ -172,14 +202,14 @@ function AuthSuccessHandler() {
                 </svg>
               </div>
             </div>
-            <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">Success!</h2>
+            <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">{AUTH_SUCCESS_TEXT.TITLE_SUCCESS}</h2>
             <p className="text-slate-600">
-              You've been signed in successfully. Redirecting...
+              {AUTH_SUCCESS_TEXT.DESC_SUCCESS}
             </p>
           </div>
         )}
 
-        {status === LoginStatusEnum.ERROR && (
+        {state.status === LoginStatusEnum.ERROR && (
           <div className="text-center animate-in fade-in zoom-in duration-300">
             <div className="mb-6">
               <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
@@ -199,22 +229,22 @@ function AuthSuccessHandler() {
               </div>
             </div>
             <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">
-              Authentication Failed
+              {AUTH_SUCCESS_TEXT.TITLE_ERROR}
             </h2>
             <p className="text-slate-600 mb-4">
-              {errorMessage || "An error occurred during sign in"}
+              {state.errorMessage || AUTH_SUCCESS_TEXT.DESC_ERROR_FALLBACK}
             </p>
             <p className="text-theme-body-sm text-slate-500">
-              Redirecting to login page...
+              {AUTH_SUCCESS_TEXT.DESC_REDIRECTING}
             </p>
           </div>
         )}
       </div>
       <AccountReactivation
-        isOpen={isReactivationOpen}
-        onClose={() => setIsReactivationOpen(false)}
+        isOpen={state.isReactivationOpen}
+        onClose={() => dispatchState({ type: ActionType.SET_IS_REACTIVATION_OPEN, payload: false })}
         onSuccess={handleReactivationSuccess}
-        emailMasked={userEmail}
+        emailMasked={state.userEmail}
       />
     </div>
   );

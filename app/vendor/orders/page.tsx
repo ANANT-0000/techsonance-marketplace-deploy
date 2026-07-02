@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { Printer, Package } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
 import { Pagination } from "@/components/common/Pagination";
 import { TableRowSkeleton } from "@/components/common/skeletons";
 import {
@@ -160,19 +159,80 @@ const getPaymentBadge = (method: string, status: string) => {
   );
 };
 
+export enum ActionType {
+  SET_LOADING = 'SET_LOADING',
+  SET_ORDER_STATUS = 'SET_ORDER_STATUS',
+  SET_SORT_BY = 'SET_SORT_BY',
+  SET_ORDERS = 'SET_ORDERS',
+  SET_PAGINATION = 'SET_PAGINATION',
+  SET_CURRENT_PAGE = 'SET_CURRENT_PAGE',
+  TOGGLE_ORDER_SELECTION = 'TOGGLE_ORDER_SELECTION',
+  SET_ALL_ORDERS_SELECTION = 'SET_ALL_ORDERS_SELECTION',
+  SET_IS_DOWNLOADING = 'SET_IS_DOWNLOADING',
+}
+
+interface State {
+  loading: boolean;
+  orderStatus: OrderStatusType | "";
+  sortBy: string;
+  orders: OrderType[];
+  selectedOrders: string[];
+  totalPages: number;
+  itemsPerPage: number;
+  currentPage: number;
+  isDownloading: boolean;
+}
+
+const initialState: State = {
+  loading: false,
+  orderStatus: "",
+  sortBy: "desc",
+  orders: [],
+  selectedOrders: [],
+  totalPages: 1,
+  itemsPerPage: 10,
+  currentPage: 1,
+  isDownloading: false,
+};
+
+type Action =
+  | { type: ActionType.SET_LOADING; payload: boolean }
+  | { type: ActionType.SET_ORDER_STATUS; payload: OrderStatusType | "" }
+  | { type: ActionType.SET_SORT_BY; payload: string }
+  | { type: ActionType.SET_ORDERS; payload: OrderType[] }
+  | { type: ActionType.SET_PAGINATION; payload: { totalPages: number } }
+  | { type: ActionType.SET_CURRENT_PAGE; payload: number }
+  | { type: ActionType.TOGGLE_ORDER_SELECTION; payload: string }
+  | { type: ActionType.SET_ALL_ORDERS_SELECTION; payload: string[] }
+  | { type: ActionType.SET_IS_DOWNLOADING; payload: boolean };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case ActionType.SET_LOADING: return { ...state, loading: action.payload };
+    case ActionType.SET_ORDER_STATUS: return { ...state, orderStatus: action.payload, currentPage: 1 };
+    case ActionType.SET_SORT_BY: return { ...state, sortBy: action.payload, currentPage: 1 };
+    case ActionType.SET_ORDERS: return { ...state, orders: action.payload };
+    case ActionType.SET_PAGINATION: return { ...state, totalPages: action.payload.totalPages };
+    case ActionType.SET_CURRENT_PAGE: return { ...state, currentPage: action.payload };
+    case ActionType.TOGGLE_ORDER_SELECTION: {
+      const isSelected = state.selectedOrders.includes(action.payload);
+      return {
+        ...state,
+        selectedOrders: isSelected
+          ? state.selectedOrders.filter(id => id !== action.payload)
+          : [...state.selectedOrders, action.payload]
+      };
+    }
+    case ActionType.SET_ALL_ORDERS_SELECTION: return { ...state, selectedOrders: action.payload };
+    case ActionType.SET_IS_DOWNLOADING: return { ...state, isDownloading: action.payload };
+    default: return state;
+  }
+}
+
 export default function OrdersPage() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [orderStatus, setOrderStatus] = useState<OrderStatusType | "">("");
-  const [sortBy, setSortBy] = useState<string>("desc");
-  const [orders, setOrders] = useState<OrderType[]>([]);
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [itemsPerPage, setItemPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const offset = (currentPage - 1) * itemsPerPage;
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [state, dispatch] = useReducer(reducer, initialState);
+  
+  const offset = (state.currentPage - 1) * state.itemsPerPage;
 
   const orderTableHeader = [
     UiText.ORDERS.TABLE_HEADERS.ORDER_ID,
@@ -186,60 +246,47 @@ export default function OrdersPage() {
     UiText.ORDERS.TABLE_HEADERS.ACTIONS,
   ];
 
-  const handleDateChange = (selectedDate: Date | undefined) => {
-    setDate(selectedDate);
-    setIsOpen(false);
-  };
   const token = authToken();
+  
   useEffect(() => {
     if (!token) {
       redirect("/auth/vendorLogin");
     }
     const getOrderList = async () => {
-      setLoading(true);
+      dispatch({ type: ActionType.SET_LOADING, payload: true });
       await fetchVendorOrderList(
         offset,
-        itemsPerPage,
+        state.itemsPerPage,
         token,
-        orderStatus,
-        sortBy,
+        state.orderStatus,
+        state.sortBy,
       )
         .then((res) => {
-          setOrders(res.data.orders || []);
-          setTotalPages(res.data.totalCount / itemsPerPage || 1);
+          dispatch({ type: ActionType.SET_ORDERS, payload: res.data.orders || [] });
+          dispatch({ type: ActionType.SET_PAGINATION, payload: { totalPages: Math.ceil(res.data.totalCount / state.itemsPerPage) || 1 } });
         })
         .catch((err) => {})
         .finally(() => {
-          setLoading(false);
+          dispatch({ type: ActionType.SET_LOADING, payload: false });
         });
     };
     getOrderList();
-  }, [orderStatus, sortBy, offset]);
-
-  const toggleOrderSelection = (orderId: string) => {
-    setSelectedOrders((prev) =>
-      prev.includes(orderId)
-        ? prev.filter((id) => id !== orderId)
-        : [...prev, orderId],
-    );
-  };
+  }, [state.orderStatus, state.sortBy, offset]);
 
   const toggleAllOrders = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked && orders) {
-      setSelectedOrders(orders.map((o) => o.id));
+    if (e.target.checked && state.orders) {
+      dispatch({ type: ActionType.SET_ALL_ORDERS_SELECTION, payload: state.orders.map((o) => o.id) });
     } else {
-      setSelectedOrders([]);
+      dispatch({ type: ActionType.SET_ALL_ORDERS_SELECTION, payload: [] });
     }
   };
 
-  // --- THE DOWNLOAD LOOP ---
   const handleBulkDownload = async () => {
-    if (selectedOrders.length === 0) return;
-    setIsDownloading(true);
+    if (state.selectedOrders.length === 0) return;
+    dispatch({ type: ActionType.SET_IS_DOWNLOADING, payload: true });
 
     try {
-      // 1. Get the Cloudinary URLs from Backend
-      const res = await fetchBulkInvoiceUrls(selectedOrders, token as string);
+      const res = await fetchBulkInvoiceUrls(state.selectedOrders, token as string);
       const invoices = res.data;
 
       if (!invoices || invoices.length === 0) {
@@ -247,10 +294,8 @@ export default function OrdersPage() {
         return;
       }
 
-      // 2. Loop through the URLs and force download
       for (const invoice of invoices) {
         if (invoice.invoice_url) {
-          // Fetching the blob forces a direct download rather than opening in a new tab
           const response = await fetch(invoice.invoice_url);
           const blob = await response.blob();
           const url = window.URL.createObjectURL(blob);
@@ -262,18 +307,18 @@ export default function OrdersPage() {
           a.click();
           a.remove();
 
-          // Small delay to prevent browser from blocking multiple rapid downloads
           await new Promise((resolve) => setTimeout(resolve, 300));
         }
       }
 
-      setSelectedOrders([]);
+      dispatch({ type: ActionType.SET_ALL_ORDERS_SELECTION, payload: [] });
     } catch {
       alert(UiText.ORDERS.FAILED_DOWNLOAD_INVOICES);
     } finally {
-      setIsDownloading(false);
+      dispatch({ type: ActionType.SET_IS_DOWNLOADING, payload: false });
     }
   };
+
   return (
     <main className="w-full px-1 min-h-screen max-h-screen overflow-y-scroll">
       {/* Header */}
@@ -283,24 +328,24 @@ export default function OrdersPage() {
           <h1 className="text-theme-h4 font-bold text-gray-800">
             {UiText.ORDERS.TITLE}
           </h1>
-          {orders && orders.length > 0 && (
+          {state.orders && state.orders.length > 0 && (
             <span className="ml-2 bg-blue-100 text-blue-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
-              {orders.length}
+              {state.orders.length}
             </span>
           )}
         </div>
         <div className="flex gap-3">
           {/* SHOW DOWNLOAD BUTTON ONLY IF ORDERS ARE SELECTED */}
-          {selectedOrders.length > 0 && (
+          {state.selectedOrders.length > 0 && (
             <button
               onClick={handleBulkDownload}
-              disabled={isDownloading}
+              disabled={state.isDownloading}
               className="flex items-center gap-2 font-semibold text-theme-body-sm bg-purple-500 hover:bg-purple-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm disabled:opacity-50"
             >
               <Printer size={16} />
-              {isDownloading
+              {state.isDownloading
                 ? UiText.ORDERS.DOWNLOADING
-                : `${UiText.ORDERS.PRINT_INVOICES} (${selectedOrders.length})`}
+                : `${UiText.ORDERS.PRINT_INVOICES} (${state.selectedOrders.length})`}
             </button>
           )}
         </div>
@@ -314,8 +359,8 @@ export default function OrdersPage() {
             name=""
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
             id=""
-            onChange={(e) => setOrderStatus(e.target.value as OrderStatusType)}
-            value={orderStatus}
+            onChange={(e) => dispatch({ type: ActionType.SET_ORDER_STATUS, payload: e.target.value as OrderStatusType })}
+            value={state.orderStatus}
           >
             <option value="">{UiText.ORDERS.ALL}</option>
             <option value={OrderStatus.PENDING}>{UiText.ORDERS.PENDING}</option>
@@ -333,8 +378,8 @@ export default function OrdersPage() {
 
           <select
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            value={state.sortBy}
+            onChange={(e) => dispatch({ type: ActionType.SET_SORT_BY, payload: e.target.value })}
             name="sort_by"
           >
             <option value="desc">{UiText.ORDERS.NEWEST_FIRST}</option>
@@ -352,8 +397,8 @@ export default function OrdersPage() {
                   type="checkbox"
                   className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
                   checked={
-                    orders?.length > 0 &&
-                    selectedOrders.length === orders.length
+                    state.orders?.length > 0 &&
+                    state.selectedOrders.length === state.orders.length
                   }
                   onChange={toggleAllOrders}
                 />
@@ -361,7 +406,7 @@ export default function OrdersPage() {
               {orderTableHeader.map((header) => (
                 <th
                   key={header}
-                  className="p-4 text-theme-caption Rent-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
                 >
                   {header}
                 </th>
@@ -369,9 +414,9 @@ export default function OrdersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading ? (
+            {state.loading ? (
               <TableRowSkeleton columns={9} rows={5} />
-            ) : orders && orders?.length === 0 ? (
+            ) : state.orders && state.orders?.length === 0 ? (
               <tr>
                 <td
                   colSpan={10}
@@ -382,8 +427,8 @@ export default function OrdersPage() {
                 </td>
               </tr>
             ) : (
-              orders &&
-              orders?.map((item) => (
+              state.orders &&
+              state.orders?.map((item) => (
                 <tr
                   key={item.id}
                   className="hover:bg-gray-50 transition-colors group"
@@ -392,8 +437,8 @@ export default function OrdersPage() {
                     <input
                       type="checkbox"
                       className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
-                      checked={selectedOrders.includes(item.id)}
-                      onChange={() => toggleOrderSelection(item.id)}
+                      checked={state.selectedOrders.includes(item.id)}
+                      onChange={() => dispatch({ type: ActionType.TOGGLE_ORDER_SELECTION, payload: item.id })}
                     />
                   </td>
 
@@ -477,9 +522,9 @@ export default function OrdersPage() {
       </div>
       <span className="flex justify-end mt-4">
         <Pagination
-          setCount={setCurrentPage}
-          count={currentPage}
-          totalPages={totalPages}
+          setCount={(val) => dispatch({ type: ActionType.SET_CURRENT_PAGE, payload: typeof val === 'function' ? val(state.currentPage) : val })}
+          count={state.currentPage}
+          totalPages={state.totalPages}
           style="relative right-0 w-54"
         />
       </span>

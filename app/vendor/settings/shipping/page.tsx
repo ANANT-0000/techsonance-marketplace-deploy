@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import RateCalculator from "../../../../components/vendor/RateCalculator";
+import RoutingStrategy from "../../../../components/vendor/RoutingStrategy";
+import { useEffect, useReducer, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import {
   Truck,
@@ -16,6 +18,51 @@ import {
   updateShippingSettings,
 } from "@/utils/vendorApiClient";
 import { LogisticsMode, ShippingChargeStrategy } from "@/utils/Types";
+import { SHIPPING_TEXT } from "@/constants/ui-text";
+
+export enum ActionType {
+  SET_SAVED = "SET_SAVED",
+  SET_ERROR_MSG = "SET_ERROR_MSG",
+  SET_IS_EDITING_FLAT_RATE = "SET_IS_EDITING_FLAT_RATE",
+  RESET_STATUS = "RESET_STATUS",
+}
+
+export type Action =
+  | { type: ActionType.SET_SAVED; payload: boolean }
+  | { type: ActionType.SET_ERROR_MSG; payload: string }
+  | { type: ActionType.SET_IS_EDITING_FLAT_RATE; payload: boolean }
+  | { type: ActionType.RESET_STATUS };
+
+// ==========================================
+// 2. STATE MANAGEMENT (useReducer)
+// ==========================================
+
+interface State {
+  saved: boolean;
+  errorMsg: string;
+  isEditingFlatRate: boolean;
+}
+
+const initialState: State = {
+  saved: false,
+  errorMsg: "",
+  isEditingFlatRate: false,
+};
+
+function shippingReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case ActionType.SET_SAVED:
+      return { ...state, saved: action.payload };
+    case ActionType.SET_ERROR_MSG:
+      return { ...state, errorMsg: action.payload };
+    case ActionType.SET_IS_EDITING_FLAT_RATE:
+      return { ...state, isEditingFlatRate: action.payload };
+    case ActionType.RESET_STATUS:
+      return { ...state, saved: false, errorMsg: "" };
+    default:
+      return state;
+  }
+}
 
 interface ShippingFormValues {
   logistics_mode: LogisticsMode;
@@ -27,11 +74,13 @@ interface ShippingFormValues {
   shipping_charge_strategy: ShippingChargeStrategy;
 }
 
+// ==========================================
+// 3. COMPONENTS
+// ==========================================
+
 export default function ShippingSettingsPage() {
   const [isPending, startTransition] = useTransition();
-  const [saved, setSaved] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [isEditingFlatRate, setIsEditingFlatRate] = useState(false);
+  const [state, dispatchState] = useReducer(shippingReducer, initialState);
   const token = authToken() || "";
 
   const { register, handleSubmit, setValue, watch, reset } =
@@ -41,8 +90,9 @@ export default function ShippingSettingsPage() {
         logistics_api_key: "",
         logistics_api_secret: "",
         is_free_shipping_enabled: false,
-        free_delivery_threshold: "0.00",
-        standard_delivery_charge: "50.00",
+        free_delivery_threshold: SHIPPING_TEXT.DEFAULT_FREE_DELIVERY_THRESHOLD,
+        standard_delivery_charge:
+          SHIPPING_TEXT.DEFAULT_STANDARD_DELIVERY_CHARGE,
         shipping_charge_strategy: ShippingChargeStrategy.STANDARD_FLAT_RATE,
       },
     });
@@ -58,9 +108,11 @@ export default function ShippingSettingsPage() {
       if (res?.data || res) {
         const d = res.data || res;
         reset({
-          logistics_mode: d.logistics_mode || "PLATFORM_PROXY",
-          logistics_api_key: d.has_api_key ? "********" : "",
-          logistics_api_secret: d.has_api_secret ? "********" : "",
+          logistics_mode: d.logistics_mode || LogisticsMode.PLATFORM_PROXY,
+          logistics_api_key: d.has_api_key ? SHIPPING_TEXT.API_SECRET_MASK : "",
+          logistics_api_secret: d.has_api_secret
+            ? SHIPPING_TEXT.API_SECRET_MASK
+            : "",
           is_free_shipping_enabled: d.is_free_shipping_enabled ?? false,
           free_delivery_threshold: Number(
             d.free_delivery_threshold || 0,
@@ -69,7 +121,8 @@ export default function ShippingSettingsPage() {
             d.standard_delivery_charge || 50,
           ).toFixed(2),
           shipping_charge_strategy:
-            d.shipping_charge_strategy || ShippingChargeStrategy.STANDARD_FLAT_RATE,
+            d.shipping_charge_strategy ||
+            ShippingChargeStrategy.STANDARD_FLAT_RATE,
         });
       }
     };
@@ -77,8 +130,7 @@ export default function ShippingSettingsPage() {
   }, [token, reset]);
 
   const onSubmit = (data: ShippingFormValues) => {
-    setErrorMsg("");
-    setSaved(false);
+    dispatchState({ type: ActionType.RESET_STATUS });
     startTransition(async () => {
       const payload = {
         logistics_mode: data.logistics_mode,
@@ -92,11 +144,20 @@ export default function ShippingSettingsPage() {
 
       const res = await updateShippingSettings(payload, token);
       if (res?.success || res?.status === 200 || res?.status === 201) {
-        setSaved(true);
-        setIsEditingFlatRate(false);
-        setTimeout(() => setSaved(false), 3000);
+        dispatchState({ type: ActionType.SET_SAVED, payload: true });
+        dispatchState({
+          type: ActionType.SET_IS_EDITING_FLAT_RATE,
+          payload: false,
+        });
+        setTimeout(
+          () => dispatchState({ type: ActionType.SET_SAVED, payload: false }),
+          SHIPPING_TEXT.SAVE_TIMEOUT_MS,
+        );
       } else {
-        setErrorMsg(res?.message || "Failed to update shipping settings");
+        dispatchState({
+          type: ActionType.SET_ERROR_MSG,
+          payload: res?.message || SHIPPING_TEXT.ERROR_MSG,
+        });
       }
     });
   };
@@ -107,11 +168,10 @@ export default function ShippingSettingsPage() {
       <div className="mb-8">
         <h1 className="text-theme-h4 font-bold text-gray-900 tracking-tight flex items-center gap-3">
           <Truck className="w-7 h-7 text-blue-600" />
-          Shipping & Logistics Settings
+          {SHIPPING_TEXT.PAGE_TITLE}
         </h1>
         <p className="text-theme-body-sm text-gray-500 mt-1">
-          Configure how shipping costs are calculated on your storefront and
-          manage fulfillment api credentials.
+          {SHIPPING_TEXT.PAGE_DESC}
         </p>
       </div>
 
@@ -120,83 +180,78 @@ export default function ShippingSettingsPage() {
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
           <h3 className="text-theme-body font-bold text-gray-800 mb-2 flex items-center gap-2">
             <span className="w-1.5 h-4 bg-blue-600 rounded-full" />
-            Fulfillment Logistics Mode
+            {SHIPPING_TEXT.LOGISTICS_MODE_TITLE}
           </h3>
           <p className="text-theme-caption text-gray-400 mb-6">
-            Determine whether orders are fulfilled under the central platform
-            account (Platform Proxy Mode) or using your own Shiprocket
-            credentials.
+            {SHIPPING_TEXT.LOGISTICS_MODE_DESC}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Platform Proxy Mode Card Option */}
             <label
               className={`flex flex-col p-5 border rounded-xl cursor-pointer transition-all ${
-                logisticsMode === "PLATFORM_PROXY"
+                logisticsMode === LogisticsMode.PLATFORM_PROXY
                   ? "border-blue-500 bg-blue-50/10 shadow-sm"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <div className="flex items-center justify-between">
                 <span className="text-theme-body-sm font-bold text-gray-800">
-                  Platform Proxy Mode
+                  {SHIPPING_TEXT.PLATFORM_PROXY_LABEL}
                 </span>
                 <input
                   type="radio"
-                  value="PLATFORM_PROXY"
+                  value={LogisticsMode.PLATFORM_PROXY}
                   {...register("logistics_mode")}
                   className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                 />
               </div>
               <p className="text-theme-caption text-gray-500 mt-2">
-                Fulfillment goes through the Platform's Master Shiprocket
-                wallet. Shipping costs are recovered via gateway splits.
+                {SHIPPING_TEXT.PLATFORM_PROXY_DESC}
               </p>
             </label>
 
             {/* Standalone Mode Card Option */}
             <label
               className={`flex flex-col p-5 border rounded-xl cursor-pointer transition-all ${
-                logisticsMode === "STANDALONE"
+                logisticsMode === LogisticsMode.STANDALONE
                   ? "border-blue-500 bg-blue-50/10 shadow-sm"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <div className="flex items-center justify-between">
                 <span className="text-theme-body-sm font-bold text-gray-800">
-                  Standalone Mode (BYO Credentials)
+                  {SHIPPING_TEXT.STANDALONE_LABEL}
                 </span>
                 <input
                   type="radio"
-                  value="STANDALONE"
+                  value={LogisticsMode.STANDALONE}
                   {...register("logistics_mode")}
                   className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                 />
               </div>
               <p className="text-theme-caption text-gray-500 mt-2">
-                Fulfilment runs directly on your own Shiprocket account. Enter
-                your verified email and password below.
+                {SHIPPING_TEXT.STANDALONE_DESC}
               </p>
             </label>
           </div>
         </div>
 
         {/* Private API Credentials (STANDALONE ONLY) */}
-        {logisticsMode === "STANDALONE" && (
+        {logisticsMode === LogisticsMode.STANDALONE && (
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4 animate-fadeIn">
             <h3 className="text-theme-body font-bold text-gray-800 flex items-center gap-2">
               <span className="w-1.5 h-4 bg-blue-600 rounded-full" />
-              Shiprocket Account Credentials
+              {SHIPPING_TEXT.CREDS_TITLE}
             </h3>
             <p className="text-theme-caption text-gray-400 mb-4">
-              Provide your API logins. These will be encrypted securely using
-              AES-256-GCM and will never be exposed.
+              {SHIPPING_TEXT.CREDS_DESC}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-theme-body-sm font-bold text-gray-700 mb-1">
-                  Shiprocket API Email
+                  {SHIPPING_TEXT.API_EMAIL_LABEL}
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300">
@@ -205,7 +260,7 @@ export default function ShippingSettingsPage() {
                   <input
                     type="text"
                     {...register("logistics_api_key")}
-                    placeholder="Enter Shiprocket Account Email"
+                    placeholder={SHIPPING_TEXT.API_EMAIL_PLACEHOLDER}
                     className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-theme-body-sm focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
@@ -213,7 +268,7 @@ export default function ShippingSettingsPage() {
 
               <div>
                 <label className="block text-theme-body-sm font-bold text-gray-700 mb-1">
-                  Shiprocket API Password
+                  {SHIPPING_TEXT.API_PASSWORD_LABEL}
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300">
@@ -222,7 +277,7 @@ export default function ShippingSettingsPage() {
                   <input
                     type="password"
                     {...register("logistics_api_secret")}
-                    placeholder="Enter Shiprocket Account Password"
+                    placeholder={SHIPPING_TEXT.API_PASSWORD_PLACEHOLDER}
                     className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-theme-body-sm focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
@@ -231,17 +286,14 @@ export default function ShippingSettingsPage() {
           </div>
         )}
 
-
-
         {/* Delivery Charging Rules & Thresholds */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-5">
           <h3 className="text-theme-body font-bold text-gray-800 flex items-center gap-2">
             <span className="w-1.5 h-4 bg-blue-600 rounded-full" />
-            Storefront Delivery Cost Calculations
+            {SHIPPING_TEXT.COST_CALC_TITLE}
           </h3>
           <p className="text-theme-caption text-gray-400">
-            Configure how standard courier shipping is charged to customers on
-            your storefront.
+            {SHIPPING_TEXT.COST_CALC_DESC}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -255,7 +307,7 @@ export default function ShippingSettingsPage() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-gray-800">
-                  Standard Flat Rate
+                  {SHIPPING_TEXT.FLAT_RATE_LABEL}
                 </span>
                 <input
                   type="radio"
@@ -265,21 +317,22 @@ export default function ShippingSettingsPage() {
                 />
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                Charge a fixed shipping amount for all orders below the threshold.
+                {SHIPPING_TEXT.FLAT_RATE_DESC}
               </p>
             </label>
 
             {/* Dynamic Customer Rate */}
             <label
               className={`flex flex-col p-5 border rounded-xl cursor-pointer transition-all ${
-                shippingStrategy === ShippingChargeStrategy.DYNAMIC_CUSTOMER_RATE
+                shippingStrategy ===
+                ShippingChargeStrategy.DYNAMIC_CUSTOMER_RATE
                   ? "border-blue-500 bg-blue-50/10 shadow-sm"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-gray-800">
-                  Dynamic Customer Rate
+                  {SHIPPING_TEXT.DYNAMIC_RATE_LABEL}
                 </span>
                 <input
                   type="radio"
@@ -289,7 +342,7 @@ export default function ShippingSettingsPage() {
                 />
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                Automatically calculate and charge live shipping rates using Shiprocket.
+                {SHIPPING_TEXT.DYNAMIC_RATE_DESC}
               </p>
             </label>
           </div>
@@ -299,29 +352,37 @@ export default function ShippingSettingsPage() {
             {shippingStrategy === ShippingChargeStrategy.STANDARD_FLAT_RATE && (
               <div>
                 <label className="block text-theme-body-sm font-bold text-gray-700 mb-1">
-                  Standard Shipping Flat Rate (₹)
+                  {SHIPPING_TEXT.STD_SHIPPING_LABEL}
                 </label>
                 <div className="relative">
-                  {watch("standard_delivery_charge") && !isEditingFlatRate ? (
+                  {watch("standard_delivery_charge") &&
+                  !state.isEditingFlatRate ? (
                     <div className="flex items-center justify-between w-full pl-4 pr-3 py-2 border border-emerald-200 bg-emerald-50 rounded-xl text-theme-body-sm">
                       <div className="flex items-center gap-2 text-emerald-700 font-medium">
                         <CheckCircle2 className="w-4 h-4" />
                         <span>
-                          ₹{watch("standard_delivery_charge")} Saved
+                          {SHIPPING_TEXT.CURRENCY_SYMBOL}
+                          {watch("standard_delivery_charge")}{" "}
+                          {SHIPPING_TEXT.SAVED_TEXT}
                         </span>
                       </div>
                       <button
                         type="button"
-                        onClick={() => setIsEditingFlatRate(true)}
+                        onClick={() =>
+                          dispatchState({
+                            type: ActionType.SET_IS_EDITING_FLAT_RATE,
+                            payload: true,
+                          })
+                        }
                         className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline focus:outline-none"
                       >
-                        Edit
+                        {SHIPPING_TEXT.EDIT_TEXT}
                       </button>
                     </div>
                   ) : (
                     <>
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-theme-body-sm font-bold">
-                        ₹
+                        {SHIPPING_TEXT.CURRENCY_SYMBOL}
                       </span>
                       <input
                         type="number"
@@ -334,8 +395,7 @@ export default function ShippingSettingsPage() {
                   )}
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1">
-                  Flat shipping fee charged if order amount does not reach the
-                  free delivery threshold.
+                  {SHIPPING_TEXT.FLAT_FEE_HINT}
                 </p>
               </div>
             )}
@@ -345,10 +405,10 @@ export default function ShippingSettingsPage() {
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
                 <div>
                   <span className="text-theme-body-sm font-bold text-gray-800 block">
-                    Enable Free Shipping Rule
+                    {SHIPPING_TEXT.FREE_SHIPPING_LABEL}
                   </span>
                   <span className="text-[11px] text-gray-400">
-                    Unlock free delivery above a cart value threshold.
+                    {SHIPPING_TEXT.FREE_SHIPPING_HINT}
                   </span>
                 </div>
                 <button
@@ -372,13 +432,13 @@ export default function ShippingSettingsPage() {
                 <label
                   className={`block text-theme-body-sm font-bold transition-colors duration-200 ${isFreeShippingEnabled ? "text-gray-700" : "text-gray-400"}`}
                 >
-                  Free Shipping Order Threshold Value (₹)
+                  {SHIPPING_TEXT.FREE_SHIPPING_THRESHOLD_LABEL}
                 </label>
                 <div className="relative">
                   <span
                     className={`absolute left-3 top-1/2 -translate-y-1/2 text-theme-body-sm font-bold transition-colors duration-200 ${isFreeShippingEnabled ? "text-gray-400" : "text-gray-300"}`}
                   >
-                    ₹
+                    {SHIPPING_TEXT.CURRENCY_SYMBOL}
                   </span>
                   <input
                     type="number"
@@ -395,8 +455,8 @@ export default function ShippingSettingsPage() {
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1 transition-colors duration-200">
                   {isFreeShippingEnabled
-                    ? "Orders at or above this cart total amount will enjoy free delivery."
-                    : "Enable the Free Shipping Rule above to configure the threshold value."}
+                    ? SHIPPING_TEXT.FREE_SHIPPING_ACTIVE_HINT
+                    : SHIPPING_TEXT.FREE_SHIPPING_INACTIVE_HINT}
                 </p>
               </div>
             </div>
@@ -406,15 +466,15 @@ export default function ShippingSettingsPage() {
         {/* Action Button & Status */}
         <div className="flex flex-col sm:flex-row items-center gap-4 justify-between pt-4 border-t border-gray-100">
           <div>
-            {saved && (
+            {state.saved && (
               <span className="text-theme-body-sm font-semibold text-emerald-600 flex items-center gap-1.5 animate-fadeIn">
                 <CheckCircle2 className="w-5 h-5" />
-                Shipping settings saved successfully.
+                {SHIPPING_TEXT.SUCCESS_MSG}
               </span>
             )}
-            {errorMsg && (
+            {state.errorMsg && (
               <span className="text-theme-body-sm font-semibold text-rose-600 animate-fadeIn">
-                ⚠️ {errorMsg}
+                ⚠️ {state.errorMsg}
               </span>
             )}
           </div>
@@ -429,10 +489,13 @@ export default function ShippingSettingsPage() {
             ) : (
               <Save className="w-4 h-4" />
             )}
-            Save Configuration
+            {SHIPPING_TEXT.BTN_SAVE}
           </button>
         </div>
       </form>
+
+      <RoutingStrategy />
+      <RateCalculator />
     </div>
   );
 }

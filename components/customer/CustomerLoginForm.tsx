@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useReducer } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -15,10 +15,16 @@ import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { loginSchema } from "@/utils/validation";
 import { CustomerLogin } from "@/utils/authApiClient";
-import { BASE_API_URL, AUTH_TEXT, COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE } from "@/constants";
+import {
+  BASE_API_URL,
+  AUTH_TEXT,
+  COOKIE_CONSENT_KEY,
+  COOKIE_CONSENT_VALUE,
+} from "@/constants";
+import { CUSTOMER_LOGIN_TEXT } from "@/constants/authText";
 import { getCompanyDomain } from "@/lib/get-domain";
 import { AccountReactivation } from "@/components/customer/AccountReactivationModel";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { CookieConsentBanner } from "@/components/common/CookieConsentBanner";
 
@@ -32,22 +38,81 @@ interface CustomerLoginFormProps {
   onSuccess?: () => void;
 }
 
-export default function CustomerLoginForm({ isModal = false, onSuccess }: CustomerLoginFormProps) {
+export enum ActionType {
+  SET_SERVER_ERROR = "SET_SERVER_ERROR",
+  SET_IS_GOOGLE_LOADING = "SET_IS_GOOGLE_LOADING",
+  SET_SUCCESS_MESSAGE = "SET_SUCCESS_MESSAGE",
+  SET_IS_REACTIVATION_OPEN = "SET_IS_REACTIVATION_OPEN",
+  TOGGLE_PASSWORD = "TOGGLE_PASSWORD",
+  SET_COOKIES_BLOCKED = "SET_COOKIES_BLOCKED",
+}
+
+type Action =
+  | { type: ActionType.SET_SERVER_ERROR; payload: string | null }
+  | { type: ActionType.SET_IS_GOOGLE_LOADING; payload: boolean }
+  | { type: ActionType.SET_SUCCESS_MESSAGE; payload: string | null }
+  | { type: ActionType.SET_IS_REACTIVATION_OPEN; payload: boolean }
+  | { type: ActionType.TOGGLE_PASSWORD }
+  | { type: ActionType.SET_COOKIES_BLOCKED; payload: boolean };
+
+interface State {
+  serverError: string | null;
+  isGoogleLoading: boolean;
+  successMessage: string | null;
+  isReactivationOpen: boolean;
+  showPassword: boolean;
+  cookiesBlocked: boolean;
+}
+
+const initialState: State = {
+  serverError: null,
+  isGoogleLoading: false,
+  successMessage: null,
+  isReactivationOpen: false,
+  showPassword: false,
+  cookiesBlocked: false,
+};
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case ActionType.SET_SERVER_ERROR:
+      return { ...state, serverError: action.payload };
+    case ActionType.SET_IS_GOOGLE_LOADING:
+      return { ...state, isGoogleLoading: action.payload };
+    case ActionType.SET_SUCCESS_MESSAGE:
+      return { ...state, successMessage: action.payload };
+    case ActionType.SET_IS_REACTIVATION_OPEN:
+      return { ...state, isReactivationOpen: action.payload };
+    case ActionType.TOGGLE_PASSWORD:
+      return { ...state, showPassword: !state.showPassword };
+    case ActionType.SET_COOKIES_BLOCKED:
+      return { ...state, cookiesBlocked: action.payload };
+    default:
+      return state;
+  }
+}
+
+import { Suspense } from "react";
+
+function CustomerLoginFormContent({
+  isModal = false,
+  onSuccess,
+}: CustomerLoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  
-  const { loginRedirectUrl } = useAppSelector((state: RootState) => state.auth);
-  
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isReactivationOpen, setIsReactivationOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [cookiesBlocked, setCookiesBlocked] = useState(false);
+
+  const { loginRedirectUrl } = useAppSelector(
+    (rootState: RootState) => rootState.auth,
+  );
+
+  const [state, dispatchState] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    setCookiesBlocked(!navigator.cookieEnabled);
+    dispatchState({
+      type: ActionType.SET_COOKIES_BLOCKED,
+      payload: !navigator.cookieEnabled,
+    });
   }, []);
 
   const {
@@ -67,26 +132,29 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
 
   useEffect(() => {
     if (!isModal && searchParams.get("registered") === "true") {
-      setSuccessMessage("Account created successfully! Please log in.");
+      dispatchState({
+        type: ActionType.SET_SUCCESS_MESSAGE,
+        payload: CUSTOMER_LOGIN_TEXT.MSG_REGISTERED,
+      });
     }
   }, [searchParams, isModal]);
 
   const onSubmit = async (data: LoginFormData) => {
     localStorage.setItem(COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE);
-    setServerError(null);
-    setSuccessMessage(null);
+    dispatchState({ type: ActionType.SET_SERVER_ERROR, payload: null });
+    dispatchState({ type: ActionType.SET_SUCCESS_MESSAGE, payload: null });
     dispatch(loginStart());
 
     try {
       const response = await CustomerLogin(data);
       if (response.status === 200) {
         dispatch(loginSuccess(response?.data));
-        toast.success("Signed in successfully!");
-        
+        toast.success(CUSTOMER_LOGIN_TEXT.MSG_SIGNED_IN);
+
         if (onSuccess) {
           onSuccess();
         }
-        
+
         if (isModal) {
           if (loginRedirectUrl) {
             router.push(loginRedirectUrl);
@@ -101,51 +169,65 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
         }
       } else if (response.status === 423) {
         dispatch(loginFailure(response?.message));
-        setServerError(response?.message);
-        setIsReactivationOpen(true);
+        dispatchState({
+          type: ActionType.SET_SERVER_ERROR,
+          payload: response?.message,
+        });
+        dispatchState({
+          type: ActionType.SET_IS_REACTIVATION_OPEN,
+          payload: true,
+        });
       } else {
         const message =
-          response?.message || "Login failed. Please check your credentials.";
+          response?.message || CUSTOMER_LOGIN_TEXT.ERR_LOGIN_CREDS;
         dispatch(loginFailure(message));
-        setServerError(message);
+        dispatchState({ type: ActionType.SET_SERVER_ERROR, payload: message });
       }
     } catch (error: any) {
       const message =
         error.response?.data?.message ||
         error.message ||
-        "Login failed. Please try again.";
+        CUSTOMER_LOGIN_TEXT.ERR_LOGIN_GENERIC;
       dispatch(loginFailure(message));
-      setServerError(message);
+      dispatchState({ type: ActionType.SET_SERVER_ERROR, payload: message });
     }
   };
 
   const handleGoogleLogin = async () => {
     localStorage.setItem(COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE);
-    setIsGoogleLoading(true);
-    setServerError(null);
-    setSuccessMessage(null);
+    dispatchState({ type: ActionType.SET_IS_GOOGLE_LOADING, payload: true });
+    dispatchState({ type: ActionType.SET_SERVER_ERROR, payload: null });
+    dispatchState({ type: ActionType.SET_SUCCESS_MESSAGE, payload: null });
 
     try {
       const domain = await getCompanyDomain();
       if (domain == null) {
-        throw new Error("Company domain not found");
+        throw new Error(CUSTOMER_LOGIN_TEXT.ERR_NO_DOMAIN);
       }
-      
-      const redirect = isModal ? loginRedirectUrl : searchParams.get("redirect");
+
+      const redirect = isModal
+        ? loginRedirectUrl
+        : searchParams.get("redirect");
       if (redirect) {
         sessionStorage.setItem("oauth_redirect", redirect);
       }
-      
+
       window.location.href = `${BASE_API_URL}/v1/auth/google?domain=${encodeURIComponent(domain)}`;
     } catch (error) {
-      setServerError("Failed to initialize Google sign-in. Please try again.");
-      setIsGoogleLoading(false);
+      dispatchState({
+        type: ActionType.SET_SERVER_ERROR,
+        payload: CUSTOMER_LOGIN_TEXT.ERR_GOOGLE_INIT,
+      });
+      dispatchState({ type: ActionType.SET_IS_GOOGLE_LOADING, payload: false });
     }
   };
 
   const handleReactivationSuccess = () => {
-    setIsReactivationOpen(false);
-    toast.success("Redirecting to dashboard...");
+    dispatchState({
+      type: ActionType.SET_IS_REACTIVATION_OPEN,
+      payload: false,
+    });
+    toast.success(CUSTOMER_LOGIN_TEXT.MSG_REDIRECTING);
     if (onSuccess) {
       onSuccess();
     }
@@ -178,18 +260,18 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
           },
         }}
       />
-      
+
       <div className="mb-6">
         <h2 className="text-theme-h4 font-bold text-gray-800 mb-1.5">
-          Welcome Back
+          {CUSTOMER_LOGIN_TEXT.TITLE}
         </h2>
         <p className="text-theme-body-sm text-slate-600">
-          Sign in to access your account
+          {CUSTOMER_LOGIN_TEXT.SUBTITLE}
         </p>
       </div>
 
       {/* Success Message */}
-      {successMessage && (
+      {state.successMessage && (
         <div className="mb-5 p-3.5 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2.5">
           <svg
             className="w-4.5 h-4.5 text-green-500 mt-0.5 flex-shrink-0"
@@ -203,13 +285,13 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
             />
           </svg>
           <p className="text-green-700 text-theme-body-sm font-medium">
-            {successMessage}
+            {state.successMessage}
           </p>
         </div>
       )}
 
       {/* Error Message */}
-      {serverError && (
+      {state.serverError && (
         <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2.5">
           <svg
             className="w-4.5 h-4.5 text-red-500 mt-0.5 flex-shrink-0"
@@ -223,7 +305,7 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
             />
           </svg>
           <p className="text-red-700 text-theme-body-sm font-medium">
-            {serverError}
+            {state.serverError}
           </p>
         </div>
       )}
@@ -234,8 +316,8 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
       <button
         type="button"
         onClick={handleGoogleLogin}
-        disabled={isGoogleLoading || isSubmitting || cookiesBlocked}
-        className={`${isGoogleLoading || isSubmitting ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 border-slate-300 hover:border-slate-400"} w-full flex items-center justify-center gap-3 border-2 text-slate-700 py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-xs mb-5 cursor-pointer text-theme-body-sm`}
+        disabled={state.isGoogleLoading || isSubmitting || state.cookiesBlocked}
+        className={`${state.isGoogleLoading || isSubmitting ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 border-slate-300 hover:border-slate-400"} w-full flex items-center justify-center gap-3 border-2 text-slate-700 py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-xs mb-5 cursor-pointer text-theme-body-sm`}
       >
         <svg className="w-4.5 h-4.5" viewBox="0 0 24 24">
           <path
@@ -256,9 +338,9 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
           />
         </svg>
         <span>
-          {isGoogleLoading
-            ? "Connecting to Google..."
-            : "Continue with Google"}
+          {state.isGoogleLoading
+            ? CUSTOMER_LOGIN_TEXT.GOOGLE_CONNECTING
+            : CUSTOMER_LOGIN_TEXT.GOOGLE_BTN}
         </span>
       </button>
 
@@ -266,7 +348,7 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
       <div className="relative flex items-center my-5">
         <div className="flex-grow border-t border-slate-200"></div>
         <span className="flex-shrink-0 mx-3.5 text-slate-400 text-theme-caption font-medium uppercase tracking-wider">
-          or sign in with email
+          {CUSTOMER_LOGIN_TEXT.OR_EMAIL}
         </span>
         <div className="flex-grow border-t border-slate-200"></div>
       </div>
@@ -279,18 +361,19 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
             htmlFor="email"
             className="text-theme-caption font-semibold text-gray-700 uppercase tracking-wide"
           >
-            Email <span className="text-red-500">*</span>
+            {CUSTOMER_LOGIN_TEXT.LBL_EMAIL}{" "}
+            <span className="text-red-500">*</span>
           </label>
           <input
             {...register("email")}
             type="email"
-            placeholder="Enter your email"
+            placeholder={CUSTOMER_LOGIN_TEXT.PH_EMAIL}
             className={`border-2 rounded-lg py-2 px-3 text-theme-body-sm focus:outline-none focus:ring-2 transition-all ${
               errors.email
                 ? "border-red-400 focus:ring-red-100 bg-red-50"
                 : "border-slate-200 focus:ring-theme-primary/20 focus:border-theme-primary"
             }`}
-            disabled={isSubmitting || isGoogleLoading}
+            disabled={isSubmitting || state.isGoogleLoading}
           />
           {errors.email && (
             <p className="text-red-600 text-theme-caption font-medium flex items-center gap-1 mt-0.5">
@@ -317,35 +400,42 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
               htmlFor="password"
               className="text-theme-caption font-semibold text-gray-700 uppercase tracking-wide"
             >
-              Password <span className="text-red-500">*</span>
+              {CUSTOMER_LOGIN_TEXT.LBL_PASS}{" "}
+              <span className="text-red-500">*</span>
             </label>
             <button
               type="button"
               onClick={handleForgotPasswordClick}
               className="text-theme-primary hover:text-theme-secondary hover:underline text-theme-caption font-semibold transition-colors cursor-pointer"
             >
-              Forgot Password?
+              {CUSTOMER_LOGIN_TEXT.BTN_FORGOT_PASS}
             </button>
           </div>
           <div className="relative">
             <input
               {...register("password")}
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
+              type={state.showPassword ? "text" : "password"}
+              placeholder={CUSTOMER_LOGIN_TEXT.PH_PASS}
               className={`w-full border-2 rounded-lg pl-3 pr-9 py-2 text-theme-body-sm focus:outline-none focus:ring-2 transition-all ${
                 errors.password
                   ? "border-red-400 focus:ring-red-100 bg-red-50"
                   : "border-slate-200 focus:ring-theme-primary/20 focus:border-theme-primary"
               }`}
-              disabled={isSubmitting || isGoogleLoading}
+              disabled={isSubmitting || state.isGoogleLoading}
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() =>
+                dispatchState({ type: ActionType.TOGGLE_PASSWORD })
+              }
               className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-theme-primary transition-colors cursor-pointer"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={
+                state.showPassword
+                  ? CUSTOMER_LOGIN_TEXT.BTN_HIDE_PASS
+                  : CUSTOMER_LOGIN_TEXT.BTN_SHOW_PASS
+              }
             >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              {state.showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
           {errors.password && (
@@ -368,7 +458,9 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
 
         <button
           type="submit"
-          disabled={isSubmitting || isGoogleLoading || cookiesBlocked}
+          disabled={
+            isSubmitting || state.isGoogleLoading || state.cookiesBlocked
+          }
           className="w-full font-bold py-2.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md disabled:shadow-none bg-theme-primary text-theme-primary-foreground hover:bg-theme-secondary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-5 cursor-pointer text-theme-body-sm"
         >
           {isSubmitting ? (
@@ -393,10 +485,10 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Signing In...
+              {CUSTOMER_LOGIN_TEXT.BTN_SIGNING_IN}
             </>
           ) : (
-            "Sign In"
+            CUSTOMER_LOGIN_TEXT.BTN_SIGN_IN
           )}
         </button>
 
@@ -405,23 +497,42 @@ export default function CustomerLoginForm({ isModal = false, onSuccess }: Custom
         </p>
 
         <p className="text-center text-theme-body-sm text-slate-600 pt-3">
-          Don&apos;t have an account?{" "}
+          {CUSTOMER_LOGIN_TEXT.LBL_NO_ACCOUNT}
           <button
             type="button"
             onClick={handleCreateAccountClick}
             className="text-theme-primary font-bold hover:text-theme-secondary hover:underline transition-colors cursor-pointer"
           >
-            Create account
+            {CUSTOMER_LOGIN_TEXT.BTN_CREATE_ACCOUNT}
           </button>
         </p>
       </form>
 
       <AccountReactivation
-        isOpen={isReactivationOpen}
-        onClose={() => setIsReactivationOpen(false)}
+        isOpen={state.isReactivationOpen}
+        onClose={() =>
+          dispatchState({
+            type: ActionType.SET_IS_REACTIVATION_OPEN,
+            payload: false,
+          })
+        }
         onSuccess={handleReactivationSuccess}
         emailMasked={userEmail}
       />
     </div>
+  );
+}
+
+export default function CustomerLoginForm(props: CustomerLoginFormProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-20 text-center">
+          <Loader2 className="animate-spin mx-auto text-blue-600" />
+        </div>
+      }
+    >
+      <CustomerLoginFormContent {...props} />
+    </Suspense>
   );
 }

@@ -2,7 +2,7 @@
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createProductPolicy,
@@ -34,9 +34,7 @@ interface PolicyFormPageProps {
   labels?: typeof UiText;
 }
 
-export default function PolicyFormPage({
-  labels = UiText,
-}: PolicyFormPageProps) {
+function PolicyFormContent({ labels = UiText }: PolicyFormPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
@@ -544,5 +542,19 @@ export default function PolicyFormPage({
         </form>
       </main>
     </>
+  );
+}
+
+export default function PolicyFormPage(props: PolicyFormPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-gray-500">
+          Loading form configuration...
+        </div>
+      }
+    >
+      <PolicyFormContent {...props} />
+    </Suspense>
   );
 }

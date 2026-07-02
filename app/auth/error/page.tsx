@@ -1,7 +1,8 @@
-﻿'use client';
+'use client';
 
 import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { AUTH_ERROR_TEXT } from '@/constants/authText';
 
 function AuthErrorHandler() {
     const router = useRouter();
@@ -13,7 +14,7 @@ function AuthErrorHandler() {
     const rawEmail = searchParams.get('email');
 
     // Clean up the URL parameters (handling the 'undefined' string from your example)
-    const errorMessage = rawMessage || 'An unknown error occurred during authentication.';
+    const errorMessage = rawMessage || AUTH_ERROR_TEXT.UNKNOWN_ERROR;
     const email = rawEmail && rawEmail !== 'undefined' ? rawEmail : null;
 
     return (
@@ -30,18 +31,18 @@ function AuthErrorHandler() {
                         </div>
                     </div>
 
-                    <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">Authentication Failed</h2>
+                    <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">{AUTH_ERROR_TEXT.TITLE}</h2>
                     
                     {/* Display the error message from the URL */}
                     <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-theme-body-sm text-left border border-red-100">
-                        <p className="font-semibold mb-1">Error Details:</p>
+                        <p className="font-semibold mb-1">{AUTH_ERROR_TEXT.ERROR_DETAILS_LABEL}</p>
                         <p>{errorMessage}</p>
-                        {status && <p className="mt-1 text-theme-caption text-red-500">Status Code: {status}</p>}
-                        {email && <p className="mt-1 text-theme-caption text-red-500">Account: {email}</p>}
+                        {status && <p className="mt-1 text-theme-caption text-red-500">{AUTH_ERROR_TEXT.STATUS_CODE_LABEL} {status}</p>}
+                        {email && <p className="mt-1 text-theme-caption text-red-500">{AUTH_ERROR_TEXT.ACCOUNT_LABEL} {email}</p>}
                     </div>
 
                     <p className="text-slate-600 mb-8">
-                        We couldn't sign you in. Please check your credentials and try again.
+                        {AUTH_ERROR_TEXT.DESCRIPTION}
                     </p>
 
                     {/* Action Buttons */}
@@ -50,13 +51,13 @@ function AuthErrorHandler() {
                             onClick={() => router.push('/auth/customerLogin')}
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
                         >
-                            Back to Login
+                            {AUTH_ERROR_TEXT.BTN_BACK_LOGIN}
                         </button>
                         <button
                             onClick={() => router.push('/')}
                             className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
                         >
-                            Return Home
+                            {AUTH_ERROR_TEXT.BTN_RETURN_HOME}
                         </button>
                     </div>
                 </div>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, KeyRound, Lock, ArrowRight, Loader2, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { requestPasswordResetOTP, resetPasswordWithOTP } from '@/utils/authApiClient';
+import { FORGOT_PASSWORD_TEXT } from '@/constants/authText';
 
 interface State {
     step: 1 | 2;
@@ -114,7 +115,7 @@ export default function ForgotPasswordClient() {
                 if (diff <= 0) {
                     clearInterval(interval);
                     setTimeLeft('00:00');
-                    dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: 'OTP has expired. Please request a new one.' });
+                    dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: FORGOT_PASSWORD_TEXT.ERR_OTP_EXPIRED });
                 } else {
                     const minutes = Math.floor(diff / 60000);
                     const seconds = Math.floor((diff % 60000) / 1000);
@@ -134,11 +135,11 @@ export default function ForgotPasswordClient() {
         try {
             await requestPasswordResetOTP(state.email);
             dispatch({ type: ForgotPasswordActionType.SET_STEP, payload: 2 });
-            dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: 'If this email matches an active profile, a secure 6-digit recovery code has been sent. The token will remain active for 15 minutes.' });
+            dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: FORGOT_PASSWORD_TEXT.MSG_OTP_SENT });
             dispatch({ type: ForgotPasswordActionType.START_COOLDOWN, payload: 60 });
             dispatch({ type: ForgotPasswordActionType.SET_OTP_EXPIRY, payload: Date.now() + 15 * 60 * 1000 }); // 15 minutes
         } catch (err) {
-            dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: 'Failed to send OTP. Please check your email and try again.' });
+            dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: FORGOT_PASSWORD_TEXT.ERR_OTP_SEND_FAILED });
         } finally {
             dispatch({ type: ForgotPasswordActionType.SET_LOADING, payload: false });
         }
@@ -152,7 +153,7 @@ export default function ForgotPasswordClient() {
 
         try {
             await resetPasswordWithOTP(state.email, state.otp, state.newPassword);
-            dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: 'Password reset successfully! Redirecting to login...' });
+            dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: FORGOT_PASSWORD_TEXT.MSG_RESET_SUCCESS });
 
             setTimeout(() => {
                 router.push('/auth/customerLogin');
@@ -163,9 +164,9 @@ export default function ForgotPasswordClient() {
             
             if (newAttempts >= 3) {
                 dispatch({ type: ForgotPasswordActionType.SET_LOCKED_OUT, payload: true });
-                dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: 'Maximum attempts reached. For your security, this session has been locked. Please reload the page to try again.' });
+                dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: FORGOT_PASSWORD_TEXT.ERR_LOCKED_OUT });
             } else {
-                dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: err.message || `Invalid OTP or failed to reset password. (${3 - newAttempts} attempts remaining)` });
+                dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: err.message || FORGOT_PASSWORD_TEXT.ERR_RESET_FAILED(3 - newAttempts) });
             }
         } finally {
             dispatch({ type: ForgotPasswordActionType.SET_LOADING, payload: false });
@@ -182,10 +183,10 @@ export default function ForgotPasswordClient() {
         if (/\d/.test(password)) strength++;
         if (/[^a-zA-Z\d]/.test(password)) strength++;
 
-        if (strength <= 2) return { strength, label: 'Weak', color: 'bg-red-500' };
-        if (strength <= 3) return { strength, label: 'Fair', color: 'bg-amber-500' };
-        if (strength <= 4) return { strength, label: 'Good', color: 'bg-lime-500' };
-        return { strength, label: 'Strong', color: 'bg-emerald-500' };
+        if (strength <= 2) return { strength, label: FORGOT_PASSWORD_TEXT.STRENGTH_WEAK, color: 'bg-red-500' };
+        if (strength <= 3) return { strength, label: FORGOT_PASSWORD_TEXT.STRENGTH_FAIR, color: 'bg-amber-500' };
+        if (strength <= 4) return { strength, label: FORGOT_PASSWORD_TEXT.STRENGTH_GOOD, color: 'bg-lime-500' };
+        return { strength, label: FORGOT_PASSWORD_TEXT.STRENGTH_STRONG, color: 'bg-emerald-500' };
     };
 
     const strength = passwordStrength(state.newPassword);
@@ -209,7 +210,7 @@ export default function ForgotPasswordClient() {
                                 className="mb-3 flex items-center gap-1 text-theme-primary-foreground/80 hover:text-theme-primary-foreground transition-colors text-theme-body-sm cursor-pointer border-none bg-transparent"
                             >
                                 <ArrowLeft className="w-4 h-4" />
-                                Back
+                                {FORGOT_PASSWORD_TEXT.BTN_BACK}
                             </button>
                         )}
 
@@ -218,7 +219,7 @@ export default function ForgotPasswordClient() {
                                 <Lock className="w-6 h-6 text-theme-primary-foreground" />
                             </div>
                             <div>
-                                <h2 className="text-theme-h4 font-bold">Reset Password</h2>
+                                <h2 className="text-theme-h4 font-bold">{FORGOT_PASSWORD_TEXT.TITLE}</h2>
                                 <div className="flex items-center gap-2 mt-1">
                                     <div className={`w-8 h-1 rounded-full ${state.step >= 1 ? 'bg-theme-primary-foreground' : 'bg-theme-primary-foreground/30'}`}></div>
                                     <div className={`w-8 h-1 rounded-full ${state.step >= 2 ? 'bg-theme-primary-foreground' : 'bg-theme-primary-foreground/30'}`}></div>
@@ -228,8 +229,8 @@ export default function ForgotPasswordClient() {
 
                         <p className="text-theme-primary-foreground/90 text-theme-body-sm">
                             {state.step === 1
-                                ? "Enter your email address and we'll send you a verification code."
-                                : "Enter the 6-digit code sent to your email and create a new password."}
+                                ? FORGOT_PASSWORD_TEXT.DESC_STEP1
+                                : FORGOT_PASSWORD_TEXT.DESC_STEP2}
                         </p>
                     </div>
                 </div>
@@ -277,7 +278,7 @@ export default function ForgotPasswordClient() {
                             >
                                 <div>
                                     <label className="block text-theme-body-sm font-semibold text-slate-700 mb-2">
-                                        Email Address
+                                        {FORGOT_PASSWORD_TEXT.LBL_EMAIL}
                                     </label>
                                     <div className="relative group">
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-theme-primary transition-colors">
@@ -289,11 +290,11 @@ export default function ForgotPasswordClient() {
                                             value={state.email}
                                             onChange={(e) => dispatch({ type: ForgotPasswordActionType.SET_EMAIL, payload: e.target.value })}
                                             className="w-full pl-12 pr-4 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-theme-primary/20 focus:border-theme-primary outline-none transition-all text-slate-700 placeholder:text-slate-400 text-theme-body-sm"
-                                            placeholder="manish@example.com"
+                                            placeholder={FORGOT_PASSWORD_TEXT.PH_EMAIL}
                                         />
                                     </div>
                                     <p className="text-theme-caption text-slate-500 mt-2">
-                                        We'll send a 6-digit verification code to this email
+                                        {FORGOT_PASSWORD_TEXT.HINT_EMAIL}
                                     </p>
                                 </div>
 
@@ -305,11 +306,11 @@ export default function ForgotPasswordClient() {
                                     {state.isLoading ? (
                                         <>
                                             <Loader2 className="w-5 h-5 animate-spin" />
-                                            Sending Code...
+                                            {FORGOT_PASSWORD_TEXT.BTN_SENDING}
                                         </>
                                     ) : (
                                         <>
-                                            {state.resendCooldown > 0 ? `Wait ${state.resendCooldown}s to Resend` : 'Send Verification Code'}
+                                            {state.resendCooldown > 0 ? FORGOT_PASSWORD_TEXT.BTN_WAIT(state.resendCooldown) : FORGOT_PASSWORD_TEXT.BTN_SEND}
                                             {state.resendCooldown === 0 && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                                         </>
                                     )}
@@ -327,10 +328,10 @@ export default function ForgotPasswordClient() {
                                 {/* Email Display */}
                                 <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
                                     <div className="flex justify-between items-center mb-1">
-                                        <p className="text-theme-caption text-slate-500">Code sent to</p>
+                                        <p className="text-theme-caption text-slate-500">{FORGOT_PASSWORD_TEXT.LBL_CODE_SENT}</p>
                                         {state.otpExpiryTime && (
                                             <span className={`text-theme-caption font-bold ${timeLeft === '00:00' ? 'text-red-500' : 'text-amber-500'}`}>
-                                                Expires in: {timeLeft}
+                                                {FORGOT_PASSWORD_TEXT.LBL_EXPIRES}{timeLeft}
                                             </span>
                                         )}
                                     </div>
@@ -343,7 +344,7 @@ export default function ForgotPasswordClient() {
                                 {/* OTP Input */}
                                 <div>
                                     <label className="block text-theme-body-sm font-semibold text-slate-700 mb-2">
-                                        Verification Code
+                                        {FORGOT_PASSWORD_TEXT.LBL_OTP}
                                     </label>
                                     <div className="relative group">
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-theme-primary transition-colors">
@@ -356,12 +357,12 @@ export default function ForgotPasswordClient() {
                                             value={state.otp}
                                             onChange={(e) => dispatch({ type: ForgotPasswordActionType.SET_OTP, payload: e.target.value.replace(/\D/g, '') })}
                                             className="w-full pl-12 pr-4 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-theme-primary/20 focus:border-theme-primary outline-none transition-all tracking-[0.5em] font-mono text-theme-h4 text-center font-bold text-slate-700"
-                                            placeholder="000000"
+                                            placeholder={FORGOT_PASSWORD_TEXT.PH_OTP}
                                         />
                                     </div>
                                     <div className="flex items-center justify-between mt-2">
                                         <p className="text-theme-caption text-slate-500">
-                                            {state.otp.length}/6 digits entered
+                                            {state.otp.length}{FORGOT_PASSWORD_TEXT.HINT_OTP}
                                         </p>
                                         <button
                                             type="button"
@@ -373,7 +374,7 @@ export default function ForgotPasswordClient() {
                                             }}
                                             className="text-theme-caption text-theme-primary hover:text-theme-secondary font-semibold bg-transparent border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {state.resendCooldown > 0 ? `Resend code in ${state.resendCooldown}s` : 'Resend code'}
+                                            {state.resendCooldown > 0 ? FORGOT_PASSWORD_TEXT.BTN_RESEND_WAIT(state.resendCooldown) : FORGOT_PASSWORD_TEXT.BTN_RESEND}
                                         </button>
                                     </div>
                                 </div>
@@ -381,7 +382,7 @@ export default function ForgotPasswordClient() {
                                 {/* Password Input */}
                                 <div>
                                     <label className="block text-theme-body-sm font-semibold text-slate-700 mb-2">
-                                        New Password
+                                        {FORGOT_PASSWORD_TEXT.LBL_NEW_PASS}
                                     </label>
                                     <div className="relative group">
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-theme-primary transition-colors">
@@ -394,14 +395,14 @@ export default function ForgotPasswordClient() {
                                             value={state.newPassword}
                                             onChange={(e) => dispatch({ type: ForgotPasswordActionType.SET_NEW_PASSWORD, payload: e.target.value })}
                                             className="w-full pl-12 pr-12 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-theme-primary/20 focus:border-theme-primary outline-none transition-all text-slate-700 text-theme-body-sm"
-                                            placeholder="Enter a strong password"
+                                            placeholder={FORGOT_PASSWORD_TEXT.PH_NEW_PASS}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => dispatch({ type: ForgotPasswordActionType.TOGGLE_PASSWORD_VISIBILITY })}
                                             className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-theme-primary text-theme-caption font-semibold cursor-pointer border-none bg-transparent"
                                         >
-                                            {state.showPassword ? 'Hide' : 'Show'}
+                                            {state.showPassword ? FORGOT_PASSWORD_TEXT.BTN_HIDE : FORGOT_PASSWORD_TEXT.BTN_SHOW}
                                         </button>
                                     </div>
 
@@ -426,13 +427,13 @@ export default function ForgotPasswordClient() {
                                             </div>
                                             <ul className="text-theme-caption text-slate-500 space-y-1">
                                                 <li className={state.newPassword.length >= 8 ? 'text-emerald-600' : ''}>
-                                                    ✓ At least 8 characters
+                                                    {FORGOT_PASSWORD_TEXT.HINT_PASS_LENGTH}
                                                 </li>
                                                 <li className={/[A-Z]/.test(state.newPassword) && /[a-z]/.test(state.newPassword) ? 'text-emerald-600' : ''}>
-                                                    ✓ Mix of uppercase & lowercase
+                                                    {FORGOT_PASSWORD_TEXT.HINT_PASS_MIX}
                                                 </li>
                                                 <li className={/\d/.test(state.newPassword) ? 'text-emerald-600' : ''}>
-                                                    ✓ Contains numbers
+                                                    {FORGOT_PASSWORD_TEXT.HINT_PASS_NUM}
                                                 </li>
                                             </ul>
                                         </motion.div>
@@ -447,11 +448,11 @@ export default function ForgotPasswordClient() {
                                     {state.isLoading ? (
                                         <>
                                             <Loader2 className="w-5 h-5 animate-spin" />
-                                            Resetting Password...
+                                            {FORGOT_PASSWORD_TEXT.BTN_RESETTING}
                                         </>
                                     ) : (
                                         <>
-                                            Reset Password
+                                            {FORGOT_PASSWORD_TEXT.BTN_RESET}
                                             <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                         </>
                                     )}
@@ -464,12 +465,12 @@ export default function ForgotPasswordClient() {
                 {/* Footer */}
                 <div className="px-8 py-6 bg-slate-50 border-t border-slate-100">
                     <p className="text-center text-theme-body-sm text-slate-600">
-                        Remember your password?{' '}
+                        {FORGOT_PASSWORD_TEXT.LBL_REMEMBER}
                         <button
                             onClick={() => router.push('/auth/customerLogin')}
                             className="text-theme-primary hover:text-theme-secondary font-semibold hover:underline bg-transparent border-none cursor-pointer"
                         >
-                            Back to Login
+                            {FORGOT_PASSWORD_TEXT.BTN_BACK_LOGIN}
                         </button>
                     </p>
                 </div>
@@ -484,7 +485,7 @@ export default function ForgotPasswordClient() {
             >
                 <p className="text-theme-caption text-slate-500 flex items-center justify-center gap-2">
                     <Lock className="w-3 h-3" />
-                    Your password is encrypted and secure
+                    {FORGOT_PASSWORD_TEXT.SECURE_MSG}
                 </p>
             </motion.div>
         </div>

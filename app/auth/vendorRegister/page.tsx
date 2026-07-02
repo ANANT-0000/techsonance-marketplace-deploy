@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import Link from "next/link";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,6 +29,7 @@ import {
   STEPS,
   VendorDocumentTypes,
 } from "@/constants";
+import { VENDOR_REGISTER_TEXT } from "@/constants/authText";
 import { vendorRegister } from "@/utils/authApiClient";
 
 import FinancialCompliance from "@/components/vendor/FinancialCompliance";
@@ -92,12 +93,134 @@ export const COMPLIANCE_REGEX: Record<
   },
 };
 
+// ─── State Management (useReducer) ───────────────────────────────────────────
+
+export enum ActionType {
+  SET_FORM_STEP = "SET_FORM_STEP",
+  SET_GLOBAL_ERROR = "SET_GLOBAL_ERROR",
+  SET_SHOW_SUCCESS = "SET_SHOW_SUCCESS",
+  SET_EMAIL_ERROR = "SET_EMAIL_ERROR",
+  SET_COUNTRY_CODE = "SET_COUNTRY_CODE",
+  SET_COMPLIANCE_VALUES = "SET_COMPLIANCE_VALUES",
+  UPDATE_COMPLIANCE_VALUE = "UPDATE_COMPLIANCE_VALUE",
+  SET_COMPLIANCE_ERRORS = "SET_COMPLIANCE_ERRORS",
+  SET_FINANCIAL_FILE_MAP = "SET_FINANCIAL_FILE_MAP",
+  SET_MISSING_FINANCIAL_DOCS = "SET_MISSING_FINANCIAL_DOCS",
+  SET_LEGAL_FILE_MAP = "SET_LEGAL_FILE_MAP",
+  SET_MISSING_LEGAL_DOCS = "SET_MISSING_LEGAL_DOCS",
+  RESET_ON_COUNTRY_CHANGE = "RESET_ON_COUNTRY_CHANGE",
+  RESET_FORM_STATE = "RESET_FORM_STATE",
+}
+
+export type Action =
+  | { type: ActionType.SET_FORM_STEP; payload: number }
+  | { type: ActionType.SET_GLOBAL_ERROR; payload: string | null }
+  | { type: ActionType.SET_SHOW_SUCCESS; payload: boolean }
+  | { type: ActionType.SET_EMAIL_ERROR; payload: string | null }
+  | { type: ActionType.SET_COUNTRY_CODE; payload: string }
+  | { type: ActionType.SET_COMPLIANCE_VALUES; payload: Record<string, string> }
+  | {
+      type: ActionType.UPDATE_COMPLIANCE_VALUE;
+      payload: { key: string; val: string };
+    }
+  | { type: ActionType.SET_COMPLIANCE_ERRORS; payload: Record<string, string> }
+  | { type: ActionType.SET_FINANCIAL_FILE_MAP; payload: FileEntry[] }
+  | { type: ActionType.SET_MISSING_FINANCIAL_DOCS; payload: string[] }
+  | { type: ActionType.SET_LEGAL_FILE_MAP; payload: FileEntry[] }
+  | { type: ActionType.SET_MISSING_LEGAL_DOCS; payload: string[] }
+  | { type: ActionType.RESET_ON_COUNTRY_CHANGE; payload: string }
+  | { type: ActionType.RESET_FORM_STATE };
+
+interface State {
+  formStep: number;
+  globalError: string | null;
+  showSuccess: boolean;
+  emailError: string | null;
+  countryCode: string;
+  complianceValues: Record<string, string>;
+  complianceErrors: Record<string, string>;
+  financialFileMap: FileEntry[];
+  missingFinancialDocs: string[];
+  legalFileMap: FileEntry[];
+  missingLegalDocs: string[];
+}
+
+const initialState: State = {
+  formStep: 0,
+  globalError: null,
+  showSuccess: false,
+  emailError: null,
+  countryCode: "",
+  complianceValues: {},
+  complianceErrors: {},
+  financialFileMap: [],
+  missingFinancialDocs: [],
+  legalFileMap: [],
+  missingLegalDocs: [],
+};
+
+function registerReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case ActionType.SET_FORM_STEP:
+      return { ...state, formStep: action.payload };
+    case ActionType.SET_GLOBAL_ERROR:
+      return { ...state, globalError: action.payload };
+    case ActionType.SET_SHOW_SUCCESS:
+      return { ...state, showSuccess: action.payload };
+    case ActionType.SET_EMAIL_ERROR:
+      return { ...state, emailError: action.payload };
+    case ActionType.SET_COUNTRY_CODE:
+      return { ...state, countryCode: action.payload };
+    case ActionType.SET_COMPLIANCE_VALUES:
+      return { ...state, complianceValues: action.payload };
+    case ActionType.UPDATE_COMPLIANCE_VALUE: {
+      const newValues = {
+        ...state.complianceValues,
+        [action.payload.key]: action.payload.val,
+      };
+      const newErrors = { ...state.complianceErrors };
+      if (newErrors[action.payload.key]) {
+        delete newErrors[action.payload.key];
+      }
+      return {
+        ...state,
+        complianceValues: newValues,
+        complianceErrors: newErrors,
+      };
+    }
+    case ActionType.SET_COMPLIANCE_ERRORS:
+      return { ...state, complianceErrors: action.payload };
+    case ActionType.SET_FINANCIAL_FILE_MAP:
+      return { ...state, financialFileMap: action.payload };
+    case ActionType.SET_MISSING_FINANCIAL_DOCS:
+      return { ...state, missingFinancialDocs: action.payload };
+    case ActionType.SET_LEGAL_FILE_MAP:
+      return { ...state, legalFileMap: action.payload };
+    case ActionType.SET_MISSING_LEGAL_DOCS:
+      return { ...state, missingLegalDocs: action.payload };
+    case ActionType.RESET_ON_COUNTRY_CHANGE:
+      return {
+        ...state,
+        countryCode: action.payload,
+        complianceValues: {},
+        complianceErrors: {},
+        missingFinancialDocs: [],
+        financialFileMap: [],
+      };
+    case ActionType.RESET_FORM_STATE:
+      return { ...initialState, showSuccess: true };
+    default:
+      return state;
+  }
+}
+
 // ─── Shared input style ───────────────────────────────────────────────────────
 const inputCls =
   "w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-theme-body-sm text-gray-800 placeholder:text-gray-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all";
 const labelCls =
   "block text-theme-caption font-semibold text-gray-600 uppercase tracking-wide mb-1.5";
-const errorCls = "mt-1.5 text-theme-caption text-red-600 flex items-center gap-1";
+const errorCls =
+  "mt-1.5 text-theme-caption text-red-600 flex items-center gap-1";
 
 // ─── StepIndicator ────────────────────────────────────────────────────────────
 function StepIndicator({ current, total }: { current: number; total: number }) {
@@ -155,26 +278,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function VendorRegisterPage() {
-  const [formStep, setFormStep] = useState(0);
-  const [globalError, setGlobalError] = useState<string | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  // Step 2 state
-  const [countryCode, setCountryCode] = useState("");
-  const [complianceValues, setComplianceValues] = useState<
-    Record<string, string>
-  >({});
-  const [complianceErrors, setComplianceErrors] = useState<
-    Record<string, string>
-  >({});
-  const [financialFileMap, setFinancialFileMap] = useState<FileEntry[]>([]);
-  const [missingFinancialDocs, setMissingFinancialDocs] = useState<string[]>(
-    [],
-  );
-
-  // Step 3 state
-  const [legalFileMap, setLegalFileMap] = useState<FileEntry[]>([]);
-  const [missingLegalDocs, setMissingLegalDocs] = useState<string[]>([]);
+  const [state, dispatch] = useReducer(registerReducer, initialState);
 
   const {
     register,
@@ -198,86 +302,108 @@ export default function VendorRegisterPage() {
       country_code: "",
     },
   });
+
   const emailValue = watch("email");
   const currentCountryFields =
-    COUNTRIES.find((c) => c.country_code === countryCode)?.fields ?? []; // Add to nextStep, after setFormStep:  // ── Navigation ──────────────────────────────────────────────────────────────
+    COUNTRIES.find((c) => c.country_code === state.countryCode)?.fields ?? [];
+
+  // ── Navigation ──────────────────────────────────────────────────────────────
   const nextStep = useCallback(async () => {
-    setGlobalError(null);
+    dispatch({ type: ActionType.SET_GLOBAL_ERROR, payload: null });
 
     // RHF field validation for steps 0 & 1
-    if (formStep === 0 || formStep === 1) {
-      const fields = STEP_RHF_FIELDS[formStep];
+    if (state.formStep === 0 || state.formStep === 1) {
+      const fields = STEP_RHF_FIELDS[state.formStep];
       const valid = fields.length > 0 ? await trigger(fields) : true;
       if (!valid) return;
     }
 
     // Step 2: compliance fields + financial doc upload
-    if (formStep === 2 || formStep === 3) {
-      if (!countryCode) {
-        setGlobalError("Please select your country to continue.");
+    if (state.formStep === 2 || state.formStep === 3) {
+      if (!state.countryCode) {
+        dispatch({
+          type: ActionType.SET_GLOBAL_ERROR,
+          payload: VENDOR_REGISTER_TEXT.ERROR_COUNTRY_REQUIRED,
+        });
         return;
       }
 
       // Validate compliance text fields
       const compErrors = validateComplianceFields(
         currentCountryFields,
-        complianceValues,
+        state.complianceValues,
       );
-      setComplianceErrors(compErrors);
+      dispatch({ type: ActionType.SET_COMPLIANCE_ERRORS, payload: compErrors });
       if (Object.keys(compErrors).length > 0) return;
 
       // Validate required document uploads
       const missingDocs = validateRequiredDocuments(
         currentCountryFields,
-        financialFileMap,
+        state.financialFileMap,
       );
-      setMissingFinancialDocs(missingDocs);
+      dispatch({
+        type: ActionType.SET_MISSING_FINANCIAL_DOCS,
+        payload: missingDocs,
+      });
       if (missingDocs.length > 0) return;
     }
 
-    setFormStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+    dispatch({
+      type: ActionType.SET_FORM_STEP,
+      payload: Math.min(state.formStep + 1, STEPS.length - 1),
+    });
   }, [
-    formStep,
+    state.formStep,
     trigger,
-    countryCode,
+    state.countryCode,
     currentCountryFields,
-    complianceValues,
-    financialFileMap,
+    state.complianceValues,
+    state.financialFileMap,
   ]);
 
   const prevStep = () => {
-    setGlobalError(null);
-    setFormStep((prev) => Math.max(prev - 1, 0));
-  }; // ── Submit ──────────────────────────────────────────────────────────────────
+    dispatch({ type: ActionType.SET_GLOBAL_ERROR, payload: null });
+    dispatch({
+      type: ActionType.SET_FORM_STEP,
+      payload: Math.max(state.formStep - 1, 0),
+    });
+  };
+
+  // ── Submit ──────────────────────────────────────────────────────────────────
   const onSubmit: SubmitHandler<VendorRegisterSchema> = async (
     data: VendorRegisterSchema,
   ) => {
-    setGlobalError(null);
+    dispatch({ type: ActionType.SET_GLOBAL_ERROR, payload: null });
 
     // Validate legal docs on final submit
     const missingLegal = validateRequiredDocuments(
       VendorDocumentTypes,
-      legalFileMap,
+      state.legalFileMap,
     );
-    setMissingLegalDocs(missingLegal);
+    dispatch({
+      type: ActionType.SET_MISSING_LEGAL_DOCS,
+      payload: missingLegal,
+    });
     if (missingLegal.length > 0) return;
 
     const formData = new FormData();
 
     // Attach all files with type prefix
-    [...financialFileMap, ...legalFileMap].forEach(({ file, type }) => {
-      if (file) {
-        formData.append(
-          "documents",
-          new File([file], `${type}__${file.name}`, { type: file.type }),
-        );
-      }
-    });
+    [...state.financialFileMap, ...state.legalFileMap].forEach(
+      ({ file, type }) => {
+        if (file) {
+          formData.append(
+            "documents",
+            new File([file], `${type}__${file.name}`, { type: file.type }),
+          );
+        }
+      },
+    );
 
     // Build compliance array from the controlled values map
     const compliance = currentCountryFields.map((f) => ({
       field_key: f.value,
-      field_value: complianceValues[f.value] ?? "",
+      field_value: state.complianceValues[f.value] ?? "",
       is_active: true,
       valid_until: "",
       field_details: [],
@@ -292,33 +418,27 @@ export default function VendorRegisterPage() {
       const result = await vendorRegister(formData);
       if (result?.status === 201) {
         reset();
-        setFinancialFileMap([]);
-        setLegalFileMap([]);
-        setComplianceValues({});
-        setCountryCode("");
-        setFormStep(0);
-        setShowSuccess(true);
+        dispatch({ type: ActionType.RESET_FORM_STATE });
       } else {
-        setGlobalError(
-          result?.message ?? "Registration failed. Please try again.",
-        );
+        dispatch({
+          type: ActionType.SET_GLOBAL_ERROR,
+          payload: result?.message ?? VENDOR_REGISTER_TEXT.ERROR_REG_FAILED,
+        });
       }
     } catch {
-      setGlobalError("Something went wrong. Please try again.");
+      dispatch({
+        type: ActionType.SET_GLOBAL_ERROR,
+        payload: VENDOR_REGISTER_TEXT.ERROR_GENERIC,
+      });
     }
   };
 
   // ── Compliance field handler ────────────────────────────────────────────────
   const handleComplianceChange = (key: string, val: string) => {
-    setComplianceValues((prev) => ({ ...prev, [key]: val }));
-    // Clear error on change
-    if (complianceErrors[key]) {
-      setComplianceErrors((prev) => {
-        const next = { ...prev };
-        delete next[key];
-        return next;
-      });
-    }
+    dispatch({
+      type: ActionType.UPDATE_COMPLIANCE_VALUE,
+      payload: { key, val },
+    });
   };
 
   const checkEmail = async () => {
@@ -326,23 +446,27 @@ export default function VendorRegisterPage() {
       AxiosAPI.get(`/v1/auth/verify-mail?email=${emailValue}`)
         .then((res) => {
           if (res.data.data.exists) {
-            setEmailError(
-              res.data.data.message ||
-                "Email already in use. Please use a different email or login.",
-            );
+            dispatch({
+              type: ActionType.SET_EMAIL_ERROR,
+              payload:
+                res.data.data.message ||
+                VENDOR_REGISTER_TEXT.ERROR_EMAIL_EXISTS,
+            });
           } else {
-            setEmailError(null);
+            dispatch({ type: ActionType.SET_EMAIL_ERROR, payload: null });
           }
         })
         .catch((err) => {
           if (err.response?.status === 409) {
-            setEmailError(
-              "Email already in use. Please use a different email or login.",
-            );
+            dispatch({
+              type: ActionType.SET_EMAIL_ERROR,
+              payload: VENDOR_REGISTER_TEXT.ERROR_EMAIL_EXISTS,
+            });
           }
         });
     }
   };
+
   useEffect(() => {
     const debouncedEmail = setTimeout(() => {
       checkEmail();
@@ -353,10 +477,12 @@ export default function VendorRegisterPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   return (
     <>
-      {showSuccess && (
+      {state.showSuccess && (
         <RegistrationSuccessModal
-          isOpen={showSuccess}
-          onClose={() => setShowSuccess(false)}
+          isOpen={state.showSuccess}
+          onClose={() =>
+            dispatch({ type: ActionType.SET_SHOW_SUCCESS, payload: false })
+          }
         />
       )}
 
@@ -366,19 +492,18 @@ export default function VendorRegisterPage() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-theme-caption font-semibold px-3 py-1.5 rounded-full mb-4">
               <Building2 size={13} />
-              Vendor Registration
+              {VENDOR_REGISTER_TEXT.PAGE_LABEL_REGISTRATION}
             </div>
             <h1 className="text-theme-h3 font-bold text-gray-900 tracking-tight mb-2">
-              Business Registration
+              {VENDOR_REGISTER_TEXT.PAGE_TITLE}
             </h1>
             <p className="text-gray-500 text-theme-body-sm text-balance max-w-md mx-auto">
-              Set up your organisation profile, configure your storefront
-              domain, and complete compliance requirements.
+              {VENDOR_REGISTER_TEXT.PAGE_DESC}
             </p>
           </div>
 
           {/* Step indicator */}
-          <StepIndicator current={formStep} total={STEPS.length} />
+          <StepIndicator current={state.formStep} total={STEPS.length} />
 
           {/* Card */}
           <div className="bg-white rounded-3xl border border-gray-200 shadow-xl shadow-gray-100/80 overflow-hidden">
@@ -390,14 +515,14 @@ export default function VendorRegisterPage() {
               noValidate
             >
               {/* ── Step 0: Organization Details ── */}
-              {formStep === 0 && (
+              {state.formStep === 0 && (
                 <section>
                   <div className="mb-6">
                     <h2 className="text-theme-h5 font-bold text-gray-900">
-                      Organization Details
+                      {VENDOR_REGISTER_TEXT.STEP_0_TITLE}
                     </h2>
                     <p className="text-gray-500 text-theme-body-sm mt-1">
-                      Basic information about your business and primary contact.
+                      {VENDOR_REGISTER_TEXT.STEP_0_DESC}
                     </p>
                   </div>
 
@@ -405,13 +530,15 @@ export default function VendorRegisterPage() {
                     {/* Company name — full width */}
                     <div className="col-span-2">
                       <label className={labelCls}>
-                        Company / Store Name{" "}
+                        {VENDOR_REGISTER_TEXT.COMPANY_NAME_LABEL}{" "}
                         <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register("company_name")}
                         className={inputCls}
-                        placeholder="Acme Retail Pvt. Ltd."
+                        placeholder={
+                          VENDOR_REGISTER_TEXT.COMPANY_NAME_PLACEHOLDER
+                        }
                       />
                       {errors.company_name && (
                         <p className={errorCls}>
@@ -423,12 +550,15 @@ export default function VendorRegisterPage() {
                     {/* First & last name */}
                     <div>
                       <label className={labelCls}>
-                        Owner First Name <span className="text-red-500">*</span>
+                        {VENDOR_REGISTER_TEXT.OWNER_FIRST_NAME_LABEL}{" "}
+                        <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register("store_owner_first_name")}
                         className={inputCls}
-                        placeholder="Rahul"
+                        placeholder={
+                          VENDOR_REGISTER_TEXT.OWNER_FIRST_NAME_PLACEHOLDER
+                        }
                       />
                       {errors.store_owner_first_name && (
                         <p className={errorCls}>
@@ -439,12 +569,15 @@ export default function VendorRegisterPage() {
 
                     <div>
                       <label className={labelCls}>
-                        Owner Last Name <span className="text-red-500">*</span>
+                        {VENDOR_REGISTER_TEXT.OWNER_LAST_NAME_LABEL}{" "}
+                        <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register("store_owner_last_name")}
                         className={inputCls}
-                        placeholder="Sharma"
+                        placeholder={
+                          VENDOR_REGISTER_TEXT.OWNER_LAST_NAME_PLACEHOLDER
+                        }
                       />
                       {errors.store_owner_last_name && (
                         <p className={errorCls}>
@@ -456,35 +589,40 @@ export default function VendorRegisterPage() {
                     {/* Email — full width */}
                     <div className="col-span-2">
                       <label className={labelCls}>
-                        Business Email <span className="text-red-500">*</span>
+                        {VENDOR_REGISTER_TEXT.EMAIL_LABEL}{" "}
+                        <span className="text-red-500">*</span>
                       </label>
                       <input
                         {...register("email")}
                         type="email"
                         className={inputCls}
-                        placeholder="owner@company.com"
+                        placeholder={VENDOR_REGISTER_TEXT.EMAIL_PLACEHOLDER}
                       />
                       <p className="text-theme-caption text-gray-400 mt-1">
-                        Your login credentials will be sent to this email after
-                        approval.
+                        {VENDOR_REGISTER_TEXT.EMAIL_HINT}
                       </p>
                       {errors.email && (
                         <p className={errorCls}>{errors.email.message}</p>
                       )}
-                      {emailError && <p className={errorCls}>{emailError}</p>}
+                      {state.emailError && (
+                        <p className={errorCls}>{state.emailError}</p>
+                      )}
                     </div>
 
                     {/* Phone with country dial code */}
                     <div className="col-span-2">
                       <label className={labelCls}>
-                        Phone Number <span className="text-red-500">*</span>
+                        {VENDOR_REGISTER_TEXT.PHONE_LABEL}{" "}
+                        <span className="text-red-500">*</span>
                       </label>
                       <div className="flex gap-2">
                         <select
                           {...register("country_code")}
                           className="border border-gray-200 rounded-xl px-3 py-2.5 text-theme-body-sm text-gray-700 bg-white outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all w-32 shrink-0"
                         >
-                          <option value="">Code</option>
+                          <option value="">
+                            {VENDOR_REGISTER_TEXT.PHONE_CODE_PLACEHOLDER}
+                          </option>
                           {COUNTRY_CODES.map((c) => (
                             <option key={c.value} value={c.value}>
                               {c.label}
@@ -494,7 +632,7 @@ export default function VendorRegisterPage() {
                         <input
                           {...register("phone_number")}
                           className={`${inputCls} flex-1`}
-                          placeholder="98765 43210"
+                          placeholder={VENDOR_REGISTER_TEXT.PHONE_PLACEHOLDER}
                         />
                       </div>
                       {(errors.country_code || errors.phone_number) && (
@@ -508,11 +646,13 @@ export default function VendorRegisterPage() {
                     {/* Category */}
                     <div>
                       <label className={labelCls}>
-                        Business Category{" "}
+                        {VENDOR_REGISTER_TEXT.CATEGORY_LABEL}{" "}
                         <span className="text-red-500">*</span>
                       </label>
                       <select {...register("category")} className={inputCls}>
-                        <option value="">Select category</option>
+                        <option value="">
+                          {VENDOR_REGISTER_TEXT.CATEGORY_PLACEHOLDER}
+                        </option>
                         {BUSINESS_CATEGORIES.map((c) => (
                           <option key={c} value={c}>
                             {c}
@@ -527,14 +667,16 @@ export default function VendorRegisterPage() {
                     {/* Company structure */}
                     <div>
                       <label className={labelCls}>
-                        Company Structure{" "}
+                        {VENDOR_REGISTER_TEXT.STRUCTURE_LABEL}{" "}
                         <span className="text-red-500">*</span>
                       </label>
                       <select
                         {...register("company_structure")}
                         className={inputCls}
                       >
-                        <option value="">Select structure</option>
+                        <option value="">
+                          {VENDOR_REGISTER_TEXT.STRUCTURE_PLACEHOLDER}
+                        </option>
                         {COMPANY_STRUCTURES.map((s) => (
                           <option key={s} value={s}>
                             {s}
@@ -552,29 +694,29 @@ export default function VendorRegisterPage() {
               )}
 
               {/* ── Step 1: Domain / Infra ── */}
-              {formStep === 1 && (
+              {state.formStep === 1 && (
                 <section>
                   <div className="mb-6">
                     <h2 className="text-theme-h5 font-bold text-gray-900">
-                      Storefront Domain
+                      {VENDOR_REGISTER_TEXT.STEP_1_TITLE}
                     </h2>
                     <p className="text-gray-500 text-theme-body-sm mt-1">
-                      Choose a unique subdomain for your vendor storefront.
-                      Customers will access your store at this URL.
+                      {VENDOR_REGISTER_TEXT.STEP_1_DESC}
                     </p>
                   </div>
 
                   <label className={labelCls}>
-                    Subdomain <span className="text-red-500">*</span>
+                    {VENDOR_REGISTER_TEXT.DOMAIN_LABEL}{" "}
+                    <span className="text-red-500">*</span>
                   </label>
                   <div className="flex">
                     <input
                       {...register("company_domain")}
                       className="flex-[2] border-2 border-r-0 border-gray-200 rounded-l-xl px-4 py-2.5 text-theme-body-sm font-mono text-gray-800 placeholder:text-gray-400 outline-none focus:border-blue-400 transition-all bg-white"
-                      placeholder="your-store"
+                      placeholder={VENDOR_REGISTER_TEXT.DOMAIN_PLACEHOLDER}
                     />
                     <span className="border-2 border-gray-200 bg-gray-50 rounded-r-xl px-4 py-2.5 text-theme-body-sm text-gray-500 flex items-center whitespace-nowrap select-none">
-                      .platform.com
+                      {VENDOR_REGISTER_TEXT.DOMAIN_SUFFIX}
                     </span>
                   </div>
                   {errors.company_domain && (
@@ -582,9 +724,9 @@ export default function VendorRegisterPage() {
                   )}
                   <ul className="mt-4 space-y-1.5">
                     {[
-                      "Lowercase letters, numbers, and hyphens only",
-                      "Cannot start or end with a hyphen",
-                      "3 – 63 characters",
+                      VENDOR_REGISTER_TEXT.DOMAIN_HINT_1,
+                      VENDOR_REGISTER_TEXT.DOMAIN_HINT_2,
+                      VENDOR_REGISTER_TEXT.DOMAIN_HINT_3,
                     ].map((hint) => (
                       <li
                         key={hint}
@@ -599,40 +741,38 @@ export default function VendorRegisterPage() {
               )}
 
               {/* ── Step 2: Financial Compliance ── */}
-              {formStep === 2 && (
+              {state.formStep === 2 && (
                 <section>
                   <div className="mb-6">
                     <h2 className="text-theme-h5 font-bold text-gray-900">
-                      Legal & Financial Compliance
+                      {VENDOR_REGISTER_TEXT.STEP_2_TITLE}
                     </h2>
                     <p className="text-gray-500 text-theme-body-sm mt-1">
-                      Required regulatory identifiers for your jurisdiction. All
-                      required fields must pass format validation.
+                      {VENDOR_REGISTER_TEXT.STEP_2_DESC}
                     </p>
                   </div>
 
                   {/* Country picker */}
                   <div className="mb-1">
                     <label className={labelCls}>
-                      Country of Registration{" "}
+                      {VENDOR_REGISTER_TEXT.COUNTRY_LABEL}{" "}
                       <span className="text-red-500">*</span>
                     </label>
                     <select
                       className={inputCls}
-                      value={countryCode}
+                      value={state.countryCode}
                       onChange={(e) => {
                         const selectedCode = e.target.value;
                         if (selectedCode) {
-                          setComplianceValues({});
-                          setComplianceErrors({});
-                          setMissingFinancialDocs([]);
-                          setFinancialFileMap([]);
+                          dispatch({
+                            type: ActionType.RESET_ON_COUNTRY_CHANGE,
+                            payload: selectedCode,
+                          });
                         }
-                        setCountryCode(selectedCode);
                       }}
                     >
                       <option value="" disabled>
-                        Select your country
+                        {VENDOR_REGISTER_TEXT.COUNTRY_PLACEHOLDER}
                       </option>
                       {COUNTRIES.map((c) => (
                         <option key={c.country_code} value={c.country_code}>
@@ -644,51 +784,66 @@ export default function VendorRegisterPage() {
 
                   {/* Dynamic compliance fields */}
                   <FinancialCompliance
-                    country_code={countryCode}
+                    country_code={state.countryCode}
                     fields={currentCountryFields}
-                    values={complianceValues}
+                    values={state.complianceValues}
                     onChange={handleComplianceChange}
-                    externalErrors={complianceErrors}
+                    externalErrors={state.complianceErrors}
                   />
 
                   {/* Financial document uploads */}
-                  {countryCode && currentCountryFields.length > 0 && (
+                  {state.countryCode && currentCountryFields.length > 0 && (
                     <DocUploadInput
-                      setFileMap={setFinancialFileMap}
-                      fileMap={financialFileMap}
+                      setFileMap={(files) =>
+                        dispatch({
+                          type: ActionType.SET_FINANCIAL_FILE_MAP,
+                          payload:
+                            typeof files === "function"
+                              ? files(state.financialFileMap)
+                              : files,
+                        })
+                      }
+                      fileMap={state.financialFileMap}
                       typeList={currentCountryFields}
-                      title="Supporting Financial Documents"
-                      missingDocs={missingFinancialDocs}
+                      title={VENDOR_REGISTER_TEXT.FINANCIAL_DOCS_TITLE}
+                      missingDocs={state.missingFinancialDocs}
                     />
                   )}
                 </section>
               )}
 
               {/* ── Step 3: Legal Documents ── */}
-              {formStep === 3 && (
+              {state.formStep === 3 && (
                 <section>
                   <div className="mb-6">
                     <h2 className="text-theme-h5 font-bold text-gray-900">
-                      Legal Business Documents
+                      {VENDOR_REGISTER_TEXT.STEP_3_TITLE}
                     </h2>
                     <p className="text-gray-500 text-theme-body-sm mt-1">
-                      Upload clear, legible copies of all required business
-                      registration documents. Accepted formats: PDF, JPG, PNG.
+                      {VENDOR_REGISTER_TEXT.STEP_3_DESC}
                     </p>
                   </div>
 
                   <DocUploadInput
-                    setFileMap={setLegalFileMap}
-                    fileMap={legalFileMap}
+                    setFileMap={(files) =>
+                      dispatch({
+                        type: ActionType.SET_LEGAL_FILE_MAP,
+                        payload:
+                          typeof files === "function"
+                            ? files(state.legalFileMap)
+                            : files,
+                      })
+                    }
+                    fileMap={state.legalFileMap}
                     typeList={VendorDocumentTypes}
-                    title="Business Registration Documents"
-                    missingDocs={missingLegalDocs}
+                    title={VENDOR_REGISTER_TEXT.LEGAL_DOCS_TITLE}
+                    missingDocs={state.missingLegalDocs}
                   />
 
                   {/* Global submit error */}
-                  {globalError && (
+                  {state.globalError && (
                     <div className="mt-4 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-theme-body-sm">
-                      {globalError}
+                      {state.globalError}
                     </div>
                   )}
                 </section>
@@ -696,31 +851,31 @@ export default function VendorRegisterPage() {
 
               {/* ── Navigation buttons ── */}
               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                {formStep > 0 ? (
+                {state.formStep > 0 ? (
                   <button
                     type="button"
                     onClick={prevStep}
                     className="flex items-center gap-2 text-theme-body-sm font-semibold text-gray-600 hover:text-gray-900 border border-gray-200 hover:border-gray-300 bg-white rounded-xl px-5 py-2.5 transition-all"
                   >
                     <ChevronLeft size={16} />
-                    Previous
+                    {VENDOR_REGISTER_TEXT.BTN_PREVIOUS}
                   </button>
                 ) : (
                   <Link
                     href="/auth/vendorLogin"
                     className="text-theme-body-sm text-gray-400 hover:text-blue-600 underline underline-offset-2 transition-colors"
                   >
-                    Already registered? Log in
+                    {VENDOR_REGISTER_TEXT.LINK_LOGIN}
                   </Link>
                 )}
 
-                {formStep < STEPS.length - 1 ? (
+                {state.formStep < STEPS.length - 1 ? (
                   <button
                     type="button"
                     onClick={nextStep}
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-theme-body-sm font-semibold px-6 py-2.5 rounded-xl transition-all shadow-sm shadow-blue-200"
                   >
-                    Continue
+                    {VENDOR_REGISTER_TEXT.BTN_CONTINUE}
                     <ChevronRight size={16} />
                   </button>
                 ) : (
@@ -732,11 +887,11 @@ export default function VendorRegisterPage() {
                     {isSubmitting ? (
                       <>
                         <Loader2 size={16} className="animate-spin" />
-                        Submitting…
+                        {VENDOR_REGISTER_TEXT.BTN_SUBMITTING}
                       </>
                     ) : (
                       <>
-                        Submit Registration
+                        {VENDOR_REGISTER_TEXT.BTN_SUBMIT}
                         <CheckCircle2 size={16} />
                       </>
                     )}
@@ -746,7 +901,8 @@ export default function VendorRegisterPage() {
 
               {/* Step counter */}
               <p className="text-center text-theme-caption text-gray-400">
-                Step {formStep + 1} of {STEPS.length}
+                {VENDOR_REGISTER_TEXT.STEP_TEXT_PREFIX} {state.formStep + 1}{" "}
+                {VENDOR_REGISTER_TEXT.STEP_TEXT_MID} {STEPS.length}
               </p>
             </form>
           </div>

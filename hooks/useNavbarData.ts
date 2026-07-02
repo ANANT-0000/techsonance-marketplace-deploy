@@ -119,8 +119,8 @@ interface NavbarApiResponse {
 interface NavbarState {
   status: NavbarFetchStatus;
   lang: string;
-  l1Config: L1NavbarPayload;
-  l2Config: L2MegaMenuPayload;
+  l1Config: L1NavbarPayload | null;
+  l2Config: L2MegaMenuPayload | null;
   menuLinks: (L1NavItem | Record<string, string | undefined>)[];
   navbarConfig: NavbarApiResponse | null;
 }
@@ -281,6 +281,8 @@ function navbarReducer(state: NavbarState, action: NavbarAction): NavbarState {
       return {
         ...state,
         status: NavbarFetchStatus.ERROR,
+        menuLinks: [],
+        l1Config: state.l1Config ? { ...state.l1Config, navigationItems: [] } : null,
       };
     case NavbarActionType.SET_LANG:
       return {
@@ -297,9 +299,9 @@ function navbarReducer(state: NavbarState, action: NavbarAction): NavbarState {
 const initialNavbarState: NavbarState = {
   status: NavbarFetchStatus.IDLE,
   lang: NavbarConfig.DEFAULT_LOCALE,
-  l1Config: CMS_L1_NAV_PAYLOAD,
-  l2Config: CMS_L2_MEGA_PAYLOAD,
-  menuLinks: NAV_LINKS,
+  l1Config: null,
+  l2Config: null,
+  menuLinks: [],
   navbarConfig: null,
 };
 
@@ -343,7 +345,9 @@ export function useNavbarData() {
       }
 
       try {
-        const res: AxiosResponse<any> = await AxiosAPI.get(`/v1/navbar`);
+        const res: AxiosResponse<any> = await AxiosAPI.get(`/v1/navbar`, {
+          headers: { "x-suppress-toast": true },
+        });
         const rawData = res.data;
         const data: NavbarApiResponse = rawData?.data ?? rawData;
         if (data?.navigationItems) {
@@ -357,10 +361,7 @@ export function useNavbarData() {
           dispatch({ type: NavbarActionType.FETCH_ERROR });
         }
       } catch (error) {
-        // Tier 1: User-Facing Error feedback
-        toast.error(NavbarConfig.ERROR_USER_MESSAGE);
-        // Tier 2: Developer Visibility logs
-
+        // Suppress toasts on failure
         dispatch({ type: NavbarActionType.FETCH_ERROR });
       }
     },

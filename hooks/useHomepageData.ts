@@ -54,7 +54,9 @@ export function useHomepageData() {
     try {
       // 1. Fetch CMS Home Page content (fresh from API first)
       try {
-        const cmsRes = await AxiosAPI.get(`/v1/cms/home?lang=${currentLang}`);
+        const cmsRes = await AxiosAPI.get(`/v1/cms/home?lang=${currentLang}`, {
+          headers: { "x-suppress-toast": true },
+        });
         const cmsRow = cmsRes.data?.data ?? cmsRes.data;
         const rawContent = cmsRow?.content;
 
@@ -116,6 +118,7 @@ export function useHomepageData() {
       try {
         const bannersRes = await AxiosAPI.get(
           "/v1/banners/active?placement=homepage_hero",
+          { headers: { "x-suppress-toast": true } }
         );
         if (bannersRes.data && Array.isArray(bannersRes.data)) {
           const urls = bannersRes.data
@@ -140,6 +143,7 @@ export function useHomepageData() {
       try {
         const categoriesRes = await AxiosAPI.get(
           "/v1/categories/homepage?limit=8",
+          { headers: { "x-suppress-toast": true } }
         );
         if (categoriesRes.data && Array.isArray(categoriesRes.data.data)) {
           const formatted = categoriesRes.data.data.map((cat: any) => ({
@@ -265,5 +269,6 @@ export function useHomepageData() {
     categories,
     heroSlides,
     isLoading,
+    cmsContent,
   };
 }

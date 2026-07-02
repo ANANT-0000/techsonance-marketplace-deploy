@@ -427,3 +427,54 @@ export const UiText = {
     },
   },
 };
+
+export const SHIPPING_TEXT = {
+  PAGE_TITLE: "Shipping & Logistics Settings",
+  PAGE_DESC:
+    "Configure how shipping costs are calculated on your storefront and manage fulfillment api credentials.",
+  LOGISTICS_MODE_TITLE: "Fulfillment Logistics Mode",
+  LOGISTICS_MODE_DESC:
+    "Determine whether orders are fulfilled under the central platform account (Platform Proxy Mode) or using your own Shiprocket credentials.",
+  PLATFORM_PROXY_LABEL: "Platform Proxy Mode",
+  PLATFORM_PROXY_DESC:
+    "Fulfillment goes through the Platform's Master Shiprocket wallet. Shipping costs are recovered via gateway splits.",
+  STANDALONE_LABEL: "Standalone Mode (BYO Credentials)",
+  STANDALONE_DESC:
+    "Fulfilment runs directly on your own Shiprocket account. Enter your verified email and password below.",
+  CREDS_TITLE: "Shiprocket Account Credentials",
+  CREDS_DESC:
+    "Provide your API logins. These will be encrypted securely using AES-256-GCM and will never be exposed.",
+  API_EMAIL_LABEL: "Shiprocket API Email",
+  API_EMAIL_PLACEHOLDER: "Enter Shiprocket Account Email",
+  API_PASSWORD_LABEL: "Shiprocket API Password",
+  API_PASSWORD_PLACEHOLDER: "Enter Shiprocket Account Password",
+  COST_CALC_TITLE: "Storefront Delivery Cost Calculations",
+  COST_CALC_DESC:
+    "Configure how standard courier shipping is charged to customers on your storefront.",
+  FLAT_RATE_LABEL: "Standard Flat Rate",
+  FLAT_RATE_DESC:
+    "Charge a fixed shipping amount for all orders below the threshold.",
+  DYNAMIC_RATE_LABEL: "Dynamic Customer Rate",
+  DYNAMIC_RATE_DESC:
+    "Automatically calculate and charge live shipping rates using Shiprocket.",
+  STD_SHIPPING_LABEL: "Standard Shipping Flat Rate (₹)",
+  SAVED_TEXT: "Saved",
+  EDIT_TEXT: "Edit",
+  CURRENCY_SYMBOL: "₹",
+  FLAT_FEE_HINT:
+    "Flat shipping fee charged if order amount does not reach the free delivery threshold.",
+  FREE_SHIPPING_LABEL: "Enable Free Shipping Rule",
+  FREE_SHIPPING_HINT: "Unlock free delivery above a cart value threshold.",
+  FREE_SHIPPING_THRESHOLD_LABEL: "Free Shipping Order Threshold Value (₹)",
+  FREE_SHIPPING_ACTIVE_HINT:
+    "Orders at or above this cart total amount will enjoy free delivery.",
+  FREE_SHIPPING_INACTIVE_HINT:
+    "Enable the Free Shipping Rule above to configure the threshold value.",
+  BTN_SAVE: "Save Configuration",
+  DEFAULT_FREE_DELIVERY_THRESHOLD: "0.00",
+  DEFAULT_STANDARD_DELIVERY_CHARGE: "50.00",
+  SUCCESS_MSG: "Shipping settings saved successfully.",
+  ERROR_MSG: "Failed to update shipping settings",
+  SAVE_TIMEOUT_MS: 3000,
+  API_SECRET_MASK: "********",
+};

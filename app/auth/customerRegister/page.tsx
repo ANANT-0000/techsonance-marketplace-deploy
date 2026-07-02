@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useReducer, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -14,11 +15,41 @@ import {
 import { getCompanyDomain } from "@/lib/get-domain";
 import { BASE_API_URL, AUTH_TEXT, ENV_DEVELOPMENT } from "@/constants";
 
+export enum ActionType {
+  SET_SERVER_ERROR = 'SET_SERVER_ERROR',
+  SET_IS_SUBMITTING = 'SET_IS_SUBMITTING',
+  SET_IS_GOOGLE_LOADING = 'SET_IS_GOOGLE_LOADING',
+}
+
+type Action =
+  | { type: ActionType.SET_SERVER_ERROR; payload: string | null }
+  | { type: ActionType.SET_IS_SUBMITTING; payload: boolean }
+  | { type: ActionType.SET_IS_GOOGLE_LOADING; payload: boolean };
+
+interface State {
+  serverError: string | null;
+  isSubmitting: boolean;
+  isGoogleLoading: boolean;
+}
+
+const initialState: State = {
+  serverError: null,
+  isSubmitting: false,
+  isGoogleLoading: false,
+};
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case ActionType.SET_SERVER_ERROR: return { ...state, serverError: action.payload };
+    case ActionType.SET_IS_SUBMITTING: return { ...state, isSubmitting: action.payload };
+    case ActionType.SET_IS_GOOGLE_LOADING: return { ...state, isGoogleLoading: action.payload };
+    default: return state;
+  }
+}
+
 export default function CustomerRegisterPage() {
   const router = useRouter();
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const {
     register,
@@ -48,8 +79,8 @@ export default function CustomerRegisterPage() {
   }, [errors]);
 
   const onSubmit = async (data: CustomerRegisterSchemaType) => {
-    setIsSubmitting(true);
-    setServerError(null);
+    dispatch({ type: ActionType.SET_IS_SUBMITTING, payload: true });
+    dispatch({ type: ActionType.SET_SERVER_ERROR, payload: null });
 
     try {
       const companyDomain = await getCompanyDomain();
@@ -58,18 +89,18 @@ export default function CustomerRegisterPage() {
       if (response?.status === 201) {
         router.push("/auth/customerLogin?registered=true");
       } else {
-        setServerError(response?.message || AUTH_TEXT.REGISTER.FAIL_GENERIC);
+        dispatch({ type: ActionType.SET_SERVER_ERROR, payload: response?.message || AUTH_TEXT.REGISTER.FAIL_GENERIC });
       }
     } catch (err: any) {
-      setServerError(err.message || AUTH_TEXT.REGISTER.FAIL_SERVER);
+      dispatch({ type: ActionType.SET_SERVER_ERROR, payload: err.message || AUTH_TEXT.REGISTER.FAIL_SERVER });
     } finally {
-      setIsSubmitting(false);
+      dispatch({ type: ActionType.SET_IS_SUBMITTING, payload: false });
     }
   };
 
   const handleGoogleRegister = async () => {
-    setIsGoogleLoading(true);
-    setServerError(null);
+    dispatch({ type: ActionType.SET_IS_GOOGLE_LOADING, payload: true });
+    dispatch({ type: ActionType.SET_SERVER_ERROR, payload: null });
 
     try {
       const domain = await getCompanyDomain();
@@ -78,8 +109,8 @@ export default function CustomerRegisterPage() {
       }
       window.location.href = `${BASE_API_URL}/v1/auth/google?domain=${encodeURIComponent(domain)}`;
     } catch (error) {
-      setServerError(AUTH_TEXT.REGISTER.GOOGLE_INIT_FAIL);
-      setIsGoogleLoading(false);
+      dispatch({ type: ActionType.SET_SERVER_ERROR, payload: AUTH_TEXT.REGISTER.GOOGLE_INIT_FAIL });
+      dispatch({ type: ActionType.SET_IS_GOOGLE_LOADING, payload: false });
     }
   };
 
@@ -98,7 +129,7 @@ export default function CustomerRegisterPage() {
           </div>
 
           {/* Server Error Alert */}
-          {serverError && (
+          {state.serverError && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
               <svg
                 className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0"
@@ -111,7 +142,7 @@ export default function CustomerRegisterPage() {
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="text-red-700 text-theme-body-sm font-medium">{serverError}</p>
+              <p className="text-red-700 text-theme-body-sm font-medium">{state.serverError}</p>
             </div>
           )}
 
@@ -119,7 +150,7 @@ export default function CustomerRegisterPage() {
           <button
             type="button"
             onClick={handleGoogleRegister}
-            disabled={isGoogleLoading || isSubmitting}
+            disabled={state.isGoogleLoading || state.isSubmitting}
             className="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 text-slate-700 py-3 rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm mb-6"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -141,7 +172,7 @@ export default function CustomerRegisterPage() {
               />
             </svg>
             <span>
-              {isGoogleLoading
+              {state.isGoogleLoading
                 ? AUTH_TEXT.REGISTER.GOOGLE_LOADING
                 : AUTH_TEXT.REGISTER.GOOGLE_BTN}
             </span>
@@ -186,7 +217,7 @@ export default function CustomerRegisterPage() {
                         ? "border-red-400 focus:ring-red-200 bg-red-50"
                         : "border-slate-300 focus:ring-blue-200 focus:border-blue-400"
                     }`}
-                    disabled={isSubmitting || isGoogleLoading}
+                    disabled={state.isSubmitting || state.isGoogleLoading}
                   />
                   {errors[field.id as keyof CustomerRegisterSchemaType] && (
                     <p className="text-red-600 text-theme-caption font-medium flex items-center gap-1">
@@ -213,10 +244,10 @@ export default function CustomerRegisterPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting || isGoogleLoading}
+              disabled={state.isSubmitting || state.isGoogleLoading}
               className="w-full font-bold py-3 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg disabled:shadow-none bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white disabled:from-blue-400 disabled:to-blue-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {isSubmitting ? (
+              {state.isSubmitting ? (
                 <>
                   <svg
                     className="animate-spin h-5 w-5 text-white"

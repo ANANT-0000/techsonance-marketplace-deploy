@@ -36,15 +36,17 @@ export function useFooterData() {
     }
 
     try {
-      const res = await AxiosAPI.get(`/v1/cms/footer?lang=${currentLang}`);
+      const res = await AxiosAPI.get(`/v1/cms/footer?lang=${currentLang}`, {
+        headers: { "x-suppress-toast": true },
+      });
       const cmsRow = res.data?.data ?? res.data;
       const rawContent = cmsRow?.content;
       if (rawContent) {
         const parsed =
           typeof rawContent === "string" ? JSON.parse(rawContent) : rawContent;
 
-        const content = parsed.content || FOOTER_CONTENT;
-        const bottomText = parsed.bottom_text || FOOTER_BOTTOM_TEXT;
+        const content = parsed.content || [];
+        const bottomText = parsed.bottom_text || null;
         setFooterContent(content);
         setFooterBottomText(bottomText);
         cacheData(`${FOOTER_CACHE_KEY}_${currentLang}`, {

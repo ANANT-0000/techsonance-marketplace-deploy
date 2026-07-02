@@ -39,7 +39,9 @@ function reducer(state: State, action: Partial<State>): State {
   return { ...state, ...action };
 }
 
-export default function OrderDetailPage() {
+import { Suspense } from "react";
+
+function OrderDetailPageContent() {
   const { orderid } = useParams<{ orderid: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -518,5 +520,19 @@ export default function OrderDetailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function OrderDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-20 text-center">
+          <Loader2 className="animate-spin mx-auto text-blue-600" />
+        </div>
+      }
+    >
+      <OrderDetailPageContent />
+    </Suspense>
   );
 }

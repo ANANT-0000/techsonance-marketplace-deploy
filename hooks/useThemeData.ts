@@ -122,7 +122,9 @@ export function useThemeData() {
     }
 
     try {
-      const res = await AxiosAPI.get("/v1/company-identity/branding");
+      const res = await AxiosAPI.get("/v1/company-identity/branding", {
+        headers: { "x-suppress-toast": true },
+      });
       const branding = res.data?.data ?? res.data;
       if (branding && typeof branding === "object" && branding.primary_color) {
         let homepageLayout = branding.homepage_layout;

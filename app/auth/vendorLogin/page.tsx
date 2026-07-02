@@ -2,12 +2,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { loginSchema } from "@/utils/validation";
-import { vendorLogin } from "@/utils/authApiClient";
-import { RootState } from "@/lib/store";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import {
   Eye,
   EyeOff,
@@ -20,6 +16,11 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+
+import { loginSchema } from "@/utils/validation";
+import { vendorLogin } from "@/utils/authApiClient";
+import { RootState } from "@/lib/store";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import {
   loginEnd,
   loginFailure,
@@ -27,31 +28,151 @@ import {
   loginSuccess,
 } from "@/lib/features/auth/authSlice";
 import { authToken } from "@/utils/authToken";
-import { VendorUser } from "@/utils/Types";
 import { CookieConsentBanner } from "@/components/common/CookieConsentBanner";
-import { AUTH_TEXT, COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE } from "@/constants";
+import {
+  AUTH_TEXT,
+  COOKIE_CONSENT_KEY,
+  COOKIE_CONSENT_VALUE,
+} from "@/constants";
+import { VENDOR_LOGIN_TEXT } from "@/constants/authText";
 
-interface LoginFormData {
-  email: string;
-  password: string;
+// ==========================================
+// 1. CONSTANTS & ENUMS
+// ==========================================
+
+export enum UiState {
+  IDLE = "idle",
+  LOADING = "loading",
+  SUCCESS = "success",
+  ERROR = "error",
+  PROMPT_CHANGE_PASSWORD = "prompt_change_password",
 }
-type UiState =
-  | "idle"
-  | "loading"
-  | "success"
-  | "error"
-  | "prompt_change_password";
 
-const STEPS = [
+export enum StepStatus {
+  PENDING = "pending",
+  ACTIVE = "active",
+  DONE = "done",
+  FAILED = "failed",
+}
+
+export enum ActionType {
+  SET_UI_STATE = "SET_UI_STATE",
+  SET_STEP = "SET_STEP",
+  SET_STEPS = "SET_STEPS",
+  TOGGLE_SHOW_PASS = "TOGGLE_SHOW_PASS",
+  SET_REDIRECT_PROGRESS = "SET_REDIRECT_PROGRESS",
+  SET_COOKIES_BLOCKED = "SET_COOKIES_BLOCKED",
+  RESET_FORM = "RESET_FORM",
+}
+
+const REDIRECT_PATH = "/vendor";
+const REGISTER_PATH = "/auth/vendorRegister";
+const CHANGE_PASSWORD_PATH = "/vendor/settings/change-password";
+
+const ERROR_MSG_LOGIN_FAILED = "Login failed";
+const ERROR_MSG_INVALID_CREDS = "Invalid credentials. Please try again.";
+
+const LOGIN_STEPS = [
   "Verifying business credentials",
   "Checking store permissions",
   "Loading your dashboard",
 ];
 
+const TIMING = {
+  REDIRECT_TOTAL_MS: 3000,
+  REDIRECT_TICK_MS: 50,
+  STEP_1_DELAY_MS: 650,
+  STEP_2_DELAY_MS: 650,
+  STEP_3_DELAY_MS: 350,
+};
+
+const STEP_STYLES: Record<StepStatus, string> = {
+  [StepStatus.PENDING]: "bg-gray-50 border-gray-100 text-gray-400",
+  [StepStatus.ACTIVE]: "bg-blue-50 border-blue-100 text-blue-700",
+  [StepStatus.DONE]: "bg-green-50 border-green-100 text-green-700",
+  [StepStatus.FAILED]: "bg-red-50 border-red-100 text-red-600",
+};
+
+// ==========================================
+// 2. STATE MANAGEMENT (useReducer)
+// ==========================================
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+interface State {
+  uiState: UiState;
+  steps: StepStatus[];
+  showPass: boolean;
+  redirectPct: number;
+  countdown: number;
+  cookiesBlocked: boolean;
+}
+
+export type Action =
+  | { type: ActionType.SET_UI_STATE; payload: UiState }
+  | {
+      type: ActionType.SET_STEP;
+      payload: { index: number; status: StepStatus };
+    }
+  | { type: ActionType.SET_STEPS; payload: StepStatus[] }
+  | { type: ActionType.TOGGLE_SHOW_PASS }
+  | {
+      type: ActionType.SET_REDIRECT_PROGRESS;
+      payload: { pct: number; countdown: number };
+    }
+  | { type: ActionType.SET_COOKIES_BLOCKED; payload: boolean }
+  | { type: ActionType.RESET_FORM };
+
+const initialState: State = {
+  uiState: UiState.IDLE,
+  steps: [StepStatus.PENDING, StepStatus.PENDING, StepStatus.PENDING],
+  showPass: false,
+  redirectPct: 100,
+  countdown: 3,
+  cookiesBlocked: false,
+};
+
+function loginReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case ActionType.SET_UI_STATE:
+      return { ...state, uiState: action.payload };
+    case ActionType.SET_STEP:
+      return {
+        ...state,
+        steps: state.steps.map((v, idx) =>
+          idx === action.payload.index ? action.payload.status : v,
+        ),
+      };
+    case ActionType.SET_STEPS:
+      return { ...state, steps: action.payload };
+    case ActionType.TOGGLE_SHOW_PASS:
+      return { ...state, showPass: !state.showPass };
+    case ActionType.SET_REDIRECT_PROGRESS:
+      return {
+        ...state,
+        redirectPct: action.payload.pct,
+        countdown: action.payload.countdown,
+      };
+    case ActionType.SET_COOKIES_BLOCKED:
+      return { ...state, cookiesBlocked: action.payload };
+    case ActionType.RESET_FORM:
+      return { ...initialState, cookiesBlocked: state.cookiesBlocked };
+    default:
+      return state;
+  }
+}
+
+// ==========================================
+// 3. COMPONENTS
+// ==========================================
+
 const StoreIllustration = () => (
   <svg
     width="100%"
-    viewBox="0 0 300 200"
+    viewBox="0 0 400 200"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
@@ -185,23 +306,16 @@ const StoreIllustration = () => (
   </svg>
 );
 
-type StepStatus = "pending" | "active" | "done" | "failed";
-
 const StepIcon = ({ status }: { status: StepStatus }) => {
-  if (status === "active")
+  if (status === StepStatus.ACTIVE)
     return (
       <span className="block w-3.5 h-3.5 rounded-full border-2 border-blue-200 border-t-blue-600 animate-spin" />
     );
-  if (status === "done") return <Check size={13} className="text-green-600" />;
-  if (status === "failed") return <X size={13} className="text-red-500" />;
+  if (status === StepStatus.DONE)
+    return <Check size={13} className="text-green-600" />;
+  if (status === StepStatus.FAILED)
+    return <X size={13} className="text-red-500" />;
   return <Clock size={13} className="text-gray-300" />;
-};
-
-const stepStyle: Record<StepStatus, string> = {
-  pending: "bg-gray-50 border-gray-100 text-gray-400",
-  active: "bg-blue-50 border-blue-100 text-blue-700",
-  done: "bg-green-50 border-green-100 text-green-700",
-  failed: "bg-red-50  border-red-100  text-red-600",
 };
 
 export default function VendorLoginPage() {
@@ -209,16 +323,8 @@ export default function VendorLoginPage() {
   const { error, user } = useAppSelector((state: RootState) => state.auth);
   const dispatch = useAppDispatch();
   const token = authToken();
-  const [uiState, setUiState] = useState<UiState>("idle");
-  const [steps, setSteps] = useState<StepStatus[]>([
-    "pending",
-    "pending",
-    "pending",
-  ]);
-  const [showPass, setShowPass] = useState(false);
-  const [redirectPct, setRedirectPct] = useState(100);
-  const [countdown, setCountdown] = useState(3);
-  const [cookiesBlocked, setCookiesBlocked] = useState(false);
+
+  const [state, dispatchState] = useReducer(loginReducer, initialState);
 
   const {
     reset,
@@ -231,100 +337,118 @@ export default function VendorLoginPage() {
   });
 
   useEffect(() => {
-    setCookiesBlocked(!navigator.cookieEnabled);
+    dispatchState({
+      type: ActionType.SET_COOKIES_BLOCKED,
+      payload: !navigator.cookieEnabled,
+    });
     if (token) {
-      router.replace(`/vendor`);
+      router.replace(REDIRECT_PATH);
     }
-  }, [token]);
+  }, [token, router]);
 
-  const setStep = (i: number, s: StepStatus) =>
-    setSteps((prev) => prev.map((v, idx) => (idx === i ? s : v)));
+  const setStep = (index: number, status: StepStatus) =>
+    dispatchState({ type: ActionType.SET_STEP, payload: { index, status } });
 
   const startRedirect = () => {
     let elapsed = 0;
-    const total = 3000,
-      tick = 50;
+    const { REDIRECT_TOTAL_MS, REDIRECT_TICK_MS } = TIMING;
+
     const t = setInterval(() => {
-      elapsed += tick;
-      setRedirectPct(Math.max(0, 100 - (elapsed / total) * 100));
-      setCountdown(Math.ceil((total - elapsed) / 1000));
-      if (elapsed >= total) {
+      elapsed += REDIRECT_TICK_MS;
+      dispatchState({
+        type: ActionType.SET_REDIRECT_PROGRESS,
+        payload: {
+          pct: Math.max(0, 100 - (elapsed / REDIRECT_TOTAL_MS) * 100),
+          countdown: Math.ceil((REDIRECT_TOTAL_MS - elapsed) / 1000),
+        },
+      });
+
+      if (elapsed >= REDIRECT_TOTAL_MS) {
         clearInterval(t);
-        router.push(`/vendor`);
+        router.push(REDIRECT_PATH);
       }
-    }, tick);
+    }, REDIRECT_TICK_MS);
   };
 
   const onSubmit = async (data: LoginFormData) => {
     localStorage.setItem(COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE);
     dispatch(loginStart());
-    setUiState("loading");
-    setSteps(["active", "pending", "pending"]);
+    dispatchState({ type: ActionType.SET_UI_STATE, payload: UiState.LOADING });
+    dispatchState({
+      type: ActionType.SET_STEPS,
+      payload: [StepStatus.ACTIVE, StepStatus.PENDING, StepStatus.PENDING],
+    });
 
     const result = await vendorLogin(data, dispatch);
     if (result?.status === 200 && result?.user) {
-      setStep(0, "done");
-      setStep(1, "active");
-      await new Promise((r) => setTimeout(r, 650));
-      setStep(1, "done");
-      setStep(2, "active");
-      await new Promise((r) => setTimeout(r, 650));
-      setStep(2, "done");
-      await new Promise((r) => setTimeout(r, 350));
+      setStep(0, StepStatus.DONE);
+      setStep(1, StepStatus.ACTIVE);
+      await new Promise((r) => setTimeout(r, TIMING.STEP_1_DELAY_MS));
+
+      setStep(1, StepStatus.DONE);
+      setStep(2, StepStatus.ACTIVE);
+      await new Promise((r) => setTimeout(r, TIMING.STEP_2_DELAY_MS));
+
+      setStep(2, StepStatus.DONE);
+      await new Promise((r) => setTimeout(r, TIMING.STEP_3_DELAY_MS));
+
       reset();
       dispatch(loginSuccess(result.user));
       dispatch(loginEnd());
 
       if (result?.user?.user?.password_change_required) {
-        setUiState("prompt_change_password");
+        dispatchState({
+          type: ActionType.SET_UI_STATE,
+          payload: UiState.PROMPT_CHANGE_PASSWORD,
+        });
       } else {
-        setUiState("success");
+        dispatchState({
+          type: ActionType.SET_UI_STATE,
+          payload: UiState.SUCCESS,
+        });
         startRedirect();
       }
     } else {
-      setStep(0, "failed");
-      dispatch(loginFailure(result?.message || "Login failed"));
-      setUiState("error");
+      setStep(0, StepStatus.FAILED);
+      dispatch(loginFailure(result?.message || ERROR_MSG_LOGIN_FAILED));
+      dispatchState({ type: ActionType.SET_UI_STATE, payload: UiState.ERROR });
     }
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 font-sans bg-white">
+    <main className="max-h-[80vh] max-w-[80vw] flex items-center justify-center p-4 font-sans bg-white">
       <div
         className="w-full grid grid-cols-2 bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200"
-        style={{ minHeight: "620px" }}
+        style={{ minHeight: "620px", maxHeight: "90vh" }}
       >
         {/* ── LEFT PANEL — illustration ── */}
-        <div className="bg-[#1a56db] p-10 flex flex-col justify-between relative overflow-hidden">
+        <div className="bg-[#1a56db] p-5 flex flex-col justify-between relative overflow-hidden">
           <div>
             <div className="inline-flex items-center gap-2 bg-white/15 rounded-full px-3 py-1.5 mb-6">
               <span className="w-2 h-2 rounded-full bg-emerald-300 block" />
               <span className="text-theme-caption text-white font-medium tracking-wide">
-                Vendor Portal
+                {VENDOR_LOGIN_TEXT.PORTAL_LABEL}
               </span>
             </div>
-            <h2 className="text-theme-h3 font-bold text-white leading-snug mb-3">
-              Grow your business
-              <br />
-              with us
+            <h2 className="text-theme-h3 font-bold text-white leading-snug mb-3 whitespace-pre-line">
+              {VENDOR_LOGIN_TEXT.HERO_TITLE}
             </h2>
             <p className="text-theme-body-sm text-white/65 leading-relaxed max-w-[260px]">
-              Manage products, track orders, and reach thousands of customers —
-              all in one place.
+              {VENDOR_LOGIN_TEXT.HERO_SUBTITLE}
             </p>
 
             {/* stat pills */}
-            <div className="flex gap-3 mt-7">
+            <div className="flex gap-3 mt-4">
               {[
                 {
                   icon: <Users size={14} />,
-                  num: "12k+",
-                  label: "Active vendors",
+                  num: VENDOR_LOGIN_TEXT.STAT_VENDORS_NUM,
+                  label: VENDOR_LOGIN_TEXT.STAT_VENDORS_LABEL,
                 },
                 {
                   icon: <TrendingUp size={14} />,
-                  num: "98%",
-                  label: "Uptime SLA",
+                  num: VENDOR_LOGIN_TEXT.STAT_UPTIME_NUM,
+                  label: VENDOR_LOGIN_TEXT.STAT_UPTIME_LABEL,
                 },
               ].map((s) => (
                 <div
@@ -343,29 +467,29 @@ export default function VendorLoginPage() {
             </div>
 
             {/* dashboard illustration */}
-            <div className="mt-8">
+            <div className="mt-0">
               <StoreIllustration />
             </div>
           </div>
 
-          <div className="text-theme-xxs text-white/35 mt-6">
-            © 2025 Techsonance Marketplace. All rights reserved.
+          <div className="text-theme-xxs text-white/35 mt-3">
+            {VENDOR_LOGIN_TEXT.FOOTER_COPYRIGHT}
           </div>
         </div>
 
         {/* ── RIGHT PANEL — form / states ── */}
         <div className="flex flex-col justify-center px-12 py-10">
           {/* IDLE */}
-          {uiState === "idle" && (
+          {state.uiState === UiState.IDLE && (
             <div>
               <p className="text-theme-xxs font-semibold tracking-widest uppercase text-gray-400 mb-5">
-                Vendor login
+                {VENDOR_LOGIN_TEXT.LOGIN_SUBHEADING}
               </p>
               <h1 className="text-theme-h4 font-bold text-gray-900 mb-1">
-                Welcome back
+                {VENDOR_LOGIN_TEXT.LOGIN_HEADING}
               </h1>
               <p className="text-theme-body-sm text-gray-500 mb-7">
-                Enter your details to access your store dashboard.
+                {VENDOR_LOGIN_TEXT.LOGIN_DESCRIPTION}
               </p>
 
               <form
@@ -376,7 +500,7 @@ export default function VendorLoginPage() {
                 {/* Email */}
                 <div>
                   <label className="block text-theme-caption font-semibold text-gray-600 mb-1.5 tracking-wide">
-                    Business email address
+                    {VENDOR_LOGIN_TEXT.EMAIL_LABEL}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -384,7 +508,7 @@ export default function VendorLoginPage() {
                     </span>
                     <input
                       type="text"
-                      placeholder="you@business.com"
+                      placeholder={VENDOR_LOGIN_TEXT.EMAIL_PLACEHOLDER}
                       autoComplete="username"
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-theme-body-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition placeholder:text-gray-300"
                       {...register("email")}
@@ -401,13 +525,13 @@ export default function VendorLoginPage() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-theme-caption font-semibold text-gray-600 tracking-wide">
-                      Password
+                      {VENDOR_LOGIN_TEXT.PASSWORD_LABEL}
                     </label>
                     <a
                       href="#"
                       className="text-theme-caption text-blue-600 hover:underline"
                     >
-                      Forgot password?
+                      {VENDOR_LOGIN_TEXT.FORGOT_PASSWORD}
                     </a>
                   </div>
                   <div className="relative">
@@ -415,7 +539,6 @@ export default function VendorLoginPage() {
                       <Eye size={15} style={{ display: "none" }} />
                     </span>
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                      {/* lock icon via unicode to keep it simple */}
                       <svg
                         width="15"
                         height="15"
@@ -429,19 +552,29 @@ export default function VendorLoginPage() {
                       </svg>
                     </span>
                     <input
-                      type={showPass ? "text" : "password"}
-                      placeholder="••••••••••"
+                      type={state.showPass ? "text" : "password"}
+                      placeholder={VENDOR_LOGIN_TEXT.PASSWORD_PLACEHOLDER}
                       autoComplete="current-password"
                       className="w-full pl-10 pr-11 py-3 border border-gray-200 rounded-xl text-theme-body-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition placeholder:text-gray-300"
                       {...register("password")}
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPass((p) => !p)}
-                      aria-label={showPass ? "Hide password" : "Show password"}
+                      onClick={() =>
+                        dispatchState({ type: ActionType.TOGGLE_SHOW_PASS })
+                      }
+                      aria-label={
+                        state.showPass
+                          ? VENDOR_LOGIN_TEXT.HIDE_PASSWORD
+                          : VENDOR_LOGIN_TEXT.SHOW_PASSWORD
+                      }
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
                     >
-                      {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                      {state.showPass ? (
+                        <EyeOff size={15} />
+                      ) : (
+                        <Eye size={15} />
+                      )}
                     </button>
                   </div>
                   {errors.password ? (
@@ -450,7 +583,7 @@ export default function VendorLoginPage() {
                     </p>
                   ) : (
                     <p className="text-gray-400 text-theme-caption mt-1">
-                      Must be at least 8 characters.
+                      {VENDOR_LOGIN_TEXT.PASSWORD_HINT}
                     </p>
                   )}
                 </div>
@@ -463,18 +596,18 @@ export default function VendorLoginPage() {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting || cookiesBlocked}
+                  disabled={isSubmitting || state.cookiesBlocked}
                   className="w-full mt-1 bg-[#1a56db] hover:bg-[#1648c0] active:scale-[.98] disabled:opacity-60 text-white font-semibold text-theme-body-sm rounded-xl py-3.5 transition flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
                       <span className="block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                      Logging in…
+                      {VENDOR_LOGIN_TEXT.BTN_LOGGING_IN}
                     </>
                   ) : (
                     <>
                       <ArrowRight size={16} />
-                      Log in to Dashboard
+                      {VENDOR_LOGIN_TEXT.BTN_LOGIN}
                     </>
                   )}
                 </button>
@@ -485,34 +618,34 @@ export default function VendorLoginPage() {
               </p>
 
               <p className="text-center text-theme-body-sm text-gray-500 mt-5">
-                Don't have a business account?{" "}
+                {VENDOR_LOGIN_TEXT.NO_ACCOUNT_TEXT}{" "}
                 <Link
-                  href="/auth/vendorRegister"
+                  href={REGISTER_PATH}
                   className="text-blue-600 font-semibold hover:underline"
                 >
-                  Create one
+                  {VENDOR_LOGIN_TEXT.CREATE_ONE_LINK}
                 </Link>
               </p>
             </div>
           )}
 
           {/* LOADING */}
-          {uiState === "loading" && (
+          {state.uiState === UiState.LOADING && (
             <div className="flex flex-col items-center text-center">
               <p className="text-theme-xxs font-semibold tracking-widest uppercase text-gray-400 mb-1">
-                Signing you in
+                {VENDOR_LOGIN_TEXT.LOADING_HEADING}
               </p>
               <p className="text-theme-caption text-gray-400 mb-6">
-                This will only take a moment
+                {VENDOR_LOGIN_TEXT.LOADING_SUBHEADING}
               </p>
               <div className="w-full flex flex-col gap-2.5">
-                {STEPS.map((label, i) => (
+                {LOGIN_STEPS.map((label, i) => (
                   <div
                     key={i}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-theme-body-sm font-medium transition-all ${stepStyle[steps[i]]}`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-theme-body-sm font-medium transition-all ${STEP_STYLES[state.steps[i]]}`}
                   >
                     <div className="w-6 h-6 rounded-full bg-white border border-gray-100 flex items-center justify-center flex-shrink-0">
-                      <StepIcon status={steps[i]} />
+                      <StepIcon status={state.steps[i]} />
                     </div>
                     {label}
                   </div>
@@ -522,83 +655,90 @@ export default function VendorLoginPage() {
           )}
 
           {/* SUCCESS */}
-          {uiState === "success" && (
+          {state.uiState === UiState.SUCCESS && (
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-5">
                 <Check size={28} className="text-green-600" />
               </div>
               <h2 className="text-theme-h6 font-bold text-gray-900 mb-1">
-                You're in!
+                {VENDOR_LOGIN_TEXT.SUCCESS_HEADING}
               </h2>
               <p className="text-theme-body-sm text-gray-500 mb-6">
-                Store verified. Taking you to your dashboard…
+                {VENDOR_LOGIN_TEXT.SUCCESS_SUBHEADING}
               </p>
               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden mb-2">
                 <div
                   className="h-1.5 bg-[#1a56db] rounded-full transition-all duration-75"
-                  style={{ width: `${redirectPct}%` }}
+                  style={{ width: `${state.redirectPct}%` }}
                 />
               </div>
               <p className="text-theme-caption text-gray-400">
-                Redirecting in {Math.max(0, countdown)}s
+                {VENDOR_LOGIN_TEXT.REDIRECT_TEXT_PREFIX}{" "}
+                {Math.max(0, state.countdown)}
+                {VENDOR_LOGIN_TEXT.REDIRECT_TEXT_SUFFIX}
               </p>
             </div>
           )}
 
           {/* PROMPT CHANGE PASSWORD */}
-          {uiState === "prompt_change_password" && (
+          {state.uiState === UiState.PROMPT_CHANGE_PASSWORD && (
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-5 animate-bounce">
                 <AlertCircle size={28} className="text-amber-600" />
               </div>
               <h2 className="text-theme-h6 font-bold text-gray-900 mb-2">
-                Temporary Password
+                {VENDOR_LOGIN_TEXT.TEMP_PASS_HEADING}
               </h2>
               <p className="text-theme-body-sm text-gray-500 mb-6 leading-relaxed">
-                You logged in with a temporary generated password. For security,
-                please set a new personal password.
+                {VENDOR_LOGIN_TEXT.TEMP_PASS_DESCRIPTION}
               </p>
               <div className="w-full flex flex-col gap-3">
                 <button
-                  onClick={() => {
-                    router.push(`/vendor/settings/change-password`);
-                  }}
+                  onClick={() => router.push(CHANGE_PASSWORD_PATH)}
                   className="w-full bg-[#1a56db] hover:bg-[#1648c0] text-white font-semibold text-theme-body-sm rounded-xl py-3 transition cursor-pointer"
                 >
-                  Change Password Now
+                  {VENDOR_LOGIN_TEXT.BTN_CHANGE_PASS}
                 </button>
                 <button
-                  onClick={() => {
-                    router.push(`/vendor`);
-                  }}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-theme-body-sm rounded-xl py-3 transition  cursor-pointer"
+                  onClick={() => router.push(REDIRECT_PATH)}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-theme-body-sm rounded-xl py-3 transition cursor-pointer"
                 >
-                  Skip for Now
+                  {VENDOR_LOGIN_TEXT.BTN_SKIP}
                 </button>
               </div>
             </div>
           )}
 
           {/* ERROR */}
-          {uiState === "error" && (
+          {state.uiState === UiState.ERROR && (
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-5">
                 <X size={28} className="text-red-500" />
               </div>
               <h2 className="text-theme-h6 font-bold text-gray-900 mb-1">
-                Login failed
+                {VENDOR_LOGIN_TEXT.ERROR_HEADING}
               </h2>
               <p className="text-theme-body-sm text-gray-500 mb-6">
-                {error || "Invalid credentials. Please try again."}
+                {error || ERROR_MSG_INVALID_CREDS}
               </p>
               <button
                 onClick={() => {
-                  setUiState("idle");
-                  setSteps(["pending", "pending", "pending"]);
+                  dispatchState({
+                    type: ActionType.SET_UI_STATE,
+                    payload: UiState.IDLE,
+                  });
+                  dispatchState({
+                    type: ActionType.SET_STEPS,
+                    payload: [
+                      StepStatus.PENDING,
+                      StepStatus.PENDING,
+                      StepStatus.PENDING,
+                    ],
+                  });
                 }}
                 className="bg-[#1a56db] hover:bg-[#1648c0] text-white font-semibold text-theme-body-sm rounded-xl px-8 py-3 transition"
               >
-                Try again
+                {VENDOR_LOGIN_TEXT.BTN_TRY_AGAIN}
               </button>
             </div>
           )}

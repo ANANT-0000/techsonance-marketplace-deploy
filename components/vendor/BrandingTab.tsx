@@ -64,6 +64,7 @@ export function BrandingTab() {
       card_style: "standard",
       homepage_layout: [
         "hero",
+        "trust_badges",
         "categories",
         "products",
         "promo",
@@ -103,6 +104,7 @@ export function BrandingTab() {
             "homepage_layout",
             d.homepage_layout || [
               "hero",
+              "trust_badges",
               "categories",
               "products",
               "promo",

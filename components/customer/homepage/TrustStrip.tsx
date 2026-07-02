@@ -168,7 +168,11 @@ export function TrustStrip({ getField }: { getField?: (k: string) => any }) {
     cmsBadges.length > 0 &&
     cmsBadges.some((badge: any) => (badge.title || badge.label || "").trim() !== "");
 
-  const badgesData = hasValidCmsBadges ? cmsBadges : DEFAULT_TRUST_BADGES;
+  if (!hasValidCmsBadges) {
+    return null;
+  }
+
+  const badgesData = cmsBadges;
 
   return (
     <section className="trust-strip bg-white border-y border-gray-100 py-3.5 lg:py-6">
