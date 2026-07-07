@@ -6,15 +6,16 @@ export const CUSTOMER_AUTH_URL = process.env.NEXT_PUBLIC_CUSTOMER_AUTH_URL;
 export const ADMIN_AUTH_URL = process.env.NEXT_PUBLIC_ADMIN_AUTH_URL;
 export const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const isClient = typeof window !== 'undefined';
-export const USER_STORAGE_KEY = 'user';
-export const ACCESS_TOKEN_KEY = 'access_token';
-export const CART_KEY = 'cart';
-export const IS_AUTHENTICATED_KEY = 'isAuthenticated';
-export const WISHLIST_KEY = 'wishlist';
-export const REFRESH_TOKEN_KEY = 'refresh_token';
-export const COOKIE_CONSENT_KEY = 'cookie_consent';
-export const COOKIE_CONSENT_VALUE = 'true';
+export const isClient = typeof window !== "undefined";
+export const USER_STORAGE_KEY = "user";
+export const ACCESS_TOKEN_KEY = "access_token";
+export const PENDING_ACTION_KEY = "pending_action";
+export const CART_KEY = "cart";
+export const IS_AUTHENTICATED_KEY = "isAuthenticated";
+export const WISHLIST_KEY = "wishlist";
+export const REFRESH_TOKEN_KEY = "refresh_token";
+export const COOKIE_CONSENT_KEY = "cookie_consent";
+export const COOKIE_CONSENT_VALUE = "true";
 
 // Branding Default Colors
 export const BRANDING_DEFAULT_PRIMARY_COLOR = "#000000";
@@ -34,14 +35,3 @@ export const COLOR_LIGHT_GRAY = "#f3f4f6";
 export const RAZORPAY_CURRENCY = "INR";
 export const RAZORPAY_MERCHANT_NAME = "Techsonance Marketplace";
 export const RAZORPAY_PAYMENT_DESCRIPTION = "Secure Order Payment";
-
-
-
-
-
-
-
-
-
-
-

@@ -40,6 +40,7 @@ function reducer(state: State, action: Partial<State>): State {
 }
 
 import { Suspense } from "react";
+import { OrderStatus } from "@/utils/Types";
 
 function OrderDetailPageContent() {
   const { orderid } = useParams<{ orderid: string }>();
@@ -58,9 +59,27 @@ function OrderDetailPageContent() {
     suggestions: [],
     copied: false,
   });
-  const isSuccess = state.order
-    ? state.order.items?.[0]?.order_status?.toLowerCase() !== "cancelled"
-    : status === "success";
+  /** Always respect the URL status param — if the payment flow redirected here
+   with ?status=failed, show failure regardless of order data.
+  * Also check payment_status and order_status from the loaded order.
+  */
+  const isSuccess = (() => {
+    // URL explicitly says failed → always show failure
+    if (status === "failed") return false;
+
+    // If we have order data, check for cancelled/failed states
+    if (state.order) {
+      const orderStatus: OrderStatus =
+        state.order.items?.[0]?.order_status?.toLowerCase();
+      const paymentStatus = state.order.payment?.payment_status?.toLowerCase();
+      if (orderStatus === OrderStatus.CANCELLED || paymentStatus === "failed")
+        return false;
+      return true;
+    }
+
+    // No order data, fall back to URL status
+    return status === "success";
+  })();
   useEffect(() => {
     if (!orderid) return;
 

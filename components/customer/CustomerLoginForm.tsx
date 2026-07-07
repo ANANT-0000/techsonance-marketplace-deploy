@@ -11,6 +11,8 @@ import {
   loginSuccess,
   closeLoginModal,
 } from "@/lib/features/auth/authSlice";
+import { syncCartAfterLogin } from "@/lib/features/Cart";
+import { createCheckoutSession } from "@/hooks/UseCheckoutSession";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { loginSchema } from "@/utils/validation";
@@ -36,6 +38,8 @@ interface LoginFormData {
 interface CustomerLoginFormProps {
   isModal?: boolean;
   onSuccess?: () => void;
+  onToggleRegister?: () => void;
+  onToggleForgotPassword?: () => void;
 }
 
 export enum ActionType {
@@ -97,6 +101,8 @@ import { Suspense } from "react";
 function CustomerLoginFormContent({
   isModal = false,
   onSuccess,
+  onToggleRegister,
+  onToggleForgotPassword,
 }: CustomerLoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -122,7 +128,7 @@ function CustomerLoginFormContent({
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    mode: "onChange",
+    mode: "onBlur",
     defaultValues: {
       email: "",
       password: "",
@@ -153,6 +159,44 @@ function CustomerLoginFormContent({
 
         if (onSuccess) {
           onSuccess();
+        }
+
+        const targetUrl = isModal ? loginRedirectUrl : searchParams.get("redirect");
+
+        // --- Cart checkout intent (CART mode): sync guest cart first ---
+        if (targetUrl && targetUrl.includes("/customer/cart?checkout=true")) {
+          try {
+            const syncResult = await dispatch(
+              syncCartAfterLogin({
+                userId: response.data.user.id,
+                token: response.data.access_token,
+              })
+            ).unwrap();
+
+            const cartId = syncResult?.cartId;
+            const hasItems = syncResult?.itemList && syncResult.itemList.length > 0;
+            if (cartId && hasItems) {
+              const urlObj = new URL(targetUrl, window.location.origin);
+              const couponId = urlObj.searchParams.get("couponId");
+              const couponParam = couponId ? `&couponId=${couponId}` : "";
+              createCheckoutSession();
+              router.push(`/customer/checkout?type=cart&id=${cartId}${couponParam}`);
+              return;
+            } else {
+              toast.error("Your cart is empty. Please add items to checkout.");
+              router.push("/customer/cart");
+              return;
+            }
+          } catch (syncErr) {
+            console.error("Cart sync failed before redirect:", syncErr);
+          }
+        }
+
+        // --- QUICK_BUY intent: redirect target is already a checkout URL ---
+        if (targetUrl && targetUrl.includes("/customer/checkout")) {
+          createCheckoutSession();
+          router.push(targetUrl);
+          return;
         }
 
         if (isModal) {
@@ -235,17 +279,25 @@ function CustomerLoginFormContent({
   };
 
   const handleForgotPasswordClick = () => {
-    if (isModal) {
-      dispatch(closeLoginModal());
+    if (isModal && onToggleForgotPassword) {
+      onToggleForgotPassword();
+    } else {
+      if (isModal) {
+        dispatch(closeLoginModal());
+      }
+      router.push("/auth/forgotPassword");
     }
-    router.push("/auth/forgotPassword");
   };
 
   const handleCreateAccountClick = () => {
-    if (isModal) {
-      dispatch(closeLoginModal());
+    if (isModal && onToggleRegister) {
+      onToggleRegister();
+    } else {
+      if (isModal) {
+        dispatch(closeLoginModal());
+      }
+      router.push("/auth/customerRegister");
     }
-    router.push("/auth/customerRegister");
   };
 
   return (

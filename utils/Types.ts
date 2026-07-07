@@ -11,6 +11,13 @@ export enum UserStatus {
   SUSPENDED = "suspended",
   REJECTED = "rejected",
 }
+export enum ShippingStrategy {
+  PRIORITY = "priority",
+  LOWEST_COST = "lowest_cost",
+  FASTEST = "fastest",
+  HYBRID = "hybrid",
+  NONE = "none",
+}
 export enum UserRole {
   ADMIN = "admin",
   VENDOR = "vendor",
@@ -412,6 +419,7 @@ export interface User {
 // used in multiple places
 export interface Address {
   address_line1: string;
+  address_line2?: string;
   address_type: string;
   city: string;
   company_id: string | null;
@@ -427,6 +435,27 @@ export interface Address {
   street: string;
   updated_at: string;
   user_id: string;
+}
+
+export interface LocationFormField {
+  name: string;
+  label?: string;
+  type: string;
+  required?: boolean;
+  colSpan?: string;
+  options?: { label: string; value: string | number }[];
+  checkboxLabel?: string;
+  placeholder?: string;
+  inputMode?:
+    | "text"
+    | "numeric"
+    | "tel"
+    | "search"
+    | "email"
+    | "url"
+    | "none"
+    | "decimal";
+  className?: string;
 }
 
 export interface Cart {
@@ -1530,23 +1559,297 @@ export interface MegaMenuColumnData {
   promotion?: PromotionData;
 }
 
+export interface LandingNavLink {
+  id?: string;
+  label: string;
+  href: string;
+}
+
+export interface LandingNavCtas {
+  login: string;
+  signup: string;
+}
+
+export interface LandingNavbarContent {
+  logo: {
+    type?: "text" | "image";
+    text: string;
+    highlight: string;
+    imageUrl?: string;
+  };
+  links: LandingNavLink[];
+  ctas: LandingNavCtas;
+}
+
+export interface LandingHeroTrustBadge {
+  id?: string;
+  label: string;
+  icon: "shield" | "server" | "users";
+}
+
+
+export interface LandingMedia {
+  type: "image" | "video" | "embed";
+  src: string;
+  alt?: string;
+  autoPlay?: boolean;
+}
+
+export interface LandingHeroContent {
+  badge: string;
+  titlePart1: string;
+  titleHighlight: string;
+  titlePart2?: string;
+  subtitle: string;
+  ctaPrimary: string;
+  ctaSecondary: string;
+  trustBadges: LandingHeroTrustBadge[];
+  visual: {
+    title: string;
+    status: string;
+    media?: LandingMedia;
+  };
+}
+
+export interface LandingTickerContent {
+  label: string;
+  brands: string[];
+}
+
+export interface LandingShowcaseImage {
+  src: string;
+  alt: string;
+}
+
+export interface LandingShowcaseContent {
+  header: {
+    label: string;
+    titlePart1: string;
+    titleHighlight: string;
+    titlePart2: string;
+    subtitle: string;
+  };
+  images: LandingShowcaseImage[];
+}
+
+export interface LandingFeatureVisualMetric {
+  label: string;
+  value: string;
+  fill: string;
+}
+
+export interface LandingFeatureVisualItem {
+  name: string;
+  status: string;
+  tone: "success" | "info" | "muted";
+}
+
+export interface LandingFeatureContent {
+  id: string;
+  number: string;
+  title: string;
+  description: string;
+  checklist: string[];
+  visual: {
+    type: "storefront" | "inventory" | "timeline" | "marketing" | "analytics";
+    title: string;
+    statusLabel?: string;
+    activityTitle?: string;
+    presenceTitle?: string;
+    commentsTitle?: string;
+    metrics?: LandingFeatureVisualMetric[];
+    items?: LandingFeatureVisualItem[];
+    activity?: LandingFeatureVisualItem[];
+    stats?: Array<{ label: string; value: string }>;
+    avatars?: string[];
+  };
+}
+
+export interface LandingFeaturesContent {
+  header: {
+    label: string;
+    titlePart1: string;
+    titleHighlight: string;
+    titlePart2: string;
+    subtitle: string;
+  };
+  items: LandingFeatureContent[];
+}
+
+export interface LandingStatsItem {
+  value: string;
+  suffix: string;
+  label: string;
+  sublabel: string;
+}
+
+export interface LandingStatsContent {
+  items: LandingStatsItem[];
+}
+
+/** Raw subscription plan row returned from the server DB */
+export interface SubscriptionPlan {
+  id: string;
+  plan_name: string;
+  display_name: string;
+  price_monthly: string | null;
+  price_annual: string | null; // per-month price billed annually
+  annual_total: string | null; // total charged upfront for annual
+  trial_days: number | null;
+  capabilities: Record<string, unknown>;
+  display_order: number | null;
+}
+
+/** CMS-controlled presentation overrides for a single plan (keyed by plan_name) */
+export interface LandingPricingPlanOverride {
+  badge?: string; // e.g. "Most Popular"
+  description: string;
+  features: string[]; // human-readable bullet strings
+  ctaLabel: string;
+  ctaHref: string;
+  isFeatured: boolean;
+}
+
+export interface LandingPricingContent {
+  header: {
+    label: string;
+    titlePart1: string;
+    titleHighlight: string;
+    titlePart2: string;
+    subtitle: string;
+  };
+  toggle: {
+    monthly: string;
+    annual: string;
+    badge: string;
+  };
+  currency: string;
+  /** Presentation overrides keyed by plan_name (e.g. 'starter', 'pro') */
+  planOverrides: Record<string, LandingPricingPlanOverride>;
+}
+
+export interface LandingTestimonial {
+  id: string;
+  quote: string;
+  author: string;
+  role: string;
+  avatar: string;
+  isTall: boolean;
+}
+
+export interface LandingTestimonialsContent {
+  header: {
+    label: string;
+    titlePart1: string;
+    titleHighlight: string;
+    titlePart2: string;
+    subtitle: string;
+  };
+  reviews: LandingTestimonial[];
+}
+
+export interface LandingIntegrationsContent {
+  header: {
+    label: string;
+    titlePart1: string;
+    titleHighlight: string;
+    subtitle: string;
+  };
+  tools: string[];
+}
+
+export interface LandingFaqQuestion {
+  id: string;
+  q: string;
+  a: string;
+}
+
+export interface LandingFaqContent {
+  header: {
+    label: string;
+    titlePart1: string;
+    titleHighlight: string;
+    subtitle: string;
+  };
+  controls: {
+    expand: string;
+    collapse: string;
+  };
+  questions: LandingFaqQuestion[];
+}
+
+export interface LandingCtaContent {
+  label: string;
+  titlePart1: string;
+  titleHighlight: string;
+  subtitle: string;
+  ctaPrimary: string;
+  ctaSecondary: string;
+}
+
+export interface LandingFooterSocialLink {
+  id: string;
+  label: string;
+  url: string;
+}
+
+export interface LandingFooterColumnLink {
+  label: string;
+  url: string;
+}
+
+export interface LandingFooterColumn {
+  label: string;
+  links: LandingFooterColumnLink[];
+}
+
+export interface LandingFooterContent {
+  brandDesc: string;
+  socials: LandingFooterSocialLink[];
+  columns: LandingFooterColumn[];
+  legal: LandingFooterColumnLink[];
+  copyright: string;
+}
+
+export interface LandingPageContent {
+  metadata: {
+    title: string;
+    description: string;
+  };
+  navbar: LandingNavbarContent;
+  hero: LandingHeroContent;
+  ticker: LandingTickerContent;
+  showcase: LandingShowcaseContent;
+  features: LandingFeaturesContent;
+  stats: LandingStatsContent;
+  pricing: LandingPricingContent;
+  testimonials: LandingTestimonialsContent;
+  integrations: LandingIntegrationsContent;
+  faq: LandingFaqContent;
+  cta: LandingCtaContent;
+  footer: LandingFooterContent;
+}
+
+export interface LandingThemeConfig {
+  primary: string;
+  primaryHover: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  surface: string;
+  text: string;
+  muted: string;
+  border: string;
+  navbar: string;
+  footer: string;
+  onPrimary: string;
+  onDark: string;
+}
 export interface FieldOption {
   label: string;
   value: string;
 }
 
-export interface LocationFormField {
-  name: string;
-  label: string;
-  type: FieldType;
-  required?: boolean;
-  placeholder?: string;
-  colSpan?: "full" | "half";
-  options?: FieldOption[]; // for select
-  checkboxLabel?: string; // for checkbox
-  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
-  className?: string;
-}
 export enum PolicyDurationUnit {
   DAYS = "days",
   MONTHS = "months",
@@ -1566,6 +1869,7 @@ export enum ReturnStatus {
   APPROVED = "approved",
   REJECTED = "rejected",
   IN_TRANSIT = "in_transit",
+  SHIPPED = "shipped",
   DELIVERED = "delivered",
   QC_PASSED = "qc_passed",
   QC_FAILED = "qc_failed",
@@ -1747,13 +2051,6 @@ export interface VendorType {
   country_code: string;
 }
 
-export enum ShippingStrategy {
-  PRIORITY = "priority",
-  LOWEST_COST = "lowest_cost",
-  FASTEST = "fastest",
-  HYBRID = "hybrid",
-  NONE = "none",
-}
 export enum CredentialType {
   RAZORPAY_KEY_ID = "razorpay_key_id",
   RAZORPAY_KEY_SECRET = "razorpay_key_secret",
@@ -1767,4 +2064,28 @@ export enum CredentialType {
 export enum PaymentGatewayProvider {
   RAZORPAY = "razorpay",
   STRIPE = "stripe",
+}
+
+export enum PlanStatus {
+  DRAFT = "draft",
+  LIVE = "live",
+  ARCHIVED = "archived",
+}
+
+export enum PriceInterval {
+  MONTHLY = "monthly",
+  YEARLY = "yearly",
+  CUSTOM = "custom",
+}
+
+export enum SyncStatus {
+  PENDING = "pending",
+  SYNCED = "synced",
+  ERROR = "error",
+}
+
+export enum FeatureType {
+  BOOLEAN = "boolean",
+  NUMBER = "number",
+  TEXT = "text",
 }

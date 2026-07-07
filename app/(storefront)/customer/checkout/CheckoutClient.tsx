@@ -951,6 +951,8 @@ function CheckoutClientInner() {
 
   // ─── Auto-redirect when cart becomes completely empty ──────────────────────
   useEffect(() => {
+    // Skip cart sync while payment is processing to prevent redirect during Razorpay
+    if (state.isProcessing) return;
     dispatch({
       type: CheckoutActionType.SET_CART_ITEMS,
       payload: state.cartItems.filter((item) =>
@@ -959,11 +961,12 @@ function CheckoutClientInner() {
         ),
       ),
     });
-  }, [reduxCartItems]);
+  }, [reduxCartItems, state.isProcessing]);
 
   useEffect(() => {
     // Only apply for cart checkout (not quick-buy), and only after initial load
-    if (isQuickBuy || state.isLoadingOrder || state.cartItems.length === 0)
+    // Skip while payment is processing to prevent redirect during Razorpay
+    if (isQuickBuy || state.isLoadingOrder || state.isProcessing || state.cartItems.length === 0)
       return;
 
     const allEmpty = state.cartItems.every((item) => {
@@ -982,7 +985,7 @@ function CheckoutClientInner() {
       return () => clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduxCartItems, state.cartItems, state.isLoadingOrder, isQuickBuy]);
+  }, [reduxCartItems, state.cartItems, state.isLoadingOrder, state.isProcessing, isQuickBuy]);
 
   useEffect(() => {
     if (isQuickBuy || state.cartItems.length === 0) return;

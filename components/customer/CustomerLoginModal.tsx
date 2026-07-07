@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
@@ -9,14 +9,17 @@ import { RootState } from "@/lib/store";
 import { closeLoginModal } from "@/lib/features/auth/authSlice";
 import { toggleCartSidebar } from "@/lib/features/CartSidebar";
 import CustomerLoginForm from "./CustomerLoginForm";
+import CustomerRegisterForm from "./CustomerRegisterForm";
 
 export function CustomerLoginModal() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { isLoginModalOpen } = useAppSelector((state: RootState) => state.auth);
+  const [view, setView] = useState<"login" | "register">("login");
 
   useEffect(() => {
     if (isLoginModalOpen) {
+      setView("login");
       dispatch(toggleCartSidebar("close"));
       const originalStyle = window.getComputedStyle(document.body).overflow;
       document.body.style.overflow = "hidden";
@@ -70,7 +73,29 @@ export function CustomerLoginModal() {
 
             {/* Form */}
             <div className="mt-2">
-              <CustomerLoginForm isModal={true} onSuccess={handleClose} />
+              {view === "login" ? (
+                <CustomerLoginForm
+                  isModal={true}
+                  onSuccess={handleClose}
+                  onToggleRegister={() => setView("register")}
+                />
+              ) : (
+                <div>
+                  <div className="mb-6">
+                    <h2 className="text-theme-h4 font-bold text-gray-800 mb-1.5">
+                      Create Account
+                    </h2>
+                    <p className="text-theme-body-sm text-slate-650">
+                      Join us to access checkouts, wishlists, and more.
+                    </p>
+                  </div>
+                  <CustomerRegisterForm
+                    isModal={true}
+                    onSuccess={handleClose}
+                    onToggleLogin={() => setView("login")}
+                  />
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

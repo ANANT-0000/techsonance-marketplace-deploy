@@ -4,6 +4,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch } from "@/hooks/reduxHooks";
 import { jwtDecode } from "jwt-decode";
 import { loginSuccess } from "@/lib/features/auth/authSlice";
+import { syncCartAfterLogin } from "@/lib/features/Cart";
+import { createCheckoutSession } from "@/hooks/UseCheckoutSession";
+import toast from "react-hot-toast";
 import {
   ACCESS_TOKEN_KEY,
   REFRESH_TOKEN_KEY,
@@ -118,14 +121,55 @@ function AuthSuccessHandler() {
 
           dispatchState({ type: ActionType.SET_STATUS, payload: LoginStatusEnum.SUCCESS });
 
-          setTimeout(() => {
+          const performRedirect = async () => {
             const oauthRedirect = sessionStorage.getItem("oauth_redirect");
             if (oauthRedirect) {
               sessionStorage.removeItem("oauth_redirect");
+
+              // --- Cart checkout intent (CART mode): sync guest cart first ---
+              if (oauthRedirect.includes("/customer/cart?checkout=true")) {
+                try {
+                  const syncResult = await dispatch(
+                    syncCartAfterLogin({
+                      userId: payload.user.id!,
+                      token: accessToken,
+                    })
+                  ).unwrap();
+
+                  const cartId = syncResult?.cartId;
+                  const hasItems = syncResult?.itemList && syncResult.itemList.length > 0;
+                  if (cartId && hasItems) {
+                    const urlObj = new URL(oauthRedirect, window.location.origin);
+                    const couponId = urlObj.searchParams.get("couponId");
+                    const couponParam = couponId ? `&couponId=${couponId}` : "";
+                    createCheckoutSession();
+                    router.push(`/customer/checkout?type=cart&id=${cartId}${couponParam}`);
+                    return;
+                  } else {
+                    toast.error("Your cart is empty. Please add items to checkout.");
+                    router.push("/customer/cart");
+                    return;
+                  }
+                } catch (syncErr) {
+                  console.error("Cart sync failed before redirect:", syncErr);
+                }
+              }
+
+              // --- QUICK_BUY intent: redirect target is already a checkout URL ---
+              if (oauthRedirect.includes("/customer/checkout")) {
+                createCheckoutSession();
+                router.push(oauthRedirect);
+                return;
+              }
+
               router.push(oauthRedirect);
             } else {
               router.push("/");
             }
+          };
+
+          setTimeout(() => {
+            performRedirect();
           }, 1000);
         } catch (decodeError) {
           dispatchState({ type: ActionType.SET_STATUS, payload: LoginStatusEnum.ERROR });

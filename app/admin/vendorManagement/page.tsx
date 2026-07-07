@@ -116,7 +116,6 @@ export default function VendorManagementPage() {
 
   return (
     <>
-      <Navbar title="Vendor Management" />
       <main className="w-full px-1 py-4">
         {/* Header matching Customers UI */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center my-6 gap-4">

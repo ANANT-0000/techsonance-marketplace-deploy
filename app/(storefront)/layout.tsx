@@ -1,9 +1,15 @@
+// This layout reads request headers (via getCompanyDomain) on every render.
+// It must never be statically prerendered.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { Navbar } from "@/components/customer/Navbar";
 import { Footer } from "@/components/customer/Footer";
 import { CartSidebar } from "@/components/customer/CartSidebar";
 import { TabNavBar } from "@/components/customer/TabNavBar";
 import { ThemeProvider } from "@/components/customer/ThemeProvider";
 import { CustomerLoginModal } from "@/components/customer/CustomerLoginModal";
+import PendingActionWatcher from "@/components/customer/PendingActionWatcher";
 import { getCompanyDomain } from "@/lib/get-domain";
 import {
   BASE_API_URL,
@@ -113,6 +119,7 @@ export default async function ShopLayout({
     <ThemeProvider theme={themeData}>
       <Navbar styles={NAVBAR_STYLE} />
       <CustomerLoginModal />
+      <PendingActionWatcher />
       <CartSidebar />
       {children}
       <TabNavBar />

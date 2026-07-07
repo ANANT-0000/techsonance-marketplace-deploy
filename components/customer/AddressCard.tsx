@@ -57,7 +57,6 @@ export const AddressCard = ({
               {address.name}
             </p>
             <p>{address.address_line1}</p>
-            {address.address_line2 && <p>{address.address_line2}</p>}
             {address.street && <p>{address.street}</p>}
             <p>
               {address.city}, {address.state} {address.postal_code}

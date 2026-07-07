@@ -499,3 +499,37 @@ export const fetchExistingReviews = async (
     };
   }
 };
+
+// ==========================================
+// PUBLIC SHIPPING SETTINGS (no auth required)
+// ==========================================
+
+/**
+ * Fetches the vendor's shipping configuration for use on the storefront
+ * (cart page, cart sidebar) so shipping charges reflect real vendor settings
+ * instead of a hardcoded fallback.
+ */
+export const fetchPublicShippingSettings = async (): Promise<{
+  is_free_shipping_enabled: boolean;
+  free_delivery_threshold: number;
+  standard_delivery_charge: number;
+  shipping_charge_strategy: "STANDARD_FLAT_RATE" | "DYNAMIC_CUSTOMER_RATE";
+} | null> => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const response = await fetch(`${BASE_API_URL}/v1/shipping/settings`, {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        "company-domain": companyDomain,
+      },
+    });
+    if (!response.ok) return null;
+    const json = await response.json();
+    // The API may nest data under a `data` key
+    return json?.data ?? json ?? null;
+  } catch {
+    return null;
+  }
+};

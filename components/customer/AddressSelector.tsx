@@ -211,7 +211,7 @@ export function AddressSelector({
                         )}
                       </div>
                       <p className="text-theme-caption text-gray-500 leading-relaxed break-words line-clamp-3">
-                        {[addr.address_line1, addr.address_line2, addr.street]
+                        {[addr.address_line1, addr.street]
                           .filter(Boolean)
                           .join(", ")}
                         <br />

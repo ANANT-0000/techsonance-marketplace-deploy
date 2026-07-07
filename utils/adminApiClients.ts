@@ -71,18 +71,16 @@ export const createPermission = async (
   }
 };
 export const handleAddRole = async (
-  adminId: string,
   formData: FormData,
   token: string,
 ) => {
   const newRole = formData.get("role") as string;
   if (!newRole.trim()) return;
   const createdRoleResult = await createRole(newRole.trim(), token);
-  revalidatePath(`/admin/${adminId}/roles`);
+  revalidatePath(`/admin/role`);
   return createdRoleResult;
 };
 export const handleDeleteRole = async (
-  adminId: string,
   id: string,
   token: string,
 ) => {
@@ -90,22 +88,20 @@ export const handleDeleteRole = async (
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
-  revalidatePath(`/admin/${adminId}/roles`);
+  revalidatePath(`/admin/role`);
 };
 
 export const handleAddPermission = async (
-  adminId: string,
   formData: FormData,
   token: string,
 ) => {
   const name = formData.get("permission") as string;
   if (!name.trim()) return;
-  revalidatePath(`/admin/${adminId}/roles`);
+  revalidatePath(`/admin/role`);
   return await createPermission(name.trim().toLowerCase(), token);
 };
 
 export const handleDeletePermission = async (
-  adminId: string,
   id: string,
   token: string,
 ) => {
@@ -116,12 +112,11 @@ export const handleDeletePermission = async (
   if (!response.ok) {
     throw new Error("Failed to delete permission");
   }
-  revalidatePath(`/admin/${adminId}/roles`);
+  revalidatePath(`/admin/role`);
   return await response.json();
 };
 
 export const handleRemovePermission = async (
-  adminId: string,
   roleId: string,
   permId: string,
   token: string,
@@ -134,7 +129,7 @@ export const handleRemovePermission = async (
     },
     body: JSON.stringify({ roleId, permissionId: permId }),
   });
-  revalidatePath(`/admin/${adminId}/roles`);
+  revalidatePath(`/admin/role`);
 };
 export const fetchApplications = async (token: string) => {
   try {
@@ -170,7 +165,6 @@ export const fetchRolePermissions = async (token: string) => {
   return res;
 };
 export const handleAssignPermission = async (
-  adminId: string,
   roleId: string,
   permissionId: string,
   token: string,
@@ -185,7 +179,7 @@ export const handleAssignPermission = async (
   });
 
   // This refreshes the page data for the specific admin
-  revalidatePath(`/admin/${adminId}/roles`);
+  revalidatePath(`/admin/role`);
 };
 export const approveVendor = async (vendorId: string, token: string) => {
   try {

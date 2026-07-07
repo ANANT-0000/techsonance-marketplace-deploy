@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 
 const CHECKOUT_SESSION_KEY = "checkout_session_token";
 export function createCheckoutSession(): string {
@@ -16,6 +17,10 @@ export function useCheckoutSession(redirectTo: string) {
     useEffect(() => {
         const sessionToken = sessionStorage.getItem(CHECKOUT_SESSION_KEY);
         if (!sessionToken) {
+            toast("Your checkout session has ended. Please start again.", {
+                icon: "🛒",
+                duration: 4000,
+            });
             router.push(redirectTo);
         }
     }, [])
@@ -25,4 +30,4 @@ export function useCheckoutSession(redirectTo: string) {
         sessionStorage.removeItem(CHECKOUT_SESSION_KEY);
     }
     return { clearSession };
-}
+}

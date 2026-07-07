@@ -97,15 +97,15 @@ function SectionLabel({
   return (
     <li
       aria-hidden="true"
-      style={{ width: expanded ? "max-content" : "100%" }}
       className={`
-        whitespace-wrap px-2.5 text-theme-tiny text-wrap font-semibold
-        uppercase tracking-[0.08em] text-white/85
-        transition-all duration-200
+        w-full overflow-hidden px-2.5 text-theme-tiny font-semibold uppercase
+        tracking-[0.08em] text-white/85 transition-all duration-200
         ${expanded ? "max-h-14 pt-4 pb-1 opacity-100" : "max-h-0 py-0 opacity-0"}
       `}
     >
-      {label}
+      <span className="block w-full whitespace-normal break-words leading-tight">
+        {label}
+      </span>
     </li>
   );
 }

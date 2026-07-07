@@ -268,76 +268,88 @@ export const loadCart = createAsyncThunk("cart/load", async () => {
   return await loadCartFromLocalOrServer();
 });
 
+let activeSyncPromise: Promise<any> | null = null;
+
 export const syncCartAfterLogin = createAsyncThunk(
   "cart/syncAfterLogin",
   async (payload: { userId: string; token: string }, { dispatch }) => {
     if (!isClient) return;
-    try {
-      const serializedCart = localStorage.getItem(CART_KEY);
-      if (!serializedCart) return;
+    if (activeSyncPromise) {
+      return activeSyncPromise;
+    }
 
-      const parsedCart = JSON.parse(serializedCart);
-      if (
-        !parsedCart ||
-        !Array.isArray(parsedCart.items) ||
-        parsedCart.items.length === 0
-      ) {
-        return;
-      }
+    const performSync = async () => {
+      try {
+        const serializedCart = localStorage.getItem(CART_KEY);
+        if (serializedCart) {
+          localStorage.removeItem(CART_KEY); // Remove immediately to prevent concurrent reads
+          const parsedCart = JSON.parse(serializedCart);
+          if (
+            parsedCart &&
+            Array.isArray(parsedCart.items) &&
+            parsedCart.items.length > 0
+          ) {
+            const guestItems = parsedCart.items;
 
-      const guestItems = parsedCart.items;
-
-      // 1. Fetch current database cart items
-      let dbItems: any[] = [];
-      const dbCartResponse = await fetchGetCartList(
-        payload.userId,
-        payload.token,
-      );
-      if (
-        dbCartResponse &&
-        dbCartResponse.success &&
-        Array.isArray(dbCartResponse.data)
-      ) {
-        dbItems = dbCartResponse.data;
-      }
-
-      // 2. Perform merge calls in parallel using fetchAddToCart
-      const mergePromises = guestItems.map(async (guestItem: CartItem) => {
-        const dbMatch = dbItems.find(
-          (item: any) => item.product_variant_id === guestItem.productVariantId,
-        );
-        if (dbMatch) {
-          // Item already exists on server. Do NOT sum quantities — that causes
-          // doubling when localStorage already mirrors the server state.
-          // Only update if the guest quantity differs from the server quantity.
-          if (guestItem.quantity !== dbMatch.quantity) {
-            await fetchAddToCart(
-              guestItem.productVariantId,
-              guestItem.quantity,
+            // 1. Fetch current database cart items
+            let dbItems: any[] = [];
+            const dbCartResponse = await fetchGetCartList(
               payload.userId,
               payload.token,
             );
+            if (
+              dbCartResponse &&
+              dbCartResponse.success &&
+              Array.isArray(dbCartResponse.data)
+            ) {
+              dbItems = dbCartResponse.data;
+            }
+
+            // 2. Perform merge calls in parallel using fetchAddToCart
+            const mergePromises = guestItems.map(async (guestItem: CartItem) => {
+              const dbMatch = dbItems.find(
+                (item: any) =>
+                  item.product_variant_id === guestItem.productVariantId,
+              );
+              if (dbMatch) {
+                // Item already exists on server. Do NOT sum quantities — that causes
+                // doubling when localStorage already mirrors the server state.
+                // Only update if the guest quantity differs from the server quantity.
+                if (guestItem.quantity !== dbMatch.quantity) {
+                  await fetchAddToCart(
+                    guestItem.productVariantId,
+                    guestItem.quantity,
+                    payload.userId,
+                    payload.token,
+                  );
+                }
+                // else: quantities already match — nothing to do
+              } else {
+                // Item is new (guest-only), add it to the server
+                await fetchAddToCart(
+                  guestItem.productVariantId,
+                  guestItem.quantity,
+                  payload.userId,
+                  payload.token,
+                );
+              }
+            });
+
+            await Promise.all(mergePromises);
           }
-          // else: quantities already match — nothing to do
-        } else {
-          // Item is new (guest-only), add it to the server
-          await fetchAddToCart(
-            guestItem.productVariantId,
-            guestItem.quantity,
-            payload.userId,
-            payload.token,
-          );
         }
-      });
+      } catch (error) {
+        console.error("Error during syncCartAfterLogin:", error);
+      } finally {
+        localStorage.removeItem(CART_KEY);
+        const result = await dispatch(loadCart()).unwrap();
+        activeSyncPromise = null;
+        return result;
+      }
+    };
 
-      await Promise.all(mergePromises);
-
-      // 3. Clear guest cart from local storage
-      localStorage.removeItem(CART_KEY);
-
-      // 4. Reload the cart state from database
-      dispatch(loadCart());
-    } catch (error) {}
+    activeSyncPromise = performSync();
+    return activeSyncPromise;
   },
 );
 

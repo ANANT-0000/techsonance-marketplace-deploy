@@ -1,41 +1,50 @@
 "use client";
 
-import { redirect, useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   handleDeleteRole,
   handleRemovePermission,
 } from "@/utils/adminApiClients";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
-import { authToken } from "@/utils/authToken";
 import { ROLES_TEXT } from "@/constants/adminText";
+import { Loader2 } from "lucide-react";
 
 export default function RoleList({
   roles,
-  adminId,
+  token,
+  onRefresh,
 }: {
   roles: any[];
-  adminId: string;
+  token: string;
+  onRefresh: () => void;
 }) {
   const { user, role } = useAppSelector((state: RootState) => state.auth);
-  const router = useRouter();
   const isAdmin = role === "admin";
-  const token = authToken();
-  if (!token) {
-    redirect("/auth/adminLogin");
-  }
+  const [busyRoleId, setBusyRoleId] = useState<string | null>(null);
+
   const onDelete = async (id: string) => {
-    if (!adminId) return;
-    await handleDeleteRole(adminId, id, token);
-    router.refresh();
+    setBusyRoleId(id);
+    try {
+      await handleDeleteRole(id, token);
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setBusyRoleId(null);
+    }
   };
 
   const onRemovePermission = async (roleId: string, permId: string) => {
-    if (!adminId) return;
-    await handleRemovePermission(adminId, roleId, permId, token).catch(
-      (error) => {},
-    );
-    router.refresh();
+    setBusyRoleId(`${roleId}-${permId}`);
+    try {
+      await handleRemovePermission(roleId, permId, token);
+      onRefresh();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setBusyRoleId(null);
+    }
   };
 
   return (
@@ -49,9 +58,10 @@ export default function RoleList({
             {isAdmin && (
               <button
                 onClick={() => onDelete(role.id)}
-                className="text-theme-caption text-red-400 hover:text-red-600"
+                disabled={busyRoleId === role.id}
+                className="text-theme-caption text-red-400 hover:text-red-600 disabled:opacity-50"
               >
-                {ROLES_TEXT.DELETE}
+                {busyRoleId === role.id ? "Deleting..." : ROLES_TEXT.DELETE}
               </button>
             )}
           </div>
@@ -59,22 +69,26 @@ export default function RoleList({
           {/* Permissions section */}
           {(role.permissions ?? []).length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
-              {role.permissions.map((p: any) => (
-                <span
-                  key={p.id}
-                  className="inline-flex items-center gap-1 text-theme-caption bg-gray-100 text-gray-600 rounded-2xl px-2 py-0.5"
-                >
-                  {p.permission_name}
-                  {isAdmin && (
-                    <button
-                      onClick={() => onRemovePermission(role.id, p.id)}
-                      className="text-gray-400 hover:text-red-500 leading-none"
-                    >
-                      ×
-                    </button>
-                  )}
-                </span>
-              ))}
+              {role.permissions.map((p: any) => {
+                const isBusy = busyRoleId === `${role.id}-${p.id}`;
+                return (
+                  <span
+                    key={p.id}
+                    className="inline-flex items-center gap-1 text-theme-caption bg-gray-100 text-gray-600 rounded-2xl px-2 py-0.5"
+                  >
+                    {p.permission_name}
+                    {isAdmin && (
+                      <button
+                        onClick={() => onRemovePermission(role.id, p.id)}
+                        disabled={isBusy}
+                        className="text-gray-400 hover:text-red-500 leading-none disabled:opacity-50"
+                      >
+                        {isBusy ? "…" : "×"}
+                      </button>
+                    )}
+                  </span>
+                );
+              })}
             </div>
           )}
         </div>

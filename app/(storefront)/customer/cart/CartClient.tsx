@@ -25,6 +25,8 @@ import { BuyBtn } from "@/components/customer/BuyBtn";
 import { fetchRemoveFromCart } from "@/utils/customerApiClient";
 import AxiosAPI from "@/lib/axios";
 import { Variant, Coupon, BuyBtnMode } from "@/utils/Types";
+import { useShippingSettings } from "@/hooks/useShippingSettings";
+import { createCheckoutSession } from "@/hooks/UseCheckoutSession";
 
 // shadcn/ui imports
 import { Card, CardContent } from "@/components/ui/card";
@@ -222,20 +224,23 @@ const OrderSummary = ({
   cartList,
   totalItemCount,
   totalPrice,
+  shippingFee,
   selectedCoupon,
   couponDiscountAmount,
   onCouponOpen,
   onCouponRemove,
+  freeDeliveryThreshold,
 }: {
   cartList: CartItemListResponse[];
   totalItemCount: number;
   totalPrice: number;
+  shippingFee: number;
   selectedCoupon: Coupon | null;
   couponDiscountAmount: number;
   onCouponOpen: () => void;
   onCouponRemove: () => void;
+  freeDeliveryThreshold: number;
 }) => {
-  const shippingFee = totalPrice >= 500 || totalPrice === 0 ? 0 : 50;
   const estimatedTax = totalPrice - totalPrice / 1.18;
   const finalPrice = Math.max(
     0,
@@ -330,15 +335,19 @@ const OrderSummary = ({
         </CardContent>
       </Card>
 
-      {/* Complimentary Shipping Banner */}
+      {/* Shipping Banner */}
       <div className="bg-secondary/30 border border-border rounded-2xl p-4 flex items-start gap-3 text-left">
         <Truck className="text-theme-primary shrink-0 mt-0.5" size={18} />
         <div>
           <h4 className="text-xs font-bold text-foreground">
-            Complimentary Shipping
+            {freeDeliveryThreshold > 0
+              ? "Complimentary Shipping"
+              : "Shipping Information"}
           </h4>
           <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
-            Orders over ₹500 qualify for free express delivery worldwide.
+            {freeDeliveryThreshold > 0
+              ? `Orders over ₹${formatCurrency(freeDeliveryThreshold)} qualify for free delivery.`
+              : "Shipping charges apply based on your order."}
           </p>
         </div>
       </div>
@@ -401,6 +410,10 @@ function CartClientContent() {
   const dispatchRedux = useAppDispatch();
   const token = authToken();
 
+  // Fetch real vendor shipping settings
+  const { computeShippingFee, settings: shippingSettings } =
+    useShippingSettings();
+
   // Avoid hydration mismatch by waiting for mount
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
@@ -434,6 +447,7 @@ function CartClientContent() {
         const couponIdParam = searchParams.get("couponId")
           ? `&couponId=${searchParams.get("couponId")}`
           : "";
+        createCheckoutSession();
         router.push(
           `/customer/checkout?type=cart&id=${cartId}${couponIdParam}`,
         );
@@ -446,6 +460,11 @@ function CartClientContent() {
   }, 0);
 
   const totalItemCount = itemList.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Shipping fee derived from vendor's saved configuration
+  const shippingFee = computeShippingFee(totalPrice);
+  const freeDeliveryThreshold =
+    shippingSettings?.free_delivery_threshold ?? 500;
 
   const couponDiscountAmount = (() => {
     if (!state.selectedCoupon) return 0;
@@ -462,9 +481,7 @@ function CartClientContent() {
 
   const finalPrice = Math.max(
     0,
-    totalPrice +
-      (totalPrice >= 500 || totalPrice === 0 ? 0 : 50) -
-      couponDiscountAmount,
+    totalPrice + shippingFee - couponDiscountAmount,
   );
 
   const handleRemoveItem = async (item: CartItemListResponse) => {
@@ -635,6 +652,8 @@ function CartClientContent() {
                 cartList={itemList}
                 totalItemCount={totalItemCount}
                 totalPrice={totalPrice}
+                shippingFee={shippingFee}
+                freeDeliveryThreshold={freeDeliveryThreshold}
                 selectedCoupon={state.selectedCoupon}
                 couponDiscountAmount={couponDiscountAmount}
                 onCouponOpen={() =>
@@ -739,12 +758,12 @@ function CartClientContent() {
               </div>
               <div className="flex justify-between items-center">
                 <span>Estimated Shipping</span>
-                {totalPrice >= 500 || totalPrice === 0 ? (
+                {shippingFee === 0 ? (
                   <span className="text-success font-bold bg-success/15 border border-success/10 px-2 py-0.5 rounded-full text-xs">
                     Free
                   </span>
                 ) : (
-                  <span className="text-foreground font-semibold">₹50.00</span>
+                  <span className="text-foreground font-semibold">₹{formatCurrency(shippingFee)}</span>
                 )}
               </div>
               <div className="flex justify-between">

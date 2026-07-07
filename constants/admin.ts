@@ -23,6 +23,7 @@ export const ADMIN_NAV_LINKS: NavLinkType[] = [
   { "Role Management": "role",            icon: "user-cog",            section: "Main"    },
   { Vendor:            "vendorManagement",icon: "building",            section: "Main"    },
   { Analytics:         "auditLog",        icon: "chart-column-stacked",section: "Main"    },
+  { "Landing Page CMS":"cms/landing-page",icon: "monitor",             section: "Main"    },
   { "Support Tickets": "supportTickets",  icon: "headset",             section: "Support" },
   { Settings:          "settings",        icon: "settings",            divider: true      },
 ];

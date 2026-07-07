@@ -16,6 +16,7 @@ const AxiosAPI = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 AxiosAPI.interceptors.request.use(async (config) => {
   const domain = await getCompanyDomain();

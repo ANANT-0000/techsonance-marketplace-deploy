@@ -78,12 +78,10 @@ const getInstanceStatusBadge = (status: string) => {
   }
 };
 export default function AdminDashboardPage() {
-  const params = useParams();
-  const token = authToken();
   const [companies, setCompanies] = useState<Vendor[]>([]);
   const [customers, setCustomers] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [systemsOperations, setSystemsOperations] = useState([]);
+
   useEffect(() => {
     AxiosAPI.get(`/v1/admin/vendors`).then((res) => {
       setCompanies(res.data.data);
@@ -98,8 +96,6 @@ export default function AdminDashboardPage() {
 
   return (
     <>
-      <Navbar title="Dashboard" />
-
       <main className="w-full px-2 lg:px-4  mx-auto pb-12 mt-6">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -149,7 +145,9 @@ export default function AdminDashboardPage() {
                 <ShoppingBag size={18} />
               </div>
             </div>
-            <p className="text-theme-h3 font-bold text-gray-800">{orders.length}</p>
+            <p className="text-theme-h3 font-bold text-gray-800">
+              {orders.length}
+            </p>
             {/* <p className="text-theme-caption font-medium text-gray-500 mt-2">
                             This month
                         </p> */}

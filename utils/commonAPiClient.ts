@@ -30,7 +30,7 @@ export const fetchProductVariantDetails = async (id: string) => {
         method: "GET",
         ...getCacheConfig(300),
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
         },
@@ -230,7 +230,7 @@ export const fetchHomepageProducts = async (
         method: "GET",
         ...getCacheConfig(300),
         credentials: "include",
-      headers: {
+        headers: {
           "Content-Type": "application/json",
           "company-domain": companyDomain,
         },
@@ -290,3 +290,18 @@ export const fetchCategories = async (): Promise<any[]> => {
     return [];
   }
 };
+
+export async function getLandingPageData() {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const res = await fetch(`${BASE_API_URL}/v1/landing-page`, {
+      headers: { "company-domain": companyDomain },
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch landing page data:", error);
+    return null;
+  }
+}

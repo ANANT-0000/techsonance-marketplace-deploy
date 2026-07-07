@@ -1,8 +1,6 @@
 "use client";
 import { useState } from "react";
 import { handleAssignPermission } from "@/utils/adminApiClients";
-import { authToken } from "@/utils/authToken";
-import { redirect } from "next/navigation";
 import { ASSIGN_SECTION_TEXT } from "@/constants/adminText";
 
 interface Permission {
@@ -25,30 +23,29 @@ interface Props {
   roles: Role[];
   permissions: Permission[];
   rolePermissions: RoleAssignment[];
-  adminId: string;
+  token: string;
+  onRefresh: () => void;
 }
 
 export default function AssignSection({
   roles,
   permissions,
-  adminId,
   rolePermissions,
+  token,
+  onRefresh,
 }: Props) {
   const [roleId, setRoleId] = useState("");
   const [permId, setPermId] = useState("");
   const [isPending, setIsPending] = useState(false);
 
-  const handleAssign = async (e: React.FormEvent) => {
+  const handleAssign = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!roleId || !permId) return;
 
     setIsPending(true);
     try {
-      const token = authToken();
-      if (!token) {
-        redirect("/auth/adminLogin");
-      }
-      await handleAssignPermission(adminId, roleId, permId, token);
+      await handleAssignPermission(roleId, permId, token);
+      onRefresh();
       setPermId("");
     } catch (error) {
     } finally {

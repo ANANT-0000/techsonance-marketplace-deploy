@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { X, Loader2, Tag, Clock, AlertCircle } from 'lucide-react';
+import { X, Loader2, Tag, Clock, AlertCircle, LogIn } from 'lucide-react';
 import AxiosAPI from '@/lib/axios';
 import { authToken } from '@/utils/authToken';
 import toast, { Toaster } from 'react-hot-toast';
 import { Coupon } from '@/utils/Types';
 import { AVAILABLE_COUPONS_MODAL_TEXT } from '@/constants/customerText';
+import { useAppDispatch } from '@/hooks/reduxHooks';
+import { openLoginModal } from '@/lib/features/auth/authSlice';
 
 interface AvailableCouponsModalProps {
     isOpen: boolean;
@@ -12,12 +14,14 @@ interface AvailableCouponsModalProps {
     onSelect: (coupon: Coupon) => void;
     cartTotal?: number; 
     productId?: string;  
+    isReadOnly?: boolean; // When true (guest), shows "Login to Apply" instead of "Apply"
 }
 
-export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0, productId }: AvailableCouponsModalProps) => {
+export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0, productId, isReadOnly = false }: AvailableCouponsModalProps) => {
     const [coupons, setCoupons] = useState<Coupon[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const token = authToken();
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         if (isOpen) {
@@ -34,9 +38,14 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
             const fetchAvailableCoupons = async () => {
                 setIsLoading(true);
                 try {
+                    // Auth header is optional — guests can browse coupons without a token
+                    const headers: Record<string, string> = {};
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
                     const res = await AxiosAPI.get(`/v1/coupon/product/${productId ?? null}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                        params: { active: true,  } 
+                        headers,
+                        params: { active: true } 
                     });
                     setCoupons(res.data.data || []);
                 } catch (error) {
@@ -57,6 +66,17 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
         });
     };
 
+    const handleApplyClick = (coupon: Coupon, isLocked: boolean) => {
+        if (isLocked) return;
+        if (isReadOnly) {
+            // Guest: close modal and open login modal
+            onClose();
+            dispatch(openLoginModal(null));
+            return;
+        }
+        onSelect(coupon);
+    };
+
     return (
         <div className="w-full h-full fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 sm:p-6">
             <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[80vh] sm:max-h-[85vh]">
@@ -71,6 +91,14 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                         <X size={18} />
                     </button>
                 </div>
+
+                {/* Guest notice banner */}
+                {isReadOnly && (
+                    <div className="mx-4 mt-3 flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-medium px-3.5 py-2.5 rounded-xl">
+                        <LogIn size={14} className="shrink-0" />
+                        <span>Login to apply these offers at checkout</span>
+                    </div>
+                )}
                 
                 {/* Coupon List (Scrollable Area) */}
                 <div className="overflow-y-auto lg:p-4 p-2 space-y-4 bg-slate-50/50 flex-1 hide-scrollbar">
@@ -79,7 +107,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                             <Loader2 className="animate-spin text-theme-primary" size={32} />
                             <p className="text-theme-body-sm text-gray-500 font-medium">{AVAILABLE_COUPONS_MODAL_TEXT.FINDING}</p>
                         </div>
-                    ) :coupons && Array.isArray(coupons) &&  coupons.length === 0 ? (
+                    ) : coupons && Array.isArray(coupons) && coupons.length === 0 ? (
                         <div className="text-center lg:py-12 py-6">
                             <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Tag className="text-gray-400" size={28} />
@@ -88,9 +116,10 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                             <p className="text-gray-500 text-theme-body-sm">{AVAILABLE_COUPONS_MODAL_TEXT.NO_OFFERS_DESC}</p>
                         </div>
                     ) : (
-                  coupons && Array.isArray(coupons) &&       coupons.map((coupon) => {
+                  coupons && Array.isArray(coupons) && coupons.map((coupon) => {
                             const minSpend = Number(coupon.min_order_amount) || 0;
-                            const isLocked = cartTotal > 0 && cartTotal < minSpend;
+                            // Only show locked state for logged-in users with cart totals
+                            const isLocked = !isReadOnly && cartTotal > 0 && cartTotal < minSpend;
                             const remainingForUnlock = minSpend - cartTotal;
 
                             return (
@@ -121,27 +150,34 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                         </div>
 
                                         <button 
-                                            onClick={() => !isLocked && onSelect(coupon)}
+                                            onClick={() => handleApplyClick(coupon, isLocked)}
                                             disabled={isLocked}
-                                            className={`px-4 sm:px-5 py-2 rounded-xl text-theme-caption sm:text-theme-body-sm font-bold transition-all shadow-sm flex-shrink-0 ${
+                                            className={`px-4 sm:px-5 py-2 rounded-xl text-theme-caption sm:text-theme-body-sm font-bold transition-all shadow-sm flex-shrink-0 flex items-center gap-1.5 ${
                                                 isLocked 
                                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-gray-900 text-white hover:bg-black hover:shadow-md active:scale-95'
+                                                    : isReadOnly
+                                                        ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95'
+                                                        : 'bg-gray-900 text-white hover:bg-black hover:shadow-md active:scale-95'
                                             }`}
                                         >
-                                            {isLocked ? AVAILABLE_COUPONS_MODAL_TEXT.BTN_LOCKED : AVAILABLE_COUPONS_MODAL_TEXT.BTN_APPLY}
+                                            {isLocked ? (
+                                                AVAILABLE_COUPONS_MODAL_TEXT.BTN_LOCKED
+                                            ) : isReadOnly ? (
+                                                <><LogIn size={12} /> Login to Apply</>
+                                            ) : (
+                                                AVAILABLE_COUPONS_MODAL_TEXT.BTN_APPLY
+                                            )}
                                         </button>
                                     </div>
 
                                     {/* Description */}
-                                  {coupon.description &&  <p className="text-theme-caption-lg sm:text-theme-body-sm text-gray-600 font-medium leading-snug">
+                                  {coupon.description && <p className="text-theme-caption-lg sm:text-theme-body-sm text-gray-600 font-medium leading-snug">
                                         {coupon.description}
                                     </p>}
 
                                     {/* Rules Grid */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:mt-1   border-t border-gray-100 border-dashed">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:mt-1 border-t border-gray-100 border-dashed">
                                         
-                                        {/* Min Spend Rule - Takes full width on mobile if needed */}
                                         {coupon.min_order_amount && (
                                             <div className="col-span-1 sm:col-span-2 text-theme-caption text-gray-500 flex items-start sm:items-center gap-1.5 leading-tight">
                                                 <AlertCircle size={14} className={`flex-shrink-0 mt-0.5 sm:mt-0 ${isLocked ? "text-amber-500" : "text-gray-400"}`} />
@@ -155,7 +191,6 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                                             </div>
                                         )}
 
-                                        {/* Meta Boxes Container */}
                                         <div className="col-span-1 sm:col-span-2 flex flex-wrap gap-2 mt-1">
                                             {coupon.max_discount_amount && (
                                                 <div className="flex-1 min-w-[100px] text-theme-tiny sm:text-theme-xxs text-gray-500 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100">
@@ -188,7 +223,7 @@ export const AvailableCouponsModal = ({ isOpen, onClose, onSelect, cartTotal = 0
                     scrollbar-width: none;
                 }
             `}</style>
-                        <Toaster />
+            <Toaster />
             
         </div>
     );

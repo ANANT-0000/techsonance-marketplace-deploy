@@ -35,6 +35,25 @@ select:-webkit-autofill {
         --theme-background: var(--background);
         --theme-text: var(--foreground);
 
+        /* --- Landing Page Tokens --- */
+        --landing-primary: #2563eb;
+        --landing-primary-hover: #4f46e5;
+        --landing-secondary: #4f46e5;
+        --landing-accent: #059669;
+        --landing-background: #f8fafc;
+        --landing-surface: #ffffff;
+        --landing-text: #0f172a;
+        --landing-muted: #475569;
+        --landing-border: rgba(15, 23, 42, 0.08);
+        --landing-navbar: rgba(248, 250, 252, 0.92);
+        --landing-footer: #0f172a;
+        --landing-on-primary: #ffffff;
+        --landing-on-dark: #ffffff;
+        --landing-primary-soft: rgba(37, 99, 235, 0.08);
+        --landing-accent-soft: rgba(79, 70, 229, 0.1);
+        --landing-success: #059669;
+        --landing-warning: #f97316;
+
         /* --- Backgrounds & Surfaces --- */
         --background: oklch(1 0 0);
         --foreground: oklch(0.145 0 0);
@@ -165,6 +184,25 @@ select:-webkit-autofill {
     --color-theme-background: var(--theme-background);
     --color-theme-text: var(--theme-text);
 
+    /* --- Landing Page Theme --- */
+    --color-landing-primary: var(--landing-primary);
+    --color-landing-primary-hover: var(--landing-primary-hover);
+    --color-landing-secondary: var(--landing-secondary);
+    --color-landing-accent: var(--landing-accent);
+    --color-landing-background: var(--landing-background);
+    --color-landing-surface: var(--landing-surface);
+    --color-landing-text: var(--landing-text);
+    --color-landing-muted: var(--landing-muted);
+    --color-landing-border: var(--landing-border);
+    --color-landing-navbar: var(--landing-navbar);
+    --color-landing-footer: var(--landing-footer);
+    --color-landing-on-primary: var(--landing-on-primary);
+    --color-landing-on-dark: var(--landing-on-dark);
+    --color-landing-primary-soft: var(--landing-primary-soft);
+    --color-landing-accent-soft: var(--landing-accent-soft);
+    --color-landing-success: var(--landing-success);
+    --color-landing-warning: var(--landing-warning);
+
     /* --- Backgrounds --- */
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -236,6 +274,10 @@ select:-webkit-autofill {
 }
 
 @layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
     * {
         @apply border-border outline-ring/50;
     }
@@ -289,6 +331,16 @@ select:-webkit-autofill {
     border: 1px solid var(--color-border, #e2e8f0) !important;
     background-color: white !important;
     color: var(--color-foreground, #0f172a) !important;
+}
+
+.landing-theme {
+    background-color: var(--landing-background);
+    color: var(--landing-text);
+}
+
+.marketing-theme {
+    background-color: var(--landing-background);
+    color: var(--landing-text);
 }
 
 /* @layer components {

@@ -474,8 +474,8 @@ export default function ProductClient({ id }: { id: string }) {
   };
 
   const handleCouponModalOpen = () => {
-    if (!token) reduxDispatch(openLoginModal(null));
-    else dispatch({ type: ActionType.SET_COUPON_MODAL_OPEN, payload: true });
+    // Both guests and logged-in users can open the modal; guests see it in read-only mode
+    dispatch({ type: ActionType.SET_COUPON_MODAL_OPEN, payload: true });
   };
 
   const inStock = (state.activeVariant?.inventory?.stock_quantity ?? 0) > 0;
@@ -1103,6 +1103,7 @@ export default function ProductClient({ id }: { id: string }) {
         }
         onSelect={handleCouponSelect}
         productId={state.product?.id}
+        isReadOnly={!token}
       />
     </main>
   );

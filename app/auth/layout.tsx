@@ -1,3 +1,7 @@
+// Reads request headers via getCompanyDomain() — must never be statically prerendered.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { ThemeProvider } from "@/components/customer/ThemeProvider";
 import { getCompanyDomain } from "@/lib/get-domain";
 import {

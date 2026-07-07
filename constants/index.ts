@@ -6,6 +6,8 @@ export * from "./customer";
 export * from "./dynamicFields";
 export * from "./storefront";
 export * from "./authText";
+export * from "./landingText";
+export * from "./sectionEditorEnums";
 export * from "./vendorText";
 export const DEFAULT_LANG = "en";
 export const ENV_DEVELOPMENT = "development";

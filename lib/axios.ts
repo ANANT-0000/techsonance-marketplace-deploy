@@ -4,9 +4,10 @@ import {
   IS_AUTHENTICATED_KEY,
   CART_KEY,
   BASE_API_URL,
+  ACCESS_TOKEN_KEY,
 } from "@/constants";
 import { getCompanyDomain } from "./get-domain";
-import { SecureErrorHandler } from "@/utils/error/error.handler";
+
 import {
   ClientActionCode,
   SanitizedErrorResponse,
@@ -34,6 +35,11 @@ AxiosAPI.interceptors.request.use(
         domainCache = await getCompanyDomain();
       }
       config.headers["company-domain"] = domainCache;
+
+      const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+      if (token && token !== "undefined" && token !== "null") {
+        config.headers["Authorization"] = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -78,7 +84,16 @@ AxiosAPI.interceptors.response.use(
         // For public routes just let the calling code handle the error
       }
     }
-    const suppressToast = error.config?.headers?.['x-suppress-toast'] === 'true' || error.config?.headers?.['x-suppress-toast'] === true;
+    let suppressToast = false;
+    if (error.config?.headers) {
+      if (typeof error.config.headers.get === "function") {
+        suppressToast = error.config.headers.get("x-suppress-toast") === "true";
+      } else {
+        suppressToast =
+          error.config.headers["x-suppress-toast"] === "true" ||
+          error.config.headers["x-suppress-toast"] === true;
+      }
+    }
 
     if (!suppressToast) {
       if (error.response && error.response.data) {
@@ -99,7 +114,9 @@ AxiosAPI.interceptors.response.use(
             toast.error(`${message} (Error Ref: ${errorCode})`);
             break;
           default:
-            toast.error(message || "An unexpected error occurred. Please try again.");
+            toast.error(
+              message || "An unexpected error occurred. Please try again.",
+            );
         }
       } else {
         toast.error("Network connectivity issue. Please try again.");

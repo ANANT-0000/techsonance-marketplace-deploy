@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   // webpack: (config, { dev }) => {
@@ -9,9 +10,13 @@ const nextConfig: NextConfig = {
   // },
 
   allowedDevOrigins: ["http://192.168.43.1:3000", "http://localhost:3000", "*"],
-  experimental: {
-    serverSourceMaps: false,
 
+  turbopack: {
+    // Fix "multiple lockfiles" warning — pin the workspace root explicitly
+    root: path.resolve(__dirname),
+  },
+
+  experimental: {
     // Only list packages that are actually in package.json
     optimizePackageImports: [
       "lucide-react",
@@ -19,7 +24,6 @@ const nextConfig: NextConfig = {
       "recharts",
       "@reduxjs/toolkit",
     ],
-    preloadEntriesOnStart: false,
     serverActions: {
       bodySizeLimit: "10mb",
     },
