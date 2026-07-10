@@ -9,6 +9,23 @@ import type {
 import { LANDING_PRICING } from "@/constants/landingText";
 import { BASE_API_URL } from "@/constants";
 
+const UNLIMITED_VALUE_RAW = "-1";
+const UNLIMITED_VALUE_DISPLAY = "Unlimited";
+
+function humanizeValue(val: string): string {
+  if (typeof val !== "string") return String(val);
+  if (val === "true" || val === "false" || /^-?\d+$/.test(val)) {
+    return val;
+  }
+  return val
+    .split("_")
+    .join(" ")
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 /** Shape used internally when rendering a merged plan card */
 interface MergedPlan {
   id: string;
@@ -215,9 +232,11 @@ export default function PricingSection({
               .split("_")
               .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
               .join(" ");
+            const rawVal = f.value === UNLIMITED_VALUE_RAW ? UNLIMITED_VALUE_DISPLAY : f.value;
+            const displayValue = humanizeValue(rawVal);
             return f.type === "boolean"
               ? formattedKey
-              : `${formattedKey}: ${f.value}`;
+              : `${formattedKey}: ${displayValue}`;
           });
 
         const fallbackOverride = buildFallbackOverride(plan);
@@ -226,6 +245,7 @@ export default function PricingSection({
 
         const override: LandingPricingPlanOverride = {
           ...baseOverride,
+          description: plan.description || baseOverride.description,
           features: finalFeatures,
         };
 

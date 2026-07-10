@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,7 +60,7 @@ import {
   Company,
   SubscriptionPlan,
 } from "@/utils/Types";
-import { SubscriptionText } from "@/constants/subscriptionText";
+
 import { authToken } from "@/utils/authToken";
 import {
   fetchAdminSubscriptions,
@@ -67,11 +68,14 @@ import {
   fetchLiveSubscriptionPlans,
 } from "@/utils/adminApiClients";
 import { Switch } from "@/components/ui/switch";
+import { SUBSCRIBATION_TEXT } from "@/constants/adminText";
 
 // ─── Constants: no inline literals in JSX/logic ──────────────────────────────
 const DEFAULT_CURRENCY = "INR";
 const DEFAULT_CURRENCY_EXPONENT = 2;
 const DEFAULT_AMOUNT_MINOR_UNITS = 0;
+const UNLIMITED_VALUE_RAW = "-1";
+const UNLIMITED_VALUE_DISPLAY = "Unlimited";
 
 const BOOLEAN_VALUE = {
   TRUE: "true",
@@ -236,6 +240,20 @@ function StatusBadge({ status }: { status: CmsPlanRow["status"] }) {
   );
 }
 
+function humanizeValue(val: string): string {
+  if (typeof val !== "string") return String(val);
+  if (val === "true" || val === "false" || /^-?\d+$/.test(val)) {
+    return val;
+  }
+  return val
+    .split("_")
+    .join(" ")
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 function humanizeFeature(f: CmsPlanFeature): string | null {
   const label = f.feature_key
     .split("_")
@@ -246,7 +264,10 @@ function humanizeFeature(f: CmsPlanFeature): string | null {
   if (f.type === FeatureType.BOOLEAN) {
     return f.value === BOOLEAN_VALUE.TRUE ? label : null;
   }
-  return `${label}: ${f.value}`;
+  const rawVal =
+    f.value === UNLIMITED_VALUE_RAW ? UNLIMITED_VALUE_DISPLAY : f.value;
+  const displayVal = humanizeValue(rawVal);
+  return `${label}: ${displayVal}`;
 }
 
 // Helper to format ISO dates to a clean display format
@@ -492,6 +513,7 @@ export default function SubscriptionsWorkspace() {
     refetch: refetchPlans,
     saveDraft,
     publish,
+    unpublish,
     createPlan,
   } = useCmsSubscriptionPlans();
 
@@ -544,7 +566,7 @@ export default function SubscriptionsWorkspace() {
     } catch (err) {
       dispatch({
         type: PAGE_ACTION.SET_VENDORS_ERROR,
-        payload: SubscriptionText.ACTIONS.FETCH_ERROR,
+        payload: SUBSCRIBATION_TEXT.ACTIONS.FETCH_ERROR,
       });
     } finally {
       dispatch({ type: PAGE_ACTION.SET_LOADING_VENDORS, payload: false });
@@ -596,6 +618,14 @@ export default function SubscriptionsWorkspace() {
     }
   };
 
+  const handleUnpublishPlan = async () => {
+    if (!draft) return;
+    const ok = await unpublish(draft.plan_key);
+    if (ok) {
+      loadVendors(); // Refresh vendor plans
+    }
+  };
+
   const handleCreatePlan = async () => {
     const result = await createPlan(newPlanKey);
     if (result.ok) {
@@ -616,7 +646,9 @@ export default function SubscriptionsWorkspace() {
       const matchesSearch =
         companyName.includes(query) || domain.includes(query);
       const matchesStatus =
-        filterStatus === "__all__" || filterStatus === "" ? true : v.status === filterStatus;
+        filterStatus === "__all__" || filterStatus === ""
+          ? true
+          : v.status === filterStatus;
 
       return matchesSearch && matchesStatus;
     });
@@ -663,11 +695,11 @@ export default function SubscriptionsWorkspace() {
 
     try {
       await updateVendorSubscription(selectedVendor.id, payload, token);
-      toast.success(SubscriptionText.ACTIONS.SUCCESS_UPDATE);
+      toast.success(SUBSCRIBATION_TEXT.ACTIONS.SUCCESS_UPDATE);
       dispatch({ type: PAGE_ACTION.CLOSE_EDIT_MODAL });
       loadVendors();
     } catch (err) {
-      toast.error(SubscriptionText.ACTIONS.FAILED_UPDATE);
+      toast.error(SUBSCRIBATION_TEXT.ACTIONS.FAILED_UPDATE);
     } finally {
       dispatch({ type: PAGE_ACTION.SET_SAVING_VENDOR, payload: false });
     }
@@ -679,10 +711,10 @@ export default function SubscriptionsWorkspace() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-6 mb-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            {SubscriptionText.PAGE_TITLE}
+            {SUBSCRIBATION_TEXT.PAGE_TITLE}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            {SubscriptionText.PAGE_DESCRIPTION}
+            {SUBSCRIBATION_TEXT.PAGE_DESCRIPTION}
           </p>
         </div>
       </div>
@@ -701,7 +733,7 @@ export default function SubscriptionsWorkspace() {
           }`}
         >
           <CreditCard className="h-4 w-4" />
-          {SubscriptionText.SECTION_CMS_TITLE}
+          {SUBSCRIBATION_TEXT.SECTION_CMS_TITLE}
         </button>
         <button
           type="button"
@@ -715,7 +747,7 @@ export default function SubscriptionsWorkspace() {
           }`}
         >
           <Users className="h-4 w-4" />
-          {SubscriptionText.SECTION_LIFECYCLE_TITLE}
+          {SUBSCRIBATION_TEXT.SECTION_LIFECYCLE_TITLE}
         </button>
       </div>
 
@@ -728,10 +760,10 @@ export default function SubscriptionsWorkspace() {
             <div>
               <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                 <CreditCard className="h-5 w-5 text-blue-500" />
-                {SubscriptionText.SECTION_CMS_TITLE}
+                {SUBSCRIBATION_TEXT.SECTION_CMS_TITLE}
               </h2>
               <p className="text-xs text-slate-500">
-                {SubscriptionText.SECTION_CMS_SUBTITLE}
+                {SUBSCRIBATION_TEXT.SECTION_CMS_SUBTITLE}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -749,7 +781,7 @@ export default function SubscriptionsWorkspace() {
                 <div className="flex items-center gap-1.5">
                   <Input
                     autoFocus
-                    placeholder={SubscriptionText.NEW_PLAN_PLACEHOLDER}
+                    placeholder={SUBSCRIBATION_TEXT.NEW_PLAN_PLACEHOLDER}
                     value={newPlanKey}
                     onChange={(e) =>
                       dispatch({
@@ -908,7 +940,7 @@ export default function SubscriptionsWorkspace() {
                       </span>
                       {isDirty && (
                         <span className="text-xs font-semibold text-amber-600">
-                          Unsaved changes
+                          {SUBSCRIBATION_TEXT.CMS_EDITOR.UNSAVED_CHANGES}
                         </span>
                       )}
                     </div>
@@ -926,23 +958,65 @@ export default function SubscriptionsWorkspace() {
                         ) : (
                           <Save className="mr-2 h-3.5 w-3.5" />
                         )}
-                        Save Draft
+                        {SUBSCRIBATION_TEXT.CMS_EDITOR.SAVE_DRAFT_BTN}
                       </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={handlePublishPlan}
-                        disabled={
-                          isSavingPlan(draft.plan_key) ||
-                          draft.status !== PlanStatus.DRAFT ||
-                          isDirty
-                        }
-                        className="h-8 text-xs font-semibold"
-                      >
-                        <UploadCloud className="mr-2 h-3.5 w-3.5" />
-                        Publish Live
-                      </Button>
+                      {draft.status === PlanStatus.LIVE ? (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={handleUnpublishPlan}
+                          disabled={isSavingPlan(draft.plan_key) || isDirty}
+                          className="h-8 text-xs font-semibold"
+                        >
+                          <EyeOff className="mr-2 h-3.5 w-3.5" />
+                          {SUBSCRIBATION_TEXT.CMS_EDITOR.UNPUBLISH_BTN}
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handlePublishPlan}
+                          disabled={
+                            isSavingPlan(draft.plan_key) ||
+                            draft.status !== PlanStatus.DRAFT ||
+                            isDirty
+                          }
+                          className="h-8 text-xs font-semibold"
+                        >
+                          <UploadCloud className="mr-2 h-3.5 w-3.5" />
+                          {SUBSCRIBATION_TEXT.CMS_EDITOR.PUBLISH_LIVE_BTN}
+                        </Button>
+                      )}
                     </div>
+                  </div>
+
+                  {/* Plan Description Card */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 mb-6 space-y-2">
+                    <Label
+                      htmlFor="plan-description"
+                      className="font-bold text-sm text-slate-900"
+                    >
+                      {SUBSCRIBATION_TEXT.ACTIONS.PLAN_DESC_LABEL}
+                    </Label>
+                    <p className="text-xs text-slate-500">
+                      {SUBSCRIBATION_TEXT.ACTIONS.PLAN_DESC_SUBTITLE}
+                    </p>
+                    <Input
+                      id="plan-description"
+                      type="text"
+                      value={draft.description || ""}
+                      onChange={(e) => {
+                        dispatch({
+                          type: PAGE_ACTION.UPDATE_DRAFT,
+                          payload: { ...draft, description: e.target.value },
+                        });
+                      }}
+                      placeholder={
+                        SUBSCRIBATION_TEXT.ACTIONS.PLAN_DESC_PLACEHOLDER
+                      }
+                      className="text-xs"
+                    />
                   </div>
 
                   <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
@@ -952,7 +1026,7 @@ export default function SubscriptionsWorkspace() {
                       <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5">
                         <div className="flex items-center justify-between">
                           <h4 className="font-bold text-sm text-slate-900">
-                            Pricing Tier Intervals
+                            {SUBSCRIBATION_TEXT.CMS_EDITOR.PRICING_TITLE}
                           </h4>
                           <Button
                             type="button"
@@ -971,7 +1045,7 @@ export default function SubscriptionsWorkspace() {
                             className="h-8 px-2 text-xs"
                           >
                             <Plus className="mr-1 h-3 w-3" />
-                            Add Price
+                            {SUBSCRIBATION_TEXT.CMS_EDITOR.ADD_PRICE_BTN}
                           </Button>
                         </div>
                         <FieldError message={errors[ERROR_FIELD.PRICES]} />
@@ -1009,7 +1083,7 @@ export default function SubscriptionsWorkspace() {
 
                               <div className="grid min-w-[70px] gap-1">
                                 <Label className="text-xs text-slate-500">
-                                  Currency
+                                  {SUBSCRIBATION_TEXT.CMS_EDITOR.LABEL_CURRENCY}
                                 </Label>
                                 <Input
                                   value={price.currency}
@@ -1042,7 +1116,7 @@ export default function SubscriptionsWorkspace() {
 
                               <div className="grid min-w-[110px] gap-1">
                                 <Label className="text-xs text-slate-500">
-                                  Interval
+                                  {SUBSCRIBATION_TEXT.CMS_EDITOR.LABEL_INTERVAL}
                                 </Label>
                                 <Select
                                   value={price.interval}
@@ -1079,7 +1153,8 @@ export default function SubscriptionsWorkspace() {
 
                               <div className="grid min-w-[120px] flex-1 gap-1">
                                 <Label className="text-xs text-slate-500">
-                                  Amount ({price.currency})
+                                  {SUBSCRIBATION_TEXT.CMS_EDITOR.LABEL_AMOUNT} (
+                                  {price.currency})
                                 </Label>
                                 <Input
                                   type="number"
@@ -1144,7 +1219,7 @@ export default function SubscriptionsWorkspace() {
 
                         {draft.prices.length === 0 && (
                           <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">
-                            No prices yet — add at least one before saving.
+                            {SUBSCRIBATION_TEXT.CMS_EDITOR.NO_PRICES}
                           </p>
                         )}
                       </div>
@@ -1154,10 +1229,10 @@ export default function SubscriptionsWorkspace() {
                         <div className="flex items-center justify-between">
                           <div>
                             <h4 className="font-bold text-sm text-slate-900">
-                              Feature Flags & Limits
+                              {SUBSCRIBATION_TEXT.CMS_EDITOR.FEATURES_TITLE}
                             </h4>
                             <p className="text-[11px] text-slate-400">
-                              Order here is the order they appear on cards.
+                              {SUBSCRIBATION_TEXT.CMS_EDITOR.FEATURES_SUBTITLE}
                             </p>
                           </div>
                           <Button
@@ -1177,7 +1252,7 @@ export default function SubscriptionsWorkspace() {
                             className="h-8 px-2 text-xs"
                           >
                             <Plus className="mr-1 h-3 w-3" />
-                            Add Feature
+                            {SUBSCRIBATION_TEXT.CMS_EDITOR.ADD_FEATURE_BTN}
                           </Button>
                         </div>
 
@@ -1217,7 +1292,10 @@ export default function SubscriptionsWorkspace() {
 
                                 <div className="grid min-w-[130px] flex-1 gap-1">
                                   <Label className="text-xs text-slate-500">
-                                    {SubscriptionText.ACTIONS.FEATURE_KEY_LABEL}
+                                    {
+                                      SUBSCRIBATION_TEXT.ACTIONS
+                                        .FEATURE_KEY_LABEL
+                                    }
                                   </Label>
                                   <Input
                                     value={feature.feature_key.replace(
@@ -1225,7 +1303,7 @@ export default function SubscriptionsWorkspace() {
                                       " ",
                                     )}
                                     placeholder={
-                                      SubscriptionText.ACTIONS
+                                      SUBSCRIBATION_TEXT.ACTIONS
                                         .FEATURE_KEY_PLACEHOLDER
                                     }
                                     onChange={(e) => {
@@ -1258,7 +1336,10 @@ export default function SubscriptionsWorkspace() {
 
                                 <div className="grid min-w-[120px] gap-1">
                                   <Label className="text-xs text-slate-500">
-                                    Behavior
+                                    {
+                                      SUBSCRIBATION_TEXT.CMS_EDITOR
+                                        .LABEL_BEHAVIOR
+                                    }
                                   </Label>
                                   <Select
                                     value={
@@ -1305,7 +1386,10 @@ export default function SubscriptionsWorkspace() {
                                         value="toggle"
                                         className="text-xs"
                                       >
-                                        Toggle Switch (Yes/No)
+                                        {
+                                          SUBSCRIBATION_TEXT.CMS_EDITOR
+                                            .BEHAVIOR_TOGGLE
+                                        }
                                       </SelectItem>
                                       <SelectItem
                                         value="text"
@@ -1319,7 +1403,7 @@ export default function SubscriptionsWorkspace() {
 
                                 <div className="grid min-w-[150px] flex-1 gap-1">
                                   <Label className="text-xs text-slate-500">
-                                    Value
+                                    {SUBSCRIBATION_TEXT.CMS_EDITOR.LABEL_VALUE}
                                   </Label>
                                   {feature.type === FeatureType.BOOLEAN ? (
                                     <div className="flex items-center gap-2 h-8 mt-1.5">
@@ -1343,17 +1427,32 @@ export default function SubscriptionsWorkspace() {
                                       />
                                       <span className="text-xs font-medium text-slate-600 select-none">
                                         {feature.value === "true"
-                                          ? "Yes (Enabled)"
-                                          : "No (Disabled)"}
+                                          ? SUBSCRIBATION_TEXT.CMS_EDITOR
+                                              .TOGGLE_ENABLED
+                                          : SUBSCRIBATION_TEXT.CMS_EDITOR
+                                              .TOGGLE_DISABLED}
                                       </span>
                                     </div>
                                   ) : (
                                     <Input
                                       type="text"
-                                      value={feature.value}
-                                      placeholder="e.g., 50, Unlimited, Premium..."
+                                      value={
+                                        feature.value === UNLIMITED_VALUE_RAW
+                                          ? UNLIMITED_VALUE_DISPLAY
+                                          : feature.value
+                                      }
+                                      placeholder={
+                                        SUBSCRIBATION_TEXT.CMS_EDITOR
+                                          .FEATURE_VALUE_PLACEHOLDER
+                                      }
                                       onChange={(e) => {
-                                        const val = e.target.value;
+                                        let val = e.target.value;
+                                        if (
+                                          val.trim().toLowerCase() ===
+                                          UNLIMITED_VALUE_DISPLAY.toLowerCase()
+                                        ) {
+                                          val = UNLIMITED_VALUE_RAW;
+                                        }
                                         const isNum = /^-?\d+$/.test(val);
                                         const next = [...draft.features];
                                         next[i] = {
@@ -1408,7 +1507,7 @@ export default function SubscriptionsWorkspace() {
 
                         {draft.features.length === 0 && (
                           <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">
-                            No feature flags on this plan yet.
+                            {SUBSCRIBATION_TEXT.CMS_EDITOR.NO_FEATURES}
                           </p>
                         )}
                       </div>
@@ -1419,7 +1518,7 @@ export default function SubscriptionsWorkspace() {
                       <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                         <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-slate-500">
                           <Eye className="h-3.5 w-3.5" />
-                          {SubscriptionText.ACTIONS.PREVIEW_TITLE}
+                          {SUBSCRIBATION_TEXT.ACTIONS.PREVIEW_TITLE}
                         </div>
 
                         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
@@ -1443,7 +1542,9 @@ export default function SubscriptionsWorkspace() {
                                   : DEFAULT_AMOUNT_MINOR_UNITS;
                               })()}
                             </span>
-                            <span className="text-xs text-slate-400">/mo</span>
+                            <span className="text-xs text-slate-400">
+                              {SUBSCRIBATION_TEXT.CMS_EDITOR.MONTHLY_LABEL}
+                            </span>
                           </div>
 
                           {(() => {
@@ -1464,11 +1565,21 @@ export default function SubscriptionsWorkspace() {
                                   yearly.currency_exponent,
                                   yearly.currency,
                                 )}{" "}
-                                billed annually (≈ {yearly.currency} {monthlyEq}
-                                /mo)
+                                {
+                                  SUBSCRIBATION_TEXT.CMS_EDITOR
+                                    .BILLED_ANNUALLY_LABEL
+                                }{" "}
+                                (≈ {yearly.currency} {monthlyEq}
+                                {SUBSCRIBATION_TEXT.CMS_EDITOR.MONTHLY_LABEL})
                               </p>
                             );
                           })()}
+
+                          <p className="mt-3 text-xs text-slate-500 leading-relaxed font-normal">
+                            {draft.description ||
+                              SUBSCRIBATION_TEXT.CMS_EDITOR
+                                .PREVIEW_DEFAULT_DESC}
+                          </p>
 
                           <div className="my-4 h-px w-full bg-slate-100" />
 
@@ -1479,7 +1590,10 @@ export default function SubscriptionsWorkspace() {
                             if (features.length === 0) {
                               return (
                                 <p className="text-xs text-slate-400 italic">
-                                  No visible feature flags yet.
+                                  {
+                                    SUBSCRIBATION_TEXT.CMS_EDITOR
+                                      .PREVIEW_NO_FEATURES
+                                  }
                                 </p>
                               );
                             }
@@ -1519,10 +1633,10 @@ export default function SubscriptionsWorkspace() {
             <div>
               <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                 <Building className="h-5 w-5 text-blue-500" />
-                {SubscriptionText.SECTION_LIFECYCLE_TITLE}
+                {SUBSCRIBATION_TEXT.SECTION_LIFECYCLE_TITLE}
               </h2>
               <p className="text-xs text-slate-500">
-                {SubscriptionText.SECTION_LIFECYCLE_SUBTITLE}
+                {SUBSCRIBATION_TEXT.SECTION_LIFECYCLE_SUBTITLE}
               </p>
             </div>
             <Button
@@ -1533,7 +1647,7 @@ export default function SubscriptionsWorkspace() {
               className="text-xs h-9"
             >
               <RefreshCw className="mr-2 h-3.5 w-3.5" />
-              {SubscriptionText.ACTIONS.REFRESH}
+              {SUBSCRIBATION_TEXT.ACTIONS.REFRESH}
             </Button>
           </div>
 
@@ -1556,7 +1670,7 @@ export default function SubscriptionsWorkspace() {
                     payload: e.target.value,
                   })
                 }
-                placeholder={SubscriptionText.SEARCH_PLACEHOLDER}
+                placeholder={SUBSCRIBATION_TEXT.SEARCH_PLACEHOLDER}
                 className="pl-9 text-xs h-9 bg-white border-slate-200"
               />
             </div>
@@ -1573,14 +1687,14 @@ export default function SubscriptionsWorkspace() {
               >
                 <SelectTrigger className="text-xs h-9 w-[150px] bg-white border-slate-200">
                   <SelectValue
-                    placeholder={SubscriptionText.FILTER_STATUS_LABEL}
+                    placeholder={SUBSCRIBATION_TEXT.FILTER_STATUS_LABEL}
                   />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__all__" className="text-xs">
-                    {SubscriptionText.FILTER_ALL_STATUS}
+                    {SUBSCRIBATION_TEXT.FILTER_ALL_STATUS}
                   </SelectItem>
-                  {Object.entries(SubscriptionText.STATUS_LABELS).map(
+                  {Object.entries(SUBSCRIBATION_TEXT.STATUS_LABELS).map(
                     ([key, label]) => (
                       <SelectItem key={key} value={key} className="text-xs">
                         {label}
@@ -1598,28 +1712,28 @@ export default function SubscriptionsWorkspace() {
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase">
                   <th className="p-4">
-                    {SubscriptionText.TABLE_HEADERS.COMPANY_NAME}
+                    {SUBSCRIBATION_TEXT.TABLE_HEADERS.COMPANY_NAME}
                   </th>
                   <th className="p-4">
-                    {SubscriptionText.TABLE_HEADERS.DOMAIN}
+                    {SUBSCRIBATION_TEXT.TABLE_HEADERS.DOMAIN}
                   </th>
                   <th className="p-4">
-                    {SubscriptionText.TABLE_HEADERS.CURRENT_PLAN}
+                    {SUBSCRIBATION_TEXT.TABLE_HEADERS.CURRENT_PLAN}
                   </th>
                   <th className="p-4">
-                    {SubscriptionText.TABLE_HEADERS.STATUS}
+                    {SUBSCRIBATION_TEXT.TABLE_HEADERS.STATUS}
                   </th>
                   <th className="p-4">
-                    {SubscriptionText.TABLE_HEADERS.TRIAL_ENDS}
+                    {SUBSCRIBATION_TEXT.TABLE_HEADERS.TRIAL_ENDS}
                   </th>
                   <th className="p-4">
-                    {SubscriptionText.TABLE_HEADERS.PERIOD_ENDS}
+                    {SUBSCRIBATION_TEXT.TABLE_HEADERS.PERIOD_ENDS}
                   </th>
                   <th className="p-4">
-                    {SubscriptionText.TABLE_HEADERS.DATE_CREATED}
+                    {SUBSCRIBATION_TEXT.TABLE_HEADERS.DATE_CREATED}
                   </th>
                   <th className="p-4 text-center">
-                    {SubscriptionText.TABLE_HEADERS.ACTIONS}
+                    {SUBSCRIBATION_TEXT.TABLE_HEADERS.ACTIONS}
                   </th>
                 </tr>
               </thead>
@@ -1640,7 +1754,7 @@ export default function SubscriptionsWorkspace() {
                       colSpan={8}
                       className="p-8 text-center text-slate-400 italic"
                     >
-                      {SubscriptionText.ACTIONS.NO_DATA}
+                      {SUBSCRIBATION_TEXT.ACTIONS.NO_DATA}
                     </td>
                   </tr>
                 ) : (
@@ -1688,7 +1802,7 @@ export default function SubscriptionsWorkspace() {
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusStyle}`}
                           >
                             ●{" "}
-                            {SubscriptionText.STATUS_LABELS[
+                            {SUBSCRIBATION_TEXT.STATUS_LABELS[
                               item.status as SubscriptionStatus
                             ] || item.status}
                           </span>
@@ -1715,7 +1829,7 @@ export default function SubscriptionsWorkspace() {
                             className="h-7 px-2.5 text-xs text-blue-600 border-blue-100 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 rounded-lg transition-colors font-semibold"
                           >
                             <Edit2 className="h-3 w-3 mr-1" />
-                            {SubscriptionText.ACTIONS.MANAGE}
+                            {SUBSCRIBATION_TEXT.ACTIONS.MANAGE}
                           </Button>
                         </td>
                       </tr>
@@ -1782,10 +1896,10 @@ export default function SubscriptionsWorkspace() {
           <form onSubmit={handleUpdateVendor}>
             <DialogHeader className="border-b border-slate-100 pb-3 mb-4">
               <DialogTitle className="text-base font-bold text-slate-900">
-                {SubscriptionText.ACTIONS.EDIT_TITLE}
+                {SUBSCRIBATION_TEXT.ACTIONS.EDIT_TITLE}
               </DialogTitle>
               <DialogDescription className="text-xs">
-                {SubscriptionText.ACTIONS.EDIT_DESC}
+                {SUBSCRIBATION_TEXT.ACTIONS.EDIT_DESC}
               </DialogDescription>
             </DialogHeader>
 
@@ -1795,7 +1909,7 @@ export default function SubscriptionsWorkspace() {
                 <div className="grid grid-cols-2 gap-2.5 rounded-xl bg-slate-50 p-3 border border-slate-100 text-xs">
                   <div>
                     <span className="block font-semibold text-slate-400 uppercase tracking-wide text-[9px]">
-                      {SubscriptionText.ACTIONS.COMPANY_LABEL}
+                      {SUBSCRIBATION_TEXT.ACTIONS.COMPANY_LABEL}
                     </span>
                     <span className="font-semibold text-slate-800">
                       {selectedVendor.company?.company_name}
@@ -1803,7 +1917,7 @@ export default function SubscriptionsWorkspace() {
                   </div>
                   <div>
                     <span className="block font-semibold text-slate-400 uppercase tracking-wide text-[9px]">
-                      {SubscriptionText.ACTIONS.DOMAIN_LABEL}
+                      {SUBSCRIBATION_TEXT.ACTIONS.DOMAIN_LABEL}
                     </span>
                     <span className="font-mono text-slate-650">
                       {selectedVendor.company?.company_domain}
@@ -1814,7 +1928,7 @@ export default function SubscriptionsWorkspace() {
                 {/* Update Plan Select */}
                 <div className="grid gap-1">
                   <Label className="text-xs font-semibold text-slate-700">
-                    {SubscriptionText.ACTIONS.PLAN_LABEL}
+                    {SUBSCRIBATION_TEXT.ACTIONS.PLAN_LABEL}
                   </Label>
                   <Select
                     value={editPlanId}
@@ -1845,7 +1959,7 @@ export default function SubscriptionsWorkspace() {
                 {/* Update Status Select */}
                 <div className="grid gap-1">
                   <Label className="text-xs font-semibold text-slate-700">
-                    {SubscriptionText.ACTIONS.STATUS_LABEL}
+                    {SUBSCRIBATION_TEXT.ACTIONS.STATUS_LABEL}
                   </Label>
                   <Select
                     value={editStatus}
@@ -1869,7 +1983,7 @@ export default function SubscriptionsWorkspace() {
                           value={status}
                           className="text-xs"
                         >
-                          {SubscriptionText.STATUS_LABELS[status]}
+                          {SUBSCRIBATION_TEXT.STATUS_LABELS[status]}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1882,7 +1996,7 @@ export default function SubscriptionsWorkspace() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="grid gap-1">
                     <Label className="text-xs text-slate-500 font-medium">
-                      {SubscriptionText.ACTIONS.TRIAL_START}
+                      {SUBSCRIBATION_TEXT.ACTIONS.TRIAL_START}
                     </Label>
                     <Input
                       type="datetime-local"
@@ -1901,7 +2015,7 @@ export default function SubscriptionsWorkspace() {
                   </div>
                   <div className="grid gap-1">
                     <Label className="text-xs text-slate-500 font-medium">
-                      {SubscriptionText.ACTIONS.TRIAL_END}
+                      {SUBSCRIBATION_TEXT.ACTIONS.TRIAL_END}
                     </Label>
                     <Input
                       type="datetime-local"
@@ -1923,7 +2037,7 @@ export default function SubscriptionsWorkspace() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="grid gap-1">
                     <Label className="text-xs text-slate-500 font-medium">
-                      {SubscriptionText.ACTIONS.PERIOD_START}
+                      {SUBSCRIBATION_TEXT.ACTIONS.PERIOD_START}
                     </Label>
                     <Input
                       type="datetime-local"
@@ -1942,7 +2056,7 @@ export default function SubscriptionsWorkspace() {
                   </div>
                   <div className="grid gap-1">
                     <Label className="text-xs text-slate-500 font-medium">
-                      {SubscriptionText.ACTIONS.PERIOD_END}
+                      {SUBSCRIBATION_TEXT.ACTIONS.PERIOD_END}
                     </Label>
                     <Input
                       type="datetime-local"
@@ -1964,7 +2078,7 @@ export default function SubscriptionsWorkspace() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="grid gap-1">
                     <Label className="text-xs text-slate-500 font-medium">
-                      {SubscriptionText.ACTIONS.GRACE_END}
+                      {SUBSCRIBATION_TEXT.ACTIONS.GRACE_END}
                     </Label>
                     <Input
                       type="datetime-local"
@@ -1983,7 +2097,7 @@ export default function SubscriptionsWorkspace() {
                   </div>
                   <div className="grid gap-1">
                     <Label className="text-xs text-slate-500 font-medium">
-                      {SubscriptionText.ACTIONS.CANCELLED_AT}
+                      {SUBSCRIBATION_TEXT.ACTIONS.CANCELLED_AT}
                     </Label>
                     <Input
                       type="datetime-local"
@@ -2012,7 +2126,7 @@ export default function SubscriptionsWorkspace() {
                 onClick={() => dispatch({ type: PAGE_ACTION.CLOSE_EDIT_MODAL })}
                 className="text-xs font-semibold"
               >
-                {SubscriptionText.ACTIONS.CANCEL_BTN}
+                {SUBSCRIBATION_TEXT.ACTIONS.CANCEL_BTN}
               </Button>
               <Button
                 type="submit"
@@ -2023,7 +2137,7 @@ export default function SubscriptionsWorkspace() {
                 {isSavingVendor ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
                 ) : null}
-                {SubscriptionText.ACTIONS.SAVE_BTN}
+                {SUBSCRIBATION_TEXT.ACTIONS.SAVE_BTN}
               </Button>
             </DialogFooter>
           </form>

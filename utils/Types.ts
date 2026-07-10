@@ -1691,6 +1691,7 @@ export interface SubscriptionPlan {
   id: string;
   plan_name: string;
   display_name: string;
+  description?: string | null;
   price_monthly: string | null;
   price_annual: string | null; // per-month price billed annually
   annual_total: string | null; // total charged upfront for annual

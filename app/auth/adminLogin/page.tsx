@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import {
   loginStart,
   loginSuccess,
   loginFailure,
 } from "@/lib/features/auth/authSlice";
 import { adminLogin } from "@/utils/authApiClient";
-import { useRouter } from "next/navigation";
+import { useRouter, notFound } from "next/navigation";
 import { useAppDispatch } from "@/hooks/reduxHooks";
+import { isAdminDomainAllowed } from "@/lib/get-domain";
 import { Eye, EyeOff } from "lucide-react";
 import { CookieConsentBanner } from "@/components/common/CookieConsentBanner";
 import {
@@ -125,6 +126,16 @@ function adminLoginReducer(state: State, action: Action): State {
 }
 
 export default function AdminLoginPage() {
+  const [domainAllowed, setDomainAllowed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const verifyDomain = async () => {
+      const allowed = await isAdminDomainAllowed();
+      setDomainAllowed(allowed);
+    };
+    verifyDomain();
+  }, []);
+
   const dispatch = useAppDispatch();
   const [state, dispatchState] = useReducer(adminLoginReducer, initialState);
   const router = useRouter();
@@ -149,6 +160,14 @@ export default function AdminLoginPage() {
       }
     };
   }, []);
+
+  if (domainAllowed === false) {
+    notFound();
+  }
+
+  if (domainAllowed === null) {
+    return null;
+  }
 
   const updateStep = (index: number, status: Step["status"]) => {
     dispatchState({ type: ActionType.UPDATE_STEP, payload: { index, status } });

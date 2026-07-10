@@ -33,6 +33,7 @@ import {
   AUTH_TEXT,
   COOKIE_CONSENT_KEY,
   COOKIE_CONSENT_VALUE,
+  UserRole,
 } from "@/constants";
 import { VENDOR_LOGIN_TEXT } from "@/constants/authText";
 
@@ -46,6 +47,7 @@ export enum UiState {
   SUCCESS = "success",
   ERROR = "error",
   PROMPT_CHANGE_PASSWORD = "prompt_change_password",
+  EXPIRED_SUBSCRIPTION = "expired_subscription",
 }
 
 export enum StepStatus {
@@ -320,7 +322,7 @@ const StepIcon = ({ status }: { status: StepStatus }) => {
 
 export default function VendorLoginPage() {
   const router = useRouter();
-  const { error, user } = useAppSelector((state: RootState) => state.auth);
+  const { error, user, isAuthenticated, role } = useAppSelector((state: RootState) => state.auth);
   const dispatch = useAppDispatch();
 
   const [state, dispatchState] = useReducer(loginReducer, initialState);
@@ -342,7 +344,7 @@ export default function VendorLoginPage() {
       payload: !navigator.cookieEnabled,
     });
     const initialToken = authToken();
-    if (initialToken) {
+    if (initialToken && isAuthenticated && role === UserRole.VENDOR) {
       router.replace(REDIRECT_PATH);
     }
     return () => {
@@ -350,7 +352,7 @@ export default function VendorLoginPage() {
         clearInterval(redirectTimerRef.current);
       }
     };
-  }, [router]);
+  }, [router, isAuthenticated, role]);
 
   const setStep = (index: number, status: StepStatus) =>
     dispatchState({ type: ActionType.SET_STEP, payload: { index, status } });
@@ -419,7 +421,17 @@ export default function VendorLoginPage() {
     } else {
       setStep(0, StepStatus.FAILED);
       dispatch(loginFailure(result?.message || ERROR_MSG_LOGIN_FAILED));
-      dispatchState({ type: ActionType.SET_UI_STATE, payload: UiState.ERROR });
+      if (result?.status === 403 && result?.message === "VENDOR SUBSCRIPTION EXPIRED") {
+        dispatchState({
+          type: ActionType.SET_UI_STATE,
+          payload: UiState.EXPIRED_SUBSCRIPTION,
+        });
+      } else {
+        dispatchState({
+          type: ActionType.SET_UI_STATE,
+          payload: UiState.ERROR,
+        });
+      }
     }
   };
 
@@ -748,6 +760,50 @@ export default function VendorLoginPage() {
               >
                 {VENDOR_LOGIN_TEXT.BTN_TRY_AGAIN}
               </button>
+            </div>
+          )}
+
+          {/* EXPIRED SUBSCRIPTION */}
+          {state.uiState === UiState.EXPIRED_SUBSCRIPTION && (
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-5 animate-pulse">
+                <AlertCircle size={28} className="text-amber-600" />
+              </div>
+              <h2 className="text-theme-h6 font-bold text-gray-900 mb-1">
+                Subscription Expired
+              </h2>
+              <p className="text-theme-body-sm text-gray-500 mb-6 max-w-xs leading-relaxed">
+                Your vendor subscription has expired. Please renew your plan or contact our support team to reactivate your store.
+              </p>
+              <div className="w-full flex flex-col gap-3">
+                <button
+                  onClick={() => {
+                    window.location.href = "mailto:support@techsonance.com?subject=Vendor Subscription Renewal Request";
+                  }}
+                  className="w-full bg-[#1a56db] hover:bg-[#1648c0] text-white font-semibold text-theme-body-sm rounded-xl py-3 transition cursor-pointer"
+                >
+                  Renew Plan / Contact Support
+                </button>
+                <button
+                  onClick={() => {
+                    dispatchState({
+                      type: ActionType.SET_UI_STATE,
+                      payload: UiState.IDLE,
+                    });
+                    dispatchState({
+                      type: ActionType.SET_STEPS,
+                      payload: [
+                        StepStatus.PENDING,
+                        StepStatus.PENDING,
+                        StepStatus.PENDING,
+                      ],
+                    });
+                  }}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-theme-body-sm rounded-xl py-3 transition cursor-pointer"
+                >
+                  Back to Login
+                </button>
+              </div>
             </div>
           )}
         </div>

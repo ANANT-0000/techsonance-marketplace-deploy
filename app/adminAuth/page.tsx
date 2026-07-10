@@ -1,8 +1,14 @@
-﻿import { ShieldCheck, ShieldHalf } from 'lucide-react'
+import { ShieldCheck, ShieldHalf } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
+import { notFound } from 'next/navigation'
+import { isAdminDomainAllowed } from '@/lib/get-domain'
 
-export default function AdminAuthPage ()  {
+export default async function AdminAuthPage ()  {
+  const allowed = await isAdminDomainAllowed();
+  if (!allowed) {
+    notFound();
+  }
   return (
 <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
             <div className="w-full max-w-2xl ">

@@ -37,6 +37,7 @@ export interface CmsPlanRow {
   version: number;
   prices: CmsPlanPrice[];
   features: CmsPlanFeature[];
+  description?: string | null;
   created_by?: string | null;
   updated_by?: string | null;
   created_at?: string;
@@ -90,6 +91,7 @@ const featureSchema = z
 
 export const planDraftSchema = z.object({
   plan_key: z.string().min(1),
+  description: z.string().optional().nullable(),
   prices: z.array(priceSchema).min(1, "Add at least one price"),
   features: z.array(featureSchema),
 });
@@ -212,10 +214,26 @@ export function useCmsSubscriptionPlans() {
           `/v1/admin/subscription-plans/${plan.plan_key}/draft`,
           {
             planKey: plan.plan_key,
+            description: plan.description ?? null,
             version: plan.version,
-            prices: plan.prices,
-            features: plan.features,
+            prices: plan.prices.map((p) => ({
+              currency: p.currency,
+              interval: p.interval,
+              interval_count: p.interval_count,
+              amount_minor_units: p.amount_minor_units,
+              currency_exponent: p.currency_exponent,
+            })),
+            features: plan.features.map((f) => ({
+              feature_key: f.feature_key,
+              type: f.type,
+              value: f.value,
+            })),
           },
+          {
+            headers: {
+              "x-suppress-redirect": "true",
+            },
+          }
         );
         toast.success(`Draft saved for "${plan.plan_key}".`);
         await fetchPlans();
@@ -249,6 +267,24 @@ export function useCmsSubscriptionPlans() {
         return true;
       } catch (err: any) {
         toast.error(err?.response?.data?.message || "Failed to publish plan.");
+        return false;
+      } finally {
+        setSaving(planKey, false);
+      }
+    },
+    [fetchPlans],
+  );
+
+  const unpublish = useCallback(
+    async (planKey: string) => {
+      setSaving(planKey, true);
+      try {
+        await AxiosAPI.post(`/v1/admin/subscription-plans/${planKey}/unpublish`);
+        toast.success(`"${planKey}" unpublished successfully.`);
+        await fetchPlans();
+        return true;
+      } catch (err: any) {
+        toast.error(err?.response?.data?.message || "Failed to unpublish plan.");
         return false;
       } finally {
         setSaving(planKey, false);
@@ -293,6 +329,7 @@ export function useCmsSubscriptionPlans() {
     refetch: fetchPlans,
     saveDraft,
     publish,
+    unpublish,
     createPlan,
   };
 }

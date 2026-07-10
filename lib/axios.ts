@@ -26,15 +26,15 @@ const AxiosAPI = axios.create({
 // ==========================================
 // 1. REQUEST INTERCEPTOR (Outgoing)
 // ==========================================
-let domainCache: string | null = null;
 AxiosAPI.interceptors.request.use(
   async (config) => {
     // Only access localStorage if we are on the client side (browser)
     if (typeof window !== "undefined") {
-      if (!domainCache) {
-        domainCache = await getCompanyDomain();
-      }
-      config.headers["company-domain"] = domainCache;
+      // Read the domain fresh on each request — avoids stale module-level
+      // cache being shared across Vercel warm Lambda invocations where a
+      // different tenant's request can pick up the wrong company-domain.
+      const domain = await getCompanyDomain();
+      config.headers["company-domain"] = domain;
 
       const token = localStorage.getItem(ACCESS_TOKEN_KEY);
       if (token && token !== "undefined" && token !== "null") {
@@ -57,8 +57,19 @@ AxiosAPI.interceptors.response.use(
     return response;
   },
   (error) => {
+    let suppressRedirect = false;
+    if (error.config?.headers) {
+      if (typeof error.config.headers.get === "function") {
+        suppressRedirect = error.config.headers.get("x-suppress-redirect") === "true";
+      } else {
+        suppressRedirect =
+          error.config.headers["x-suppress-redirect"] === "true" ||
+          error.config.headers["x-suppress-redirect"] === true;
+      }
+    }
+
     // If the backend throws a 401 Unauthorized (Expired or Invalid Token)
-    if (error.response && error.response.status === 401) {
+    if (error.response && error.response.status === 401 && !suppressRedirect) {
       if (typeof window !== "undefined") {
         const currentPath = window.location.pathname;
         // Only redirect on explicitly protected areas — public storefront
@@ -108,7 +119,9 @@ AxiosAPI.interceptors.response.use(
             break;
           case ClientActionCode.NAVIGATE_HOME:
             toast.error(message);
-            window.location.href = "/";
+            if (!suppressRedirect) {
+              window.location.href = "/";
+            }
             break;
           case ClientActionCode.CONTACT_SUPPORT:
             toast.error(`${message} (Error Ref: ${errorCode})`);
