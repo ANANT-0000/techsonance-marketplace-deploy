@@ -15,6 +15,7 @@ import {
   AUTH_TEXT,
   COOKIE_CONSENT_KEY,
   COOKIE_CONSENT_VALUE,
+  IS_AUTHENTICATED_KEY,
 } from "@/constants";
 import { ADMIN_LOGIN_TEXT } from "@/constants/adminText";
 
@@ -130,12 +131,23 @@ export default function AdminLoginPage() {
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    dispatchState({ type: ActionType.SET_COOKIES_BLOCKED, payload: !navigator.cookieEnabled });
-    const storedData = typeof window !== 'undefined' ? localStorage.getItem(IS_AUTHENTICATED_KEY) : null;
+    dispatchState({
+      type: ActionType.SET_COOKIES_BLOCKED,
+      payload: !navigator.cookieEnabled,
+    });
+    const storedData =
+      typeof window !== "undefined"
+        ? localStorage.getItem(IS_AUTHENTICATED_KEY)
+        : null;
     const auth = storedData ? JSON.parse(storedData) : null;
     if (auth && auth?.isAuthenticated && auth?.role === "admin") {
-      router.push(`/admin`)
+      router.push(`/admin`);
     }
+    return () => {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+      }
+    };
   }, []);
 
   const updateStep = (index: number, status: Step["status"]) => {
@@ -180,7 +192,7 @@ export default function AdminLoginPage() {
     updateStep(2, "done");
     await new Promise((r) => setTimeout(r, 400));
 
-    dispatchState({ type: ActionType.SET_UI_STATE, payload: 'success' });
+    dispatchState({ type: ActionType.SET_UI_STATE, payload: "success" });
     startRedirect();
   };
 

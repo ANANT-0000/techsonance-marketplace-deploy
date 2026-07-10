@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { AUTH_TEXT } from "@/constants";
 import CustomerRegisterForm from "@/components/customer/CustomerRegisterForm";
+import { CUSTOMER_REGISTRATION_POSTER } from "@/constants/common";
 
 export default function CustomerRegisterPage() {
   return (
@@ -14,7 +15,7 @@ export default function CustomerRegisterPage() {
             <h1 className="text-theme-h3 font-bold text-gray-800 mb-2">
               {AUTH_TEXT.REGISTER.TITLE}
             </h1>
-            <p className="text-theme-body-sm text-slate-600">
+            <p className="text-theme-body-sm text-slate-650">
               {AUTH_TEXT.REGISTER.SUBTITLE}
             </p>
           </div>
@@ -33,7 +34,7 @@ export default function CustomerRegisterPage() {
             </p>
           </div>
           <Image
-            src="https://imgs.search.brave.com/KuCYM754oU5_H4hh07t-Qc6WZH3BUTuLJEFzYxh8Y2c/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzUyLzg1/LzEyLzUyODUxMmU2/MDA1NjY1OGVmN2Zi/MGEwZWM5MDk0YmI0/LmpwZw"
+            src={CUSTOMER_REGISTRATION_POSTER}
             width={800}
             height={800}
             alt="Join our community"

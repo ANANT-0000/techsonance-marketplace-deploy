@@ -320,3 +320,68 @@ export const fetchDeleteTemplate = async (id: string, token: string) => {
     throw error;
   }
 };
+
+export const fetchAdminSubscriptions = async (token: string) => {
+  try {
+    const response = await fetch(`${BASE_API_URL}/v1/admin/subscription-plans/vendors`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to fetch vendor subscriptions");
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateVendorSubscription = async (
+  subscriptionId: string,
+  payload: any,
+  token: string,
+) => {
+  try {
+    const response = await fetch(
+      `${BASE_API_URL}/v1/admin/subscription-plans/vendors/${subscriptionId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      },
+    );
+    if (!response.ok) {
+      throw new Error("Failed to update vendor subscription");
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchLiveSubscriptionPlans = async (token: string) => {
+  try {
+    const response = await fetch(
+      `${BASE_API_URL}/v1/admin/subscription-plans/live-plans`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch live subscription plans");
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+};

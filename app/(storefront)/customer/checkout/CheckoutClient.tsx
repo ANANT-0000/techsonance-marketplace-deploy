@@ -1648,7 +1648,9 @@ function CheckoutClientInner() {
                   disabled={
                     state.selectedAddressId === null ||
                     state.isProcessing ||
-                    state.isTaxLoading
+                    state.isTaxLoading ||
+                    !!state.taxError ||
+                    !!state.checkoutError
                   }
                   className="w-full bg-black text-white font-semibold py-3.5 rounded-xl   hover:translate-y-1 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed text-theme-body-plus shadow-sm shadow-black cursor-pointer"
                 >

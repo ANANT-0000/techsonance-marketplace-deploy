@@ -348,6 +348,7 @@ export function HeroEditor({ value, onChange }: HeroEditorProps) {
                 className="w-full h-full border-0"
                 title="Embed Preview"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"
                 allowFullScreen
               />
             </div>

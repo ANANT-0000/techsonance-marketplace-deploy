@@ -1033,11 +1033,16 @@ export const fetchCompanyCustomers = async (
   status: string,
   sortBy: string,
   token: string,
+  date?: Date,
 ) => {
   try {
     const domain = await getCompanyDomain();
+    let url = `${BASE_API_URL}/v1/company/customers?offset=${offset}&limit=${limit}&status=${status}&sortBy=${sortBy}`;
+    if (date) {
+      url += `&date=${encodeURIComponent(date.toISOString())}`;
+    }
     const response = await fetch(
-      `${BASE_API_URL}/v1/company/customers?offset=${offset}&limit=${limit}&status=${status}&sortBy=${sortBy}`,
+      url,
       {
         ...getCacheConfig(3600),
         credentials: "include",
@@ -2519,15 +2524,10 @@ export const fetchLogisticCompanies = async (token: string) => {
     );
 
     if (!res.ok) {
-      console.error(
-        "fetchLogisticCompanies failed:",
-        res.status,
-        await res.text(),
-      );
       return { data: [] };
     }
     const json = await res.json();
-    console.log("fetchLogisticCompanies success:", json);
+
     return json;
   } catch (error) {
     return { data: [], message: "Error fetching logistic companies" };

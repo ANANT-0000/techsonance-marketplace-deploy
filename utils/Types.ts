@@ -1587,7 +1587,6 @@ export interface LandingHeroTrustBadge {
   icon: "shield" | "server" | "users";
 }
 
-
 export interface LandingMedia {
   type: "image" | "video" | "embed";
   src: string;
@@ -2076,6 +2075,9 @@ export enum PriceInterval {
   MONTHLY = "monthly",
   YEARLY = "yearly",
   CUSTOM = "custom",
+  DAILY = "daily",
+  WEELKY = "weekly",
+  QUARTERLY = "quarterly",
 }
 
 export enum SyncStatus {

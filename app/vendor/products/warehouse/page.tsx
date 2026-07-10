@@ -167,7 +167,12 @@ export default function LocationsPage() {
                 ? {
                     ...loc,
                     warehouse_name: data.name,
-                    address: { ...loc.address, ...data },
+                    address: {
+                      ...loc.address,
+                      ...data,
+                      number: data.phone,
+                      address_type: data.address_for,
+                    },
                   }
                 : loc
             )
@@ -182,7 +187,12 @@ export default function LocationsPage() {
             {
               ...res,
               warehouse_name: data.name,
-              address: { ...res.address, ...data },
+              address: {
+                ...res.address,
+                ...data,
+                number: data.phone,
+                address_type: data.address_for,
+              },
             },
           ]);
         })

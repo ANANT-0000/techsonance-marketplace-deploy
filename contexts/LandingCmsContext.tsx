@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from "react";
 import AxiosAPI from "@/lib/axios";
 import { toast } from "react-hot-toast";
 import { deepMerge } from "@/utils/deepMerge";
@@ -73,7 +80,7 @@ export interface CmsState {
   loadFailed: boolean;
   ignoreLoadError: boolean;
   publishStatus: PublishStatus;
-  
+
   isThemeSaving: boolean;
   isThemeDirty: boolean;
   themeVersion: number | null;
@@ -148,10 +155,13 @@ const initialState: CmsState = {
 // Add UUIDs to legacy arrays that might not have them, using standard `crypto.randomUUID()` where available.
 function normalizeContent(rawContent: any) {
   const merged = deepMerge(rawContent || {}, DEFAULT_CONTENT);
-  
+
   // Assign UUIDs to arrays that need stable keys if they lack an id
-  const ensureId = (item: any) => ({ ...item, id: item.id || crypto.randomUUID() });
-  
+  const ensureId = (item: any) => ({
+    ...item,
+    id: item.id || crypto.randomUUID(),
+  });
+
   if (merged.footer?.socials) {
     merged.footer.socials = merged.footer.socials.map(ensureId);
   }
@@ -159,7 +169,7 @@ function normalizeContent(rawContent: any) {
     merged.footer.columns = merged.footer.columns.map((col: any) => ({
       ...col,
       id: col.id || crypto.randomUUID(),
-      links: col.links?.map(ensureId) || []
+      links: col.links?.map(ensureId) || [],
     }));
   }
   if (merged.footer?.legal) {
@@ -169,7 +179,11 @@ function normalizeContent(rawContent: any) {
     merged.features.items = merged.features.items.map((item: any) => ({
       ...item,
       id: item.id || crypto.randomUUID(),
-      checklist: item.checklist?.map((text: string) => ({ id: crypto.randomUUID(), text })) || [] // If they were just strings, we might want to keep them as strings or change to objects. Wait, FeaturesEditor checklist expects array of strings. We'll leave strings alone for now as we can use index safely if they don't reorder, but stable id is better. The plan said stable id for checklist. We will handle checklist differently in FeaturesEditor.
+      checklist:
+        item.checklist?.map((text: string) => ({
+          id: crypto.randomUUID(),
+          text,
+        })) || [], // If they were just strings, we might want to keep them as strings or change to objects. Wait, FeaturesEditor checklist expects array of strings. We'll leave strings alone for now as we can use index safely if they don't reorder, but stable id is better. The plan said stable id for checklist. We will handle checklist differently in FeaturesEditor.
     }));
   }
   if (merged.navbar?.links) {
@@ -178,38 +192,67 @@ function normalizeContent(rawContent: any) {
   if (merged.hero?.trustBadges) {
     merged.hero.trustBadges = merged.hero.trustBadges.map(ensureId);
   }
-  
+
   return merged;
 }
 
 export type CmsAction =
   | { type: CmsActionType.FETCH_START }
-  | { type: CmsActionType.FETCH_SUCCESS; payload: { isPublished: boolean; theme: any; content: any; version: number | null; logoUrl: string | null; themeVersion: number | null } }
+  | {
+      type: CmsActionType.FETCH_SUCCESS;
+      payload: {
+        isPublished: boolean;
+        theme: any;
+        content: any;
+        version: number | null;
+        logoUrl: string | null;
+        themeVersion: number | null;
+      };
+    }
   | { type: CmsActionType.FETCH_ERROR }
   | { type: CmsActionType.IGNORE_LOAD_ERROR }
   | { type: CmsActionType.SET_PUBLISH_STATUS; payload: PublishStatus }
   | { type: CmsActionType.THEME_SAVE_START }
-  | { type: CmsActionType.THEME_SAVE_SUCCESS; payload: { version: number | null } }
+  | {
+      type: CmsActionType.THEME_SAVE_SUCCESS;
+      payload: { version: number | null };
+    }
   | { type: CmsActionType.THEME_SAVE_ERROR }
   | { type: CmsActionType.THEME_SAVE_CONFLICT }
-  | { type: CmsActionType.SET_THEME_COLOR; payload: { key: keyof CmsTheme; value: string } }
+  | {
+      type: CmsActionType.SET_THEME_COLOR;
+      payload: { key: keyof CmsTheme; value: string };
+    }
   | { type: CmsActionType.APPLY_THEME_PRESET; payload: Partial<CmsTheme> }
   | { type: CmsActionType.RESET_THEME; payload: CmsTheme }
   | { type: CmsActionType.CONTENT_SAVE_START }
-  | { type: CmsActionType.CONTENT_SAVE_SUCCESS; payload: { version: number | null } }
+  | {
+      type: CmsActionType.CONTENT_SAVE_SUCCESS;
+      payload: { version: number | null };
+    }
   | { type: CmsActionType.CONTENT_SAVE_ERROR }
   | { type: CmsActionType.CONTENT_SAVE_CONFLICT }
-  | { type: CmsActionType.SET_SECTION_CONTENT; payload: { key: SectionKey; value: any } };
+  | {
+      type: CmsActionType.SET_SECTION_CONTENT;
+      payload: { key: SectionKey; value: any };
+    };
 
 function cmsReducer(state: CmsState, action: CmsAction): CmsState {
   switch (action.type) {
     case CmsActionType.FETCH_START:
-      return { ...state, isLoading: true, loadFailed: false, ignoreLoadError: false };
+      return {
+        ...state,
+        isLoading: true,
+        loadFailed: false,
+        ignoreLoadError: false,
+      };
     case CmsActionType.FETCH_SUCCESS:
       return {
         ...state,
         isLoading: false,
-        publishStatus: action.payload.isPublished ? PublishStatus.Live : PublishStatus.Draft,
+        publishStatus: action.payload.isPublished
+          ? PublishStatus.Live
+          : PublishStatus.Draft,
         theme: deepMerge(action.payload.theme || {}, DEFAULT_THEME),
         themeVersion: action.payload.themeVersion,
         isThemeDirty: false,
@@ -221,7 +264,12 @@ function cmsReducer(state: CmsState, action: CmsAction): CmsState {
         contentSaveConflict: false,
       };
     case CmsActionType.FETCH_ERROR:
-      return { ...state, isLoading: false, loadFailed: true, publishStatus: PublishStatus.Unknown };
+      return {
+        ...state,
+        isLoading: false,
+        loadFailed: true,
+        publishStatus: PublishStatus.Unknown,
+      };
     case CmsActionType.IGNORE_LOAD_ERROR:
       return { ...state, ignoreLoadError: true };
     case CmsActionType.SET_PUBLISH_STATUS:
@@ -231,7 +279,12 @@ function cmsReducer(state: CmsState, action: CmsAction): CmsState {
     case CmsActionType.THEME_SAVE_START:
       return { ...state, isThemeSaving: true, themeSaveConflict: false };
     case CmsActionType.THEME_SAVE_SUCCESS:
-      return { ...state, isThemeSaving: false, isThemeDirty: false, themeVersion: action.payload.version };
+      return {
+        ...state,
+        isThemeSaving: false,
+        isThemeDirty: false,
+        themeVersion: action.payload.version,
+      };
     case CmsActionType.THEME_SAVE_ERROR:
       return { ...state, isThemeSaving: false };
     case CmsActionType.THEME_SAVE_CONFLICT:
@@ -259,7 +312,12 @@ function cmsReducer(state: CmsState, action: CmsAction): CmsState {
     case CmsActionType.CONTENT_SAVE_START:
       return { ...state, isContentSaving: true, contentSaveConflict: false };
     case CmsActionType.CONTENT_SAVE_SUCCESS:
-      return { ...state, isContentSaving: false, contentDirtySections: new Set(), contentVersion: action.payload.version };
+      return {
+        ...state,
+        isContentSaving: false,
+        contentDirtySections: new Set(),
+        contentVersion: action.payload.version,
+      };
     case CmsActionType.CONTENT_SAVE_ERROR:
       return { ...state, isContentSaving: false };
     case CmsActionType.CONTENT_SAVE_CONFLICT:
@@ -270,7 +328,10 @@ function cmsReducer(state: CmsState, action: CmsAction): CmsState {
       return {
         ...state,
         contentDirtySections: newDirty,
-        content: { ...state.content, [action.payload.key]: action.payload.value },
+        content: {
+          ...state.content,
+          [action.payload.key]: action.payload.value,
+        },
       };
     }
     default:
@@ -295,20 +356,25 @@ export function LandingCmsProvider({ children }: { children: ReactNode }) {
   const fetchData = useCallback(async () => {
     try {
       dispatch({ type: CmsActionType.FETCH_START });
-      const res = await AxiosAPI.get("/v1/landing-page", { headers: { "x-suppress-toast": "true" } });
+      const res = await AxiosAPI.get("/v1/landing-page", {
+        headers: { "x-suppress-toast": "true" },
+      });
       dispatch({
         type: CmsActionType.FETCH_SUCCESS,
         payload: {
-          isPublished: res.data?.isPublished,
-          theme: res.data?.theme,
-          content: res.data?.content,
-          version: typeof res.data?.version === "number" ? res.data.version : null,
-          themeVersion: typeof res.data?.themeVersion === "number" ? res.data.themeVersion : null,
-          logoUrl: res.data?.branding?.logo_url ?? null,
+          isPublished: res.data?.data?.isPublished,
+          theme: res.data?.data?.theme,
+          content: res.data?.data?.content,
+          version:
+            typeof res.data?.data?.version === "number" ? res.data.data.version : null,
+          themeVersion:
+            typeof res.data?.data?.themeVersion === "number"
+              ? res.data.data.themeVersion
+              : null,
+          logoUrl: res.data?.data?.branding?.logo_url ?? null,
         },
       });
     } catch (error) {
-      console.error("CMS Load Error:", error);
       dispatch({ type: CmsActionType.FETCH_ERROR });
       toast.error(CMS_STRINGS.contentLoadError);
     }
@@ -322,9 +388,14 @@ export function LandingCmsProvider({ children }: { children: ReactNode }) {
         expectedVersion: state.themeVersion ?? undefined,
       };
       const res = await AxiosAPI.post("/v1/landing-page/theme", payload);
-      dispatch({ 
+      dispatch({
         type: CmsActionType.THEME_SAVE_SUCCESS,
-        payload: { version: typeof res.data?.themeVersion === "number" ? res.data.themeVersion : null }
+        payload: {
+          version:
+            typeof res.data?.data?.themeVersion === "number"
+              ? res.data.data.themeVersion
+              : null,
+        },
       });
       toast.success(CMS_STRINGS.themeSaveSuccess);
     } catch (error: any) {
@@ -349,7 +420,10 @@ export function LandingCmsProvider({ children }: { children: ReactNode }) {
       const res = await AxiosAPI.post("/v1/landing-page/content", payload);
       dispatch({
         type: CmsActionType.CONTENT_SAVE_SUCCESS,
-        payload: { version: typeof res.data?.version === "number" ? res.data.version : null },
+        payload: {
+          version:
+            typeof res.data?.data?.version === "number" ? res.data.data.version : null,
+        },
       });
       toast.success(CMS_STRINGS.contentSaveSuccess);
     } catch (error: any) {
@@ -367,12 +441,20 @@ export function LandingCmsProvider({ children }: { children: ReactNode }) {
   const togglePublish = async () => {
     const desiredState = state.publishStatus !== PublishStatus.Live;
     try {
-      const res = await AxiosAPI.post("/v1/landing-page/publish", { publish: desiredState });
+      const res = await AxiosAPI.post("/v1/landing-page/publish", {
+        publish: desiredState,
+      });
       dispatch({
         type: CmsActionType.SET_PUBLISH_STATUS,
-        payload: res.data?.isPublished ? PublishStatus.Live : PublishStatus.Draft,
+        payload: res.data?.data?.isPublished
+          ? PublishStatus.Live
+          : PublishStatus.Draft,
       });
-      toast.success(res.data?.isPublished ? CMS_STRINGS.publishSuccess : CMS_STRINGS.unpublishSuccess);
+      toast.success(
+        res.data?.data?.isPublished
+          ? CMS_STRINGS.publishSuccess
+          : CMS_STRINGS.unpublishSuccess,
+      );
     } catch (error) {
       toast.error(CMS_STRINGS.publishError);
       throw error;
@@ -395,7 +477,16 @@ export function LandingCmsProvider({ children }: { children: ReactNode }) {
   }, [state.isThemeDirty, state.contentDirtySections.size]);
 
   return (
-    <CmsContext.Provider value={{ state, dispatch, fetchData, saveTheme, saveContent, togglePublish }}>
+    <CmsContext.Provider
+      value={{
+        state,
+        dispatch,
+        fetchData,
+        saveTheme,
+        saveContent,
+        togglePublish,
+      }}
+    >
       {children}
     </CmsContext.Provider>
   );
@@ -403,6 +494,7 @@ export function LandingCmsProvider({ children }: { children: ReactNode }) {
 
 export function useLandingCms() {
   const ctx = useContext(CmsContext);
-  if (!ctx) throw new Error("useLandingCms must be used within LandingCmsProvider");
+  if (!ctx)
+    throw new Error("useLandingCms must be used within LandingCmsProvider");
   return ctx;
 }

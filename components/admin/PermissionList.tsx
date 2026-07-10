@@ -24,7 +24,6 @@ export const PermissionList = ({
       await handleDeletePermission(id, token);
       onRefresh();
     } catch (err) {
-      console.error(err);
     } finally {
       setBusyId(null);
     }

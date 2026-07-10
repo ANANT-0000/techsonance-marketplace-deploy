@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { handleAssignPermission } from "@/utils/adminApiClients";
 import { ASSIGN_SECTION_TEXT } from "@/constants/adminText";
+import toast from "react-hot-toast";
 
 interface Permission {
   id: string;
@@ -45,9 +46,13 @@ export default function AssignSection({
     setIsPending(true);
     try {
       await handleAssignPermission(roleId, permId, token);
+      toast.success("Permission assigned successfully");
       onRefresh();
       setPermId("");
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || "Failed to assign permission",
+      );
     } finally {
       setIsPending(false);
     }

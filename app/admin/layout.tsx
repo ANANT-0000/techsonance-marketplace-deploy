@@ -5,7 +5,7 @@ import { ADMIN_NAV_LINKS } from "@/constants/admin";
 // @ts-ignore
 import "./index.css";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { authToken } from "@/utils/authToken";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { useAppSelector } from "@/hooks/reduxHooks";
@@ -26,11 +26,22 @@ export default function AdminLayout({
     (state: RootState) => state.auth,
   );
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    if (!isAuthenticated || role !== UserRole.ADMIN) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && (!isAuthenticated || role !== UserRole.ADMIN)) {
       router.push(ADMIN_LOGIN_PATH);
     }
-  }, [isAuthenticated, role, router]);
+  }, [mounted, isAuthenticated, role, router]);
+
+  if (!mounted || !isAuthenticated || role !== UserRole.ADMIN) {
+    return null;
+  }
+
   return (
     <>
       <main className={`flex w-full mr-6`}>

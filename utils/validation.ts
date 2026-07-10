@@ -175,7 +175,9 @@ export const customerRegisterSchema = z
 
     confirm_password: z.string(),
 
-    terms_accepted: z.boolean().default(false),
+    terms_accepted: z.boolean().refine((val) => val === true, {
+      message: "You must accept the terms and conditions",
+    }),
   })
   .refine((data) => data.password === data.confirm_password, {
     error: "Passwords do not match",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useCallback } from "react";
 import { searchImgDark } from "@/constants/common";
 import {
   ChevronDown,
@@ -71,6 +71,7 @@ export enum ActionType {
   SET_STATUS_FILTER = 'SET_STATUS_FILTER',
   SET_SORT_BY = 'SET_SORT_BY',
   SET_CUSTOMERS = 'SET_CUSTOMERS',
+  SET_ERROR = 'SET_ERROR',
 }
 
 type Action =
@@ -78,7 +79,8 @@ type Action =
   | { type: ActionType.SET_IS_OPEN; payload: boolean }
   | { type: ActionType.SET_STATUS_FILTER; payload: string }
   | { type: ActionType.SET_SORT_BY; payload: string }
-  | { type: ActionType.SET_CUSTOMERS; payload: CustomerType[] };
+  | { type: ActionType.SET_CUSTOMERS; payload: CustomerType[] }
+  | { type: ActionType.SET_ERROR; payload: string | null };
 
 interface State {
   date: Date | undefined;
@@ -86,6 +88,7 @@ interface State {
   statusFilter: string;
   sortBy: string;
   customers: CustomerType[];
+  error: string | null;
 }
 
 const initialState: State = {
@@ -94,6 +97,7 @@ const initialState: State = {
   statusFilter: "",
   sortBy: "desc",
   customers: [],
+  error: null,
 };
 
 function reducer(state: State, action: Action): State {
@@ -103,6 +107,7 @@ function reducer(state: State, action: Action): State {
     case ActionType.SET_STATUS_FILTER: return { ...state, statusFilter: action.payload };
     case ActionType.SET_SORT_BY: return { ...state, sortBy: action.payload };
     case ActionType.SET_CUSTOMERS: return { ...state, customers: action.payload };
+    case ActionType.SET_ERROR: return { ...state, error: action.payload };
     default: return state;
   }
 }
@@ -128,20 +133,28 @@ export default function VendorCustomersPage({
 
   const token = authToken();
 
-  useEffect(() => {
+  const getCustomerList = useCallback(async () => {
     if (!token) {
       redirect("/auth/vendorLogin");
+      return;
     }
-
-    const getCustomerList = async () => {
-      await fetchCompanyCustomers(0, 10, state.statusFilter, state.sortBy, token)
-        .then((res) => {
+    dispatch({ type: ActionType.SET_ERROR, payload: null });
+    await fetchCompanyCustomers(0, 10, state.statusFilter, state.sortBy, token, state.date)
+      .then((res) => {
+        if (res.success || res.data) {
           dispatch({ type: ActionType.SET_CUSTOMERS, payload: res.data || [] });
-        })
-        .catch((err) => {});
-    };
+        } else {
+          dispatch({ type: ActionType.SET_ERROR, payload: res.message || "Failed to load customers" });
+        }
+      })
+      .catch((err) => {
+        dispatch({ type: ActionType.SET_ERROR, payload: err?.message || "Failed to load customers" });
+      });
+  }, [token, state.statusFilter, state.sortBy, state.date]);
+
+  useEffect(() => {
     getCustomerList();
-  }, [state.statusFilter, state.sortBy]);
+  }, [getCustomerList]);
 
   return (
     <main className="w-full px-1">
@@ -258,7 +271,22 @@ export default function VendorCustomersPage({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {!state.customers || state.customers.length === 0 ? (
+            {state.error ? (
+              <tr>
+                <td
+                  colSpan={9}
+                  className="py-16 text-center text-theme-body-sm"
+                >
+                  <p className="text-red-500 font-semibold mb-3">⚠️ {state.error}</p>
+                  <button
+                    onClick={() => getCustomerList()}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-xl transition-all shadow-sm font-medium cursor-pointer"
+                  >
+                    Retry
+                  </button>
+                </td>
+              </tr>
+            ) : !state.customers || state.customers.length === 0 ? (
               <tr>
                 <td
                   colSpan={9}

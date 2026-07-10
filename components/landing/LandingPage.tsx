@@ -237,7 +237,7 @@ export default function LandingPage({ cmsData }: LandingPageProps) {
 
       <main>{SECTION_ORDER.map((sectionId) => renderSection(sectionId))}</main>
 
-      <LandingFooter content={footerContent} />
+      <LandingFooter content={footerContent} logo={navbarContent.logo} />
     </div>
   );
 }

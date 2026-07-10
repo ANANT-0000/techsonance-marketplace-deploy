@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import RolesSection from "@/components/admin/RolesSection";
 import PermissionsSection from "@/components/admin/PermissionsSection";
 import AssignSection from "@/components/admin/AssignSection";
-import { fetchPermissions, fetchRolePermissions, fetchRoles } from "@/utils/adminApiClients";
+import {
+  fetchPermissions,
+  fetchRolePermissions,
+  fetchRoles,
+} from "@/utils/adminApiClients";
 import { authToken } from "@/utils/authToken";
 
 export default function RolesPage() {
@@ -16,16 +20,18 @@ export default function RolesPage() {
   const [rolePerms, setRolePerms] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const tokenValue = authToken();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+    const tokenValue = authToken();
     if (!tokenValue) {
       router.push("/auth/adminLogin");
       return;
     }
     setToken(tokenValue);
     loadData(tokenValue);
-  }, [tokenValue, router]);
+  }, [router]);
 
   const loadData = async (activeToken: string) => {
     try {
@@ -38,13 +44,12 @@ export default function RolesPage() {
       setPermissions(getPermissions?.data || []);
       setRolePerms(getRolePerms || []);
     } catch (error) {
-      console.error("Failed to load RBAC data", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!tokenValue) return null;
+  if (!isMounted || !token) return null;
 
   if (isLoading) {
     return (
@@ -57,11 +62,21 @@ export default function RolesPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 space-y-8 w-full">
-      <h1 className="text-theme-h6 font-semibold text-gray-800">RBAC Management</h1>
+      <h1 className="text-theme-h6 font-semibold text-gray-800">
+        RBAC Management
+      </h1>
 
-      <RolesSection roles={roles} token={token || ""} onRefresh={() => loadData(token || "")} />
+      <RolesSection
+        roles={roles}
+        token={token || ""}
+        onRefresh={() => loadData(token || "")}
+      />
       <hr className="border-gray-200" />
-      <PermissionsSection permissions={permissions} token={token || ""} onRefresh={() => loadData(token || "")} />
+      <PermissionsSection
+        permissions={permissions}
+        token={token || ""}
+        onRefresh={() => loadData(token || "")}
+      />
       <hr className="border-gray-200" />
       <AssignSection
         roles={roles}

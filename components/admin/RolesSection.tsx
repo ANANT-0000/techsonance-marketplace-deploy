@@ -19,7 +19,8 @@ export default function RolesSection({
 
   const onAddRoleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const roleName = formData.get("role") as string;
     if (!roleName || !roleName.trim()) return;
 
@@ -27,9 +28,8 @@ export default function RolesSection({
     try {
       await handleAddRole(formData, token);
       onRefresh();
-      e.currentTarget.reset();
+      form.reset();
     } catch (error) {
-      console.error(error);
     } finally {
       setIsAdding(false);
     }
@@ -65,7 +65,9 @@ export default function RolesSection({
         {roles.length > 0 ? (
           <RoleList roles={roles} token={token} onRefresh={onRefresh} />
         ) : (
-          <p className="text-theme-body-sm text-gray-500">{ROLES_TEXT.NO_ROLES_FOUND}</p>
+          <p className="text-theme-body-sm text-gray-500">
+            {ROLES_TEXT.NO_ROLES_FOUND}
+          </p>
         )}
       </Suspense>
     </div>

@@ -29,7 +29,6 @@ export default function RoleList({
       await handleDeleteRole(id, token);
       onRefresh();
     } catch (err) {
-      console.error(err);
     } finally {
       setBusyRoleId(null);
     }
@@ -41,7 +40,6 @@ export default function RoleList({
       await handleRemovePermission(roleId, permId, token);
       onRefresh();
     } catch (error) {
-      console.error(error);
     } finally {
       setBusyRoleId(null);
     }

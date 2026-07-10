@@ -14,7 +14,7 @@ export function deepMerge<T>(fromServer: any, fallback: T): T {
   }
 
   if (Array.isArray(fallback)) {
-    return Array.isArray(fromServer) ? fromServer : fallback;
+    return (Array.isArray(fromServer) ? fromServer : fallback) as unknown as T;
   }
 
   // Both are objects

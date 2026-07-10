@@ -68,9 +68,7 @@ export default function PendingActionWatcher() {
           },
         );
       }
-    } catch (err) {
-      console.error("Failed to execute pending action:", err);
-    }
+    } catch (err) {}
   }, [isAuthenticated, user?.id, token, dispatch]);
 
   return null;

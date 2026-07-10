@@ -36,7 +36,6 @@ export default function PermissionsSection({
       onRefresh();
       e.currentTarget.reset();
     } catch (error) {
-      console.error(error);
     } finally {
       setIsAdding(false);
     }

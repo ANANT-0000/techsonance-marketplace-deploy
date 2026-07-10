@@ -301,7 +301,6 @@ export async function getLandingPageData() {
     if (!res.ok) return null;
     return await res.json();
   } catch (error) {
-    console.error("Failed to fetch landing page data:", error);
     return null;
   }
 }

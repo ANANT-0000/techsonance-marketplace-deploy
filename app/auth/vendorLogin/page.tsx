@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import {
   Eye,
   EyeOff,
@@ -322,9 +322,9 @@ export default function VendorLoginPage() {
   const router = useRouter();
   const { error, user } = useAppSelector((state: RootState) => state.auth);
   const dispatch = useAppDispatch();
-  const token = authToken();
 
   const [state, dispatchState] = useReducer(loginReducer, initialState);
+  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     reset,
@@ -341,10 +341,16 @@ export default function VendorLoginPage() {
       type: ActionType.SET_COOKIES_BLOCKED,
       payload: !navigator.cookieEnabled,
     });
-    if (token) {
+    const initialToken = authToken();
+    if (initialToken) {
       router.replace(REDIRECT_PATH);
     }
-  }, [token, router]);
+    return () => {
+      if (redirectTimerRef.current) {
+        clearInterval(redirectTimerRef.current);
+      }
+    };
+  }, [router]);
 
   const setStep = (index: number, status: StepStatus) =>
     dispatchState({ type: ActionType.SET_STEP, payload: { index, status } });
@@ -353,7 +359,7 @@ export default function VendorLoginPage() {
     let elapsed = 0;
     const { REDIRECT_TOTAL_MS, REDIRECT_TICK_MS } = TIMING;
 
-    const t = setInterval(() => {
+    redirectTimerRef.current = setInterval(() => {
       elapsed += REDIRECT_TICK_MS;
       dispatchState({
         type: ActionType.SET_REDIRECT_PROGRESS,
@@ -364,7 +370,9 @@ export default function VendorLoginPage() {
       });
 
       if (elapsed >= REDIRECT_TOTAL_MS) {
-        clearInterval(t);
+        if (redirectTimerRef.current) {
+          clearInterval(redirectTimerRef.current);
+        }
         router.push(REDIRECT_PATH);
       }
     }, REDIRECT_TICK_MS);

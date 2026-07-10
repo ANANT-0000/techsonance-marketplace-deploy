@@ -17,7 +17,7 @@ A comprehensive **multi-tenant e-commerce marketplace** platform where customers
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
-- [User Roles & Routing (Middleware Fluidifier)](#user-roles--routing-middleware-fluidifier)
+- [User Roles & Routing (Proxy Fluidifier)](#user-roles--routing-proxy-fluidifier)
 - [Flow & UX Fluidifiers](#flow--ux-fluidifiers)
 - [Environment Variables](#environment-variables)
 - [Available Scripts](#available-scripts)
@@ -28,7 +28,7 @@ A comprehensive **multi-tenant e-commerce marketplace** platform where customers
 
 ## Overview
 
-The platform operates on a **multi-tenant architecture** where each vendor operates an isolated storefront under the Sound Sphere umbrella, managed centrally by platform administrators. Rather than jarring page reloads or redirects, the app utilizes Next.js App Router and optimized request middleware to provide a fluid, single-page application experience.
+The platform operates on a **multi-tenant architecture** where each vendor operates an isolated storefront under the Sound Sphere umbrella, managed centrally by platform administrators. Rather than jarring page reloads or redirects, the app utilizes Next.js App Router and optimized request proxy to provide a fluid, single-page application experience.
 
 ---
 
@@ -64,7 +64,7 @@ The platform operates on a **multi-tenant architecture** where each vendor opera
 | ------------------------- | ------------------------------------------------------ |
 | **Framework**             | Next.js 16.2 (App Router) · React 19 · TypeScript 6.0  |
 | **State Management**      | Redux Toolkit · React Redux                            |
-| **Routing & Protection**  | Next.js Middleware & React Router-style Client Guards  |
+| **Routing & Protection**  | Next.js Proxy & React Router-style Client Guards  |
 | **Styling & UI**          | Tailwind CSS v4 · shadcn/ui · Radix UI · Framer Motion |
 | **Forms & Validation**    | React Hook Form · Zod                                  |
 | **Data Visualisation**    | Recharts                                               |
@@ -117,8 +117,7 @@ techsonance-marketplace/
 │   ├── vendor/                     # Vendor dashboard and settings
 │   ├── StoreProvider.tsx           # Redux provider context
 │   ├── globals.css                 # Global CSS (Tailwind directive imports)
-│   ├── layout.tsx                  # Root Next.js layout
-│   └── middleware.ts               # Request path interceptor & guard
+│   └── layout.tsx                  # Root Next.js layout
 ├── components/                     # Reusable UI components
 │   ├── common/                     # Shared components (ProtectedRoute, Sidebar, modals)
 │   ├── customer/                   # Storefront components (ItemActionButtons, TrackingTimeline)
@@ -128,6 +127,7 @@ techsonance-marketplace/
 ├── constants/                      # Text contents and configuration strings
 ├── hooks/                          # Custom hooks (e.g. useOrderEligibilityGuard, reduxHooks)
 ├── lib/                            # Helper utilities and Redux store configuration
+├── proxy.ts                        # Request path interceptor & guard (Next.js Proxy)
 ├── public/                         # Static assets (images, icons)
 ├── utils/                          # API clients, types, and schema validations
 ├── package.json                    # Scripts and dependencies
@@ -136,16 +136,16 @@ techsonance-marketplace/
 
 ---
 
-## User Roles & Routing (Middleware Fluidifier)
+## User Roles & Routing (Proxy Fluidifier)
 
-The routing flow is dynamically protected by Next.js request middleware (`app/middleware.ts`):
+The routing flow is dynamically protected by Next.js request proxy (`proxy.ts`):
 
 - **Guest Routes**: `/` (storefront), `/auth/*`
 - **Customer Pages**: `/customer/*` (requires role ID `3`)
 - **Vendor Dashboard**: `/vendor/*` (requires role ID `2`)
 - **Admin Panel**: `/admin/*` (requires role ID `1`)
 
-Next.js middleware intercepts requests to `/vendor/*` and `/admin/*` before rendering:
+Next.js proxy intercepts requests to `/vendor/*` and `/admin/*` before rendering:
 
 1. It validates the presence of an access token cookie.
 2. If missing or invalid, it redirects the user smoothly to the entry storefront page.
@@ -157,8 +157,8 @@ Next.js middleware intercepts requests to `/vendor/*` and `/admin/*` before rend
 
 To ensure the storefront operates as a premium, fluid marketplace, the application incorporates several transition, state, and tracking helpers:
 
-1. **Request Flow Fluidifier (Middleware)**
-   - `app/middleware.ts` intercepts router transitions, checking authentication tokens server-side before routes resolve to eliminate visual flashing.
+1. **Request Flow Fluidifier (Proxy)**
+   - `proxy.ts` intercepts router transitions, checking authentication tokens server-side before routes resolve to eliminate visual flashing.
 2. **Checkout Fluidifier (Razorpay Overlay)**
    - Payment checkout is completed inside a non-disruptive overlay directly overlaying the checkout screen, maintaining customer context and providing a smooth visual path to the order completion page.
 3. **Logistics & Timeline Tracking**

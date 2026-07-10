@@ -23,10 +23,10 @@ export enum LoginStatusEnum {
 }
 
 export enum ActionType {
-  SET_STATUS = 'SET_STATUS',
-  SET_ERROR_MESSAGE = 'SET_ERROR_MESSAGE',
-  SET_IS_REACTIVATION_OPEN = 'SET_IS_REACTIVATION_OPEN',
-  SET_USER_EMAIL = 'SET_USER_EMAIL',
+  SET_STATUS = "SET_STATUS",
+  SET_ERROR_MESSAGE = "SET_ERROR_MESSAGE",
+  SET_IS_REACTIVATION_OPEN = "SET_IS_REACTIVATION_OPEN",
+  SET_USER_EMAIL = "SET_USER_EMAIL",
 }
 
 type Action =
@@ -51,11 +51,16 @@ const initialState: State = {
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case ActionType.SET_STATUS: return { ...state, status: action.payload };
-    case ActionType.SET_ERROR_MESSAGE: return { ...state, errorMessage: action.payload };
-    case ActionType.SET_IS_REACTIVATION_OPEN: return { ...state, isReactivationOpen: action.payload };
-    case ActionType.SET_USER_EMAIL: return { ...state, userEmail: action.payload };
-    default: return state;
+    case ActionType.SET_STATUS:
+      return { ...state, status: action.payload };
+    case ActionType.SET_ERROR_MESSAGE:
+      return { ...state, errorMessage: action.payload };
+    case ActionType.SET_IS_REACTIVATION_OPEN:
+      return { ...state, isReactivationOpen: action.payload };
+    case ActionType.SET_USER_EMAIL:
+      return { ...state, userEmail: action.payload };
+    default:
+      return state;
   }
 }
 
@@ -63,7 +68,7 @@ function AuthSuccessHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  
+
   const [state, dispatchState] = useReducer(reducer, initialState);
 
   useEffect(() => {
@@ -74,17 +79,34 @@ function AuthSuccessHandler() {
         const message = searchParams.get("message");
         const status = searchParams.get("status");
         const email = searchParams.get("email");
-        
-        dispatchState({ type: ActionType.SET_USER_EMAIL, payload: email ? email : "" });
-        
+
+        dispatchState({
+          type: ActionType.SET_USER_EMAIL,
+          payload: email ? email : "",
+        });
+
         if (!accessToken) {
           if (status == "423") {
-            dispatchState({ type: ActionType.SET_IS_REACTIVATION_OPEN, payload: true });
-            dispatchState({ type: ActionType.SET_ERROR_MESSAGE, payload: message ? message : AUTH_SUCCESS_TEXT.ERR_NO_TOKEN });
+            dispatchState({
+              type: ActionType.SET_IS_REACTIVATION_OPEN,
+              payload: true,
+            });
+            dispatchState({
+              type: ActionType.SET_ERROR_MESSAGE,
+              payload: message ? message : AUTH_SUCCESS_TEXT.ERR_NO_TOKEN,
+            });
             return;
           }
-          dispatchState({ type: ActionType.SET_STATUS, payload: status ? LoginStatusEnum[status as keyof typeof LoginStatusEnum] : LoginStatusEnum.ERROR });
-          dispatchState({ type: ActionType.SET_ERROR_MESSAGE, payload: message ? message : AUTH_SUCCESS_TEXT.ERR_NO_TOKEN });
+          dispatchState({
+            type: ActionType.SET_STATUS,
+            payload: (status && Object.values(LoginStatusEnum).includes(status as any))
+              ? (status as LoginStatusEnum)
+              : LoginStatusEnum.ERROR,
+          });
+          dispatchState({
+            type: ActionType.SET_ERROR_MESSAGE,
+            payload: message ? message : AUTH_SUCCESS_TEXT.ERR_NO_TOKEN,
+          });
           setTimeout(() => router.push("/auth/customerLogin"), 2000);
           return;
         }
@@ -119,7 +141,10 @@ function AuthSuccessHandler() {
             }),
           );
 
-          dispatchState({ type: ActionType.SET_STATUS, payload: LoginStatusEnum.SUCCESS });
+          dispatchState({
+            type: ActionType.SET_STATUS,
+            payload: LoginStatusEnum.SUCCESS,
+          });
 
           const performRedirect = async () => {
             const oauthRedirect = sessionStorage.getItem("oauth_redirect");
@@ -133,26 +158,32 @@ function AuthSuccessHandler() {
                     syncCartAfterLogin({
                       userId: payload.user.id!,
                       token: accessToken,
-                    })
+                    }),
                   ).unwrap();
 
                   const cartId = syncResult?.cartId;
-                  const hasItems = syncResult?.itemList && syncResult.itemList.length > 0;
+                  const hasItems =
+                    syncResult?.itemList && syncResult.itemList.length > 0;
                   if (cartId && hasItems) {
-                    const urlObj = new URL(oauthRedirect, window.location.origin);
+                    const urlObj = new URL(
+                      oauthRedirect,
+                      window.location.origin,
+                    );
                     const couponId = urlObj.searchParams.get("couponId");
                     const couponParam = couponId ? `&couponId=${couponId}` : "";
                     createCheckoutSession();
-                    router.push(`/customer/checkout?type=cart&id=${cartId}${couponParam}`);
+                    router.push(
+                      `/customer/checkout?type=cart&id=${cartId}${couponParam}`,
+                    );
                     return;
                   } else {
-                    toast.error("Your cart is empty. Please add items to checkout.");
+                    toast.error(
+                      "Your cart is empty. Please add items to checkout.",
+                    );
                     router.push("/customer/cart");
                     return;
                   }
-                } catch (syncErr) {
-                  console.error("Cart sync failed before redirect:", syncErr);
-                }
+                } catch (syncErr) {}
               }
 
               // --- QUICK_BUY intent: redirect target is already a checkout URL ---
@@ -172,13 +203,25 @@ function AuthSuccessHandler() {
             performRedirect();
           }, 1000);
         } catch (decodeError) {
-          dispatchState({ type: ActionType.SET_STATUS, payload: LoginStatusEnum.ERROR });
-          dispatchState({ type: ActionType.SET_ERROR_MESSAGE, payload: AUTH_SUCCESS_TEXT.ERR_INVALID_TOKEN });
+          dispatchState({
+            type: ActionType.SET_STATUS,
+            payload: LoginStatusEnum.ERROR,
+          });
+          dispatchState({
+            type: ActionType.SET_ERROR_MESSAGE,
+            payload: AUTH_SUCCESS_TEXT.ERR_INVALID_TOKEN,
+          });
           setTimeout(() => router.push("/auth/customerLogin"), 2000);
         }
       } catch (error) {
-        dispatchState({ type: ActionType.SET_STATUS, payload: LoginStatusEnum.ERROR });
-        dispatchState({ type: ActionType.SET_ERROR_MESSAGE, payload: AUTH_SUCCESS_TEXT.ERR_AUTH_FAILED });
+        dispatchState({
+          type: ActionType.SET_STATUS,
+          payload: LoginStatusEnum.ERROR,
+        });
+        dispatchState({
+          type: ActionType.SET_ERROR_MESSAGE,
+          payload: AUTH_SUCCESS_TEXT.ERR_AUTH_FAILED,
+        });
         setTimeout(() => router.push("/auth/customerLogin"), 2000);
       }
     };
@@ -187,7 +230,10 @@ function AuthSuccessHandler() {
   }, [searchParams, router, dispatch]);
 
   const handleReactivationSuccess = () => {
-    dispatchState({ type: ActionType.SET_IS_REACTIVATION_OPEN, payload: false });
+    dispatchState({
+      type: ActionType.SET_IS_REACTIVATION_OPEN,
+      payload: false,
+    });
     router.push("/auth/customerLogin");
   };
 
@@ -246,10 +292,10 @@ function AuthSuccessHandler() {
                 </svg>
               </div>
             </div>
-            <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">{AUTH_SUCCESS_TEXT.TITLE_SUCCESS}</h2>
-            <p className="text-slate-600">
-              {AUTH_SUCCESS_TEXT.DESC_SUCCESS}
-            </p>
+            <h2 className="text-theme-h4 font-bold text-gray-800 mb-2">
+              {AUTH_SUCCESS_TEXT.TITLE_SUCCESS}
+            </h2>
+            <p className="text-slate-600">{AUTH_SUCCESS_TEXT.DESC_SUCCESS}</p>
           </div>
         )}
 
@@ -286,7 +332,12 @@ function AuthSuccessHandler() {
       </div>
       <AccountReactivation
         isOpen={state.isReactivationOpen}
-        onClose={() => dispatchState({ type: ActionType.SET_IS_REACTIVATION_OPEN, payload: false })}
+        onClose={() =>
+          dispatchState({
+            type: ActionType.SET_IS_REACTIVATION_OPEN,
+            payload: false,
+          })
+        }
         onSuccess={handleReactivationSuccess}
         emailMasked={state.userEmail}
       />

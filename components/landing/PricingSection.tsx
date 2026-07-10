@@ -7,6 +7,7 @@ import type {
   SubscriptionPlan,
 } from "@/utils/Types";
 import { LANDING_PRICING } from "@/constants/landingText";
+import { BASE_API_URL } from "@/constants";
 
 /** Shape used internally when rendering a merged plan card */
 interface MergedPlan {
@@ -107,15 +108,18 @@ function buildFallbackOverride(
     }
   }
 
+  const isEnterpriseLike =
+    (plan.plan_name || "").toLowerCase().includes("enterprise") ||
+    (plan.display_name || "").toLowerCase().includes("enterprise");
+
   return {
-    description:
-      plan.plan_name === "enterprise"
-        ? "For larger teams that need dedicated support, advanced controls, and automation."
-        : plan.display_name,
+    description: isEnterpriseLike
+      ? "For larger teams that need dedicated support, advanced controls, and automation."
+      : plan.display_name,
     features,
-    ctaLabel: plan.plan_name === "enterprise" ? "Contact Sales" : "Get Started",
+    ctaLabel: isEnterpriseLike ? "Contact Sales" : "Get Started",
     ctaHref: "/auth/vendorRegister",
-    isFeatured: plan.plan_name === "pro",
+    isFeatured: false,
   };
 }
 
@@ -140,13 +144,10 @@ export default function PricingSection({
   let mergedPlans: MergedPlan[] = [];
 
   useEffect(() => {
-    // Skip fetch if we were provided plans externally (e.g., Pavement Integration)
-    if (initialPlans && initialPlans.length > 0) return;
-
     const loadPlans = async () => {
       try {
         const plansRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/public/subscription-plans`,
+          `${BASE_API_URL}/v1/public/subscription-plans`,
           {
             next: { revalidate: 60 }, // ISR: Revalidate every 60 seconds
           },
@@ -159,11 +160,9 @@ export default function PricingSection({
         } else {
           setPlans(data);
         }
-      } catch (e) {
-        console.error("Failed to fetch live subscription plans:", e);
-      }
+      } catch (e) {}
     };
-    
+
     loadPlans();
   }, []);
 
@@ -171,15 +170,16 @@ export default function PricingSection({
     mergedPlans = plans
       .map((plan: any) => {
         const planName = plan.plan_key || plan.plan_name;
-        
-        const baseOverride: LandingPricingPlanOverride =
-          planOverrides?.[planName] ??
+
+        const baseOverride: LandingPricingPlanOverride = planOverrides?.[
+          planName
+        ] ??
           meta.planOverrides?.[planName] ?? {
             description: "For growing businesses.",
             features: [],
             ctaLabel: "Get Started",
             ctaHref: "/auth/vendorRegister",
-            isFeatured: planName === "pro",
+            isFeatured: false,
           };
 
         const monthlyPriceObj = plan.prices?.find(
@@ -190,16 +190,20 @@ export default function PricingSection({
         );
 
         const priceMonthly = monthlyPriceObj
-          ? String(monthlyPriceObj.amount_cents / 100)
-          : plan.price_monthly ?? "0";
-          
+          ? String(
+              monthlyPriceObj.amount_minor_units /
+                Math.pow(10, monthlyPriceObj.currency_exponent ?? 2),
+            )
+          : (plan.price_monthly ?? "0");
+
         const annualTotalNum = yearlyPriceObj
-          ? yearlyPriceObj.amount_cents / 100
-          : plan.annual_total ?? null;
-          
+          ? yearlyPriceObj.amount_minor_units /
+            Math.pow(10, yearlyPriceObj.currency_exponent ?? 2)
+          : (plan.annual_total ?? null);
+
         const priceAnnual = annualTotalNum
           ? String(Math.round(Number(annualTotalNum) / 12))
-          : plan.price_annual ?? null;
+          : (plan.price_annual ?? null);
 
         // Build features from DB or use old capabilities fallback if empty
         const dbFeatures = (plan.features || [])
@@ -215,9 +219,10 @@ export default function PricingSection({
               ? formattedKey
               : `${formattedKey}: ${f.value}`;
           });
-          
+
         const fallbackOverride = buildFallbackOverride(plan);
-        const finalFeatures = dbFeatures.length > 0 ? dbFeatures : fallbackOverride.features;
+        const finalFeatures =
+          dbFeatures.length > 0 ? dbFeatures : fallbackOverride.features;
 
         const override: LandingPricingPlanOverride = {
           ...baseOverride,
@@ -226,12 +231,13 @@ export default function PricingSection({
 
         return {
           id: plan.id,
-          displayName: plan.display_name || planName.charAt(0).toUpperCase() + planName.slice(1),
+          displayName:
+            plan.display_name ||
+            planName.charAt(0).toUpperCase() + planName.slice(1),
           priceMonthly,
           priceAnnual,
           annualTotal: annualTotalNum ? String(annualTotalNum) : null,
-          displayOrder:
-            plan.display_order ?? (planName === "starter" ? 1 : planName === "pro" ? 2 : 3),
+          displayOrder: plan.display_order ?? (Number(priceMonthly) || 0),
           override,
         };
       })
@@ -240,6 +246,19 @@ export default function PricingSection({
           (a.displayOrder ?? Number.MAX_SAFE_INTEGER) -
           (b.displayOrder ?? Number.MAX_SAFE_INTEGER),
       );
+
+    const hasFeatured = mergedPlans.some((p) => p.override.isFeatured);
+    if (!hasFeatured && mergedPlans.length > 0) {
+      const middleIdx = Math.floor(mergedPlans.length / 2);
+      mergedPlans[middleIdx].override = {
+        ...mergedPlans[middleIdx].override,
+        isFeatured: true,
+      };
+    }
+  }
+
+  if (!plans || plans.length === 0) {
+    return null;
   }
 
   return (

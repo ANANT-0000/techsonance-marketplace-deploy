@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useCallback } from "react";
 import { Printer, Package } from "lucide-react";
 import { Pagination } from "@/components/common/Pagination";
 import { TableRowSkeleton } from "@/components/common/skeletons";
@@ -169,6 +169,7 @@ export enum ActionType {
   TOGGLE_ORDER_SELECTION = 'TOGGLE_ORDER_SELECTION',
   SET_ALL_ORDERS_SELECTION = 'SET_ALL_ORDERS_SELECTION',
   SET_IS_DOWNLOADING = 'SET_IS_DOWNLOADING',
+  SET_ERROR = 'SET_ERROR',
 }
 
 interface State {
@@ -181,6 +182,7 @@ interface State {
   itemsPerPage: number;
   currentPage: number;
   isDownloading: boolean;
+  error: string | null;
 }
 
 const initialState: State = {
@@ -193,6 +195,7 @@ const initialState: State = {
   itemsPerPage: 10,
   currentPage: 1,
   isDownloading: false,
+  error: null,
 };
 
 type Action =
@@ -204,16 +207,17 @@ type Action =
   | { type: ActionType.SET_CURRENT_PAGE; payload: number }
   | { type: ActionType.TOGGLE_ORDER_SELECTION; payload: string }
   | { type: ActionType.SET_ALL_ORDERS_SELECTION; payload: string[] }
-  | { type: ActionType.SET_IS_DOWNLOADING; payload: boolean };
+  | { type: ActionType.SET_IS_DOWNLOADING; payload: boolean }
+  | { type: ActionType.SET_ERROR; payload: string | null };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case ActionType.SET_LOADING: return { ...state, loading: action.payload };
-    case ActionType.SET_ORDER_STATUS: return { ...state, orderStatus: action.payload, currentPage: 1 };
-    case ActionType.SET_SORT_BY: return { ...state, sortBy: action.payload, currentPage: 1 };
+    case ActionType.SET_ORDER_STATUS: return { ...state, orderStatus: action.payload, currentPage: 1, selectedOrders: [] };
+    case ActionType.SET_SORT_BY: return { ...state, sortBy: action.payload, currentPage: 1, selectedOrders: [] };
     case ActionType.SET_ORDERS: return { ...state, orders: action.payload };
     case ActionType.SET_PAGINATION: return { ...state, totalPages: action.payload.totalPages };
-    case ActionType.SET_CURRENT_PAGE: return { ...state, currentPage: action.payload };
+    case ActionType.SET_CURRENT_PAGE: return { ...state, currentPage: action.payload, selectedOrders: [] };
     case ActionType.TOGGLE_ORDER_SELECTION: {
       const isSelected = state.selectedOrders.includes(action.payload);
       return {
@@ -225,6 +229,7 @@ function reducer(state: State, action: Action): State {
     }
     case ActionType.SET_ALL_ORDERS_SELECTION: return { ...state, selectedOrders: action.payload };
     case ActionType.SET_IS_DOWNLOADING: return { ...state, isDownloading: action.payload };
+    case ActionType.SET_ERROR: return { ...state, error: action.payload };
     default: return state;
   }
 }
@@ -248,30 +253,36 @@ export default function OrdersPage() {
 
   const token = authToken();
   
-  useEffect(() => {
+  const getOrderList = useCallback(async () => {
     if (!token) {
       redirect("/auth/vendorLogin");
+      return;
     }
-    const getOrderList = async () => {
-      dispatch({ type: ActionType.SET_LOADING, payload: true });
-      await fetchVendorOrderList(
-        offset,
-        state.itemsPerPage,
-        token,
-        state.orderStatus,
-        state.sortBy,
-      )
-        .then((res) => {
-          dispatch({ type: ActionType.SET_ORDERS, payload: res.data.orders || [] });
-          dispatch({ type: ActionType.SET_PAGINATION, payload: { totalPages: Math.ceil(res.data.totalCount / state.itemsPerPage) || 1 } });
-        })
-        .catch((err) => {})
-        .finally(() => {
-          dispatch({ type: ActionType.SET_LOADING, payload: false });
-        });
-    };
+    dispatch({ type: ActionType.SET_LOADING, payload: true });
+    dispatch({ type: ActionType.SET_ERROR, payload: null });
+    await fetchVendorOrderList(
+      offset,
+      state.itemsPerPage,
+      token,
+      state.orderStatus,
+      state.sortBy,
+    )
+      .then((res) => {
+        dispatch({ type: ActionType.SET_ORDERS, payload: res.data.orders || [] });
+        dispatch({ type: ActionType.SET_PAGINATION, payload: { totalPages: Math.ceil(res.data.totalCount / state.itemsPerPage) || 1 } });
+      })
+      .catch((err) => {
+        dispatch({ type: ActionType.SET_ERROR, payload: err?.message || "Failed to load orders" });
+        dispatch({ type: ActionType.SET_ORDERS, payload: [] });
+      })
+      .finally(() => {
+        dispatch({ type: ActionType.SET_LOADING, payload: false });
+      });
+  }, [offset, state.itemsPerPage, token, state.orderStatus, state.sortBy]);
+
+  useEffect(() => {
     getOrderList();
-  }, [state.orderStatus, state.sortBy, offset]);
+  }, [getOrderList]);
 
   const toggleAllOrders = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked && state.orders) {
@@ -398,7 +409,9 @@ export default function OrdersPage() {
                   className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
                   checked={
                     state.orders?.length > 0 &&
-                    state.selectedOrders.length === state.orders.length
+                    state.orders.every((o) =>
+                      state.selectedOrders.includes(o.id),
+                    )
                   }
                   onChange={toggleAllOrders}
                 />
@@ -416,6 +429,21 @@ export default function OrdersPage() {
           <tbody className="divide-y divide-gray-100">
             {state.loading ? (
               <TableRowSkeleton columns={9} rows={5} />
+            ) : state.error ? (
+              <tr>
+                <td
+                  colSpan={10}
+                  className="py-16 text-center text-theme-body-sm"
+                >
+                  <p className="text-red-500 font-semibold mb-3">⚠️ {state.error}</p>
+                  <button
+                    onClick={() => getOrderList()}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-xl transition-all shadow-sm font-medium cursor-pointer"
+                  >
+                    Retry
+                  </button>
+                </td>
+              </tr>
             ) : state.orders && state.orders?.length === 0 ? (
               <tr>
                 <td

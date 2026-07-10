@@ -5,9 +5,15 @@ import type { LandingFooterContent } from "@/utils/Types";
 
 interface LandingFooterProps {
   content: LandingFooterContent;
+  logo?: {
+    type?: "text" | "image";
+    text?: string;
+    highlight?: string;
+    imageUrl?: string;
+  };
 }
 
-export default function LandingFooter({ content }: LandingFooterProps) {
+export default function LandingFooter({ content, logo }: LandingFooterProps) {
   return (
     <footer
       aria-label="Footer"
@@ -18,9 +24,22 @@ export default function LandingFooter({ content }: LandingFooterProps) {
           <div className="max-w-md">
             <Link
               href="/"
-              className="text-2xl font-semibold tracking-[-0.05em] text-landing-on-dark"
+              className="flex items-center justify-start gap-2 bg-white p-1 rounded-2xl"
             >
-              Techso<span className="text-landing-primary">nance</span>
+              {logo?.type === "image" && logo?.imageUrl ? (
+                <img
+                  src={logo.imageUrl}
+                  alt={logo.text || "Company Logo"}
+                  className="w-full h-20 object-contain"
+                />
+              ) : (
+                <span className="text-2xl font-semibold tracking-[-0.05em] text-landing-on-dark">
+                  {logo?.text || "Techso"}
+                  <span className="text-landing-primary">
+                    {logo?.highlight || "nance"}
+                  </span>
+                </span>
+              )}
             </Link>
             <p className="mt-5 max-w-sm text-sm leading-7 text-landing-on-dark/55">
               {content.brandDesc}

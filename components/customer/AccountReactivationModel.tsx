@@ -120,10 +120,15 @@ export function AccountReactivation({
 
     const handleSendCode = async () => {
         dispatch({ type: ActionType.SET_IS_LOADING, payload: true });
-        await AxiosAPI.post(`v1/users/reactivate`, { email: emailMasked });
-        dispatch({ type: ActionType.SET_IS_LOADING, payload: false });
-        dispatch({ type: ActionType.SET_STEP, payload: 'otp' });
-        dispatch({ type: ActionType.SET_TIME_LEFT, payload: 30 });
+        try {
+            await AxiosAPI.post(`v1/users/reactivate`, { email: emailMasked });
+            dispatch({ type: ActionType.SET_STEP, payload: 'otp' });
+            dispatch({ type: ActionType.SET_TIME_LEFT, payload: 30 });
+        } catch (error) {
+            // Error is logged or handled globally
+        } finally {
+            dispatch({ type: ActionType.SET_IS_LOADING, payload: false });
+        }
     };
 
     const handleVerifyReactivation = async (e?: React.FormEvent) => {
@@ -132,13 +137,14 @@ export function AccountReactivation({
         if (otpString.length !== 6) return;
 
         dispatch({ type: ActionType.SET_IS_LOADING, payload: true });
-        await AxiosAPI.patch(`v1/users/reactivate/confirm`, { otp: otpString, email: emailMasked })
-        .catch((error) => {
-            // Error handling logic
-        });
-        
-        dispatch({ type: ActionType.SET_IS_LOADING, payload: false });
-        dispatch({ type: ActionType.SET_STEP, payload: 'success' });
+        try {
+            await AxiosAPI.patch(`v1/users/reactivate/confirm`, { otp: otpString, email: emailMasked });
+            dispatch({ type: ActionType.SET_STEP, payload: 'success' });
+        } catch (error: any) {
+            // Error is logged or handled globally
+        } finally {
+            dispatch({ type: ActionType.SET_IS_LOADING, payload: false });
+        }
     };
 
     // --- OTP Input Handlers ---

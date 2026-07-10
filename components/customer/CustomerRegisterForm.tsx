@@ -83,7 +83,7 @@ export default function CustomerRegisterForm({
       password: "",
       confirm_password: "",
       phone_number: "",
-      terms_accepted: true,
+      terms_accepted: false,
     },
   });
 
@@ -119,9 +119,7 @@ export default function CustomerRegisterForm({
             }
             return;
           }
-        } catch (loginErr) {
-          console.error("Auto login failed:", loginErr);
-        }
+        } catch (loginErr) {}
 
         // Fallback if auto-login fails or behaves unexpectedly
         if (isModal && onToggleLogin) {
@@ -259,7 +257,7 @@ export default function CustomerRegisterForm({
             >
               <label
                 htmlFor={field.id}
-                className="text-theme-caption font-semibold text-gray-705 uppercase tracking-wide"
+                className="text-theme-caption font-semibold text-gray-700 uppercase tracking-wide"
               >
                 {field.label}
                 {field.required && <span className="text-red-500 ml-1">*</span>}
@@ -298,6 +296,40 @@ export default function CustomerRegisterForm({
           ))}
         </div>
 
+        {/* Terms and Conditions Checkbox */}
+        <div className="flex flex-col gap-1.5 mt-2">
+          <label className="flex items-center gap-2.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              id="terms_accepted"
+              {...register("terms_accepted")}
+              className="w-4.5 h-4.5 rounded-sm border-2 border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-200 transition-all cursor-pointer"
+              disabled={state.isSubmitting || state.isGoogleLoading}
+            />
+            <span className="text-theme-body-sm text-slate-600">
+              I accept the{" "}
+              <Link
+                href="/terms"
+                className="text-blue-600 hover:text-blue-700 font-semibold hover:underline"
+              >
+                Terms and Conditions
+              </Link>
+            </span>
+          </label>
+          {errors.terms_accepted && (
+            <p className="text-red-600 text-theme-caption font-medium flex items-center gap-1 mt-1">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {errors.terms_accepted.message}
+            </p>
+          )}
+        </div>
+
         <button
           type="submit"
           disabled={state.isSubmitting || state.isGoogleLoading}
@@ -332,20 +364,20 @@ export default function CustomerRegisterForm({
           )}
         </button>
 
-        <p className="text-center text-theme-body-sm text-slate-650 pt-2">
+        <p className="text-center text-theme-body-sm text-slate-600 pt-2">
           {AUTH_TEXT.REGISTER.ALREADY_HAVE}
           {isModal && onToggleLogin ? (
             <button
               type="button"
               onClick={onToggleLogin}
-              className="text-blue-600 font-bold hover:text-blue-750 hover:underline transition-colors ml-1"
+              className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition-colors ml-1"
             >
               {AUTH_TEXT.REGISTER.LOGIN_LINK}
             </button>
           ) : (
             <Link
               href="/auth/customerLogin"
-              className="text-blue-600 font-bold hover:text-blue-750 hover:underline transition-colors ml-1"
+              className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition-colors ml-1"
             >
               {AUTH_TEXT.REGISTER.LOGIN_LINK}
             </Link>

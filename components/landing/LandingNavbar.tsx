@@ -112,6 +112,7 @@ export default function LandingNavbar({ content }: LandingNavbarProps) {
 
       <div
         id="landing-mobile-menu"
+        inert={!isMobileMenuOpen}
         className={`fixed inset-0 z-[999] bg-landing-background/98 px-4 py-6 backdrop-blur-xl transition-all duration-300 lg:hidden ${
           isMobileMenuOpen
             ? "pointer-events-auto opacity-100"

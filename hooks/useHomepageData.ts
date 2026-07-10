@@ -17,6 +17,7 @@ export function useHomepageData() {
   const [categories, setCategories] = useState<any[]>([]);
   const [heroSlides, setHeroSlides] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasError, setHasError] = useState<boolean>(false);
 
   // Initialize lang and subscribe to changes without polling
   useEffect(() => {
@@ -37,6 +38,7 @@ export function useHomepageData() {
 
   const fetchData = useCallback(async (currentLang: string) => {
     setIsLoading(true);
+    setHasError(false);
     // Try finding in cache first
     const cachedCms = getCachedData(`${CmsDataKey.CMS_CACHE_KEY}_${currentLang}`);
     if (cachedCms) {
@@ -94,6 +96,7 @@ export function useHomepageData() {
           }
         }
       } catch (err: any) {
+        setHasError(true);
         if (!cmsContent) {
           const staleCached = localStorage.getItem(
             `${CmsDataKey.CMS_CACHE_KEY}_${currentLang}`,
@@ -270,5 +273,6 @@ export function useHomepageData() {
     heroSlides,
     isLoading,
     cmsContent,
+    hasError,
   };
 }

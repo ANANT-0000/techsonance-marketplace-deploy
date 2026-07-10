@@ -55,9 +55,9 @@ export function useLandingTheme() {
 
     try {
       const response = await AxiosAPI.get("/v1/landing-page", {
-        headers: { "x-suppress-toast": "true" }
+        headers: { "x-suppress-toast": "true" },
       });
-      console.log("response", response.data);
+
       const payload = response.data?.data;
       const merged = normalizeLandingTheme(payload);
       setLandingTheme(merged);

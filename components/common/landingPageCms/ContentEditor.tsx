@@ -28,7 +28,6 @@ import { CmsActionType, SectionKey } from "@/contexts/LandingCmsContext";
 import { CMS_STRINGS } from "@/constants/landingCms.strings";
 
 import { HeroEditor } from "./HeroEditor";
-import { PricingEditor } from "./PricingEditor";
 import { FaqEditor } from "./FaqEditor";
 import { TestimonialsEditor } from "./TestimonialsEditor";
 import { NavbarEditor } from "./NavbarEditor";
@@ -85,7 +84,6 @@ const SECTIONS = [
   { key: "metadata", label: "SEO", icon: Search },
   { key: "hero", label: "Hero", icon: Sparkles },
   { key: "features", label: "Features", icon: Layers },
-  { key: "pricing", label: "Pricing", icon: DollarSign },
   { key: "testimonials", label: "Testimonials", icon: MessageSquare },
   { key: "faq", label: "FAQ", icon: HelpCircle },
   { key: "stats", label: "Stats", icon: BarChart3 },
@@ -218,17 +216,17 @@ export function ContentEditor() {
                 disabled={isEditingDisabled}
                 className={`relative flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
+                    ? "bg-blue-600 text-white shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
                 <Icon
-                  className={`h-4 w-4 ${isActive ? "text-primary-foreground" : "text-muted-foreground"}`}
+                  className={`h-4 w-4 ${isActive ? "text-white" : "text-muted-foreground"}`}
                 />
                 {section.label}
                 {sectionDirty && (
                   <span
-                    className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-primary-foreground" : "bg-primary"}`}
+                    className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-white" : "bg-blue-600"}`}
                     aria-label="Unsaved changes"
                     title="Unsaved changes"
                   />
@@ -286,17 +284,6 @@ export function ContentEditor() {
               dispatch({
                 type: CmsActionType.SET_SECTION_CONTENT,
                 payload: { key: "features", value: v },
-              })
-            }
-          />
-        )}
-        {activeSection === "pricing" && (
-          <PricingEditor
-            value={content.pricing}
-            onChange={(v) =>
-              dispatch({
-                type: CmsActionType.SET_SECTION_CONTENT,
-                payload: { key: "pricing", value: v },
               })
             }
           />

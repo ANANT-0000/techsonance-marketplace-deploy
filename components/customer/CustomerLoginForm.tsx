@@ -161,7 +161,9 @@ function CustomerLoginFormContent({
           onSuccess();
         }
 
-        const targetUrl = isModal ? loginRedirectUrl : searchParams.get("redirect");
+        const targetUrl = isModal
+          ? loginRedirectUrl
+          : searchParams.get("redirect");
 
         // --- Cart checkout intent (CART mode): sync guest cart first ---
         if (targetUrl && targetUrl.includes("/customer/cart?checkout=true")) {
@@ -170,26 +172,27 @@ function CustomerLoginFormContent({
               syncCartAfterLogin({
                 userId: response.data.user.id,
                 token: response.data.access_token,
-              })
+              }),
             ).unwrap();
 
             const cartId = syncResult?.cartId;
-            const hasItems = syncResult?.itemList && syncResult.itemList.length > 0;
+            const hasItems =
+              syncResult?.itemList && syncResult.itemList.length > 0;
             if (cartId && hasItems) {
               const urlObj = new URL(targetUrl, window.location.origin);
               const couponId = urlObj.searchParams.get("couponId");
               const couponParam = couponId ? `&couponId=${couponId}` : "";
               createCheckoutSession();
-              router.push(`/customer/checkout?type=cart&id=${cartId}${couponParam}`);
+              router.push(
+                `/customer/checkout?type=cart&id=${cartId}${couponParam}`,
+              );
               return;
             } else {
               toast.error("Your cart is empty. Please add items to checkout.");
               router.push("/customer/cart");
               return;
             }
-          } catch (syncErr) {
-            console.error("Cart sync failed before redirect:", syncErr);
-          }
+          } catch (syncErr) {}
         }
 
         // --- QUICK_BUY intent: redirect target is already a checkout URL ---

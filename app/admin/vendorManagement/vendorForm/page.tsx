@@ -20,18 +20,15 @@ import {
   Pencil,
 } from "lucide-react";
 
-import { Navbar } from "@/components/admin/Navbar";
 import { COUNTRIES } from "@/constants/common";
 import { VendorDocumentTypes } from "@/constants";
 import {
-  BUSINESS_ADMIN_ACCOUNT_FIELDS,
   ORGANIZATION_DETAIL_FIELDS,
   STEPS,
   STEP_RHF_FIELDS,
 } from "@/constants/dynamicFields";
 import { DocUploadInput, FileEntry } from "@/components/vendor/DocUploadInput";
 import FinancialCompliance from "@/components/vendor/FinancialCompliance";
-import { zodResolver as _z } from "@hookform/resolvers/zod";
 import {
   validateComplianceFields,
   validateRequiredDocuments,

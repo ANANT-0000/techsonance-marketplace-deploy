@@ -30,9 +30,9 @@ export default function VendorLayout({
   const router = useRouter();
   useEffect(() => {
     if (!isAuthenticated || role !== UserRole.VENDOR) {
-      router.replace(ROOT_PATH);
+      router.replace(VENDOR_LOGIN_PATH);
     }
-  }, []);
+  }, [isAuthenticated, role, router]);
   useEffect(() => {
     // Axios interceptor in lib/axios.ts
     const interceptor = AxiosAPI.interceptors.response.use(
@@ -49,6 +49,11 @@ export default function VendorLayout({
       AxiosAPI.interceptors.response.eject(interceptor);
     };
   }, []);
+
+  if (!isAuthenticated || role !== UserRole.VENDOR) {
+    return null;
+  }
+
   return (
     <>
       <main className={`flex w-full`}>

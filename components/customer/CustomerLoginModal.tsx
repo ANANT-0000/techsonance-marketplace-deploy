@@ -85,7 +85,7 @@ export function CustomerLoginModal() {
                     <h2 className="text-theme-h4 font-bold text-gray-800 mb-1.5">
                       Create Account
                     </h2>
-                    <p className="text-theme-body-sm text-slate-650">
+                    <p className="text-theme-body-sm text-slate-600">
                       Join us to access checkouts, wishlists, and more.
                     </p>
                   </div>

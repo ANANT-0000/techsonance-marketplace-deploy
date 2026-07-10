@@ -19,42 +19,122 @@ import LandingPage from "@/components/landing/LandingPage";
 import LandingPageSkeleton from "@/components/common/LandingPageSkeleton";
 import { getLandingPageData } from "@/utils/commonAPiClient";
 import { LANDING_METADATA } from "@/constants/landingText";
-import { OG_TYPE, TWITTER_CARD } from "@/constants/storefront";
+import {
+  OG_TYPE,
+  TWITTER_CARD,
+  DEFAULT_FAVICON_PATH,
+  DEFAULT_STORE_NAME,
+  STORE_SUFFIX,
+  BRANDING_ENDPOINT,
+  HEADER_COMPANY_DOMAIN,
+  REVALIDATE_INTERVAL,
+  getWelcomeDescription,
+} from "@/constants/storefront";
 
 // ── Storefront (MainSite) imports ───────────────────────────────────────────
-import StorefrontHome from "@/app/(storefront)/page";
+import StorefrontHome from "@/app/(storefront)/StorefrontHome";
+import ShopLayout from "@/app/(storefront)/layout";
 
 // ── Metadata ────────────────────────────────────────────────────────────────
-const metadataBaseUrl = new URL(
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
-);
+export async function generateMetadata(): Promise<Metadata> {
+  const isLanding = await shouldShowLandingPage();
+  const headersList = await headers();
+  const host = headersList.get("host") ?? "localhost:3000";
+  const protocol = host.includes("localhost") ? "http" : "https";
+  const siteUrl = `${protocol}://${host}`;
+  const metadataBaseUrl = new URL(siteUrl);
 
-export const metadata: Metadata = {
-  metadataBase: metadataBaseUrl,
-  title: LANDING_METADATA.title,
-  description: LANDING_METADATA.description,
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: LANDING_METADATA.title,
-    description: LANDING_METADATA.description,
-    type: OG_TYPE,
-    url: "/",
-    images: [
-      {
-        url: "/assets/landing/tm-622-screen-02.jpg",
-        width: 620,
-        height: 1262,
-        alt: LANDING_METADATA.title,
+  if (isLanding) {
+    return {
+      metadataBase: metadataBaseUrl,
+      title: LANDING_METADATA.title,
+      description: LANDING_METADATA.description,
+      alternates: { canonical: "/" },
+      openGraph: {
+        title: LANDING_METADATA.title,
+        description: LANDING_METADATA.description,
+        type: OG_TYPE,
+        url: "/",
+        images: [
+          {
+            url: "/assets/landing/tm-622-screen-02.jpg",
+            width: 620,
+            height: 1262,
+            alt: LANDING_METADATA.title,
+          },
+        ],
       },
-    ],
-  },
-  twitter: {
-    card: TWITTER_CARD,
-    title: LANDING_METADATA.title,
-    description: LANDING_METADATA.description,
-    images: ["/assets/landing/tm-622-screen-02.jpg"],
-  },
-};
+      twitter: {
+        card: TWITTER_CARD,
+        title: LANDING_METADATA.title,
+        description: LANDING_METADATA.description,
+        images: ["/assets/landing/tm-622-screen-02.jpg"],
+      },
+    };
+  }
+
+  // Storefront specific metadata
+  const companyDomain = host.split(":")[0].toLowerCase();
+  let storeName = DEFAULT_STORE_NAME;
+  let faviconUrl = DEFAULT_FAVICON_PATH;
+  if (companyDomain) {
+    const namePart = companyDomain.split(".")[0] || "";
+    if (namePart) {
+      storeName =
+        namePart.charAt(0).toUpperCase() + namePart.slice(1) + STORE_SUFFIX;
+    }
+  }
+
+  try {
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    const res = await fetch(`${apiBaseUrl}${BRANDING_ENDPOINT}`, {
+      headers: {
+        [HEADER_COMPANY_DOMAIN]: companyDomain || "",
+      },
+      next: { revalidate: REVALIDATE_INTERVAL },
+    });
+    if (res.ok) {
+      const result = await res.json();
+      const branding = result?.data;
+      if (branding && typeof branding === "object" && branding.favicon_url) {
+        faviconUrl = branding.favicon_url;
+      }
+    }
+  } catch (err) {}
+
+  const descriptionText = getWelcomeDescription(storeName);
+
+  return {
+    metadataBase: metadataBaseUrl,
+    title: storeName,
+    description: descriptionText,
+    icons: {
+      icon: faviconUrl,
+    },
+    alternates: { canonical: "/" },
+    openGraph: {
+      title: storeName,
+      description: descriptionText,
+      type: OG_TYPE,
+      url: "/",
+      images: [
+        {
+          url: "/assets/landing/tm-622-screen-02.jpg",
+          width: 620,
+          height: 1262,
+          alt: storeName,
+        },
+      ],
+    },
+    twitter: {
+      card: TWITTER_CARD,
+      title: storeName,
+      description: descriptionText,
+      images: ["/assets/landing/tm-622-screen-02.jpg"],
+    },
+  };
+}
 
 // ── Must be dynamic: reads `headers()` on every request ─────────────────────
 export const dynamic = "force-dynamic";
@@ -132,5 +212,9 @@ export default async function RootPage() {
   }
 
   // ── Storefront / MainSite (e.g. acme.techsonance.co.in) ───────────────────
-  return <StorefrontHome />;
+  return (
+    <ShopLayout>
+      <StorefrontHome />
+    </ShopLayout>
+  );
 }

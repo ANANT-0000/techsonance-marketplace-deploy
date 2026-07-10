@@ -100,7 +100,7 @@ function DraggableScrollContainer({
 }
 
 export default function Home() {
-  const { getField, banners, categories, heroSlides, isLoading, cmsContent } =
+  const { getField, banners, categories, heroSlides, isLoading, cmsContent, hasError } =
     useHomepageData();
   const { themeData } = useThemeData();
 
@@ -129,7 +129,7 @@ export default function Home() {
       .finally(() => setProductsLoading(false));
   }, []);
 
-  if (!isLoading && !cmsContent) {
+  if (!isLoading && !cmsContent && !hasError) {
     return (
       <div className="fixed inset-0 z-[99999] min-h-screen flex items-center justify-center bg-gray-50 p-6">
         <div className="max-w-md w-full bg-white p-10 rounded-3xl shadow-sm border border-gray-100 text-center flex flex-col items-center">

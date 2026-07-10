@@ -115,7 +115,9 @@ export default function ForgotPasswordClient() {
                 if (diff <= 0) {
                     clearInterval(interval);
                     setTimeLeft('00:00');
-                    dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: FORGOT_PASSWORD_TEXT.ERR_OTP_EXPIRED });
+                    if (!state.isLockedOut) {
+                        dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: FORGOT_PASSWORD_TEXT.ERR_OTP_EXPIRED });
+                    }
                 } else {
                     const minutes = Math.floor(diff / 60000);
                     const seconds = Math.floor((diff % 60000) / 1000);
@@ -124,7 +126,7 @@ export default function ForgotPasswordClient() {
             }, 1000);
             return () => clearInterval(interval);
         }
-    }, [state.otpExpiryTime, state.step]);
+    }, [state.otpExpiryTime, state.step, state.isLockedOut]);
 
     const handleRequestOtp = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -114,7 +114,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
 
           <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
             {content.trustBadges.map((badge) => {
-              const Icon = TRUST_ICON_MAP[badge.icon];
+              const Icon = TRUST_ICON_MAP[badge.icon] ?? ShieldCheck;
 
               return (
                 <div key={badge.label} className="flex items-center gap-2">

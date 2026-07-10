@@ -194,14 +194,14 @@ function LandingPageCMSInner() {
             onClick={() => setActiveTab(TabKey.Content)}
             className={`flex items-center gap-2 pb-4 text-sm font-semibold transition-colors border-b-2 ${
               activeTab === TabKey.Content
-                ? "border-primary text-primary"
+                ? "border-blue-600 text-blue-600"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <FileText className="h-4 w-4" />
             Content Sections
             {state.contentDirtySections.size > 0 && (
-              <span className="h-2 w-2 rounded-full bg-primary" />
+              <span className="h-2 w-2 rounded-full bg-blue-600" />
             )}
           </button>
           <button
@@ -213,14 +213,14 @@ function LandingPageCMSInner() {
             onClick={() => setActiveTab(TabKey.Theme)}
             className={`flex items-center gap-2 pb-4 text-sm font-semibold transition-colors border-b-2 ${
               activeTab === TabKey.Theme
-                ? "border-primary text-primary"
+                ? "border-blue-600 text-blue-600"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <Paintbrush className="h-4 w-4" />
             Theme Colors
             {state.isThemeDirty && (
-              <span className="h-2 w-2 rounded-full bg-primary" />
+              <span className="h-2 w-2 rounded-full bg-blue-600" />
             )}
           </button>
         </div>

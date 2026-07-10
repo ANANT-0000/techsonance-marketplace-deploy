@@ -190,12 +190,14 @@ export function NavbarEditor({
                   placeholder="Label (e.g. Pricing)"
                   className="h-8 text-xs flex-1"
                 />
-                <UrlInput
-                  value={link.href}
-                  onChange={(val) => updateLink(i, { href: val })}
-                  placeholder="url"
-                  className="h-8 text-xs flex-1"
-                />
+                <div className="flex-1">
+                  <UrlInput
+                    value={link.href}
+                    onChange={(val) => updateLink(i, { href: val })}
+                    placeholder="url"
+                    className="h-8 text-xs"
+                  />
+                </div>
                 <Button
                   variant="ghost"
                   size="icon"
