@@ -9,6 +9,7 @@ export * from "./authText";
 export * from "./landingText";
 export * from "./sectionEditorEnums";
 export * from "./vendorText";
+export * from "./commonText";
 export const DEFAULT_LANG = "en";
 export const ENV_DEVELOPMENT = "development";
 export const ENV_PRODUCTION = "production";

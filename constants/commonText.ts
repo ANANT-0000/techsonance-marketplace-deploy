@@ -72,3 +72,9 @@ export const TICKET_LIST_TEXT = {
   ACTIVE_TICKETS_SUFFIX: ")",
   FILTER_STATUS: "Filter Status...",
 };
+
+export const STORE_NOT_AVAILABLE_TEXT = {
+  TITLE: "Store Not Available",
+  DESCRIPTION: "This store is currently being set up and has no content published yet. Please check back later.",
+};
+

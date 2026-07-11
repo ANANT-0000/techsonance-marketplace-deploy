@@ -304,3 +304,17 @@ export async function getLandingPageData() {
     return null;
   }
 }
+
+export async function fetchCompanyProfile() {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const res = await fetch(`${BASE_API_URL}/v1/company/profile`, {
+      headers: { "company-domain": companyDomain },
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    return null;
+  }
+}

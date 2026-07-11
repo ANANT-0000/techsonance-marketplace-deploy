@@ -17,7 +17,8 @@ import type { Metadata } from "next";
 // ── Landing page imports ────────────────────────────────────────────────────
 import LandingPage from "@/components/landing/LandingPage";
 import LandingPageSkeleton from "@/components/common/LandingPageSkeleton";
-import { getLandingPageData } from "@/utils/commonAPiClient";
+import StoreNotAvailable from "@/components/common/StoreNotAvailable";
+import { getLandingPageData, fetchCompanyProfile } from "@/utils/commonAPiClient";
 import { LANDING_METADATA } from "@/constants/landingText";
 import {
   OG_TYPE,
@@ -203,7 +204,7 @@ export default async function RootPage() {
   const isLanding = await shouldShowLandingPage();
 
   if (isLanding) {
-    // ── Landing page (e.g. marketplace.techsonance.co.in) ──────────────────
+    // ── Marketplace Main Landing Page (e.g. marketplace.techsonance.co.in) ──
     return (
       <Suspense fallback={<LandingPageSkeleton />}>
         <LandingPageContainer />
@@ -211,7 +212,23 @@ export default async function RootPage() {
     );
   }
 
-  // ── Storefront / MainSite (e.g. acme.techsonance.co.in) ───────────────────
+  // ── Vendor Storefront / MainSite (e.g. acme.techsonance.co.in) ────────────
+  const profile = await fetchCompanyProfile();
+
+  if (!profile || profile.siteStatus === 'not_started') {
+    return <StoreNotAvailable />;
+  }
+
+  // If the vendor has published a landing page, show it.
+  if (profile.siteData?.isPublished) {
+    return (
+      <Suspense fallback={<LandingPageSkeleton />}>
+        <LandingPageContainer />
+      </Suspense>
+    );
+  }
+
+  // Otherwise, if they have products, show the storefront home.
   return (
     <ShopLayout>
       <StorefrontHome />
