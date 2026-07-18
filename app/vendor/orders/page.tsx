@@ -15,9 +15,12 @@ import {
   ReturnType,
   UserStatus,
 } from "@/utils/Types";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { UiText } from "@/constants/ui-text";
+import { useVendorTour } from "@/components/vendor/VendorTourProvider";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { useState } from "react";
 
 interface OrderAddressType {
   name: string;
@@ -160,16 +163,16 @@ const getPaymentBadge = (method: string, status: string) => {
 };
 
 export enum ActionType {
-  SET_LOADING = 'SET_LOADING',
-  SET_ORDER_STATUS = 'SET_ORDER_STATUS',
-  SET_SORT_BY = 'SET_SORT_BY',
-  SET_ORDERS = 'SET_ORDERS',
-  SET_PAGINATION = 'SET_PAGINATION',
-  SET_CURRENT_PAGE = 'SET_CURRENT_PAGE',
-  TOGGLE_ORDER_SELECTION = 'TOGGLE_ORDER_SELECTION',
-  SET_ALL_ORDERS_SELECTION = 'SET_ALL_ORDERS_SELECTION',
-  SET_IS_DOWNLOADING = 'SET_IS_DOWNLOADING',
-  SET_ERROR = 'SET_ERROR',
+  SET_LOADING = "SET_LOADING",
+  SET_ORDER_STATUS = "SET_ORDER_STATUS",
+  SET_SORT_BY = "SET_SORT_BY",
+  SET_ORDERS = "SET_ORDERS",
+  SET_PAGINATION = "SET_PAGINATION",
+  SET_CURRENT_PAGE = "SET_CURRENT_PAGE",
+  TOGGLE_ORDER_SELECTION = "TOGGLE_ORDER_SELECTION",
+  SET_ALL_ORDERS_SELECTION = "SET_ALL_ORDERS_SELECTION",
+  SET_IS_DOWNLOADING = "SET_IS_DOWNLOADING",
+  SET_ERROR = "SET_ERROR",
 }
 
 interface State {
@@ -212,31 +215,57 @@ type Action =
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case ActionType.SET_LOADING: return { ...state, loading: action.payload };
-    case ActionType.SET_ORDER_STATUS: return { ...state, orderStatus: action.payload, currentPage: 1, selectedOrders: [] };
-    case ActionType.SET_SORT_BY: return { ...state, sortBy: action.payload, currentPage: 1, selectedOrders: [] };
-    case ActionType.SET_ORDERS: return { ...state, orders: action.payload };
-    case ActionType.SET_PAGINATION: return { ...state, totalPages: action.payload.totalPages };
-    case ActionType.SET_CURRENT_PAGE: return { ...state, currentPage: action.payload, selectedOrders: [] };
+    case ActionType.SET_LOADING:
+      return { ...state, loading: action.payload };
+    case ActionType.SET_ORDER_STATUS:
+      return {
+        ...state,
+        orderStatus: action.payload,
+        currentPage: 1,
+        selectedOrders: [],
+      };
+    case ActionType.SET_SORT_BY:
+      return {
+        ...state,
+        sortBy: action.payload,
+        currentPage: 1,
+        selectedOrders: [],
+      };
+    case ActionType.SET_ORDERS:
+      return { ...state, orders: action.payload };
+    case ActionType.SET_PAGINATION:
+      return { ...state, totalPages: action.payload.totalPages };
+    case ActionType.SET_CURRENT_PAGE:
+      return { ...state, currentPage: action.payload, selectedOrders: [] };
     case ActionType.TOGGLE_ORDER_SELECTION: {
       const isSelected = state.selectedOrders.includes(action.payload);
       return {
         ...state,
         selectedOrders: isSelected
-          ? state.selectedOrders.filter(id => id !== action.payload)
-          : [...state.selectedOrders, action.payload]
+          ? state.selectedOrders.filter((id) => id !== action.payload)
+          : [...state.selectedOrders, action.payload],
       };
     }
-    case ActionType.SET_ALL_ORDERS_SELECTION: return { ...state, selectedOrders: action.payload };
-    case ActionType.SET_IS_DOWNLOADING: return { ...state, isDownloading: action.payload };
-    case ActionType.SET_ERROR: return { ...state, error: action.payload };
-    default: return state;
+    case ActionType.SET_ALL_ORDERS_SELECTION:
+      return { ...state, selectedOrders: action.payload };
+    case ActionType.SET_IS_DOWNLOADING:
+      return { ...state, isDownloading: action.payload };
+    case ActionType.SET_ERROR:
+      return { ...state, error: action.payload };
+    default:
+      return state;
   }
 }
 
 export default function OrdersPage() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const offset = (state.currentPage - 1) * state.itemsPerPage;
 
   const orderTableHeader = [
@@ -252,10 +281,10 @@ export default function OrdersPage() {
   ];
 
   const token = authToken();
-  
+
   const getOrderList = useCallback(async () => {
     if (!token) {
-      redirect("/auth/vendorLogin");
+      router.push("/auth/vendorLogin");
       return;
     }
     dispatch({ type: ActionType.SET_LOADING, payload: true });
@@ -268,11 +297,24 @@ export default function OrdersPage() {
       state.sortBy,
     )
       .then((res) => {
-        dispatch({ type: ActionType.SET_ORDERS, payload: res.data.orders || [] });
-        dispatch({ type: ActionType.SET_PAGINATION, payload: { totalPages: Math.ceil(res.data.totalCount / state.itemsPerPage) || 1 } });
+        dispatch({
+          type: ActionType.SET_ORDERS,
+          payload: res.data.orders || [],
+        });
+
+        dispatch({
+          type: ActionType.SET_PAGINATION,
+          payload: {
+            totalPages:
+              Math.ceil(res.data.totalCount / state.itemsPerPage) || 1,
+          },
+        });
       })
       .catch((err) => {
-        dispatch({ type: ActionType.SET_ERROR, payload: err?.message || "Failed to load orders" });
+        dispatch({
+          type: ActionType.SET_ERROR,
+          payload: err?.message || "Failed to load orders",
+        });
         dispatch({ type: ActionType.SET_ORDERS, payload: [] });
       })
       .finally(() => {
@@ -283,10 +325,26 @@ export default function OrdersPage() {
   useEffect(() => {
     getOrderList();
   }, [getOrderList]);
+  
+  const { startVendorTour } = useVendorTour();
+  const user = useAppSelector((state) => state.auth.user) as import("@/utils/Types").VendorUser | null;
+
+  useEffect(() => {
+    if (user && user.preferences && Array.isArray(user.preferences.completed_tours)) {
+      if (!user.preferences.completed_tours.includes("orders")) {
+        setTimeout(() => startVendorTour("orders"), 500);
+      }
+    } else if (user && !user.preferences) {
+      setTimeout(() => startVendorTour("orders"), 500);
+    }
+  }, [user, startVendorTour]);
 
   const toggleAllOrders = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked && state.orders) {
-      dispatch({ type: ActionType.SET_ALL_ORDERS_SELECTION, payload: state.orders.map((o) => o.id) });
+      dispatch({
+        type: ActionType.SET_ALL_ORDERS_SELECTION,
+        payload: state.orders.map((o) => o.id),
+      });
     } else {
       dispatch({ type: ActionType.SET_ALL_ORDERS_SELECTION, payload: [] });
     }
@@ -297,7 +355,10 @@ export default function OrdersPage() {
     dispatch({ type: ActionType.SET_IS_DOWNLOADING, payload: true });
 
     try {
-      const res = await fetchBulkInvoiceUrls(state.selectedOrders, token as string);
+      const res = await fetchBulkInvoiceUrls(
+        state.selectedOrders,
+        token as string,
+      );
       const invoices = res.data;
 
       if (!invoices || invoices.length === 0) {
@@ -329,6 +390,14 @@ export default function OrdersPage() {
       dispatch({ type: ActionType.SET_IS_DOWNLOADING, payload: false });
     }
   };
+
+  if (!mounted) {
+    return (
+      <main className="w-full px-4 py-8 min-h-screen">
+        <TableRowSkeleton columns={9} rows={5} />
+      </main>
+    );
+  }
 
   return (
     <main className="w-full px-1 min-h-screen max-h-screen overflow-y-scroll">
@@ -370,7 +439,12 @@ export default function OrdersPage() {
             name=""
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
             id=""
-            onChange={(e) => dispatch({ type: ActionType.SET_ORDER_STATUS, payload: e.target.value as OrderStatusType })}
+            onChange={(e) =>
+              dispatch({
+                type: ActionType.SET_ORDER_STATUS,
+                payload: e.target.value as OrderStatusType,
+              })
+            }
             value={state.orderStatus}
           >
             <option value="">{UiText.ORDERS.ALL}</option>
@@ -390,7 +464,12 @@ export default function OrdersPage() {
           <select
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
             value={state.sortBy}
-            onChange={(e) => dispatch({ type: ActionType.SET_SORT_BY, payload: e.target.value })}
+            onChange={(e) =>
+              dispatch({
+                type: ActionType.SET_SORT_BY,
+                payload: e.target.value,
+              })
+            }
             name="sort_by"
           >
             <option value="desc">{UiText.ORDERS.NEWEST_FIRST}</option>
@@ -399,7 +478,7 @@ export default function OrdersPage() {
         </span>
       </div>
 
-      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
+      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white" id="tour-orders-table">
         <table className="w-full table-auto min-w-[900px] border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 text-left">
@@ -435,7 +514,9 @@ export default function OrdersPage() {
                   colSpan={10}
                   className="py-16 text-center text-theme-body-sm"
                 >
-                  <p className="text-red-500 font-semibold mb-3">⚠️ {state.error}</p>
+                  <p className="text-red-500 font-semibold mb-3">
+                    ⚠️ {state.error}
+                  </p>
                   <button
                     onClick={() => getOrderList()}
                     className="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-xl transition-all shadow-sm font-medium cursor-pointer"
@@ -456,7 +537,7 @@ export default function OrdersPage() {
               </tr>
             ) : (
               state.orders &&
-              state.orders?.map((item) => (
+              state.orders?.map((item, idx) => (
                 <tr
                   key={item.id}
                   className="hover:bg-gray-50 transition-colors group"
@@ -466,7 +547,12 @@ export default function OrdersPage() {
                       type="checkbox"
                       className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
                       checked={state.selectedOrders.includes(item.id)}
-                      onChange={() => dispatch({ type: ActionType.TOGGLE_ORDER_SELECTION, payload: item.id })}
+                      onChange={() =>
+                        dispatch({
+                          type: ActionType.TOGGLE_ORDER_SELECTION,
+                          payload: item.id,
+                        })
+                      }
                     />
                   </td>
 
@@ -534,7 +620,7 @@ export default function OrdersPage() {
                   </td>
 
                   {/* ACTIONS */}
-                  <td className="p-4">
+                  <td className="p-4" id={idx === 0 ? "tour-order-status-action" : undefined}>
                     <Link
                       href={`orders/${item.id}`}
                       className="text-theme-caption font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
@@ -550,7 +636,12 @@ export default function OrdersPage() {
       </div>
       <span className="flex justify-end mt-4">
         <Pagination
-          setCount={(val) => dispatch({ type: ActionType.SET_CURRENT_PAGE, payload: typeof val === 'function' ? val(state.currentPage) : val })}
+          setCount={(val) =>
+            dispatch({
+              type: ActionType.SET_CURRENT_PAGE,
+              payload: typeof val === "function" ? val(state.currentPage) : val,
+            })
+          }
           count={state.currentPage}
           totalPages={state.totalPages}
           style="relative right-0 w-54"

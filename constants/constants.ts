@@ -5,6 +5,7 @@ export const VENDOR_AUTH_URL = process.env.NEXT_PUBLIC_VENDOR_AUTH_URL;
 export const CUSTOMER_AUTH_URL = process.env.NEXT_PUBLIC_CUSTOMER_AUTH_URL;
 export const ADMIN_AUTH_URL = process.env.NEXT_PUBLIC_ADMIN_AUTH_URL;
 export const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL;
+export const PLATFORM_BASE_DOMAIN = process.env.NEXT_PUBLIC_PLATFORM_BASE_DOMAIN || "platform.com";
 
 export const isClient = typeof window !== "undefined";
 export const USER_STORAGE_KEY = "user";

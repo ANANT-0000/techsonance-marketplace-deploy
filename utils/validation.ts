@@ -1,21 +1,93 @@
 import * as z from "zod";
 import { BannerPlacement, ProductStatus, PromotionType } from "./Types";
-import { COMPLIANCE_REGEX } from "@/app/auth/vendorRegister/page";
+// Removed COMPLIANCE_REGEX import
 import {
   BRANDING_DEFAULT_PRIMARY_COLOR,
   BRANDING_DEFAULT_BACKGROUND_COLOR,
   BRANDING_DEFAULT_TEXT_COLOR,
   BRANDING_DEFAULT_WHITE_COLOR,
+  VENDOR_REGISTER_TEXT,
 } from "@/constants";
 export const passwordValidation = new RegExp(
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*\-+]).{8,}$/,
 );
+
+export const PASSWORD_REQUIREMENTS_REGEX = {
+  LOWERCASE: /[a-z]/,
+  UPPERCASE: /[A-Z]/,
+  NUMBER: /\d/,
+  SPECIAL_CHAR: /[^a-zA-Z\d]/,
+};
+
 export const passwordValidationSchema = z
   .string()
   .regex(
     passwordValidation,
     "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character",
   );
+
+export const COMPLIANCE_REGEX: Record<
+  string,
+  { pattern: RegExp; message: string }
+> = {
+  // India
+  gstin: {
+    pattern: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/,
+    message:
+      "Invalid GSTIN. Format: 2-digit state code + 10-char PAN + 1-char entity + Z + 1-char checksum",
+  },
+  pan: {
+    pattern: /^[A-Z]{5}[0-9]{4}[A-Z]$/,
+    message:
+      "Invalid PAN. Format: 5 uppercase letters + 4 digits + 1 uppercase letter",
+  },
+  fssai: {
+    pattern: /^[0-9]{14}$/,
+    message: "FSSAI license must be exactly 14 digits",
+  },
+  aadhaar: {
+    pattern: /^\d{12}$/,
+    message: "Aadhaar must be exactly 12 digits",
+  },
+  personal_pan: {
+    pattern: /^[A-Z]{5}[0-9]{4}[A-Z]$/,
+    message: "Invalid Personal PAN",
+  },
+  // Bangladesh
+  bin: {
+    pattern: /^[0-9]{9}$/,
+    message: "Invalid BIN. Must be exactly 9 digits",
+  },
+  tin: {
+    pattern: /^[0-9]{12}$/,
+    message: "Invalid TIN. Must be exactly 12 digits",
+  },
+  // Sri Lanka
+  tin_lk: {
+    pattern: /^[0-9]{9}([0-9]{3})?$/,
+    message: "Invalid TIN. Must be 9 or 12 digits",
+  },
+  vat_reg: {
+    pattern: /^[0-9]{9}[VX]$/,
+    message: "Invalid VAT number. Format: 9 digits followed by V or X",
+  },
+  nid_bd: {
+    pattern: /^(\d{10}|\d{13}|\d{17})$/,
+    message: "NID must be 10, 13, or 17 digits",
+  },
+  nic_lk: {
+    pattern: /^(\d{9}[VXvx]|\d{12})$/,
+    message: "Invalid NIC format",
+  },
+  emirates_id: {
+    pattern: /^\d{15}$/,
+    message: "Emirates ID must be exactly 15 digits",
+  },
+  iqama_sa: {
+    pattern: /^\d{10}$/,
+    message: "Iqama / National ID must be exactly 10 digits",
+  },
+};
 
 // ─── Single compliance entry ──────────────────────────────────────────────────
 const complianceEntrySchema = z.object({
@@ -27,61 +99,177 @@ const complianceEntrySchema = z.object({
 
 const maxDigits = 3; // Change this number to your limit
 // ─── Main schema ─────────────────────────────────────────────────────────────
-export const vendorRegisterSchema = z.object({
-  // Step 0 — Organization
-  company_name: z
-    .string()
-    .min(2, "Company name must be at least 2 characters")
-    .max(100, "Company name too long")
-    .regex(/^[a-zA-Z0-9\s]+$/, "Only letters, numbers, and spaces are allowed")
-    .refine(
-      (val) => {
-        const digitCount = (val.match(/\d/g) || []).length;
-        return digitCount <= maxDigits;
-      },
-      {
-        message: `Company name can contain at most ${maxDigits} numbers`,
-      },
-    ),
-  store_owner_first_name: z
-    .string()
-    .min(2, "First name must be at least 2 characters")
-    .max(50, "First name too long")
-    .regex(/^[A-Za-z\s'-]+$/, "First name can only contain letters"),
-  store_owner_last_name: z
-    .string()
-    .min(2, "Last name must be at least 2 characters")
-    .max(50, "Last name too long")
-    .regex(/^[A-Za-z\s'-]+$/, "Last name can only contain letters"),
-  email: z.email("Enter a valid email address").max(254, "Email too long"),
-  country_code: z.string().min(1, "Please select a country code"),
-  phone_number: z
-    .string()
-    .min(7, "Phone number too short")
-    .max(15, "Phone number too long")
-    .regex(
-      /^[0-9\-\s\+\(\)]+$/,
-      "Enter a valid phone number (digits, spaces, hyphens, +, parentheses)",
-    ),
-  category: z.string().min(1, "Please select a business category"),
-  company_structure: z.string().min(1, "Please select a company structure"),
+export const vendorRegisterSchema = z
+  .object({
+    // Step 0 — Organization
+    company_name: z
+      .string()
+      .trim()
+      .min(2, "Company name must be at least 2 characters")
+      .max(100, "Company name too long")
+      .regex(
+        /^[a-zA-Z0-9\s&.,'-]+$/,
+        "Only letters, numbers, spaces, and basic punctuation are allowed",
+      )
+      .refine((val) => !/(.)\1{2,}/.test(val), {
+        message: "Consecutive repeating characters are not allowed",
+      })
+      .refine(
+        (val) => {
+          const digitCount = (val.match(/\d/g) || []).length;
+          return digitCount <= maxDigits;
+        },
+        {
+          message: `Company name can contain at most ${maxDigits} numbers`,
+        },
+      ),
+    store_owner_first_name: z
+      .string()
+      .trim()
+      .min(2, "First name must be at least 2 characters")
+      .max(50, "First name too long")
+      .regex(
+        /^[A-Za-z\s'-]+$/,
+        "First name can only contain letters, spaces, hyphens and apostrophes",
+      )
+      .refine((val) => !/(.)\1{2,}/.test(val.toLowerCase()), {
+        message: "Consecutive repeating characters are not allowed",
+      }),
+    store_owner_last_name: z
+      .string()
+      .trim()
+      .min(2, "Last name must be at least 2 characters")
+      .max(50, "Last name too long")
+      .regex(
+        /^[A-Za-z\s'-]+$/,
+        "Last name can only contain letters, spaces, hyphens and apostrophes",
+      )
+      .refine((val) => !/(.)\1{2,}/.test(val.toLowerCase()), {
+        message: "Consecutive repeating characters are not allowed",
+      }),
+    email: z
+      .string()
+      .trim()
+      .email("Enter a valid email address")
+      .max(254, "Email too long"),
+    country_code: z.string().min(1, "Please select a country code"),
+    phone_number: z
+      .string()
+      .min(7, "Phone number too short")
+      .max(15, "Phone number too long")
+      .regex(
+        /^[0-9\-\s\+\(\)]+$/,
+        "Enter a valid phone number (digits, spaces, hyphens, +, parentheses)",
+      ),
+    category: z.string().min(1, "Please select a business category"),
+    company_structure: z.string().min(1, "Please select a company structure"),
+    password: z
+      .string()
+      .min(8, "Password too short")
+      .regex(
+        passwordValidation,
+        "Password must include uppercase, lowercase, number, and special character",
+      ),
+    confirm_password: z.string(),
+    plan_id: z.string().min(1, "Please select a subscription plan"),
+    // Step 1 - Domain
+    domain_type: z.enum(["subdomain", "custom"]).default("subdomain"),
+    company_domain: z
+      .string()
+      .min(3, "Domain must be at least 3 characters")
+      .max(255, "Domain too long"),
 
-  // Step 1 — Domain
-  company_domain: z
-    .string()
-    .min(3, "Domain must be at least 3 characters")
-    .max(63, "Domain too long (max 63 chars)")
-    .regex(
-      /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/,
-      "Domain: lowercase letters and numbers only, no leading/trailing hyphens",
-    ),
-
-  // Step 2 — Compliance (array; individual field_value regex validated at step level)
-  company_compliance: z.array(complianceEntrySchema).default([]),
-});
+    // Step 2 — Compliance (array; individual field_value regex validated at step level)
+    company_compliance: z.array(complianceEntrySchema).default([]),
+  })
+  .refine((data) => data.password === data.confirm_password, {
+    error: "Passwords do not match",
+    path: ["confirm_password"],
+  })
+  .superRefine((data, ctx) => {
+    if (data.domain_type === "subdomain") {
+      const slug = data.company_domain || "";
+      if (slug.length < 3) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["company_domain"],
+          message: "Domain must be at least 3 characters",
+        });
+      }
+      if (slug.length > 63) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["company_domain"],
+          message: "Domain too long (max 63 chars)",
+        });
+      }
+      if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]{3,}$/.test(slug)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["company_domain"],
+          message:
+            "Domain: lowercase letters and numbers only, no leading/trailing hyphens",
+        });
+      }
+    } else if (data.domain_type === "custom") {
+      const custom = data.company_domain || "";
+      if (!custom) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["company_domain"],
+          message: "Please enter your custom domain",
+        });
+      } else if (
+        !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i.test(
+          custom,
+        )
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["company_domain"],
+          message: "Domain must include a valid extension like .com or .co.in",
+        });
+      }
+    }
+  });
 
 export type VendorRegisterSchema = z.infer<typeof vendorRegisterSchema>;
 
+export const SUBDOMAIN_RULES = [
+  {
+    text: VENDOR_REGISTER_TEXT.DOMAIN_RULE_SUB_1,
+    isValid: (val: string) => /^[a-z0-9-]+$/.test(val) && !/[A-Z]/.test(val),
+  },
+  {
+    text: VENDOR_REGISTER_TEXT.DOMAIN_RULE_SUB_2,
+    isValid: (val: string) =>
+      val.length > 0 && !val.startsWith("-") && !val.endsWith("-"),
+  },
+  {
+    text: VENDOR_REGISTER_TEXT.DOMAIN_RULE_SUB_3,
+    isValid: (val: string) => val.length >= 3 && val.length <= 63,
+  },
+];
+
+export const CUSTOM_DOMAIN_RULES = [
+  {
+    text: VENDOR_REGISTER_TEXT.DOMAIN_RULE_CUS_1,
+    isValid: (val: string) =>
+      val.length > 0 && !/^https?:\/\//i.test(val) && !/^www\./i.test(val),
+  },
+  {
+    text: VENDOR_REGISTER_TEXT.DOMAIN_RULE_CUS_2,
+    isValid: (val: string) =>
+      /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i.test(
+        val,
+      ),
+  },
+  {
+    text: VENDOR_REGISTER_TEXT.DOMAIN_RULE_CUS_3,
+    isValid: (val: string) =>
+      val.length > 0 && !/\/$/.test(val) && val.split("/").length === 1,
+  },
+];
 // ─── Step-level compliance validator (called in nextStep for step 2) ──────────
 // Returns a map of field_key → error message string (empty = valid)
 export function validateComplianceFields(

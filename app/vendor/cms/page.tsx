@@ -12,8 +12,12 @@ import {
   Image as ImageIcon,
   X,
 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
+import { useVendorTour } from "@/components/vendor/VendorTourProvider";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { VendorUser } from "@/utils/Types";
 import { BrandingTab } from "@/components/vendor/BrandingTab";
 import {
   HeroLayout,
@@ -194,6 +198,25 @@ export default function CmsManagementPage({
   const { page, lang, loading, saving, msg, data } = state;
 
   const [selectedHotspotId, setSelectedHotspotId] = useState<any>(null);
+  
+  const { startVendorTour } = useVendorTour();
+  const user = useAppSelector((state) => state.auth.user) as VendorUser | undefined;
+
+  useEffect(() => {
+    if (user && user.preferences && Array.isArray(user.preferences.completed_tours)) {
+      if (!user.preferences.completed_tours.includes("cms")) {
+        const timer = setTimeout(() => {
+          startVendorTour("cms");
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+    } else if (user && !user.preferences) {
+      const timer = setTimeout(() => {
+        startVendorTour("cms");
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [user, startVendorTour]);
 
   const load = async () => {
     if (page === PageType.THEME) {
@@ -337,7 +360,11 @@ export default function CmsManagementPage({
   };
 
   return (
-    <div className=" flex-1 bg-gray-50 p-6 lg:p-10 min-h-screen max-h-screen overflow-y-auto">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex-1 min-w-0 bg-gray-50/50 p-6 lg:p-10 min-h-screen max-h-screen overflow-y-scroll overflow-x-hidden"
+    >
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-theme-h4 font-bold text-gray-900">
@@ -362,7 +389,7 @@ export default function CmsManagementPage({
         </button>
       </div>
       {/* Tab + Lang selectors */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 mb-8 flex flex-col lg:flex-row gap-4">
+      <div id="tour-cms-tabs" className="bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl shadow-sm p-5 mb-8 flex flex-col lg:flex-row gap-6 sticky top-0 z-10">
         <div className="flex-1">
           <p className="text-theme-caption font-bold text-gray-400 uppercase mb-2">
             {labels.PAGE_SECTION}
@@ -382,7 +409,7 @@ export default function CmsManagementPage({
           </div>
         </div>
         {page !== PageType.THEME && page !== PageType.NAVBAR && (
-          <div>
+          <div id="tour-cms-lang">
             <p className="text-theme-caption font-bold text-gray-400 uppercase mb-2">
               {labels.LANGUAGE}
             </p>
@@ -419,101 +446,125 @@ export default function CmsManagementPage({
         </div>
       )}
 
-      {loading ? (
-        <div className="bg-white rounded-2xl border p-20 flex items-center justify-center">
-          <Loader2 size={36} className="animate-spin text-purple-600" />
-        </div>
-      ) : page === PageType.THEME ? (
-        <div className="space-y-6">
-          <BrandingTab />
-        </div>
-      ) : page === PageType.NAVBAR ? (
-        /* Relational navbar tab — self-fetching, manages its own saves.
-           Rendered outside the legacy CMS form so the global Save button
-           doesn't attempt a JSON-blob write for the navbar page. */
-        <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300">
-          <CmsNavbarTab />
-        </div>
-      ) : (
-        <form
-          onSubmit={save}
-          className="space-y-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-h-[70vh] overflow-y-auto pr-2"
-        >
-          {/* HOME */}
-          {page === PageType.HOME && (
-            <CmsHomeTab
-              data={data}
-              set={set}
-              removeItem={removeItem}
-              addItem={addItem}
-              updateItem={updateItem}
-              makeAutoSave={makeAutoSave}
-              handleImageClick={handleImageClick}
-              selectedHotspotId={selectedHotspotId}
-              setSelectedHotspotId={setSelectedHotspotId}
-            />
-          )}
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="bg-white rounded-2xl border p-20 flex items-center justify-center"
+          >
+            <Loader2 size={36} className="animate-spin text-purple-600" />
+          </motion.div>
+        ) : page === PageType.THEME ? (
+          <motion.div
+            key="theme"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-6 pb-20"
+          >
+            <BrandingTab />
+          </motion.div>
+        ) : page === PageType.NAVBAR ? (
+          /* Relational navbar tab — self-fetching, manages its own saves.
+             Rendered outside the legacy CMS form so the global Save button
+             doesn't attempt a JSON-blob write for the navbar page. */
+          <motion.div
+            key="navbar"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-6 pb-20"
+          >
+            <CmsNavbarTab />
+          </motion.div>
+        ) : (
+          <motion.form
+            key="form"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            onSubmit={save}
+            className="space-y-8 pb-20"
+          >
+            {/* HOME */}
+            {page === PageType.HOME && (
+              <CmsHomeTab
+                data={data}
+                set={set}
+                removeItem={removeItem}
+                addItem={addItem}
+                updateItem={updateItem}
+                makeAutoSave={makeAutoSave}
+                handleImageClick={handleImageClick}
+                selectedHotspotId={selectedHotspotId}
+                setSelectedHotspotId={setSelectedHotspotId}
+              />
+            )}
 
-          {/* NAVBAR — handled by the branch above, never reaches here */}
+            {/* NAVBAR — handled by the branch above, never reaches here */}
 
-          {/* FOOTER */}
-          {page === PageType.FOOTER && (
-            <CmsFooterTab data={data} addItem={addItem} set={set} />
-          )}
+            {/* FOOTER */}
+            {page === PageType.FOOTER && (
+              <CmsFooterTab data={data} addItem={addItem} set={set} />
+            )}
 
-          {/* ABOUT */}
-          {page === PageType.ABOUT && (
-            <CmsAboutTab
-              data={data}
-              addItem={addItem}
-              set={set}
-              removeItem={removeItem}
-              updateItem={updateItem}
-              makeAutoSave={makeAutoSave}
-            />
-          )}
+            {/* ABOUT */}
+            {page === PageType.ABOUT && (
+              <CmsAboutTab
+                data={data}
+                addItem={addItem}
+                set={set}
+                removeItem={removeItem}
+                updateItem={updateItem}
+                makeAutoSave={makeAutoSave}
+              />
+            )}
 
-          {/* CONTACT */}
-          {page === PageType.CONTACT && (
-            <CmsContactTab
-              data={data}
-              addItem={addItem}
-              set={set}
-              removeItem={removeItem}
-              updateItem={updateItem}
-              makeAutoSave={makeAutoSave}
-            />
-          )}
+            {/* CONTACT */}
+            {page === PageType.CONTACT && (
+              <CmsContactTab
+                data={data}
+                addItem={addItem}
+                set={set}
+                removeItem={removeItem}
+                updateItem={updateItem}
+                makeAutoSave={makeAutoSave}
+              />
+            )}
 
-          {/* storefront */}
-          {page === PageType.STORE && (
-            <CmsStoreTab set={set} data={data} makeAutoSave={makeAutoSave} />
-          )}
+            {/* storefront */}
+            {page === PageType.STORE && (
+              <CmsStoreTab set={set} data={data} makeAutoSave={makeAutoSave} />
+            )}
 
-          {/* Footer Actions */}
-          <div className="flex justify-end gap-4 bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-            <button
-              type="button"
-              onClick={load}
-              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-theme-caption font-bold uppercase rounded-xl transition-all"
-            >
-              {labels.RESET}
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-theme-caption font-bold uppercase rounded-xl shadow-md disabled:opacity-50"
-            >
-              {saving ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <Save size={14} />
-              )}
-              {saving ? labels.SAVING : labels.SAVE_CONFIGURATION}
-            </button>
-          </div>
-        </form>
-      )}
-    </div>
+            {/* Footer Actions */}
+            <div className="flex justify-end gap-4 bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <button
+                type="button"
+                onClick={load}
+                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-theme-caption font-bold uppercase rounded-xl transition-all"
+              >
+                {labels.RESET}
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-theme-caption font-bold uppercase rounded-xl shadow-md disabled:opacity-50"
+              >
+                {saving ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Save size={14} />
+                )}
+                {saving ? labels.SAVING : labels.SAVE_CONFIGURATION}
+              </button>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

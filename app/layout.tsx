@@ -24,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang={DEFAULT_LANG}>
       <head>
+        <link rel="icon" href="/favicon.ico" type="image/png" sizes="any" />
         {process.env.NODE_ENV === ENV_DEVELOPMENT && (
           <Script
             src={REACT_SCAN_SCRIPT_URL}

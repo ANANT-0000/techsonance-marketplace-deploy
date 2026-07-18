@@ -70,6 +70,13 @@ export const VENDOR_PROFILE_TEXT = {
   },
 };
 
+export const PROFILE_REMINDER_BANNER_TEXT = {
+  TITLE: "Complete Your Vendor Profile",
+  DESCRIPTION: "You're one step away from accepting orders. Please verify your business identity and upload required compliance documents.",
+  BTN_VERIFY: "Verify Now",
+  BTN_DISMISS: "Dismiss",
+};
+
 export const BUSINESS_PROFILE_TEXT = {
   TITLE: "Business Profile",
   LABELS: {
@@ -2125,4 +2132,53 @@ export const PAYMENT_PAGE_STRINGS = {
   SUCCESS_MSG: "Payment configuration vaulted successfully.",
   ERROR_FALLBACK: "Failed to update payment configuration",
   SAVE_BUTTON: "Save Configuration",
+};
+export const VENDOR_BILLING_TEXT = {
+  PAGE_TITLE: "Billing & Subscription",
+  PAGE_SUBTITLE: "Manage your current plan, check usage, and explore powerful features.",
+  ALERTS: {
+    FETCH_ERROR: "Failed to load subscription details.",
+    LOGIN_REQUIRED: "You must be logged in to upgrade.",
+    UPGRADE_SUCCESS: "Successfully switched to {plan}!",
+    UPGRADE_ERROR: "Failed to upgrade plan.",
+    UNEXPECTED_ERROR: "An unexpected error occurred during upgrade.",
+  },
+  CURRENT_PLAN: {
+    TRIAL_BADGE: "Free Trial",
+    EXPIRED_BADGE: "Expired",
+    STATUS_PREFIX: "Current subscription status: ",
+    TRIAL_ENDING: "Trial Ending Soon",
+    ACTION_REQUIRED: "Action Required",
+    DAYS_REMAINING: "You have {days} day(s) remaining on your current {type}. Upgrade to avoid interruption.",
+    NEEDS_ATTENTION: "Your plan needs attention.",
+    NO_SUBSCRIPTION: "No active subscription found. Please select a plan below.",
+  },
+  AVAILABLE_PLANS: {
+    SECTION_TITLE: "Choose the Right Plan for You",
+    SECTION_SUBTITLE: "Scale your business with transparent pricing and powerful tools designed for growth.",
+    MOST_POPULAR: "Most Popular",
+    CURRENT_PLAN: "Current Plan",
+    PER_MONTH: "/month",
+    UPGRADING: "Upgrading...",
+    CHOOSE_PLAN: "Choose",
+    DEFAULT_DESC: "The perfect plan to get started.",
+  },
+  EMPTY_STATE: {
+    TITLE: "No Plans Available",
+    MESSAGE: "There are currently no subscription plans available to choose from. Please check back later or contact support.",
+  },
+  MODAL: {
+    TITLE: "Confirm Plan Change",
+    DESC_PREFIX: "You are about to switch to the",
+    DESC_SUFFIX: "plan.",
+    NEW_PRICE: "New Monthly Price:",
+    WARNING: "By confirming, your account features and limits will be updated immediately to match the new plan.",
+    CANCEL: "Cancel",
+    CONFIRM: "Confirm & Upgrade",
+    PROCESSING: "Processing...",
+  },
+  FORMATTING: {
+    CUSTOM: "Custom",
+    FREE: "Free",
+  }
 };

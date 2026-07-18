@@ -395,8 +395,10 @@ export interface VendorUser {
   store_name: string;
   category: string;
   vendor_status: string;
+  is_verified?: boolean;
   joined_at: Date;
   password_change_required?: boolean;
+  preferences?: { completed_tours: string[] };
 }
 
 export interface User {
@@ -2091,4 +2093,26 @@ export enum FeatureType {
   BOOLEAN = "boolean",
   NUMBER = "number",
   TEXT = "text",
+}
+export enum BannerUrgency {
+  INFO = "info",
+  WARNING = "warning",
+  DANGER = "danger",
+}
+
+export interface VendorSubscriptionStatus {
+  id: string;
+  company_id: string;
+  status: string; // from SubscriptionStatus enum
+  plan_name: string;
+  plan_display_name: string;
+  capabilities: Record<string, unknown>;
+  days_remaining: number | null;
+  trial_ends_at: string | null;
+  is_trial: boolean;
+  is_expired: boolean;
+  is_active: boolean;
+  in_grace_period: boolean;
+  show_banner: boolean;
+  banner_urgency: BannerUrgency;
 }

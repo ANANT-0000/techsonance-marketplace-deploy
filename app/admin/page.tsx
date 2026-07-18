@@ -96,7 +96,7 @@ export default function AdminDashboardPage() {
 
   return (
     <>
-      <main className="w-full px-2 lg:px-4  mx-auto pb-12 mt-6">
+      <main className="w-full min-h-screen max-h-screen overflow-y-scroll px-2 lg:px-4  mx-auto pb-12 mt-6">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col hover:border-gray-300 transition-colors group">

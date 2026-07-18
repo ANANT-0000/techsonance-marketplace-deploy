@@ -16,6 +16,7 @@ import { COUNTRIES } from "@/constants";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { COMPLIANCE_TEXT } from "@/constants/vendorText";
+import { formatDateReadable } from "@/lib/utils";
 
 // ─── Types inferred from schema ───────────────────────────────────────────────
 
@@ -127,15 +128,6 @@ function isPdf(url: string) {
 }
 function isImage(url: string) {
   return /\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(url);
-}
-
-function formatDate(dateStr: string | null | undefined) {
-  if (!dateStr) return null;
-  return new Date(dateStr).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
 }
 
 function isExpiringSoon(validUntil: string | null) {
@@ -377,13 +369,13 @@ function ComplianceCard({
                 : expiring
                   ? COMPLIANCE_TEXT.CARD.EXPIRES_SOON
                   : COMPLIANCE_TEXT.CARD.VALID_UNTIL}{" "}
-              {formatDate(field.valid_until)}
+              {formatDateReadable(field.valid_until)}
             </span>
           )}
 
           <span className="inline-flex items-center gap-1.5 text-theme-xxs text-stone-400 bg-stone-50 border border-stone-200 px-2.5 py-1 rounded-full">
             <i className="ti ti-clock text-theme-xxs" aria-hidden="true" />
-            {COMPLIANCE_TEXT.CARD.ADDED} {formatDate(field.created_at)}
+            {COMPLIANCE_TEXT.CARD.ADDED} {formatDateReadable(field.created_at)}
           </span>
         </div>
 
@@ -422,7 +414,7 @@ function ComplianceCard({
                   {doc.document_type.replace(/_/g, " ")}
                 </p>
                 <p className="text-theme-xxs text-stone-400 mt-0.5">
-                  Uploaded {formatDate(doc.created_at)} ·{" "}
+                  Uploaded {formatDateReadable(doc.created_at)} ·{" "}
                   {isPdf(doc.document_url) ? "PDF" : "Image"}
                 </p>
               </div>

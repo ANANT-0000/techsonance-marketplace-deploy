@@ -313,7 +313,8 @@ export async function fetchCompanyProfile() {
       next: { revalidate: 60 },
     });
     if (!res.ok) return null;
-    return await res.json();
+    const json = await res.json();
+    return json?.data ?? json;
   } catch (error) {
     return null;
   }

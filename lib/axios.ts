@@ -85,11 +85,11 @@ AxiosAPI.interceptors.response.use(
           localStorage.removeItem(IS_AUTHENTICATED_KEY);
           localStorage.removeItem(CART_KEY);
           if (currentPath.startsWith("/admin")) {
-            window.location.href = "/auth/adminLogin";
+            // window.location.href = "/auth/adminLogin";
           } else if (currentPath.startsWith("/vendor")) {
-            window.location.href = "/auth/vendorLogin";
+            // window.location.href = "/auth/vendorLogin";
           } else {
-            window.location.href = "/auth/customerLogin";
+            // window.location.href = "/auth/customerLogin";
           }
         }
         // For public routes just let the calling code handle the error
@@ -120,7 +120,7 @@ AxiosAPI.interceptors.response.use(
           case ClientActionCode.NAVIGATE_HOME:
             toast.error(message);
             if (!suppressRedirect) {
-              window.location.href = "/";
+              // window.location.href = "/";
             }
             break;
           case ClientActionCode.CONTACT_SUPPORT:

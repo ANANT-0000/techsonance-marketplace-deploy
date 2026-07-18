@@ -24,7 +24,7 @@ import { COUNTRIES } from "@/constants/common";
 import { VendorDocumentTypes } from "@/constants";
 import {
   ORGANIZATION_DETAIL_FIELDS,
-  STEPS,
+  VENDOR_REGISTER_FORM_STEPS,
   STEP_RHF_FIELDS,
 } from "@/constants/dynamicFields";
 import { DocUploadInput, FileEntry } from "@/components/vendor/DocUploadInput";
@@ -201,7 +201,9 @@ export default function VendorFormPage() {
       if (missingDocs.length > 0) return;
     }
 
-    setFormStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+    setFormStep((prev) =>
+      Math.min(prev + 1, VENDOR_REGISTER_FORM_STEPS.length - 1),
+    );
   }, [
     formStep,
     trigger,

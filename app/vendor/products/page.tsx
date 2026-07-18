@@ -24,6 +24,9 @@ import { authToken } from "@/utils/authToken";
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useReducer } from "react";
 import { PRODUCTS_LIST_TEXT } from "@/constants/vendorText";
+import { useVendorTour } from "@/components/vendor/VendorTourProvider";
+import { useAppSelector } from "@/hooks/reduxHooks";
+import { VendorUser } from "@/utils/Types";
 
 export const PRODUCT_TABLE_HEAD = [
   PRODUCTS_LIST_TEXT.TABLE_HEADERS.PRODUCT,
@@ -131,6 +134,8 @@ function productsReducer(
 export default function Products() {
   const router = useRouter();
   const token = authToken();
+  const { startVendorTour } = useVendorTour();
+  const user = useAppSelector((state) => state.auth.user) as VendorUser | undefined;
 
   const [state, dispatch] = useReducer(productsReducer, initialState);
   const {
@@ -244,6 +249,22 @@ export default function Products() {
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
 
+  useEffect(() => {
+    if (user && user.preferences && Array.isArray(user.preferences.completed_tours)) {
+      if (!user.preferences.completed_tours.includes("products")) {
+        const timer = setTimeout(() => {
+          startVendorTour("products");
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+    } else if (user && !user.preferences) {
+      const timer = setTimeout(() => {
+        startVendorTour("products");
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [user, startVendorTour]);
+
   return (
     <main className="w-full px-2 min-h-screen max-h-screen overflow-y-scroll">
       {/* Header */}
@@ -261,6 +282,7 @@ export default function Products() {
         </div>
         <div className="flex gap-3">
           <Link
+            id="tour-products-add"
             className="flex items-center gap-2 rounded-xl bg-gray-900 hover:bg-black text-white text-theme-body-sm font-semibold px-4 py-2.5 transition-colors shadow-sm"
             href="products/productForm"
           >
@@ -271,7 +293,7 @@ export default function Products() {
       </div>
 
       {/* Filter Bar */}
-      <div className="flex flex-wrap justify-between rounded-xl items-center py-3 px-4 gap-3 bg-white border border-gray-200 shadow-sm mb-4">
+      <div id="tour-products-filter" className="flex flex-wrap justify-between rounded-xl items-center py-3 px-4 gap-3 bg-white border border-gray-200 shadow-sm mb-4">
         {/* Search */}
         <span className="flex flex-1 min-w-[220px] items-center gap-2 border border-gray-200 bg-gray-50 py-2 px-3 rounded-xl focus-within:border-blue-400 focus-within:bg-white transition-colors">
           <DynamicIcon
@@ -332,7 +354,7 @@ export default function Products() {
       </div>
 
       {/* Table — horizontally scrollable */}
-      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
+      <div id="tour-products-table" className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
         <Table className="w-full table-auto min-w-[800px]">
           <TableHeader>
             <TableRow className="bg-gray-50 border-b border-gray-100 hover:bg-gray-50">

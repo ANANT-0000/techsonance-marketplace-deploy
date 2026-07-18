@@ -27,7 +27,7 @@ export function SlideQueryPicker({
       try {
         const [catRes, prodRes] = await Promise.all([
           AxiosAPI.get("/v1/categories"),
-          AxiosAPI.get("/v1/products?limit=100"),
+          AxiosAPI.get("/v1/products/vendor-products?limit=100", { headers: { "x-suppress-toast": "true" } }),
         ]);
         // Categories
         const cats: string[] = (catRes.data?.data ?? catRes.data ?? [])
@@ -173,7 +173,7 @@ export function SlideQueryPicker({
                 {UiText.CLEAR_ALL}
               </button>
             </div>
-            <p className="text-theme-tiny text-emerald-600 mt-2 font-mono">
+            <p className="text-theme-tiny text-emerald-600 mt-2 font-mono break-all">
               ↳ /store?search={encodeURIComponent(selected.join(" "))}
             </p>
           </>

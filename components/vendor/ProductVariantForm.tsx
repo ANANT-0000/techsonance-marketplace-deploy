@@ -26,6 +26,7 @@ import { ArrowLeft } from "lucide-react";
 import { generateSKU } from "@/utils/generateSku";
 import { authToken } from "@/utils/authToken";
 import { PRODUCT_VARIANT_FORM_TEXT } from "@/constants/vendorText";
+import { useVendorTour } from "@/components/vendor/VendorTourProvider";
 // Replaced constants
 export const ProductVariantForm = ({
   vendorId,
@@ -154,10 +155,22 @@ export const ProductVariantForm = ({
   }, [existVariant, variantId]); // reset is stable, no need to add it
 
   const token = authToken();
+  const { startVendorTour } = useVendorTour();
   useEffect(() => {
     if (!token) redirect("/auth/vendorLogin");
     return () => revokeAll();
   }, []);
+
+  useEffect(() => {
+    if (user && user.preferences && Array.isArray(user.preferences.completed_tours)) {
+      if (!user.preferences.completed_tours.includes("variantCreation")) {
+        const timer = setTimeout(() => {
+          startVendorTour("variantCreation");
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [user, startVendorTour]);
   const fileStateMap = {
     variantMediaMain: { files: productFiles, setFiles: setProductFiles },
     variantMediaGallery: { files: featureFiles, setFiles: setFeatureFiles },
@@ -392,7 +405,7 @@ export const ProductVariantForm = ({
         </div>
 
         {/* ── 2. PRICING & INVENTORY ── */}
-        <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
+        <div id="tour-variant-pricing" className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
             <DynamicIcon
               fallback={() => <p></p>}
@@ -463,7 +476,7 @@ export const ProductVariantForm = ({
         </div>
 
         {/* ── 3. LOGISTICS & DIMENSIONS ── */}
-        <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
+        <div id="tour-variant-inventory" className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
             <DynamicIcon
               fallback={() => <p></p>}
@@ -557,7 +570,7 @@ export const ProductVariantForm = ({
         </div>
 
         {/* ── 4. MEDIA ── */}
-        <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
+        <div id="tour-variant-images" className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
             <DynamicIcon
               fallback={() => <p></p>}

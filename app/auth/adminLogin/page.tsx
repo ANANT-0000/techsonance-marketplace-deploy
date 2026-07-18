@@ -9,24 +9,38 @@ import {
 import { adminLogin } from "@/utils/authApiClient";
 import { useRouter, notFound } from "next/navigation";
 import { useAppDispatch } from "@/hooks/reduxHooks";
+import { User, VendorUser, UserRole } from "@/utils/Types";
 import { isAdminDomainAllowed } from "@/lib/get-domain";
 import { Eye, EyeOff } from "lucide-react";
 import { CookieConsentBanner } from "@/components/common/CookieConsentBanner";
-import {
-  AUTH_TEXT,
-  COOKIE_CONSENT_KEY,
-  COOKIE_CONSENT_VALUE,
-  IS_AUTHENTICATED_KEY,
-} from "@/constants";
+import { AUTH_TEXT, IS_AUTHENTICATED_KEY } from "@/constants";
 import { ADMIN_LOGIN_TEXT } from "@/constants/adminText";
 
-type UiState = "idle" | "loading" | "success" | "error";
-type Step = { label: string; status: "pending" | "active" | "done" | "failed" };
+enum UiState {
+  IDLE = "idle",
+  LOADING = "loading",
+  SUCCESS = "success",
+  ERROR = "error",
+}
+enum StepStatus {
+  PENDING = "pending",
+  ACTIVE = "active",
+  DONE = "done",
+  FAILED = "failed",
+}
+type Step = { label: string; status: StepStatus };
+
+export interface AdminLoginResponseData {
+  user: Partial<User | VendorUser>;
+  access_token: string;
+  refresh_token: string;
+  role: UserRole;
+}
 
 const INITIAL_STEPS: Step[] = [
-  { label: ADMIN_LOGIN_TEXT.STEP_VALIDATING, status: "pending" },
-  { label: ADMIN_LOGIN_TEXT.STEP_PERMISSIONS, status: "pending" },
-  { label: ADMIN_LOGIN_TEXT.STEP_INITIALISING, status: "pending" },
+  { label: ADMIN_LOGIN_TEXT.STEP_VALIDATING, status: StepStatus.PENDING },
+  { label: ADMIN_LOGIN_TEXT.STEP_PERMISSIONS, status: StepStatus.PENDING },
+  { label: ADMIN_LOGIN_TEXT.STEP_INITIALISING, status: StepStatus.PENDING },
 ];
 
 export enum ActionType {
@@ -39,7 +53,7 @@ export enum ActionType {
   SET_COUNTDOWN = "SET_COUNTDOWN",
   TOGGLE_SHOW_PASS = "TOGGLE_SHOW_PASS",
   SET_REDIRECT_PROGRESS = "SET_REDIRECT_PROGRESS",
-  SET_COOKIES_BLOCKED = "SET_COOKIES_BLOCKED",
+  SET_STORAGE_BLOCKED = "SET_STORAGE_BLOCKED",
   RESET_ON_RETRY = "RESET_ON_RETRY",
 }
 
@@ -56,7 +70,7 @@ export type Action =
   | { type: ActionType.SET_COUNTDOWN; payload: number }
   | { type: ActionType.TOGGLE_SHOW_PASS }
   | { type: ActionType.SET_REDIRECT_PROGRESS; payload: number }
-  | { type: ActionType.SET_COOKIES_BLOCKED; payload: boolean }
+  | { type: ActionType.SET_STORAGE_BLOCKED; payload: boolean }
   | { type: ActionType.RESET_ON_RETRY };
 
 interface State {
@@ -68,19 +82,19 @@ interface State {
   countdown: number;
   showPass: boolean;
   redirectProgress: number;
-  cookiesBlocked: boolean;
+  storageBlocked: boolean;
 }
 
 const initialState: State = {
   adminLoginID: null,
   adminLoginPass: null,
   error: null,
-  uiState: "idle",
-  steps: INITIAL_STEPS,
+  uiState: UiState.IDLE,
+  steps: INITIAL_STEPS.map((s) => ({ ...s })),
   countdown: 3,
   showPass: false,
   redirectProgress: 100,
-  cookiesBlocked: false,
+  storageBlocked: false,
 };
 
 function adminLoginReducer(state: State, action: Action): State {
@@ -107,7 +121,7 @@ function adminLoginReducer(state: State, action: Action): State {
         ...state,
         steps: INITIAL_STEPS.map((s, i) => ({
           ...s,
-          status: i === 0 ? "active" : "pending",
+          status: i === 0 ? StepStatus.ACTIVE : StepStatus.PENDING,
         })),
       };
     case ActionType.SET_COUNTDOWN:
@@ -116,24 +130,39 @@ function adminLoginReducer(state: State, action: Action): State {
       return { ...state, showPass: !state.showPass };
     case ActionType.SET_REDIRECT_PROGRESS:
       return { ...state, redirectProgress: action.payload };
-    case ActionType.SET_COOKIES_BLOCKED:
-      return { ...state, cookiesBlocked: action.payload };
+    case ActionType.SET_STORAGE_BLOCKED:
+      return { ...state, storageBlocked: action.payload };
     case ActionType.RESET_ON_RETRY:
-      return { ...state, uiState: "idle", error: null };
+      return {
+        ...state,
+        uiState: UiState.IDLE,
+        error: null,
+        adminLoginID: null,
+        adminLoginPass: null,
+      };
     default:
       return state;
   }
 }
 
 export default function AdminLoginPage() {
+  // TODO(security): Domain and auth gating currently run client-side in useEffect, after the full admin-login bundle is sent to the browser. Consider moving to Next.js middleware or a Server Component.
   const [domainAllowed, setDomainAllowed] = useState<boolean | null>(null);
 
   useEffect(() => {
+    let ignore = false;
     const verifyDomain = async () => {
-      const allowed = await isAdminDomainAllowed();
-      setDomainAllowed(allowed);
+      try {
+        const allowed = await isAdminDomainAllowed();
+        if (!ignore) setDomainAllowed(allowed);
+      } catch (error) {
+        if (!ignore) setDomainAllowed(false);
+      }
     };
     verifyDomain();
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const dispatch = useAppDispatch();
@@ -142,24 +171,43 @@ export default function AdminLoginPage() {
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    if (domainAllowed !== true) return;
+
+    const storageAvailable = (() => {
+      try {
+        localStorage.setItem("__test__", "1");
+        localStorage.removeItem("__test__");
+        return true;
+      } catch {
+        return false;
+      }
+    })();
+
     dispatchState({
-      type: ActionType.SET_COOKIES_BLOCKED,
-      payload: !navigator.cookieEnabled,
+      type: ActionType.SET_STORAGE_BLOCKED,
+      payload: !storageAvailable,
     });
+
     const storedData =
       typeof window !== "undefined"
         ? localStorage.getItem(IS_AUTHENTICATED_KEY)
         : null;
-    const auth = storedData ? JSON.parse(storedData) : null;
+    let auth = null;
+    try {
+      auth = storedData ? JSON.parse(storedData) : null;
+    } catch {
+      localStorage.removeItem(IS_AUTHENTICATED_KEY);
+      auth = null;
+    }
     if (auth && auth?.isAuthenticated && auth?.role === "admin") {
-      router.push(`/admin`);
+      router.replace(`/admin`);
     }
     return () => {
       if (countdownRef.current) {
         clearInterval(countdownRef.current);
       }
     };
-  }, []);
+  }, [domainAllowed, router]);
 
   if (domainAllowed === false) {
     notFound();
@@ -175,63 +223,95 @@ export default function AdminLoginPage() {
 
   const submitHandler = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    localStorage.setItem(COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE);
+    if (state.uiState === UiState.LOADING) return;
+    if (!state.adminLoginID || !state.adminLoginPass) {
+      dispatchState({
+        type: ActionType.SET_ERROR,
+        payload: "Please fill in all fields.",
+      });
+      return;
+    }
     dispatchState({ type: ActionType.SET_ERROR, payload: null });
-    dispatchState({ type: ActionType.SET_UI_STATE, payload: "loading" });
+    dispatchState({ type: ActionType.SET_UI_STATE, payload: UiState.LOADING });
     dispatchState({ type: ActionType.RESET_STEPS });
 
     dispatch(loginStart());
 
-    const result: { status: boolean; message: string; data?: any } =
-      await adminLogin({
+    let result: {
+      status: number;
+      message: string;
+      data?: AdminLoginResponseData;
+    };
+    try {
+      result = await adminLogin({
         admin_id: state.adminLoginID!,
         password: state.adminLoginPass!,
       });
-
-    dispatch(
-      result.status ? loginSuccess(result.data) : loginFailure(result.message),
-    );
-
-    if (!result.status) {
-      updateStep(0, "failed");
-      dispatchState({ type: ActionType.SET_ERROR, payload: result.message });
-      dispatchState({ type: ActionType.SET_UI_STATE, payload: "error" });
+    } catch (err) {
+      dispatch(loginFailure("Network error. Please try again."));
+      updateStep(0, StepStatus.FAILED);
+      dispatchState({
+        type: ActionType.SET_ERROR,
+        payload: "Network error. Please try again.",
+      });
+      dispatchState({ type: ActionType.SET_UI_STATE, payload: UiState.ERROR });
       return;
     }
 
+    dispatch(
+      result.status === 200
+        ? loginSuccess(result.data!)
+        : loginFailure(result.message),
+    );
+
+    if (result.status !== 200) {
+      updateStep(0, StepStatus.FAILED);
+      dispatchState({ type: ActionType.SET_ERROR, payload: result.message });
+      dispatchState({ type: ActionType.SET_UI_STATE, payload: UiState.ERROR });
+      return;
+    }
+
+    localStorage.setItem(
+      IS_AUTHENTICATED_KEY,
+      JSON.stringify({ isAuthenticated: true, role: "admin", ...result.data }),
+    );
+
+    // NOTE: intentional UX delay for step animation — confirm with product
+    // before removing/shortening this.
     // Step 1 done, step 2 active
-    updateStep(0, "done");
-    updateStep(1, "active");
+    updateStep(0, StepStatus.DONE);
+    updateStep(1, StepStatus.ACTIVE);
     await new Promise((r) => setTimeout(r, 600));
 
-    updateStep(1, "done");
-    updateStep(2, "active");
+    updateStep(1, StepStatus.DONE);
+    updateStep(2, StepStatus.ACTIVE);
     await new Promise((r) => setTimeout(r, 600));
 
-    updateStep(2, "done");
+    updateStep(2, StepStatus.DONE);
     await new Promise((r) => setTimeout(r, 400));
 
-    dispatchState({ type: ActionType.SET_UI_STATE, payload: "success" });
+    dispatchState({ type: ActionType.SET_UI_STATE, payload: UiState.SUCCESS });
     startRedirect();
   };
 
   const startRedirect = () => {
-    let elapsed = 0;
     const total = 3000;
     const interval = 50;
+    const startTime = Date.now();
     countdownRef.current = setInterval(() => {
-      elapsed += interval;
+      const elapsed = Date.now() - startTime;
       dispatchState({
         type: ActionType.SET_REDIRECT_PROGRESS,
         payload: Math.max(0, 100 - (elapsed / total) * 100),
       });
       dispatchState({
         type: ActionType.SET_COUNTDOWN,
-        payload: Math.ceil((total - elapsed) / 1000),
+        payload: Math.ceil((total - Math.min(elapsed, total)) / 1000),
       });
       if (elapsed >= total) {
         clearInterval(countdownRef.current!);
-        router.replace(`/admin`);
+
+        router.replace("/admin");
       }
     }, interval);
   };
@@ -262,8 +342,8 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="min-h-screen   flex items-center justify-center p-6 font-sans">
-      <div className="w-full  bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+    <main className="min-h-screen flex items-center justify-center p-6 font-sans">
+      <div className="w-full bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
         {/* Header — always visible */}
         <div className="px-8 pt-8 pb-6 border-b border-gray-100">
           <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center mb-4">
@@ -290,14 +370,17 @@ export default function AdminLoginPage() {
         </div>
 
         {/* IDLE — login form */}
-        {state.uiState === "idle" && (
+        {state.uiState === UiState.IDLE && (
           <form
             onSubmit={submitHandler}
             className="w-full px-8 py-6 flex flex-col gap-4"
           >
             <CookieConsentBanner />
             <div className="flex flex-col gap-1.5">
-              <label className="text-md font-medium text-gray-600 tracking-wide">
+              <label
+                htmlFor="adminLoginID"
+                className="text-md font-medium text-gray-600 tracking-wide"
+              >
                 {ADMIN_LOGIN_TEXT.ID_LABEL}
               </label>
               <div className="relative">
@@ -305,8 +388,13 @@ export default function AdminLoginPage() {
                   @
                 </span>
                 <input
+                  id="adminLoginID"
+                  name="adminLoginID"
+                  autoComplete="username"
                   type="text"
                   required
+                  maxLength={50}
+                  value={state.adminLoginID ?? ""}
                   className="w-full pl-8 pr-3 py-2.5 border border-gray-200 rounded-lg text-theme-body-sm text-gray-900 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition"
                   placeholder={ADMIN_LOGIN_TEXT.ID_PLACEHOLDER}
                   onChange={(e) =>
@@ -319,12 +407,20 @@ export default function AdminLoginPage() {
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-md font-medium text-gray-600 tracking-wide">
+              <label
+                htmlFor="adminLoginPass"
+                className="text-md font-medium text-gray-600 tracking-wide"
+              >
                 {ADMIN_LOGIN_TEXT.PASS_LABEL}
               </label>
               <div className="relative">
                 <input
+                  id="adminLoginPass"
+                  name="adminLoginPass"
+                  autoComplete="current-password"
                   type={state.showPass ? "text" : "password"}
+                  required
+                  value={state.adminLoginPass ?? ""}
                   className="w-full pl-8 pr-10 py-2.5 border border-gray-200 rounded-lg text-md"
                   onChange={(e) =>
                     dispatchState({
@@ -350,13 +446,26 @@ export default function AdminLoginPage() {
               </div>
             </div>
             {state.error && (
-              <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5 text-theme-body-sm text-red-600">
+              <div
+                role="alert"
+                aria-live="polite"
+                className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5 text-theme-body-sm text-red-600"
+              >
                 <span>⚠</span> {state.error}
+              </div>
+            )}
+            {state.storageBlocked && (
+              <div
+                role="alert"
+                aria-live="polite"
+                className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5 text-theme-body-sm text-amber-700"
+              >
+                <span>⚠</span> Please enable local storage to sign in.
               </div>
             )}
             <button
               type="submit"
-              disabled={state.cookiesBlocked}
+              disabled={state.storageBlocked}
               className="w-full bg-sky-500 hover:bg-sky-600 active:scale-[.98] disabled:opacity-60 text-white font-semibold text-theme-body-sm rounded-lg py-2.5 transition flex items-center justify-center gap-2"
             >
               {ADMIN_LOGIN_TEXT.BTN_AUTH}
@@ -371,7 +480,7 @@ export default function AdminLoginPage() {
         )}
 
         {/* LOADING — step progress */}
-        {state.uiState === "loading" && (
+        {state.uiState === UiState.LOADING && (
           <div className="px-8 py-8 flex flex-col items-center">
             <p className="text-theme-caption font-medium text-gray-400 uppercase tracking-widest mb-1">
               {ADMIN_LOGIN_TEXT.LOADING_TITLE}
@@ -379,7 +488,7 @@ export default function AdminLoginPage() {
             <p className="text-theme-caption text-gray-400 mb-5">
               {ADMIN_LOGIN_TEXT.LOADING_SUBTITLE}
             </p>
-            <div className="w-full flex flex-col gap-2">
+            <div className="w-full flex flex-col gap-2" aria-live="polite">
               {state.steps.map((step, i) => (
                 <div
                   key={i}
@@ -396,7 +505,7 @@ export default function AdminLoginPage() {
         )}
 
         {/* SUCCESS — redirect countdown */}
-        {state.uiState === "success" && (
+        {state.uiState === UiState.SUCCESS && (
           <div className="px-8 py-8 flex flex-col items-center text-center">
             <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4 text-theme-h4">
               ✓
@@ -422,7 +531,7 @@ export default function AdminLoginPage() {
         )}
 
         {/* ERROR — access denied */}
-        {state.uiState === "error" && (
+        {state.uiState === UiState.ERROR && (
           <div className="px-8 py-8 flex flex-col items-center text-center">
             <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-4 text-theme-h4">
               ✕

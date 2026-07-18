@@ -44,8 +44,9 @@ import {
 } from "@/components/common/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UiText } from "@/constants/ui-text";
-import { useAppDispatch } from "@/hooks/reduxHooks";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { stopPageLoading } from "@/lib/features/pageLoading";
+import { useVendorTour } from "@/components/vendor/VendorTourProvider";
 
 interface OrderAddressType {
   name: string;
@@ -105,50 +106,57 @@ const getStatusBadges = (statuses: string | string[]) => {
     new Set(statusArray.map((s) => s.toLowerCase())),
   );
   const renderBadge = (status: string, index: number) => {
-    switch (status) {
+    const displayStatus = UiText.DASHBOARD.STATUS_LABELS[status.toUpperCase() as keyof typeof UiText.DASHBOARD.STATUS_LABELS] || status;
+
+    switch (status.toLowerCase()) {
       case OrderStatus.PENDING:
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
+            className="inline-flex items-center gap-1.5 bg-amber-50/80 text-amber-600 py-1 px-3 rounded-full text-[12px] font-medium border border-amber-100/50"
           >
-            ● Pending
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+            {displayStatus}
           </span>
         );
       case OrderStatus.DELIVERED:
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
+            className="inline-flex items-center gap-1.5 bg-emerald-50/80 text-emerald-600 py-1 px-3 rounded-full text-[12px] font-medium border border-emerald-100/50"
           >
-            ● Delivered
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            {displayStatus}
           </span>
         );
       case "active":
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
+            className="inline-flex items-center gap-1.5 bg-indigo-50/80 text-indigo-600 py-1 px-3 rounded-full text-[12px] font-medium border border-indigo-100/50"
           >
-            ● Active
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+            {displayStatus}
           </span>
         );
       case OrderStatus.CANCELLED:
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize"
+            className="inline-flex items-center gap-1.5 bg-rose-50/80 text-rose-600 py-1 px-3 rounded-full text-[12px] font-medium border border-rose-100/50"
           >
-            ● {status}
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+            {displayStatus}
           </span>
         );
       case OrderStatus.SHIPPED:
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-violet-50 text-violet-700 border border-violet-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
+            className="inline-flex items-center gap-1.5 bg-violet-50/80 text-violet-600 py-1 px-3 rounded-full text-[12px] font-medium border border-violet-100/50"
           >
-            ● Shipped
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>
+            {displayStatus}
           </span>
         );
       case ReturnType.RETURN:
@@ -156,18 +164,20 @@ const getStatusBadges = (statuses: string | string[]) => {
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 border border-purple-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize"
+            className="inline-flex items-center gap-1.5 bg-fuchsia-50/80 text-fuchsia-600 py-1 px-3 rounded-full text-[12px] font-medium border border-fuchsia-100/50"
           >
-            ● {status}
+            <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-500"></span>
+            {displayStatus}
           </span>
         );
       default:
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize"
+            className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-600 py-1 px-3 rounded-full text-[12px] font-medium border border-slate-100"
           >
-            ● {status}
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            {displayStatus}
           </span>
         );
     }
@@ -176,7 +186,7 @@ const getStatusBadges = (statuses: string | string[]) => {
   if (uniqueStatuses.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="flex flex-wrap items-center gap-2">
       {uniqueStatuses.map((status, index) => renderBadge(status, index))}
     </div>
   );
@@ -186,7 +196,7 @@ const getPaymentBadge = (method: string, status: string) => {
   const isPaid = status === "Paid" || status === "success";
   return (
     <span
-      className={`inline-flex items-center py-1 px-3 rounded-full text-theme-caption font-semibold border ${isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-600 border-gray-200"}`}
+      className={`inline-flex items-center py-1 px-3 rounded-full text-[12px] font-medium border ${isPaid ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-600 border-slate-100"}`}
     >
       {method || "N/A"}
     </span>
@@ -264,7 +274,7 @@ export type DashboardAction =
 
 export const initialDashboardState: DashboardState = {
   recentOrders: [],
-  loadingRecentOrders: false,
+  loadingRecentOrders: true,
   totalPages: 1,
   currentPage: 1,
   totalRevenue: 0,
@@ -368,6 +378,22 @@ export default function DashboardPage() {
   const revenueGrowth = 0;
   const router = useRouter();
   const token = authToken();
+  
+  const { startVendorTour } = useVendorTour();
+  const user = useAppSelector((state) => state.auth.user) as import("@/utils/Types").VendorUser | null;
+
+  useEffect(() => {
+    // Only trigger if we have a user and they haven't completed the dashboard tour
+    if (user && user.preferences && Array.isArray(user.preferences.completed_tours)) {
+      if (!user.preferences.completed_tours.includes("dashboard")) {
+        // slight delay to let the UI mount properly
+        setTimeout(() => startVendorTour("dashboard"), 500);
+      }
+    } else if (user && !user.preferences) {
+      // If preferences object doesn't exist yet, it means they haven't completed any tours
+      setTimeout(() => startVendorTour("dashboard"), 500);
+    }
+  }, [user, startVendorTour]);
 
   const setCurrentPage = (page: number | ((prev: number) => number)) => {
     const nextPage = typeof page === "function" ? page(currentPage) : page;
@@ -406,10 +432,6 @@ export default function DashboardPage() {
           type: DashboardActionType.SET_LOADING_RECENT_ORDERS,
           payload: false,
         });
-        reducerDispatch({
-          type: DashboardActionType.SET_LOADING_RECENT_ORDERS,
-          payload: false,
-        });
       });
 
     reducerDispatch({
@@ -435,7 +457,7 @@ export default function DashboardPage() {
           payload: false,
         });
       })
-      .catch(() => {
+      .catch((err) => {
         dispatch(stopPageLoading());
         reducerDispatch({
           type: DashboardActionType.SET_LOADING_METRICS,
@@ -461,7 +483,7 @@ export default function DashboardPage() {
           payload: false,
         });
       })
-      .catch(() => {
+      .catch((err) => {
         reducerDispatch({
           type: DashboardActionType.SET_LOADING_CHART,
           payload: false,
@@ -483,7 +505,7 @@ export default function DashboardPage() {
           payload: false,
         });
       })
-      .catch(() => {
+      .catch((err) => {
         reducerDispatch({
           type: DashboardActionType.SET_LOADING_PRODUCTS,
           payload: false,
@@ -584,90 +606,134 @@ export default function DashboardPage() {
 
   return (
     <>
-      <main className="px-2 overflow-y-scroll h-screen">
-        <span id="analytics-report-container">
+      <main className="px-2 overflow-y-scroll h-screen" id="tour-dashboard-welcome">
+        <div id="tour-analytics-overview">
           {isLoadingMetrics ? (
-            <MetricsSkeleton
-              count={3}
-              style="my-6 flex justify-between "
-              subStyle="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow"
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 my-8">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-3xl p-6 flex flex-col justify-between h-[120px] shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-100"
+                >
+                  <Skeleton className="h-4 w-24 bg-slate-100/80 rounded-full animate-pulse" />
+                  <div className="flex justify-between items-end mt-4">
+                    <Skeleton className="h-8 w-24 bg-slate-100/80 rounded-xl animate-pulse" />
+                    <Skeleton className="h-10 w-10 bg-slate-100/80 rounded-2xl animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+            <div id="tour-analytics-overview" className="grid grid-cols-1 sm:grid-cols-3 gap-6 my-8">
               {/* Total Revenue */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
-                <div className="flex flex-col gap-1">
-                  <span className="text-theme-caption font-semibold text-gray-400 uppercase tracking-wider">
+              <div className="bg-white rounded-3xl p-6 flex items-start justify-between shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300 ease-out group">
+                <div className="flex flex-col gap-2">
+                  <span className="text-[13px] font-medium text-slate-500 uppercase tracking-widest">
                     {UiText.DASHBOARD.TOTAL_REVENUE}
                   </span>
-                  <span className="text-theme-h4 font-bold text-gray-800 mt-1">
+                  <span className="text-3xl font-light tracking-tight text-slate-900 mt-1">
                     ₹{formatCurrency(totalRevenue)}
                   </span>
-                  <span className="flex items-center gap-1 text-theme-caption font-medium text-emerald-600 mt-1">
-                    <TrendingUp size={13} />
+                  <span className="flex items-center gap-1 text-[13px] font-medium text-emerald-600 mt-2 bg-emerald-50 w-fit px-2 py-0.5 rounded-full">
+                    <TrendingUp size={14} strokeWidth={2.5} />
                     {revenueGrowth}% {UiText.DASHBOARD.VS_LAST_MONTH}
                   </span>
                 </div>
               </div>
 
               {/* Pending Orders */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
-                <div className="flex flex-col gap-1">
-                  <span className="text-theme-caption font-semibold text-gray-400 uppercase tracking-wider">
+              <div className="bg-white rounded-3xl p-6 flex items-start justify-between shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300 ease-out group">
+                <div className="flex flex-col gap-2">
+                  <span className="text-[13px] font-medium text-slate-500 uppercase tracking-widest">
                     {UiText.DASHBOARD.PENDING_ORDERS}
                   </span>
-                  <span className="text-theme-h4 font-bold text-gray-800 mt-1">
+                  <span className="text-3xl font-light tracking-tight text-slate-900 mt-1">
                     {formatNumber(pendingOrders)}
                   </span>
-                  <span className="text-theme-caption text-amber-600 font-medium mt-1">
+                  <span className="text-[13px] text-amber-600 font-medium mt-2 bg-amber-50 w-fit px-2 py-0.5 rounded-full">
                     {UiText.DASHBOARD.IMMEDIATE_SHIPPING_REQUIRED}
                   </span>
                 </div>
-                <span className="bg-amber-50 p-3 rounded-xl">
-                  <Clock size={20} className="text-amber-500" />
-                </span>
+                <div className="bg-slate-50 p-3.5 rounded-2xl group-hover:bg-amber-50 group-hover:scale-110 transition-all duration-300 ease-out">
+                  <Clock
+                    size={22}
+                    className="text-slate-400 group-hover:text-amber-500 transition-colors duration-300"
+                    strokeWidth={1.5}
+                  />
+                </div>
               </div>
 
               {/* Active Products */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start justify-between hover:shadow-md transition-shadow">
-                <div className="flex flex-col gap-1">
-                  <span className="text-theme-caption font-semibold text-gray-400 uppercase tracking-wider">
+              <div className="bg-white rounded-3xl p-6 flex items-start justify-between shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300 ease-out group">
+                <div className="flex flex-col gap-2">
+                  <span className="text-[13px] font-medium text-slate-500 uppercase tracking-widest">
                     {UiText.DASHBOARD.ACTIVE_PRODUCTS}
                   </span>
-                  <span className="text-theme-h4 font-bold text-gray-800 mt-1">
+                  <span className="text-3xl font-light tracking-tight text-slate-900 mt-1">
                     {formatNumber(activeProducts)}
                   </span>
-                  <span className="text-theme-caption text-red-500 font-medium mt-1">
+                  <span className="text-[13px] text-rose-500 font-medium mt-2 bg-rose-50 w-fit px-2 py-0.5 rounded-full">
                     {lowStock} {UiText.DASHBOARD.LOW_STOCK_WARNING}
                   </span>
                 </div>
-                <span className="bg-blue-50 p-3 rounded-xl">
-                  <Package size={20} className="text-blue-500" />
-                </span>
+                <div className="bg-slate-50 p-3.5 rounded-2xl group-hover:bg-indigo-50 group-hover:scale-110 transition-all duration-300 ease-out">
+                  <Package
+                    size={22}
+                    className="text-slate-400 group-hover:text-indigo-500 transition-colors duration-300"
+                    strokeWidth={1.5}
+                  />
+                </div>
               </div>
             </div>
           )}
+        </div>
 
-          {/* Revenue Chart Section */}
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 my-6">
-            <div className="flex justify-between items-center mb-6">
+        {/* Revenue Chart Section */}
+          <div id="tour-revenue-chart" className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-slate-100 p-8 my-8 relative overflow-hidden">
+            <div className="flex justify-between items-center mb-8 relative z-10">
               <div>
-                <h2 className="font-bold text-theme-h6 text-gray-800">
+                <h2 className="text-xl font-medium text-slate-900 tracking-tight">
                   {UiText.DASHBOARD.REVENUE_OVERVIEW}
                 </h2>
-                <p className="text-theme-caption text-gray-500">
+                <p className="text-[13px] font-medium text-slate-500 mt-1">
                   {UiText.DASHBOARD.LAST_30_DAYS}
                 </p>
               </div>
             </div>
             {isLoadingChart ? (
-              <Skeleton className="h-64 w-full" />
-            ) : chartData && chartData.length > 0 ? (
-              <div className="h-[300px] w-full">
+              <div className="h-[300px] w-full flex flex-col gap-4 relative z-10">
+                <Skeleton className="h-[250px] w-full bg-slate-100/80 rounded-2xl animate-pulse" />
+                <div className="flex justify-between px-4">
+                  <Skeleton className="h-3 w-12 bg-slate-100/80 rounded-full animate-pulse" />
+                  <Skeleton className="h-3 w-12 bg-slate-100/80 rounded-full animate-pulse" />
+                  <Skeleton className="h-3 w-12 bg-slate-100/80 rounded-full animate-pulse" />
+                </div>
+              </div>
+            ) : (
+              <div className="relative h-[300px] w-full z-10">
+                {(!chartData || chartData.length === 0) && (
+                  <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-indigo-50/80 backdrop-blur-sm border border-indigo-100/50 px-4 py-2 rounded-xl shadow-sm">
+                    <TrendingUp
+                      className="w-4 h-4 text-indigo-500"
+                      strokeWidth={2}
+                    />
+                    <p className="text-[13px] font-medium text-indigo-700">
+                      Analytics will appear after your first sale
+                    </p>
+                  </div>
+                )}
+
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
-                    data={chartData}
-                    margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                    data={
+                      !chartData || chartData.length === 0
+                        ? Array.from({ length: 7 }).map((_, i) => ({
+                            date: `Day ${i + 1}`,
+                            revenue: 0,
+                          }))
+                        : chartData
+                    }
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                   >
                     <defs>
                       <linearGradient
@@ -679,12 +745,12 @@ export default function DashboardPage() {
                       >
                         <stop
                           offset="5%"
-                          stopColor="#8b5cf6"
-                          stopOpacity={0.3}
+                          stopColor="#6366f1"
+                          stopOpacity={0.15}
                         />
                         <stop
                           offset="95%"
-                          stopColor="#8b5cf6"
+                          stopColor="#6366f1"
                           stopOpacity={0}
                         />
                       </linearGradient>
@@ -692,28 +758,30 @@ export default function DashboardPage() {
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
-                      stroke="#f3f4f6"
+                      stroke="#f1f5f9"
                     />
                     <XAxis
                       dataKey="date"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 12, fill: "#9ca3af" }}
+                      tick={{ fontSize: 12, fill: "#94a3b8", fontWeight: 500 }}
                       dy={10}
                     />
 
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 12, fill: "#9ca3af" }}
+                      tick={{ fontSize: 12, fill: "#94a3b8", fontWeight: 500 }}
                       tickFormatter={(value) => `₹${value}`}
                     />
 
                     <Tooltip
                       contentStyle={{
-                        borderRadius: "12px",
-                        border: "none",
-                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        borderRadius: "16px",
+                        border: "1px solid #f1f5f9",
+                        boxShadow: "0 10px 40px -10px rgb(0 0 0 / 0.1)",
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        backdropFilter: "blur(8px)",
                       }}
                       formatter={(value: number) => [`₹${value}`, "Revenue"]}
                     />
@@ -721,47 +789,49 @@ export default function DashboardPage() {
                     <Area
                       type="monotone"
                       dataKey="revenue"
-                      stroke="#8b5cf6"
-                      strokeWidth={3}
+                      stroke="#6366f1"
+                      strokeWidth={2.5}
                       fillOpacity={1}
                       fill="url(#colorRevenue)"
+                      activeDot={{
+                        r: 6,
+                        fill: "#6366f1",
+                        stroke: "#fff",
+                        strokeWidth: 3,
+                      }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400 text-theme-body-sm">
-                {UiText.DASHBOARD.NOT_ENOUGH_DATA}
               </div>
             )}
           </div>
 
           {/* Top Selling Products Section */}
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 my-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-bold text-theme-h6 text-gray-800">
+          <div id="tour-top-products" className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-slate-100 p-8 my-8">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-xl font-medium text-slate-900 tracking-tight">
                 {UiText.DASHBOARD.TOP_PERFORMING_PRODUCTS}
               </h2>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {isLoadingProducts ? (
                 <div>
-                  {Array.from({ length: 2 }).map((_, idx) => (
+                  {Array.from({ length: 3 }).map((_, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-4 border border-gray-100 rounded-xl"
+                      className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl mb-3 bg-white shadow-[0_2px_10px_rgb(0,0,0,0.02)]"
                     >
                       <div className="flex items-center gap-4">
-                        <Skeleton className="h-10 w-10 bg-purple-100 text-purple-600 rounded-full" />
+                        <Skeleton className="h-12 w-12 bg-slate-100/80 rounded-full animate-pulse" />
                         <div className="space-y-2">
-                          <Skeleton className="h-4 w-32" />
-                          <Skeleton className="h-3 w-20" />
+                          <Skeleton className="h-4 w-32 bg-slate-100/80 rounded-full animate-pulse" />
+                          <Skeleton className="h-3 w-20 bg-slate-100/80 rounded-full animate-pulse" />
                         </div>
                       </div>
-                      <div className="text-right space-y-2">
-                        <Skeleton className="h-6 w-24" />
-                        <Skeleton className="h-3 w-20" />
+                      <div className="text-right flex flex-col items-end space-y-2">
+                        <Skeleton className="h-4 w-16 bg-slate-100/80 rounded-full animate-pulse" />
+                        <Skeleton className="h-5 w-20 bg-slate-100/80 rounded-full animate-pulse" />
                       </div>
                     </div>
                   ))}
@@ -770,43 +840,55 @@ export default function DashboardPage() {
                 topProducts.map((product, idx) => (
                   <div
                     key={product.variant_id}
-                    className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl hover:shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:border-slate-200 hover:-translate-y-0.5 transition-all duration-300 ease-out bg-white group"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-theme-body-sm">
+                      <div className="h-12 w-12 bg-slate-50 group-hover:bg-indigo-50 text-slate-400 group-hover:text-indigo-600 rounded-full flex items-center justify-center font-medium text-sm transition-colors duration-300">
                         #{idx + 1}
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-800 text-theme-body-sm">
+                        <p className="font-medium text-slate-900 text-sm">
                           {product.variant_name}
                         </p>
-                        <p className="text-theme-caption text-gray-500">
+                        <p className="text-[13px] text-slate-500 mt-0.5">
                           SKU: {product.sku}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-800">
+                      <p className="font-medium text-slate-900">
                         ₹{product.revenue.toLocaleString()}
                       </p>
-                      <p className="text-theme-caption text-emerald-600 font-medium">
+                      <p className="text-[13px] text-emerald-600 font-medium mt-0.5 bg-emerald-50 w-fit px-2 py-0.5 rounded-full ml-auto">
                         {product.total_sold} units sold
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-6 text-gray-400 text-theme-body-sm">
-                  {UiText.DASHBOARD.NO_SALES_DATA}
+                <div className="flex flex-col items-center justify-center text-center py-12 px-6 rounded-2xl border border-slate-100 bg-white shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+                  <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                    <Package
+                      className="w-6 h-6 text-slate-400"
+                      strokeWidth={1.5}
+                    />
+                  </div>
+                  <h3 className="text-sm font-medium text-slate-900 mb-1">
+                    No products performing yet
+                  </h3>
+                  <p className="text-[13px] text-slate-500 max-w-sm mx-auto text-balance">
+                    When your products start selling, your top performers will
+                    be ranked here automatically.
+                  </p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Recent Orders Table */}
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden my-6">
-            <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
-              <h2 className="font-bold text-theme-h6 text-gray-800">
+          <div id="tour-recent-orders" className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden my-8">
+            <div className="flex justify-between items-center px-8 py-6 border-b border-slate-100">
+              <h2 className="text-xl font-medium text-slate-900 tracking-tight">
                 {UiText.DASHBOARD.RECENT_ORDERS}
               </h2>
               <span className="flex gap-4 items-center justify-between">
@@ -814,7 +896,7 @@ export default function DashboardPage() {
                   <button
                     onClick={handleBulkDownload}
                     disabled={isDownloading}
-                    className="flex items-center gap-2 font-semibold text-theme-body-sm bg-purple-500 hover:bg-purple-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm disabled:opacity-50"
+                    className="flex items-center gap-2 font-medium text-[13px] bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-5 py-2.5 transition-all shadow-[0_4px_14px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:shadow-none"
                   >
                     <Printer size={16} />
                     {isDownloading
@@ -824,7 +906,7 @@ export default function DashboardPage() {
                 )}
                 <select
                   name=""
-                  className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
+                  className="text-[13px] font-medium border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-slate-600 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-50 cursor-pointer transition-all shadow-sm"
                   id=""
                   onChange={(e) =>
                     handleOrderFilter(e.target.value as OrderStatusType)
@@ -833,27 +915,28 @@ export default function DashboardPage() {
                   <option value="">{UiText.DASHBOARD.SELECT_STATUS}</option>
                   {Object.values(OrderStatus).map((status) => (
                     <option key={status} value={status}>
-                      {status}
+                      {UiText.DASHBOARD.STATUS_LABELS[status.toUpperCase() as keyof typeof UiText.DASHBOARD.STATUS_LABELS] || status}
                     </option>
                   ))}
                 </select>
                 <button
                   onClick={() => router.push(`/vendor/orders`)}
-                  className="flex items-center gap-1 text-theme-body-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                  className="flex items-center gap-1.5 text-[13px] font-medium text-indigo-600 hover:text-indigo-800 transition-colors ml-2"
                 >
-                  {UiText.DASHBOARD.VIEW_ALL} <ArrowUpRight size={15} />
+                  {UiText.DASHBOARD.VIEW_ALL}{" "}
+                  <ArrowUpRight size={15} strokeWidth={2} />
                 </button>
               </span>
             </div>
 
-            <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
+            <div className="w-full overflow-x-auto bg-white px-2 pb-2">
               <table className="w-full table-auto min-w-[900px] border-collapse">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200 text-left">
-                    <th className="p-4 w-10">
+                  <tr className="border-b border-slate-100 text-left">
+                    <th className="p-4 pl-6 w-12">
                       <input
                         type="checkbox"
-                        className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                        className="w-4 h-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-500 cursor-pointer"
                         checked={
                           recentOrders?.length > 0 &&
                           selectedOrders.length === recentOrders.length
@@ -864,28 +947,54 @@ export default function DashboardPage() {
                     {orderTableHeader.map((header) => (
                       <th
                         key={header}
-                        className="p-4 text-theme-caption Rent-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                        className="p-4 text-[12px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap"
                       >
                         {header}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-slate-100">
                   {loadingRecentOrders ? (
-                    <TableRowSkeleton columns={9} rows={5} />
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={i} className="border-b border-slate-50/50">
+                        <td colSpan={10} className="p-4 pl-6">
+                          <div className="flex items-center justify-between gap-4 w-full">
+                            <Skeleton className="h-4 w-4 rounded bg-slate-100/80 animate-pulse shrink-0" />
+                            <Skeleton className="h-4 w-16 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                            <Skeleton className="h-4 w-24 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                            <Skeleton className="h-4 w-8 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                            <Skeleton className="h-6 w-20 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                            <Skeleton className="h-4 w-32 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                            <Skeleton className="h-6 w-20 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                            <Skeleton className="h-4 w-24 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                            <Skeleton className="h-4 w-20 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                            <Skeleton className="h-8 w-12 rounded-xl bg-slate-100/80 animate-pulse shrink-0" />
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   ) : Array.isArray(recentOrders) &&
                     recentOrders.length <= 0 ? (
                     <tr>
-                      <td
-                        colSpan={10}
-                        className="py-16 text-center text-gray-400 text-theme-body-sm"
-                      >
-                        <Package
-                          size={36}
-                          className="mx-auto mb-3 opacity-30"
-                        />
-                        {UiText.DASHBOARD.NO_ORDERS_FOUND}
+                      <td colSpan={10} className="py-24 text-center">
+                        <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
+                          <div className="h-14 w-14 bg-slate-50 border border-slate-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] rounded-full flex items-center justify-center mb-5">
+                            <Package
+                              size={24}
+                              className="text-slate-400"
+                              strokeWidth={1.5}
+                            />
+                          </div>
+                          <h3 className="text-sm font-medium text-slate-900 mb-1.5">
+                            No orders found
+                          </h3>
+                          <p className="text-[13px] text-slate-500 mb-6 text-balance">
+                            You don't have any orders matching your criteria.
+                            Try adjusting the status filter or wait for new
+                            customers.
+                          </p>
+                        </div>
                       </td>
                     </tr>
                   ) : (
@@ -893,12 +1002,12 @@ export default function DashboardPage() {
                     recentOrders.map((item) => (
                       <tr
                         key={item.id}
-                        className="hover:bg-gray-50 transition-colors group"
+                        className="hover:bg-slate-50/80 transition-colors group"
                       >
-                        <td className="p-4">
+                        <td className="p-4 pl-6">
                           <input
                             type="checkbox"
-                            className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                            className="w-4 h-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-500 cursor-pointer transition-colors"
                             checked={selectedOrders.includes(item.id)}
                             onChange={() => toggleOrderSelection(item.id)}
                           />
@@ -906,20 +1015,20 @@ export default function DashboardPage() {
 
                         {/* ORDER ID */}
                         <td className="p-4">
-                          <span className="font-mono text-theme-body-sm font-semibold text-gray-800">
+                          <span className="font-medium text-[13px] text-slate-900 tracking-wide">
                             #{item.id.split("-")[0].toUpperCase()}
                           </span>
                         </td>
 
                         {/* TOTAL AMOUNT */}
                         <td className="p-4">
-                          <span className="font-semibold text-gray-800">
+                          <span className="font-medium text-slate-700">
                             ₹{Number(item.total_amount).toLocaleString()}
                           </span>
                         </td>
 
                         {/* QTY */}
-                        <td className="p-4 text-gray-600 text-theme-body-sm">
+                        <td className="p-4 text-slate-600 text-[13px] font-medium">
                           {item.items?.reduce(
                             (total, cur) => total + cur.quantity,
                             0,
@@ -938,7 +1047,7 @@ export default function DashboardPage() {
                         </td>
 
                         {/* CUSTOMER */}
-                        <td className="p-4 text-theme-body-sm text-gray-700 font-medium whitespace-nowrap">
+                        <td className="p-4 text-[13px] text-slate-700 font-medium whitespace-nowrap">
                           {item.address?.name || "N/A"}
                         </td>
 
@@ -951,7 +1060,7 @@ export default function DashboardPage() {
                         </td>
 
                         {/* LOCATION */}
-                        <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap max-w-[200px] truncate">
+                        <td className="p-4 text-[13px] text-slate-500 whitespace-nowrap max-w-[200px] truncate">
                           {[
                             item.address?.city,
                             item.address?.state,
@@ -963,7 +1072,7 @@ export default function DashboardPage() {
                         </td>
 
                         {/* DATE */}
-                        <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap">
+                        <td className="p-4 text-[13px] text-slate-500 whitespace-nowrap font-medium">
                           {new Date(item.created_at).toLocaleDateString(
                             "en-GB",
                           )}
@@ -973,7 +1082,7 @@ export default function DashboardPage() {
                         <td className="p-4">
                           <Link
                             href={`/vendor/orders/${item.id}`}
-                            className="text-theme-caption font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                            className="inline-flex items-center justify-center text-[12px] font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
                           >
                             {UiText.DASHBOARD.VIEW_ARROW}
                           </Link>
@@ -997,7 +1106,6 @@ export default function DashboardPage() {
               />
             </span>
           )}
-        </span>
       </main>
     </>
   );

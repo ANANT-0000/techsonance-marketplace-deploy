@@ -36,7 +36,10 @@ export const isAdminDomainAllowed = async (): Promise<boolean> => {
 
   // Strip single or double quotes around the env variable string if they exist
   const cleanedEnv = allowedDomainsEnv.replace(/['"]/g, "");
-  const allowedList = cleanedEnv.split(",").map((d) => d.trim().toLowerCase());
+  const allowedList = cleanedEnv
+    .split(",")
+    .filter((d) => d.trim().length > 0)
+    .map((d) => d.trim().toLowerCase());
 
   // Get the actual hostname (e.g. localhost, admin.techsonance.co.in) to verify against allowedList,
   // rather than getCompanyDomain() which returns a mock UUID in local dev.

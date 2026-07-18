@@ -10,7 +10,7 @@ import {
   fetchApplications,
   rejectVendor,
 } from "@/utils/adminApiClients";
-import { formatStructure, formatDate } from "@/lib/utils";
+import { formatDateSystem, formatStructure } from "@/lib/utils";
 import { DocumentsSection } from "@/components/admin/DocumentSection";
 import { authToken } from "@/utils/authToken";
 import { redirect } from "next/navigation";
@@ -113,7 +113,9 @@ export default function VendorsApplicationsPage() {
                   <span className="flex justify-between p-4 border-2 border-gray-300 rounded-2xl mb-0">
                     {/* Left — Business Profile */}
                     <div className="leftSection px-4">
-                      <h1 className="text-theme-h5 font-bold">Business Profile</h1>
+                      <h1 className="text-theme-h5 font-bold">
+                        Business Profile
+                      </h1>
 
                       <p className="my-4 flex flex-col">
                         <span className="font-semibold text-gray-500">
@@ -175,7 +177,7 @@ export default function VendorsApplicationsPage() {
                     {/* Right — Domain Assignment */}
                     <div className="rightSection px-4">
                       <p className="text-right">
-                        {formatDate(vendor.created_at)}
+                        {formatDateSystem(vendor.created_at)}
                       </p>
 
                       <div className="w-full flex justify-start flex-col gap-6 bg-gray-100 my-4 border py-4 px-6 rounded-lg items-center">
@@ -243,7 +245,9 @@ export default function VendorsApplicationsPage() {
                   {/* ── Validation Actions ── */}
                   <span className="flex gap-6 justify-between items-baseline">
                     <div className="flex flex-1 flex-col gap-6 border-2 border-gray-300 rounded-xl mt-6 px-8 py-4">
-                      <h1 className="font-bold text-theme-h4">Validation Actions</h1>
+                      <h1 className="font-bold text-theme-h4">
+                        Validation Actions
+                      </h1>
                       <p>
                         By approving, a dedicated database instance will be
                         provisioned for

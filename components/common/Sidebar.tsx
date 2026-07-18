@@ -289,6 +289,7 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
 
       {/* ── Nav ────────────────────────────────────────────────────────────── */}
       <nav
+        id="tour-sidebar-nav"
         className="flex-1 overflow-y-auto overflow-x-hidden"
         aria-label="Main navigation"
       >

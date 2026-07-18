@@ -96,23 +96,31 @@ export const adminLogin = async (data: {
       password: data.password,
     });
 
-    const result = response.data;
+    const result =
+      typeof response.data === "string"
+        ? JSON.parse(response.data)
+        : response.data;
+    const payloadData = result.data;
     const payload: {
       user: User;
       access_token: string;
       role: UserRole;
       refresh_token: string;
     } = {
-      user: result.data.user,
-      access_token: result.data.access_token,
-      role: result.data.role as UserRole,
-      refresh_token: result.data.refresh_token,
+      user: payloadData.user,
+      access_token: payloadData.access_token,
+      role: payloadData.role as UserRole,
+      refresh_token: payloadData.refresh_token,
     };
-    return { status: true, message: "Login successful", data: payload };
+    return {
+      status: result.status || 200,
+      message: result.message || "Login successful",
+      data: payload,
+    };
   } catch (err: any) {
     const errorMessage =
       err.response?.data?.message || err.message || "Login failed";
-    return { status: false, message: errorMessage };
+    return { status: err.response?.status || 400, message: errorMessage };
   }
 };
 
@@ -208,6 +216,25 @@ export const requestPasswordResetOTP = async (email: string) => {
 
   const response = await AxiosAPI.post(
     `${BASE_API_URL}/v1/auth/request-password-reset`,
+    {
+      email: email,
+    },
+    {
+      headers: {
+        "company-domain": domain,
+      },
+    },
+  );
+
+  if (!response.status) throw new Error("Failed to request OTP");
+  return response.data;
+};
+
+export const requestVendorPasswordResetOTP = async (email: string) => {
+  const domain = await getCompanyDomain();
+
+  const response = await AxiosAPI.post(
+    `${BASE_API_URL}/v1/auth/vendor/request-password-reset`,
     {
       email: email,
     },

@@ -8,11 +8,10 @@ import {
   TAX_RATES_FORM_TEXT,
 } from "./vendorText";
 import { EDIT_PROFILE_TEXT } from "./customerText";
-export const STEPS = [
+export const VENDOR_REGISTER_FORM_STEPS = [
   { id: 0, label: "Organization", icon: Building2 },
   { id: 1, label: "Domain", icon: Globe2 },
   { id: 2, label: "Compliance", icon: ShieldCheck },
-  { id: 3, label: "Documents", icon: FileArchive },
 ];
 export const PROFILE_EDIT_FIELDS = [
   {
@@ -57,8 +56,10 @@ export const STEP_RHF_FIELDS: Record<number, (keyof VendorRegisterSchema)[]> = {
     "phone_number",
     "category",
     "company_structure",
+    "password",
+    "confirm_password",
   ],
-  1: ["company_domain"],
+  1: ["domain_type", "company_domain"],
   2: [],
   3: [],
 };

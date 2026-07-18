@@ -15,6 +15,7 @@ export const InnerSideBar = ({
     const path = usePathname()
     const [isClosed, setIsClosed] = useState(false)
     const [hovered, setHovered] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -36,6 +37,10 @@ export const InnerSideBar = ({
         leaveTimer.current = setTimeout(() => {
             setHovered(false);
         }, 120);
+    }, []);
+
+    useEffect(() => {
+        setMounted(true);
     }, []);
 
     const links = getVendorInnerSidebarLinks(selectedMenu)
@@ -72,7 +77,11 @@ export const InnerSideBar = ({
                         className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors ml-auto"
                         aria-label={expanded ? INNER_SIDEBAR_TEXT.ARIA_COLLAPSE : INNER_SIDEBAR_TEXT.ARIA_EXPAND}
                     >
-                        <DynamicIcon name={!expanded ? "panel-left-open" : "panel-left-close"} size={24} />
+                        {mounted ? (
+                            <DynamicIcon name={!expanded ? "panel-left-open" : "panel-left-close"} size={24} />
+                        ) : (
+                            <div className="w-6 h-6" />
+                        )}
                     </button>
                 </div>
 
@@ -124,7 +133,11 @@ export const InnerSideBar = ({
                                                         )}
 
                                                         <span className={`shrink-0 ${isActive ? "text-blue-500" : "text-gray-400 group-hover:text-gray-600"}`}>
-                                                            <DynamicIcon name={item.icon as IconName} size={24} />
+                                                            {mounted ? (
+                                                                <DynamicIcon name={item.icon as IconName} size={24} />
+                                                            ) : (
+                                                                <div className="w-6 h-6" />
+                                                            )}
                                                         </span>
 
                                                         {/* Label — hidden when collapsed */}

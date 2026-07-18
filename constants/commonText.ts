@@ -44,6 +44,7 @@ export const REGISTRATION_SUCCESS_MODAL_TEXT = {
   CREDENTIALS_DELIVERY: "Credentials Delivery",
   SENT_TO_EMAIL: "Sent to your registered email",
   BACK_TO_HOME: "Back to Home",
+  GO_TO_LOGIN: "Go to Login Page",
   NEED_HELP: "Need help?",
   SUPPORT_EMAIL: "techsonance@email.com",
 };

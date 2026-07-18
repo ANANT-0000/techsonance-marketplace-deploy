@@ -18,6 +18,7 @@ import { formatCurrency } from "@/lib/utils";
 import toast, { Toaster } from "react-hot-toast";
 import { motion } from "framer-motion";
 import { WISHLIST_PAGE_TEXT } from "@/constants/customerText";
+import { WishlistPageSkeleton } from "@/components/customer/WishlistPageSkeleton";
 
 interface WishlistItemType {
   created_at: string;
@@ -137,23 +138,7 @@ export default function WishlistPage() {
         {/* Content */}
         <div>
           {isLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="bg-card border border-border rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 relative animate-pulse shadow-sm"
-                >
-                  <div className="shrink-0 w-24 h-24 sm:w-28 sm:h-28 bg-secondary/40 rounded-xl" />
-                  <div className="flex-1 flex flex-col justify-between py-1 space-y-3">
-                    <div className="space-y-2">
-                      <div className="h-6 bg-secondary rounded w-3/4" />
-                      <div className="h-5 bg-secondary rounded w-1/4" />
-                    </div>
-                    <div className="h-11 bg-secondary rounded-xl w-full sm:w-40" />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <WishlistPageSkeleton />
           ) : isEmpty ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.97 }}

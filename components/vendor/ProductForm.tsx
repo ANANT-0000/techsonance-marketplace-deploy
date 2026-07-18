@@ -35,6 +35,7 @@ import { DynamicIcon } from "lucide-react/dynamic";
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useCallback, useState, use } from "react";
 import { FieldErrors, useFieldArray, useForm } from "react-hook-form";
+import { useVendorTour } from "@/components/vendor/VendorTourProvider";
 
 // Replaced constants
 export function ProductForm({
@@ -115,7 +116,7 @@ export function ProductForm({
     append: appendAttribute,
     remove: removeAttribute,
   } = useFieldArray({ control, name: "attributes" });
-  const { user } = useAppSelector((state) => state.auth);
+  const user = useAppSelector((state) => state.auth.user) as VendorUser | undefined;
   const router = useRouter();
 
   const [productFiles, setProductFiles] = useState<FileOrProductImage[]>([]);
@@ -124,6 +125,19 @@ export function ProductForm({
 
   const { getPreviewUrl, revokeAll, revokeOne } = usePreviewUrls();
   const token = authToken();
+  const { startVendorTour } = useVendorTour();
+  
+  useEffect(() => {
+    if (user && user.preferences && Array.isArray(user.preferences.completed_tours)) {
+      if (!user.preferences.completed_tours.includes("productCreation")) {
+        const timer = setTimeout(() => {
+          startVendorTour("productCreation");
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [user, startVendorTour]);
+
   useEffect(() => {
     return () => revokeAll();
   }, [revokeAll]);
@@ -321,7 +335,7 @@ export function ProductForm({
         </header>
 
         {/* ── 1. GENERAL INFORMATION ── */}
-        <div className="section">
+        <div id="tour-product-basic" className="section">
           <div className="section_header">
             <DynamicIcon
               fallback={() => <p></p>}
@@ -779,7 +793,7 @@ export function ProductForm({
         </div>
 
         {/* ── 4. CATEGORY & TAXATION ── */}
-        <div className="section">
+        <div id="tour-product-category" className="section">
           <div className="section_header">
             <DynamicIcon
               fallback={() => <p></p>}

@@ -8,23 +8,10 @@ import type {
 } from "@/utils/Types";
 import { LANDING_PRICING } from "@/constants/landingText";
 import { BASE_API_URL } from "@/constants";
+import { formatFeatureDisplay } from "@/lib/utils";
 
 const UNLIMITED_VALUE_RAW = "-1";
 const UNLIMITED_VALUE_DISPLAY = "Unlimited";
-
-function humanizeValue(val: string): string {
-  if (typeof val !== "string") return String(val);
-  if (val === "true" || val === "false" || /^-?\d+$/.test(val)) {
-    return val;
-  }
-  return val
-    .split("_")
-    .join(" ")
-    .split(" ")
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
 
 /** Shape used internally when rendering a merged plan card */
 interface MergedPlan {
@@ -222,22 +209,10 @@ export default function PricingSection({
           ? String(Math.round(Number(annualTotalNum) / 12))
           : (plan.price_annual ?? null);
 
-        // Build features from DB or use old capabilities fallback if empty
+        // Build features from CMS features array; fall back to capabilities object
         const dbFeatures = (plan.features || [])
-          .filter((f: any) =>
-            f.type === "boolean" ? f.value === "true" : true,
-          )
-          .map((f: any) => {
-            const formattedKey = f.feature_key
-              .split("_")
-              .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-              .join(" ");
-            const rawVal = f.value === UNLIMITED_VALUE_RAW ? UNLIMITED_VALUE_DISPLAY : f.value;
-            const displayValue = humanizeValue(rawVal);
-            return f.type === "boolean"
-              ? formattedKey
-              : `${formattedKey}: ${displayValue}`;
-          });
+          .map((f: any) => formatFeatureDisplay(f))
+          .filter(Boolean) as string[];
 
         const fallbackOverride = buildFallbackOverride(plan);
         const finalFeatures =

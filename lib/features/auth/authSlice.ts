@@ -4,7 +4,6 @@ import {
   ACCESS_TOKEN_KEY,
   CART_KEY,
   IS_AUTHENTICATED_KEY,
-  isClient,
   REFRESH_TOKEN_KEY,
   USER_STORAGE_KEY,
   WISHLIST_KEY,
@@ -63,6 +62,16 @@ const initialState: AuthType = {
   loginRedirectUrl: null,
 };
 
+const setAuthCookie = (name: string, value: string) => {
+  const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+  const secureFlag = isHttps ? "; Secure" : "";
+  document.cookie = `${name}=${value}; path=/; max-age=604800; SameSite=Lax${secureFlag}`;
+};
+
+const clearAuthCookie = (name: string) => {
+  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+};
+
 export const getPreloadedAuthState = (): { auth: AuthType } => {
   return {
     auth: initialState,
@@ -74,7 +83,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     hydrateAuth(state) {
-      if (isClient) {
+      if (typeof window !== "undefined") {
         try {
           const isAuthRaw = localStorage.getItem(IS_AUTHENTICATED_KEY);
           const parsedAuth = isAuthRaw ? JSON.parse(isAuthRaw) : null;
@@ -139,7 +148,7 @@ const authSlice = createSlice({
       state.isLoginModalOpen = false;
       state.loginRedirectUrl = null;
 
-      if (isClient) {
+      if (typeof window !== "undefined") {
         // Keep everything uniformly in localStorage
         localStorage.setItem(
           IS_AUTHENTICATED_KEY,
@@ -151,6 +160,10 @@ const authSlice = createSlice({
         );
         localStorage.setItem(ACCESS_TOKEN_KEY, action.payload.access_token); // Store token as a raw string
         localStorage.setItem(REFRESH_TOKEN_KEY, action.payload.refresh_token); // Store token as a raw string
+
+        // Set cookies so that Next.js Server Middleware can check the auth state
+        setAuthCookie("accessToken", action.payload.access_token);
+        setAuthCookie("access_token", action.payload.access_token);
       }
     },
     logOut(state) {
@@ -161,13 +174,17 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = null;
 
-      if (isClient) {
+      if (typeof window !== "undefined") {
         localStorage.removeItem(USER_STORAGE_KEY);
         localStorage.removeItem(CART_KEY);
         localStorage.removeItem(IS_AUTHENTICATED_KEY);
         localStorage.removeItem(ACCESS_TOKEN_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
         localStorage.removeItem(WISHLIST_KEY);
+
+        // Clear cookies
+        clearAuthCookie("accessToken");
+        clearAuthCookie("access_token");
       }
     },
 

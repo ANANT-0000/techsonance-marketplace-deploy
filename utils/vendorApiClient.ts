@@ -22,6 +22,28 @@ import {
 // CATEGORY API ENDPOINTS
 // ==========================================
 
+export const completeVendorTour = async (vendorId: string, tourId: string, token: string) => {
+  try {
+    const companyDomain = await getCompanyDomain();
+    const response = await fetch(`${BASE_API_URL}/v1/vendors/${vendorId}/preferences/tour-complete`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "company-domain": companyDomain,
+      },
+      body: JSON.stringify({ tourId }),
+    });
+    if (!response.ok) {
+      return { status: response.status, statusText: response.statusText };
+    }
+    return await response.json();
+  } catch (error) {
+    return { status: 500, statusText: "Internal Server Error" + error };
+  }
+};
+
 export const fetchVendorsProductsCategory = async (token: string) => {
   try {
     const companyDomain = await getCompanyDomain();
@@ -556,8 +578,7 @@ export const fetchVendorOrderList = async (
   status?: OrderStatus | "",
   sortBy?: string,
 ) => {
-  try {
-    const companyDomain = await getCompanyDomain();
+  const companyDomain = await getCompanyDomain();
 
     const queryParams = new URLSearchParams();
     queryParams.append("offset", String(offset));
@@ -582,12 +603,13 @@ export const fetchVendorOrderList = async (
       },
     );
     if (response.status !== 200) {
-      return [];
+      if (response.status === 403)
+        throw new Error(
+          "Access denied. Please check your subscription limits.",
+        );
+      throw new Error("Failed to fetch orders from server.");
     }
     return await response.json();
-  } catch (error) {
-    return [];
-  }
 };
 export const fetchVendorOrderDetails = async (
   orderId: string,
@@ -1041,17 +1063,14 @@ export const fetchCompanyCustomers = async (
     if (date) {
       url += `&date=${encodeURIComponent(date.toISOString())}`;
     }
-    const response = await fetch(
-      url,
-      {
-        ...getCacheConfig(3600),
-        credentials: "include",
-        headers: {
-          "company-domain": domain,
-          Authorization: `Bearer ${token}`,
-        },
+    const response = await fetch(url, {
+      ...getCacheConfig(3600),
+      credentials: "include",
+      headers: {
+        "company-domain": domain,
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
     return await response.json();
   } catch (error) {
     return { data: [], message: "Error fetching company customers" };
@@ -2638,6 +2657,71 @@ export const updateVendorPaymentConfig = async (
     return {
       success: false,
       message: "Error updating payment configuration",
+    };
+  }
+};
+// ==========================================
+// SUBSCRIPTION APIS
+// ==========================================
+
+export const getAvailableSubscriptionPlans = async () => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(`${BASE_API_URL}/v1/subscription/plans`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "company-domain": domain,
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error("Failed to fetch available plans");
+    return res.json();
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getSubscriptionStatus = async (token: string) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(`${BASE_API_URL}/v1/subscription/status`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "company-domain": domain,
+        Authorization: `Bearer ${token}`,
+      },
+      next: { revalidate: 0 },
+    });
+    if (!res.ok) throw new Error("Failed to fetch subscription status");
+    return res.json();
+  } catch (error) {
+    return null;
+  }
+};
+
+export const upgradeSubscriptionPlan = async (
+  token: string,
+  plan_id: string,
+) => {
+  const domain = await getCompanyDomain();
+  try {
+    const res = await fetch(`${BASE_API_URL}/v1/subscription/upgrade`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "company-domain": domain,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ plan_id }),
+    });
+    return res.json();
+  } catch (error) {
+    return {
+      success: false,
+      message: "Error upgrading subscription plan",
     };
   }
 };

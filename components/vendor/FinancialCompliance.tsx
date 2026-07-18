@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, Info, ShieldCheck } from "lucide-react";
-import { COMPLIANCE_REGEX } from "@/app/auth/vendorRegister/page";
+import { COMPLIANCE_REGEX } from "@/utils/validation";
 import { FINANCIAL_COMPLIANCE_TEXT } from "@/constants/vendorText";
 
 export interface ComplianceField {

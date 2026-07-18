@@ -31,7 +31,6 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
             className={`group flex flex-col cursor-pointer overflow-hidden transition-all duration-300 relative h-full rounded-[var(--radius)] ${cardCls} shadow`}
         >
             <div 
-                style={{ background: bgColor }} 
                 className="relative aspect-square md:aspect-[4/5] overflow-hidden transition-colors duration-500"
             >
                 <WishListBtn productVariantId={variantId} styles="absolute md:top-3 top-0 md:right-3 right-1 z-10 md:w-9 md:h-9 w-7 h-7 bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center rounded-full text-gray-600 hover:text-red-500 transition-colors" />
@@ -50,7 +49,6 @@ export function ProductCard({ product, idx }: { product: Product; idx: number })
                 {/* Seamless Edge Blending Overlay */}
                 <div 
                     className="absolute inset-0 pointer-events-none transition-all duration-500"
-                    style={{ boxShadow: `inset 0 0 20px 6px ${solidBg}` }}
                 />
             </div>
 

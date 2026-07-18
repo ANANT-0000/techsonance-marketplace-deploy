@@ -12,6 +12,7 @@ import { FilterSidebar, FilterState } from "./FilterSidebar";
 import { ProductSkeleton } from "../common/ProductSkeleton";
 import { SearchBar } from "./SearchBar";
 import { Product, Category } from "@/utils/Types";
+import { ShoppingPageSkeleton } from "./ShoppingPageSkeleton";
 
 import {
   fetchProducts,
@@ -19,7 +20,6 @@ import {
   SortBy,
 } from "@/utils/commonAPiClient";
 import { SHOPPING_LIST_TEXT } from "@/constants/customerText";
-import { PageLoader } from "./PageLoader";
 import toast from "react-hot-toast";
 import { ShoppingListConfig } from "@/constants";
 
@@ -291,9 +291,6 @@ function ShoppingListContent({ styles }: ShoppingListProps) {
   const currentSortLabel =
     SORT_OPTIONS.find((o) => o.value === sortBy)?.label ??
     SHOPPING_LIST_TEXT.SORT_NEWEST;
-  if (state.pageIsLoading) {
-    return <PageLoader />;
-  }
   return (
     <motion.section
       className={`w-full ${styles ?? ""}`}
@@ -448,13 +445,7 @@ function ShoppingListContent({ styles }: ShoppingListProps) {
 
 export function ShoppingList(props: ShoppingListProps) {
   return (
-    <Suspense
-      fallback={
-        <div className="p-20 text-center">
-          <Loader2 className="animate-spin mx-auto text-blue-600" />
-        </div>
-      }
-    >
+    <Suspense fallback={<ShoppingPageSkeleton />}>
       <ShoppingListContent {...props} />
     </Suspense>
   );

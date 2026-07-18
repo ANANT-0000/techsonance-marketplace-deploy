@@ -10,7 +10,7 @@ import { authToken } from "@/utils/authToken";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
-import { UserRole } from "@/constants";
+import { UserRole } from "@/utils/Types";
 import { isAdminDomainAllowed } from "@/lib/get-domain";
 
 const ADMIN_LOGIN_PATH = "/auth/adminLogin";
@@ -25,8 +25,12 @@ export default function AdminLayout({
 
   useEffect(() => {
     const verifyDomain = async () => {
-      const allowed = await isAdminDomainAllowed();
-      setDomainAllowed(allowed);
+      try {
+        const allowed = await isAdminDomainAllowed();
+        setDomainAllowed(allowed);
+      } catch (error) {
+        setDomainAllowed(false);
+      }
     };
     verifyDomain();
   }, []);
@@ -44,16 +48,26 @@ export default function AdminLayout({
   }, []);
 
   useEffect(() => {
-    if (mounted && domainAllowed === true && (!isAuthenticated || role !== UserRole.ADMIN)) {
+    if (
+      (mounted &&
+        domainAllowed === true &&
+        (!isAuthenticated || role !== UserRole.ADMIN)) ||
+      !token
+    ) {
       router.push(ADMIN_LOGIN_PATH);
     }
-  }, [mounted, isAuthenticated, role, router, domainAllowed]);
+  }, [mounted, isAuthenticated, role, router, domainAllowed, token]);
 
   if (domainAllowed === false) {
     notFound();
   }
 
-  if (!mounted || domainAllowed === null || !isAuthenticated || role !== UserRole.ADMIN) {
+  if (
+    !mounted ||
+    domainAllowed === null ||
+    !isAuthenticated ||
+    role !== UserRole.ADMIN
+  ) {
     return null;
   }
 

@@ -6,6 +6,7 @@ import {
   Category,
   CategoryTreeNode,
   DiscountConfig,
+  FeatureType,
   FixedAmountConfig,
   OrderStatus,
   PercentageConfig,
@@ -15,6 +16,8 @@ import {
 } from "@/utils/Types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { CmsPlanFeature } from "@/hooks/useCmsSubscriptionPlans";
+import { BOOLEAN_VALUE } from "@/components/common/subscriptions/SharedUI";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -57,9 +60,34 @@ export const formatStructure = (s: string) =>
 /** Formats an ISO date string into a localized short date string.
  * @param {string} dateStr - The ISO date string (e.g., "2023-10-01T12:00:00Z").
  * @returns {string} The localized date (e.g., "10/1/2023").*/
-export const formatDate = (dateStr: string) =>
+export const formatDateSystem = (dateStr: string) =>
   new Date(dateStr).toLocaleDateString();
 
+/**
+ * Formats an ISO date string into a readable, localized format (e.g., "12 Jul 2026").
+ *
+ * Handles null, undefined, or invalid date strings by returning "N/A".
+ * Uses the 'en-GB' locale to ensure a consistent day-month-year order with a short month name.
+ *
+ * @param isoStr - The ISO 8601 date string to format (e.g., "2026-07-12"). Can be null or undefined.
+ * @returns The formatted date string (e.g., "12 Jul 2026") or "N/A" if the input is invalid.
+ */
+export const formatDateReadable = (
+  isoStr: string | null | undefined,
+): string => {
+  if (!isoStr) return "N/A";
+  try {
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return "N/A";
+    return d.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return "N/A";
+  }
+};
 /** Validates if a string is a valid image URL based on file extension.
  * Checks for common image formats including jpg, jpeg, png, gif, webp, svg, and bmp.
  * Supports URLs with query parameters.
@@ -195,21 +223,33 @@ export function calculateCouponDiscount(
   }
 }
 
-/** Converts an ISO 8601 date string to the `datetime-local` input format (YYYY-MM-DDTHH:mm).
- * Used for populating HTML5 date/time input fields. Returns an empty string if the input
- * is invalid or null.
- * @param {string} val - The ISO date string.
- * @returns {string} The formatted datetime string or empty string.*/
-export const toDatetimeLocal = (val: string) => {
+/**
+ * Converts a date string to the format required for HTML <input type="datetime-local">.
+ * Format: "YYYY-MM-DDTHH:MM" (e.g., "2026-07-12T15:30").
+ *
+ * Returns an empty string if the input is null, undefined, empty, or an invalid date.
+ *
+ * @param val - The date string to convert.
+ * @returns The formatted datetime-local string or an empty string if invalid.
+ *
+ * @example
+ * toDatetimeLocal("2026-07-12T15:30:00"); // "2026-07-12T15:30"
+ * toDatetimeLocal("invalid");             // ""
+ * toDatetimeLocal(null);                  // ""
+ */
+export const toDatetimeLocal = (val: string | null | undefined): string => {
   if (!val) return "";
   try {
     const d = new Date(val);
+    // Explicitly check for Invalid Date to prevent "NaN" output
     if (isNaN(d.getTime())) return "";
+
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
     const hh = String(d.getHours()).padStart(2, "0");
     const min = String(d.getMinutes()).padStart(2, "0");
+
     return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
   } catch {
     return "";
@@ -303,4 +343,88 @@ export const getUIConfig = (status: OrderStatus) => {
       stepIndex: 0,
     }
   );
+};
+/**
+ * Converts a machine-readable string (e.g., database keys like "first_name")
+ * into a human-readable label (e.g., "First Name").
+ *
+ * - Replaces underscores with spaces.
+ * - Capitalizes the first letter of each word.
+ * - Returns booleans ("true"/"false") and integers unchanged.
+ * - Returns "N/A" is not applicable, but here it returns the stringified value for non-strings.
+ *
+ * @param val - The input string to format. Can also be a non-string value, which will be stringified.
+ * @returns The formatted, readable string (e.g., "Total Amount") or the original value if it is a boolean or number.
+ *
+ * @example
+ * formatLabel("user_profile_data"); // "User Profile Data"
+ * formatLabel("is_active");         // "Is Active"
+ * formatLabel("true");              // "true" (unchanged)
+ * formatLabel("123");               // "123" (unchanged)
+ * formatLabel(42);                  // "42" (stringified)
+ */
+export function formatLabel(val: string | number | boolean): string {
+  if (typeof val !== "string") return String(val);
+
+  // Pass through booleans and whole numbers as-is
+  if (val === "true" || val === "false" || /^-?\d+$/.test(val)) {
+    return val;
+  }
+
+  return val
+    .split("_")
+    .join(" ")
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+/**
+ * Formats a CMS plan feature into a human-readable display string.
+ *
+ * Logic:
+ * 1. Converts the `feature_key` (e.g., "storage_limit") to a Title Case label ("Storage Limit").
+ * 2. For BOOLEAN features: Returns the label only if the value is true; otherwise returns null.
+ * 3. For other types: Replaces raw values (like "unlimited") with display values and formats them.
+ * 4. Returns a string in the format "Label: Value" (e.g., "Storage: 5 GB").
+ *
+ * @param f - The CMS plan feature object containing the key, type, and value.
+ * @returns The formatted display string (e.g., "Storage: 5 GB"), the label only (for booleans), or null if the feature should be hidden.
+ *
+ * @example
+ * formatFeatureDisplay({ feature_key: "storage_limit", type: FeatureType.NUMBER, value: "1000" });
+ * // Returns "Storage Limit: 1 GB" (assuming formatLabel handles size)
+ *
+ * formatFeatureDisplay({ feature_key: "is_premium", type: FeatureType.BOOLEAN, value: BOOLEAN_VALUE.TRUE });
+ * // Returns "Is Premium"
+ *
+ * formatFeatureDisplay({ feature_key: "is_premium", type: FeatureType.BOOLEAN, value: BOOLEAN_VALUE.FALSE });
+ * // Returns null
+ */
+export const formatFeatureDisplay = (f: CmsPlanFeature): string | null => {
+  const UNLIMITED_VALUE_RAW = "-1";
+  const UNLIMITED_VALUE_DISPLAY = "Unlimited";
+  // Humanize the key: "storage_limit" -> "Storage Limit"
+  const label = f.feature_key
+    .split("_")
+    .filter(Boolean)
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+
+  if (!label) return null;
+
+  // Special handling for Boolean features
+  if (f.type === FeatureType.BOOLEAN) {
+    // Return label only if true, otherwise hide (null)
+    return f.value === BOOLEAN_VALUE.TRUE ? label : null;
+  }
+
+  // Handle "Unlimited" or other raw value replacements
+  const rawVal =
+    f.value === UNLIMITED_VALUE_RAW ? UNLIMITED_VALUE_DISPLAY : f.value;
+
+  // Format the value (e.g., "1000" -> "1K" or just pass through)
+  const displayVal = formatLabel(rawVal);
+
+  return `${label}: ${displayVal}`;
 };

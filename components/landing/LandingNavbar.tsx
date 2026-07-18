@@ -47,8 +47,8 @@ export default function LandingNavbar({ content }: LandingNavbarProps) {
     <nav
       className={`fixed inset-x-0 top-0 z-[1000] border-b transition-all duration-300 ${
         isScrolled
-          ? "border-landing-border bg-landing-navbar/95 py-3 backdrop-blur-xl shadow-[0_1px_0_var(--landing-border)]"
-          : "border-transparent bg-transparent py-5"
+          ? "border-landing-border bg-landing-navbar/95 py-0 backdrop-blur-xl shadow-[0_1px_0_var(--landing-border)]"
+          : "border-transparent bg-transparent py-0"
       }`}
       aria-label="Main navigation"
     >
@@ -58,7 +58,7 @@ export default function LandingNavbar({ content }: LandingNavbarProps) {
             <img
               src={content.logo.imageUrl}
               alt={content.logo.text || "Company Logo"}
-              className="w-48 h-24 object-contain  "
+              className="w-48 h-16 object-contain p-1"
             />
           ) : (
             <span className="text-xl font-semibold tracking-[-0.04em] text-landing-text">
@@ -84,12 +84,6 @@ export default function LandingNavbar({ content }: LandingNavbarProps) {
         </ul>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Link
-            href="/auth/login"
-            className="rounded-full px-4 py-2 text-sm font-medium text-landing-muted transition-colors hover:bg-landing-primary-soft hover:text-landing-primary"
-          >
-            {content.ctas.login}
-          </Link>
           <Link
             href="/auth/vendorRegister"
             className="rounded-full bg-landing-primary px-5 py-2.5 text-sm font-semibold text-landing-on-primary shadow-lg shadow-landing-primary/20 transition-transform hover:bg-landing-primary-hover hover:scale-[1.02]"

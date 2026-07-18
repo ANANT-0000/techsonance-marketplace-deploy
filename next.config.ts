@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   //   return config;
   // },
 
-  allowedDevOrigins: ["http://192.168.43.1:3000", "http://localhost:3000", "*"],
+  allowedDevOrigins: ["192.168.29.28", "localhost", "*"],
 
   turbopack: {
     // Fix "multiple lockfiles" warning — pin the workspace root explicitly

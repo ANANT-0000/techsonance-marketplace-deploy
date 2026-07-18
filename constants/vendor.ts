@@ -394,7 +394,11 @@ export const getVendorInnerSidebarLinks = (
         {
           section: "Organization",
           list: [
-            // { title: 'Billing & Banking', path: `/vendor/settings/billing`, icon: 'landmark' },
+            {
+              title: "Billing & Banking",
+              path: `/vendor/settings/billing`,
+              icon: "landmark",
+            },
             {
               title: "Tax & Compliance",
               path: `/vendor/settings/compliance`,

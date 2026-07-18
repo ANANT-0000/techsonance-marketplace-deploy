@@ -65,6 +65,9 @@ export const VENDOR_LOGIN_TEXT = {
   BTN_TRY_AGAIN: "Try again",
   HIDE_PASSWORD: "Hide password",
   SHOW_PASSWORD: "Show password",
+  RESEND_TEMP_PASSWORD_LINK: "Resend generated password",
+  ERR_EMAIL_REQUIRED_FOR_RESEND: "Please enter your business email address first.",
+  MSG_TEMP_PASSWORD_RESENT: "A new generated password has been sent to your email.",
 };
 
 export const VENDOR_REGISTER_TEXT = {
@@ -91,15 +94,42 @@ export const VENDOR_REGISTER_TEXT = {
   CATEGORY_PLACEHOLDER: "Select category",
   STRUCTURE_LABEL: "Company Structure",
   STRUCTURE_PLACEHOLDER: "Select structure",
+  PASSWORD_LABEL: "PASSWORD",
+  PASSWORD_PLACEHOLDER: "Create a secure password",
+  CONFIRM_PASSWORD_LABEL: "CONFIRM PASSWORD",
+  CONFIRM_PASSWORD_PLACEHOLDER: "Confirm your password",
+  HIDE_PASSWORD: "Hide password",
+  SHOW_PASSWORD: "Show password",
+  PLAN_LABEL: "SUBSCRIPTION PLAN",
+  PLAN_PLACEHOLDER: "Select a subscription plan",
+  PLAN_LOADING: "Loading plans...",
+  PLAN_HINT: "You will start on a free trial when your account is approved.",
+  PLAN_SELECTED_SUFFIX: "Selected",
+  PLAN_TRIAL_DAYS_SUFFIX: "days free",
+  PLAN_MONTHLY_PRICE_LABEL: "Monthly Price:",
+  PLAN_ANNUAL_PRICE_LABEL: "Annual Price (per month):",
+  CURRENCY_SYMBOL: "₹",
   STEP_1_TITLE: "Storefront Domain",
   STEP_1_DESC:
     "Choose a unique subdomain for your storefront. Customers will access your store at this URL.",
   DOMAIN_LABEL: "Subdomain",
   DOMAIN_PLACEHOLDER: "your-store",
   DOMAIN_SUFFIX: ".platform.com",
-  DOMAIN_HINT_1: "Lowercase letters, numbers, and hyphens only",
-  DOMAIN_HINT_2: "Cannot start or end with a hyphen",
-  DOMAIN_HINT_3: "3 – 63 characters",
+  DOMAIN_SUBDOMAIN_LABEL: "Platform Subdomain",
+  DOMAIN_SUBDOMAIN_DESC: "Fastest setup. Your store will be hosted at ",
+  DOMAIN_CUSTOM_LABEL: "Custom Domain",
+  DOMAIN_CUSTOM_DESC: "Connect your existing domain (e.g. ",
+  DOMAIN_PREVIEW_LIVE: "Your store will be live at ",
+  DOMAIN_PREVIEW_CUSTOM_HINT: "After you continue, we'll email you the DNS records to connect this domain.",
+  DOMAIN_CUSTOM_EXAMPLE: "shop.yourbrand.com",
+  DOMAIN_CUSTOM_PLACEHOLDER: "e.g., shop.mybrand.com",
+  STORE_URL_LABEL: "Store URL:",
+  DOMAIN_RULE_SUB_1: "Lowercase letters and numbers only",
+  DOMAIN_RULE_SUB_2: "No leading or trailing hyphens",
+  DOMAIN_RULE_SUB_3: "Between 3 and 63 characters",
+  DOMAIN_RULE_CUS_1: "Enter your domain without https:// or www",
+  DOMAIN_RULE_CUS_2: "Must be a valid domain (e.g. shop.yourbrand.com)",
+  DOMAIN_RULE_CUS_3: "No paths or trailing slashes",
   STEP_2_TITLE: "Legal & Financial Compliance",
   STEP_2_DESC:
     "Required regulatory identifiers for your jurisdiction. All required fields must pass format validation.",
@@ -120,9 +150,44 @@ export const VENDOR_REGISTER_TEXT = {
   ERROR_COUNTRY_REQUIRED: "Please select your country to continue.",
   ERROR_EMAIL_EXISTS:
     "Email already in use. Please use a different email or login.",
+  ERROR_PHONE_EXISTS:
+    "Phone number already in use. Please use a different phone number or log in.",
   ERROR_REG_FAILED: "Registration failed. Please try again.",
   ERROR_GENERIC: "Something went wrong. Please try again.",
+  APP_NAME: "Techsonance",
+  HERO_TITLE_START: "Start selling",
+  HERO_TITLE_HIGHLIGHT: "everywhere.",
+  TRUST_BADGE_SETUP: "~5 min setup",
+  TRUST_BADGE_VERIFIED: "Verified seller account",
+  REGISTER_BUSINESS_ENTITY: "Register Business Entity",
+  REGISTER_BUSINESS_DESC:
+    "Turn on to provide tax & compliance details for a registered business.",
+  DOMAIN_INPUT_SLUG: "Storefront Slug",
+  DOMAIN_INPUT_FULL: "Full Domain URL",
 };
+
+export const VENDOR_REGISTER_BRAND_FEATURES = [
+  {
+    icon: "🚀",
+    title: "Launch in minutes",
+    desc: "Get your storefront live with zero friction.",
+  },
+  {
+    icon: "🔒",
+    title: "Bank-level security",
+    desc: "Your data is encrypted and always protected.",
+  },
+  {
+    icon: "📈",
+    title: "Built to scale",
+    desc: "From solo seller to enterprise — we grow with you.",
+  },
+  {
+    icon: "🌍",
+    title: "Global reach",
+    desc: "Sell to customers in any country, any currency.",
+  },
+];
 
 export const AUTH_ERROR_TEXT = {
   UNKNOWN_ERROR: "An unknown error occurred during authentication.",
@@ -177,6 +242,64 @@ export const FORGOT_PASSWORD_TEXT = {
   SECURE_MSG: "Your password is encrypted and secure",
 };
 
+export const VENDOR_FORGOT_PASSWORD_TEXT = {
+  ERR_OTP_EXPIRED: "OTP has expired. Please request a new one.",
+  MSG_OTP_SENT: "If this email matches an active profile, a secure 6-digit recovery code has been sent. The token will remain active for 15 minutes.",
+  ERR_OTP_SEND_FAILED: "Failed to send OTP. Please check your email and try again.",
+  MSG_RESET_SUCCESS: "Password reset successfully! Redirecting to login...",
+  ERR_LOCKED_OUT: "Maximum attempts reached. For your security, this session has been locked. Please reload the page to try again.",
+  ERR_RESET_FAILED: (attempts: number) => `Invalid OTP or failed to reset password. (${attempts} attempts remaining)`,
+  STRENGTH_WEAK: "Weak",
+  STRENGTH_FAIR: "Fair",
+  STRENGTH_GOOD: "Good",
+  STRENGTH_STRONG: "Strong",
+  BTN_BACK: "Back",
+  TITLE: "Vendor Reset Password",
+  DESC_STEP1: "Enter your vendor email address and we'll send you a verification code.",
+  DESC_STEP2: "Enter the 6-digit code sent to your email and create a new password.",
+  LBL_EMAIL: "Business Email Address",
+  PH_EMAIL: "vendor@company.com",
+  HINT_EMAIL: "We'll send a 6-digit verification code to this business email",
+  BTN_SENDING: "Sending Code...",
+  BTN_WAIT: (seconds: number) => `Wait ${seconds}s to Resend`,
+  BTN_SEND: "Send Verification Code",
+  LBL_CODE_SENT: "Code sent to",
+  LBL_EXPIRES: "Expires in: ",
+  LBL_OTP: "Verification Code",
+  PH_OTP: "000000",
+  HINT_OTP: "/6 digits entered",
+  BTN_RESEND_WAIT: (seconds: number) => `Resend code in ${seconds}s`,
+  BTN_RESEND: "Resend code",
+  LBL_NEW_PASS: "New Password",
+  PH_NEW_PASS: "Enter a strong password",
+  BTN_HIDE: "Hide",
+  BTN_SHOW: "Show",
+  HINT_PASS_LENGTH: "✓ At least 8 characters",
+  HINT_PASS_MIX: "✓ Mix of uppercase & lowercase",
+  HINT_PASS_NUM: "✓ Contains numbers",
+  BTN_RESETTING: "Resetting Password...",
+  BTN_RESET: "Reset Password",
+  LBL_REMEMBER: "Remember your password? ",
+  BTN_BACK_LOGIN: "Back to Login",
+  SECURE_MSG: "Your password is encrypted and secure",
+};
+
+export const VENDOR_SET_PASSWORD_TEXT = {
+  ERR_SESSION_INVALID: "User session invalid. Please log in again.",
+  ERR_PASSWORDS_MISMATCH: "New passwords do not match.",
+  MSG_PASSWORD_UPDATED: "Password updated successfully! Redirecting to dashboard...",
+  ERR_UPDATE_FAILED: "Failed to update password. Please check your current temporary password and try again.",
+  HEADING_SECURE_ACCOUNT: "Secure Your Account",
+  HEADING_SET_NEW_PASSWORD: "Set New Password",
+  DESC_SET_NEW_PASSWORD: "Please change your temporary system-generated password to a permanent one before accessing the dashboard.",
+  LABEL_NEW_PASSWORD: "NEW PASSWORD",
+  PH_NEW_PASSWORD: "Enter new password",
+  LABEL_CONFIRM_PASSWORD: "CONFIRM PASSWORD",
+  PH_CONFIRM_PASSWORD: "Confirm new password",
+  BTN_UPDATING: "Updating...",
+  BTN_UPDATE_PASSWORD: "Update Password",
+};
+
 export const CUSTOMER_LOGIN_TEXT = {
   MSG_REGISTERED: "Account created successfully! Please log in.",
   MSG_SIGNED_IN: "Signed in successfully!",
@@ -201,6 +324,8 @@ export const CUSTOMER_LOGIN_TEXT = {
   BTN_SIGN_IN: "Sign In",
   LBL_NO_ACCOUNT: "Don't have an account? ",
   BTN_CREATE_ACCOUNT: "Create account",
+  HIDE_PASSWORD: "Hide password",
+  SHOW_PASSWORD: "Show password",
 };
 
 export const AUTH_CENTER_TEXT = {
