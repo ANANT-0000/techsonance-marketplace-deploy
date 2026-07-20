@@ -25,6 +25,8 @@ export default function RootLayout({
     <html lang={DEFAULT_LANG}>
       <head>
         <link rel="icon" href="/favicon.ico" type="image/png" sizes="any" />
+      </head>
+      <body>
         {process.env.NODE_ENV === ENV_DEVELOPMENT && (
           <Script
             src={REACT_SCAN_SCRIPT_URL}
@@ -33,8 +35,6 @@ export default function RootLayout({
           />
         )}
         <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-      </head>
-      <body>
         <ReduxProviders>{children}</ReduxProviders>
       </body>
     </html>

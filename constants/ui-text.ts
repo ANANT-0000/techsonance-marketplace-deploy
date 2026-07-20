@@ -282,6 +282,14 @@ export const UiText = {
     NEWEST_FIRST: "Newest First",
     OLDEST_FIRST: "Oldest First",
     NO_ORDERS: "No orders found.",
+    NO_ORDERS_DESC:
+      "You don't have any orders matching your criteria. Try adjusting the status filter or wait for new customers.",
+    WAITING_FOR_ORDER: "Waiting for your first order",
+    WAITING_FOR_ORDER_DESC: "When customers purchase your products, their orders will appear here automatically.",
+    ERROR_TITLE: "Unable to load orders",
+    ERROR_FETCH_FAILED: "We couldn't connect to the server to fetch your orders.",
+    ERROR_GENERIC: "Something went wrong while fetching your orders.",
+    TRY_AGAIN: "Try Again",
     VIEW_ARROW: "View →",
     NO_INVOICES_WARNING: "No generated invoices found for these orders yet.",
     FAILED_DOWNLOAD_INVOICES: "Failed to download invoices.",
@@ -301,6 +309,12 @@ export const UiText = {
   },
   ORDER_DETAILS: {
     LOADING: "Loading order…",
+    TOAST_TRACKING_FAILED: "Failed to update tracking URL.",
+    TOAST_CANCEL_FAILED: "Failed to cancel item.",
+    TOAST_LOAD_FAILED: "Failed to load order details. Please try again.",
+    ERROR_LOAD_FAILED_TITLE: "Unable to load order",
+    ERROR_LOAD_FAILED_DESC: "We couldn't retrieve the details for this order. It might have been removed or there's a connection issue.",
+    TRY_AGAIN: "Try Again",
     BACK_TO_ORDERS: "Back to Orders",
     TITLE: "Order Details",
     VIEW_INVOICE: "View Invoice",
@@ -366,7 +380,11 @@ export const UiText = {
   BACK_ORDERS: {
     TITLE: "Back Orders",
     LOAD_ERROR: "Failed to load return requests",
-    NO_ORDERS: "No back orders found.",
+    NO_ORDERS: "No return requests yet.",
+    NO_ORDERS_DESC:
+      "Customer return and replacement requests will appear here.",
+    ERROR_DESC: "We couldn't retrieve your return requests. There may be a connection issue.",
+    TRY_AGAIN: "Try Again",
     NA: "N/A",
     SKU_PREFIX: "SKU: ",
     QTY_PREFIX: "Qty: ",
@@ -430,6 +448,9 @@ export const UiText = {
     SAVING: "Saving...",
     NO_CHANGES: "No changes to save.",
     LOAD_ERROR: "Failed to load request details",
+    ERROR_DESC: "The return request details could not be retrieved. They may have been removed or you might not have access.",
+    GO_BACK: "Go Back",
+    TRY_AGAIN: "Try Again",
     STATUS_REQUIRED: "Please select a status",
     NOTE_REQUIRED: "A note is required for rejections or QC failures",
     UPDATE_SUCCESS: "Status updated successfully",
@@ -446,6 +467,12 @@ export const UiText = {
       RETURN: "Return",
       REPLACEMENT: "Replacement",
     },
+  },
+  AUTH: {
+    SESSION_CHECK_TITLE: "Checking your session...",
+    SESSION_CHECK_DESC:
+      "We are verifying your session details. If this does not resolve quickly, your session may have expired. Please log in again to securely access your dashboard.",
+    LOG_IN_AGAIN: "Log In Again",
   },
 };
 

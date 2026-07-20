@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import RateCalculator from "../../../../components/vendor/RateCalculator";
 import RoutingStrategy from "../../../../components/vendor/RoutingStrategy";
@@ -79,6 +80,8 @@ interface ShippingFormValues {
 // ==========================================
 
 export default function ShippingSettingsPage() {
+  const companyId = getClientCompanyId();
+
   const [isPending, startTransition] = useTransition();
   const [state, dispatchState] = useReducer(shippingReducer, initialState);
   const token = authToken() || "";
@@ -102,9 +105,9 @@ export default function ShippingSettingsPage() {
   const shippingStrategy = watch("shipping_charge_strategy");
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !companyId) return;
     const loadSettings = async () => {
-      const res = await fetchShippingSettings(token);
+      const res = await fetchShippingSettings(token, companyId);
       if (res?.data || res) {
         const d = res.data || res;
         reset({
@@ -130,6 +133,7 @@ export default function ShippingSettingsPage() {
   }, [token, reset]);
 
   const onSubmit = (data: ShippingFormValues) => {
+    if (!companyId) return;
     dispatchState({ type: ActionType.RESET_STATUS });
     startTransition(async () => {
       const payload = {
@@ -142,7 +146,7 @@ export default function ShippingSettingsPage() {
         logistics_api_secret: data.logistics_api_secret,
       };
 
-      const res = await updateShippingSettings(payload, token);
+      const res = await updateShippingSettings(payload, token, companyId);
       if (res?.success || res?.status === 200 || res?.status === 201) {
         dispatchState({ type: ActionType.SET_SAVED, payload: true });
         dispatchState({

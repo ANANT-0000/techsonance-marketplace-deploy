@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import {
   fetchTaxProfiles,
   fetchTaxSlabOptions,
@@ -11,9 +12,14 @@ import { authToken } from "@/utils/authToken";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { SessionErrorCard } from "@/components/vendor/SessionErrorCard";
 
-const getWarehouseOptions = async (token: string, setWarehouseOptions: any) => {
-  await fetchVendorWarehouse(token)
+const getWarehouseOptions = async (
+  token: string,
+  companyId: string,
+  setWarehouseOptions: any,
+) => {
+  await fetchVendorWarehouse(token, companyId)
     .then((res) => {
       setWarehouseOptions(
         res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name })),
@@ -21,8 +27,12 @@ const getWarehouseOptions = async (token: string, setWarehouseOptions: any) => {
     })
     .catch((error) => {});
 };
-const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
-  await fetchVendorsProductsCategory(token)
+const getCategoryOptions = async (
+  token: string,
+  companyId: string,
+  setCategoryOptions: any,
+) => {
+  await fetchVendorsProductsCategory(token, companyId)
     .then((res) => {
       setCategoryOptions(
         res.data.map((c: any) => ({ value: c.id, label: c.name })),
@@ -31,8 +41,12 @@ const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
     .catch((error) => {});
 };
 
-const getTaxSlabsOptions = async (token: string, setTaxSlabsOptions: any) => {
-  fetchTaxSlabOptions(token)
+const getTaxSlabsOptions = async (
+  token: string,
+  companyId: string,
+  setTaxSlabsOptions: any,
+) => {
+  fetchTaxSlabOptions(token, companyId)
     .then((res) => {
       setTaxSlabsOptions(
         res.data.map((t: any) => ({
@@ -44,6 +58,8 @@ const getTaxSlabsOptions = async (token: string, setTaxSlabsOptions: any) => {
     .catch((error) => {});
 };
 export default function ProductFormPage() {
+  const companyId = getClientCompanyId();
+
   const { user } = useAppSelector((state) => state.auth);
   const vendorId = (user && "vendor_id" in user ? user.vendor_id : "") ?? "";
   const [categoryOptions, setCategoryOptions] = useState<
@@ -56,18 +72,18 @@ export default function ProductFormPage() {
     { value: string; label: string }[]
   >([]);
   const token = authToken();
-  if (!token) {
-    redirect("/auth/vendorLogin");
+  if (!token || !companyId) {
+    return <SessionErrorCard />;
   }
 
   useEffect(() => {
-    getWarehouseOptions(token, setWarehouseOptions);
-    getCategoryOptions(token, setCategoryOptions);
-    getTaxSlabsOptions(token, setTaxSlabsOptions);
-  }, [token]);
+    getWarehouseOptions(token, companyId, setWarehouseOptions);
+    getCategoryOptions(token, companyId, setCategoryOptions);
+    getTaxSlabsOptions(token, companyId, setTaxSlabsOptions);
+  }, [token, companyId]);
   return (
-    <main className="min-h-screen max-h-screen overflow-y-scroll py-8 w-full ">
-      <div className=" mx-auto">
+    <main className="w-full px-4 sm:px-8 py-1 min-h-screen max-h-screen overflow-y-scroll bg-[#fafafa]">
+      <div className="mx-auto space-y-6 pt-4 pb-12">
         <ProductForm
           categoryOptions={categoryOptions}
           vendorId={vendorId}

@@ -1,6 +1,7 @@
 ﻿# TechSonance Marketplace - Complete Architecture Documentation
 
 ## Project Overview
+
 **TechSonance Marketplace** (Sound Sphere) is a comprehensive multi-tenant music marketplace platform with three distinct user roles: **Admin**, **Vendor**, and **Customer**. Built using **React 19 + TypeScript + Vite + Redux Toolkit** with a focus on e-commerce functionality including shopping cart, wishlist, checkout, and order management.
 
 ---
@@ -8,17 +9,20 @@
 ## Tech Stack
 
 ### Frontend Framework
+
 - **React** 19.2.4
 - **TypeScript** 5.9.3
 - **Vite** (Build tool & dev server)
 - **React Router** v7.12.0
 
 ### State Management
+
 - **Redux Toolkit** 2.11.2
 - **React Redux** 9.2.0
 - **Redux** 5.0.1
 
 ### UI & Styling
+
 - **Tailwind CSS** 4.1.18
 - **@tailwindcss/vite** 4.1.18
 - **Radix UI** components (@radix-ui/react-select, react-separator, react-slot)
@@ -28,16 +32,20 @@
 - **tw-animate-css** 1.4.0
 
 ### Forms & Validation
+
 - **React Hook Form** 7.71.1
 - **Zod** 4.3.5
 
 ### Data Visualization
+
 - **Recharts** 2.15.4
 
 ### HTTP Client
+
 - **Axios** 1.13.4
 
 ### Other Libraries
+
 - **date-fns** 4.1.0 (Date formatting)
 - **embla-carousel-react** 8.6.0 (Carousel component)
 - **react-day-picker** 9.13.0 (Calendar picker)
@@ -66,6 +74,7 @@ Located in [src/app/store.ts](src/app/store.ts), the application uses **7 main s
 ```
 
 **Type Definitions**:
+
 ```typescript
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
@@ -76,35 +85,35 @@ export type AppDispatch = typeof store.dispatch;
 The store implements custom middleware to persist state to localStorage:
 
 ```typescript
-const localStorageMiddleware = store => next => action => {
-    const result = next(action);
-    
-    // Persists cart state
-    if (action.type.startsWith('cart/')) {
-        const cartState = store.getState().cart;
-        localStorage.setItem('cart', JSON.stringify(cartState));
-    }
-    
-    // Persists auth state
-    if (action.type.startsWith('auth/')) {
-        const authState = store.getState().auth;
-        localStorage.setItem('auth', JSON.stringify(authState));
-    }
-    
-    // Persists cart sidebar state
-    if (action.type.startsWith('cartSidebar/')) {
-        const cartSidebarState = store.getState().cartSidebar;
-        localStorage.setItem('cartSidebar', JSON.stringify(cartSidebarState));
-    }
-    
-    // Persists wishlist state
-    if (action.type.startsWith('wishlist/')) {
-        const wishlistState = store.getState().wishlist;
-        localStorage.setItem('wishlist', JSON.stringify(wishlistState));
-    }
-    
-    return result;
-}
+const localStorageMiddleware = (store) => (next) => (action) => {
+  const result = next(action);
+
+  // Persists cart state
+  if (action.type.startsWith("cart/")) {
+    const cartState = store.getState().cart;
+    localStorage.setItem("cart", JSON.stringify(cartState));
+  }
+
+  // Persists auth state
+  if (action.type.startsWith("auth/")) {
+    const authState = store.getState().auth;
+    localStorage.setItem("auth", JSON.stringify(authState));
+  }
+
+  // Persists cart sidebar state
+  if (action.type.startsWith("cartSidebar/")) {
+    const cartSidebarState = store.getState().cartSidebar;
+    localStorage.setItem("cartSidebar", JSON.stringify(cartSidebarState));
+  }
+
+  // Persists wishlist state
+  if (action.type.startsWith("wishlist/")) {
+    const wishlistState = store.getState().wishlist;
+    localStorage.setItem("wishlist", JSON.stringify(wishlistState));
+  }
+
+  return result;
+};
 ```
 
 ---
@@ -112,6 +121,7 @@ const localStorageMiddleware = store => next => action => {
 ## Authentication System
 
 ### Auth State Structure
+
 Located in [src/features/auth/authSlice.ts](src/features/auth/authSlice.ts)
 
 ```typescript
@@ -126,6 +136,7 @@ interface AuthType {
 ```
 
 ### User Profile Structure
+
 Located in [src/utils/Types.ts](src/utils/Types.ts)
 
 ```typescript
@@ -133,12 +144,12 @@ interface UserProfile {
   // Core User Data
   user_id: number;
   company_id: number;
-  user_role_id: number;  // 1: Admin, 2: Vendor, 3: Customer
+  user_role_id: number; // 1: Admin, 2: Vendor, 3: Customer
   name: string;
   email: string;
   phone: string;
   profileImgUrl: string;
-  user_status: 'active' | 'suspended' | 'pending';
+  user_status: "active" | "suspended" | "pending";
   created_at: string;
 
   // Linked Data
@@ -153,36 +164,39 @@ interface UserProfile {
 
 ```typescript
 enum UserRole {
-  Admin = 'admin',
-  Vendor = 'vendor',
-  Customer = 'customer'
+  Admin = "admin",
+  Vendor = "vendor",
+  Customer = "customer",
 }
 
-type Permission = 'read' | 'create' | 'delete' | 'update';
+type Permission = "read" | "create" | "delete" | "update";
 
 interface RoleDefinition {
   can: Permission[];
 }
 
 const role: Record<UserRole, RoleDefinition> = {
-  admin: { can: ['read', 'create', 'delete', 'update'] },
-  vendor: { can: ['read', 'create', 'update'] },
-  customer: { can: ['read'] }
-}
+  admin: { can: ["read", "create", "delete", "update"] },
+  vendor: { can: ["read", "create", "update"] },
+  customer: { can: ["read"] },
+};
 ```
 
 ### Auth Actions
 
 #### Core Authentication Actions
+
 1. **loginStart()** - Sets loading state to true
 2. **loginSuccess(payload)** - Stores user data + token in state & localStorage
 3. **loginFailure(error)** - Handles authentication errors
 4. **logOut()** - Clears auth state and all localStorage data
 
 #### User Profile Management Actions
+
 5. **updateUserProfile(payload)** - Updates user profile information
 
 #### Address Management Actions (CRUD)
+
 6. **createAddress(payload)** - Adds new address to user's addresses array
 7. **updateAddress(payload)** - Updates existing address by address_id
 8. **deleteAddress(address_id)** - Removes address from user's addresses
@@ -233,6 +247,7 @@ export const MockUser: UserProfile = {
 ## Shopping Features - Redux Slices
 
 ### 1. Cart Slice
+
 [src/features/Cart.ts](src/features/Cart.ts)
 
 ```typescript
@@ -248,15 +263,16 @@ interface CartState {
 }
 
 // Actions:
-addToCart(item)         // Adds item or increments quantity
-removeFromCart(id)      // Removes item by id
-updateQuantity(payload) // Updates item quantity
-clearCart()            // Clears all items
+addToCart(item); // Adds item or increments quantity
+removeFromCart(id); // Removes item by id
+updateQuantity(payload); // Updates item quantity
+clearCart(); // Clears all items
 ```
 
 **State Persistence**: Automatically synced to `localStorage` with key `'cart'`
 
 ### 2. Cart Sidebar Slice
+
 [src/features/CartSidebar.ts](src/features/CartSidebar.ts)
 
 ```typescript
@@ -274,6 +290,7 @@ toggleCartSidebar(action: 'open' | 'close' | undefined)
 **State Persistence**: Automatically synced to `localStorage` with key `'cartSidebar'`
 
 ### 3. Wishlist Slice
+
 [src/features/Wishlist.ts](src/features/Wishlist.ts)
 
 ```typescript
@@ -289,8 +306,8 @@ interface WishlistState {
 }
 
 // Actions:
-addToWishlist(item)        // Adds item with timestamp
-removeFromWishlist(productId) // Removes item by productId
+addToWishlist(item); // Adds item with timestamp
+removeFromWishlist(productId); // Removes item by productId
 ```
 
 **State Persistence**: Automatically synced to `localStorage` with key `'wishlist'`
@@ -361,8 +378,9 @@ The application uses **React Router v7** with nested routes and role-based acces
 ### Layout Components
 
 #### 1. ShopLayout (`/`)
+
 - **File**: [src/app/pages/shop/ShopLayout.tsx](src/app/pages/shop/ShopLayout.tsx)
-- **Structure**: 
+- **Structure**:
   ```
   <Navbar />
   <Outlet /> (Child routes)
@@ -373,8 +391,9 @@ The application uses **React Router v7** with nested routes and role-based acces
 - **Features**: Customer-facing storefront with persistent cart sidebar
 
 #### 2. UserLayout (`/customerProfile/:userId`)
+
 - **File**: [src/app/pages/shop/customerProfile/UserLayout.tsx](src/app/pages/shop/customerProfile/UserLayout.tsx)
-- **Structure**: 
+- **Structure**:
   ```
   <ProfileSidebar />
   <Outlet /> (Profile pages)
@@ -382,18 +401,21 @@ The application uses **React Router v7** with nested routes and role-based acces
 - **Features**: Customer profile management with sidebar navigation
 
 #### 3. AdminLayout (`/admin`)
+
 - **File**: [src/app/pages/admin/AdminLayout.tsx](src/app/pages/admin/AdminLayout.tsx)
 - **Structure**: Admin Sidebar → Content Area
-- **Dynamic Margin**: 
+- **Dynamic Margin**:
   - Collapsed: `ml-24`
   - Expanded: `ml-50`
 
 #### 4. VendorLayout (`/vendor`)
+
 - **File**: [src/app/pages/vendor/VendorLayout.tsx](src/app/pages/vendor/VendorLayout.tsx)
 - **Structure**: Vendor Sidebar → Content Area
 - **Same responsive behavior as AdminLayout**
 
 #### 5. VendorSettingLayout (`/vendor/settings`)
+
 - **File**: [src/app/pages/vendor/settings/VendorSettingLayout.tsx](src/app/pages/vendor/settings/VendorSettingLayout.tsx)
 - **Structure**: InnerSidebar → Settings pages
 - **Nested settings navigation with sections**
@@ -416,8 +438,9 @@ The application uses **React Router v7** with nested routes and role-based acces
 ```
 
 **Role Mapping**:
+
 ```typescript
-const allowedRoles = ['customer', 'admin', 'vendor'];
+const allowedRoles = ["customer", "admin", "vendor"];
 const userRoleType = allowedRoles[user.user_role_id - 1];
 ```
 
@@ -431,7 +454,7 @@ const userRoleType = allowedRoles[user.user_role_id - 1];
 interface Address {
   address_id: number;
   name?: string;
-  address_for: 'home' | 'work' | 'other';
+  address_for: "home" | "work" | "other";
   address_line1: string;
   city: string;
   state: string;
@@ -472,7 +495,7 @@ interface Wishlist {
 ```typescript
 interface UserOrder {
   order_id: number;
-  order_status: 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
+  order_status: "Pending" | "Shipped" | "Delivered" | "Cancelled";
   delivered_at?: string;
   shippingTo: Address | string;
   products?: { product_id: string; quantity: number }[];
@@ -483,16 +506,18 @@ interface UserOrder {
 ```
 
 ### Product Category Type
+
 [src/utils/customer/constants.ts](src/utils/customer/constants.ts)
 
 ```typescript
 interface CATEGORY_LIST_TYPE {
   title: string;
-  url: string;  // Image URL
+  url: string; // Image URL
 }
 ```
 
 **Available Categories**:
+
 - Guitars
 - Drums
 - Keyboards
@@ -529,6 +554,7 @@ interface FooterSectionType {
 ## Component Architecture
 
 ### Common Components
+
 Located in [src/components/common/](src/components/common/)
 
 1. **ProtectedRoute** - RBAC wrapper component
@@ -540,17 +566,20 @@ Located in [src/components/common/](src/components/common/)
 7. **ProductSkeleton** - Loading skeleton for products
 
 ### Admin Components
+
 [src/components/admin/](src/components/admin/)
 
 - **Navbar** - Admin header with page title and user info
 - **DashboardChart** - Analytics visualization with Recharts
 
 ### Vendor Components
+
 [src/components/vendor/](src/components/vendor/)
 
 - **Navbar** - Vendor header with navigation
 
 ### Customer Components (14 Components)
+
 [src/components/customer/](src/components/customer/)
 
 1. **Navbar** - Customer storefront header with search/cart/wishlist
@@ -569,6 +598,7 @@ Located in [src/components/common/](src/components/common/)
 14. **CustomerFeedback** - Customer review/rating component
 
 ### UI Components (shadcn/ui)
+
 [src/components/ui/](src/components/ui/)
 
 - **button** - Button variants with CVA
@@ -584,6 +614,7 @@ Located in [src/components/common/](src/components/common/)
 ## Customer Pages Architecture
 
 ### Shop Pages
+
 [src/app/pages/shop/](src/app/pages/shop/)
 
 1. **Home** (`/`) - Landing page with hero, categories, featured products
@@ -593,6 +624,7 @@ Located in [src/components/common/](src/components/common/)
 5. **AboutAs** (`/about`) - About company page
 
 ### Customer Profile Pages
+
 [src/app/pages/shop/customerProfile/](src/app/pages/shop/customerProfile/)
 
 1. **UserProfile** (`/customerProfile/:userId`) - Profile overview
@@ -605,6 +637,7 @@ Located in [src/components/common/](src/components/common/)
 8. **Unauthorized** (`/unauthorized`) - Access denied page
 
 ### Payment Flow
+
 [src/app/pages/shop/customerProfile/Payment/](src/app/pages/shop/customerProfile/Payment/)
 
 1. **Checkout** (`/customerProfile/:userId/checkout/:id`) - Payment and order review
@@ -615,17 +648,19 @@ Located in [src/components/common/](src/components/common/)
 ## State Management Deep Dive
 
 ### 1. Auth Slice - Complete Feature Set
+
 [src/features/auth/authSlice.ts](src/features/auth/authSlice.ts)
 
 **State Management**:
+
 ```typescript
 const initialState: AuthType = {
-  isAuthenticated: !!localStorage.getItem('authToken'),
+  isAuthenticated: !!localStorage.getItem("authToken"),
   user: getUserFromLocalStorage() || MockUser,
   loading: false,
   error: null,
-  token: localStorage.getItem('authToken') || null,
-  role: {} as Record<UserRole, RoleDefinition>
+  token: localStorage.getItem("authToken") || null,
+  role: {} as Record<UserRole, RoleDefinition>,
 };
 ```
 
@@ -649,6 +684,7 @@ const initialState: AuthType = {
 **Logging**: All actions include comprehensive console logging for debugging
 
 ### 2. Sidebar Slice
+
 [src/features/sidebar.ts](src/features/sidebar.ts)
 
 ```typescript
@@ -657,10 +693,11 @@ interface SidebarState {
 }
 
 // Actions:
-toggleSidebar() // Toggles sidebar open/closed state
+toggleSidebar(); // Toggles sidebar open/closed state
 ```
 
 **Usage**:
+
 ```typescript
 const { isSidebarOpen } = useSelector((state) => state.sidebar);
 dispatch(toggleSidebar());
@@ -670,6 +707,7 @@ dispatch(toggleSidebar());
 ```
 
 ### 3. Menu Slice
+
 [src/features/menuBar.ts](src/features/menuBar.ts)
 
 ```typescript
@@ -678,11 +716,12 @@ interface MenuState {
 }
 
 // Actions:
-openMenu()  // Opens mobile menu
-closeMenu() // Closes mobile menu
+openMenu(); // Opens mobile menu
+closeMenu(); // Closes mobile menu
 ```
 
 ### 4. Admin Theme Slice
+
 [src/features/theme/adminThemeSlice.ts](src/features/theme/adminThemeSlice.ts)
 
 Manages dark/light mode preferences for admin and vendor panels.
@@ -955,6 +994,7 @@ products       errors
 ## Navigation Configuration
 
 ### Admin Navigation Links
+
 [src/utils/constants.ts](src/utils/constants.ts)
 
 ```typescript
@@ -1080,6 +1120,7 @@ FOOTER_CONTENT: FooterSectionType[] = [
 ## Environment Configuration
 
 ### API Base URLs
+
 [src/utils/constants.ts](src/utils/constants.ts)
 
 ```typescript
@@ -1089,6 +1130,7 @@ export const ADMIN_BASE_URL = import.meta.env.VITE_ADMIN_BASE_URL;
 ```
 
 **Expected .env variables**:
+
 ```env
 VITE_VENDOR_BASE_URL=http://api.example.com/vendor
 VITE_CUSTOMER_BASE_URL=http://api.example.com/customer
@@ -1100,23 +1142,25 @@ VITE_ADMIN_BASE_URL=http://api.example.com/admin
 ## Customer-Facing Features
 
 ### Home Page Content
+
 [src/utils/customer/constants.ts](src/utils/customer/constants.ts)
 
 ```typescript
-HOME_HERO_TITLE = "Welcome to Sound Sphere - Your Ultimate Music Marketplace"
-HOME_HERO_DESC = "Discover, buy, and sell music products with ease. Join our vibrant community of music lovers and elevate your sound experience today!"
-HERO_BTN_TEXT = "Shop Now"
+HOME_HERO_TITLE = "Welcome to Sound Sphere - Your Ultimate Music Marketplace";
+HOME_HERO_DESC =
+  "Discover, buy, and sell music products with ease. Join our vibrant community of music lovers and elevate your sound experience today!";
+HERO_BTN_TEXT = "Shop Now";
 ```
 
 ### Brand Features Section
 
 ```typescript
 HOME_BRAND_FEATURES = [
-  { title: 'Secure Payment', icon: 'Wallet' },
-  { title: 'Free Shipping', icon: 'Package' },
-  { title: 'Delivered with Care and on time', icon: 'Truck' },
-  { title: 'High Quality audio', icon: 'audio-lines' },
-]
+  { title: "Secure Payment", icon: "Wallet" },
+  { title: "Free Shipping", icon: "Package" },
+  { title: "Delivered with Care and on time", icon: "Truck" },
+  { title: "High Quality audio", icon: "audio-lines" },
+];
 ```
 
 ### Shop Page Features
@@ -1133,14 +1177,17 @@ HOME_BRAND_FEATURES = [
 ## Asset Management
 
 ### Icon Assets
+
 [src/assets/](src/assets/)
 
 **Brand Assets**:
+
 - `e-commerce_brand_logo.png` - Main brand logo
 - `TS_Logo.png` - TechSonance logo
 - `tsLogo.png` - Alternative logo
 
 **Navigation Icons**:
+
 - `dashboard_icon.png` - Dashboard
 - `vendor_icon.png` - Vendors
 - `customers_icon.png` - Customers
@@ -1154,6 +1201,7 @@ HOME_BRAND_FEATURES = [
 - `settings_icon.png` - Settings
 
 **UI Icons**:
+
 - `searchImgDark.png` / `searchImgLight.png` - Search
 - `heartDark.png` / `heartLight.png` - Wishlist
 - `shoppingCart.png` - Cart
@@ -1168,11 +1216,13 @@ HOME_BRAND_FEATURES = [
 - `file_icon.png` - Document
 
 **Social Media Icons**:
+
 - `facebook icon.png`
 - `instagram icon.png`
 - `youtube icon.png`
 
 **Poster Images**:
+
 - `admin form poster.png` - Admin login background
 - `customer form poster.png` / `customer form poster 2.png` - Customer auth
 - `vendor login poster.png` - Vendor auth background
@@ -1182,47 +1232,55 @@ HOME_BRAND_FEATURES = [
 ## Key Design Patterns
 
 ### 1. Role-Based Access Control (RBAC)
+
 - Every protected route validates `user_role_id`
 - Permission-based UI rendering using `role` object
 - Centralized role definitions in Types.ts
 - Dynamic role mapping from `user_role_id` to role type
 
 ### 2. Layout Pattern with React Router
+
 - Shared layouts using `<Outlet />`
 - Nested route hierarchies (4 levels deep)
 - Consistent navigation across sections
 - Layout-specific sidebars and navigation
 
 ### 3. Redux Slice Pattern
+
 - Feature-based state organization (7 slices)
 - Separate reducers for distinct concerns
 - Type-safe state access with TypeScript
 - Comprehensive action logging for debugging
 
 ### 4. Higher-Order Component (HOC) Pattern
+
 - `ProtectedRoute` wraps authenticated components
 - Reusable authorization logic
 - Route-level access control with role validation
 
 ### 5. Responsive Sidebar Pattern
+
 - Toggle state managed globally in Redux
 - Persistent across navigation
 - Dynamic layout adjustments (margin-left)
 - Consistent behavior in Admin and Vendor panels
 
 ### 6. Constants-Based Configuration
+
 - Centralized navigation definitions
 - Environment-based API URLs
 - Reusable UI constants and content
 - Separation of content from components
 
 ### 7. LocalStorage Persistence Pattern
+
 - Custom middleware for automatic persistence
 - State hydration on app initialization
 - Selective persistence (auth, cart, wishlist, cartSidebar)
 - Error handling for localStorage failures
 
 ### 8. Compound Component Pattern
+
 - Layout components with nested child routes
 - Sidebar + Content area composition
 - Profile sidebar with multiple pages
@@ -1377,6 +1435,7 @@ techsonance-marketplace/
 ## Multi-Tenant Architecture
 
 ### Tenant Isolation
+
 - Each vendor operates independently with `company_id`
 - Company-specific data segregation in database
 - Admin oversees all vendor instances system-wide
@@ -1489,19 +1548,19 @@ src/utils/Types.ts
 ### Axios Instance Configuration
 
 ```typescript
-import axios from 'axios';
-import { CUSTOMER_BASE_URL } from './constants';
+import axios from "axios";
+import { CUSTOMER_BASE_URL } from "./constants";
 
 const apiClient = axios.create({
   baseURL: CUSTOMER_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Add auth token to requests
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem("authToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -1515,10 +1574,10 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Logout user
       dispatch(logOut());
-      navigate('/auth/customerLogin');
+      navigate("/customer/login");
     }
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
@@ -1532,7 +1591,7 @@ const handleFetchProducts = async () => {
     const response = await axios.get(`${CUSTOMER_BASE_URL}/products`);
     setProducts(response.data);
   } catch (error) {
-    console.error('Failed to fetch products:', error);
+    console.error("Failed to fetch products:", error);
     setError(error.message);
   } finally {
     dispatch(setLoading(false));
@@ -1546,12 +1605,12 @@ const handleFetchProducts = async () => {
 
 ### What Gets Persisted
 
-| Slice | LocalStorage Key | Why Persisted |
-|-------|------------------|---------------|
-| auth | 'auth', 'authToken', 'user' | Maintain login session |
-| cart | 'cart' | Preserve shopping cart across sessions |
-| cartSidebar | 'cartSidebar' | Remember cart panel state |
-| wishlist | 'wishlist' | Save favorite items |
+| Slice       | LocalStorage Key            | Why Persisted                          |
+| ----------- | --------------------------- | -------------------------------------- |
+| auth        | 'auth', 'authToken', 'user' | Maintain login session                 |
+| cart        | 'cart'                      | Preserve shopping cart across sessions |
+| cartSidebar | 'cartSidebar'               | Remember cart panel state              |
+| wishlist    | 'wishlist'                  | Save favorite items                    |
 
 ### What Doesn't Get Persisted
 
@@ -1565,7 +1624,7 @@ const handleFetchProducts = async () => {
 // Each slice loads initial state from localStorage
 const loadCartFromLocalStorage = () => {
   try {
-    const serializedCart = localStorage.getItem('cart');
+    const serializedCart = localStorage.getItem("cart");
     if (serializedCart) {
       const parsedCart = JSON.parse(serializedCart);
       if (parsedCart && Array.isArray(parsedCart.items)) {
@@ -1579,7 +1638,7 @@ const loadCartFromLocalStorage = () => {
 };
 
 const initialState = {
-  items: loadCartFromLocalStorage().items || []
+  items: loadCartFromLocalStorage().items || [],
 };
 ```
 
@@ -1588,15 +1647,18 @@ const initialState = {
 ## Performance Considerations
 
 ### Code Splitting
+
 - React Router automatically splits routes
 - Lazy loading can be implemented for heavy components
 
 ### Image Optimization
+
 - Use appropriate image formats (WebP with fallbacks)
 - Implement lazy loading for product images
 - Use responsive images with srcset
 
 ### Bundle Size Management
+
 ```bash
 # Analyze bundle size
 npm run build
@@ -1604,6 +1666,7 @@ npx vite-bundle-visualizer
 ```
 
 ### Memoization
+
 - Use `React.memo()` for expensive components
 - Use `useMemo()` for expensive calculations
 - Use `useCallback()` for stable function references
@@ -1613,29 +1676,34 @@ npx vite-bundle-visualizer
 ## Testing Strategy (Recommended)
 
 ### Unit Testing
+
 ```bash
 # Install testing dependencies
 npm install --save-dev vitest @testing-library/react @testing-library/jest-dom
 ```
 
 **Test Coverage Targets**:
+
 - Redux slices (reducers & actions)
 - Utility functions
 - Form validation schemas
 - Protected route logic
 
 ### Integration Testing
+
 - API integration tests
 - User flow tests (login → shop → checkout)
 - Role-based access control tests
 
 ### E2E Testing
+
 ```bash
 # Install Playwright or Cypress
 npm install --save-dev @playwright/test
 ```
 
 **Critical User Flows**:
+
 1. Customer registration → login → shop → add to cart → checkout
 2. Vendor login → create product → manage inventory
 3. Admin login → approve vendor → view analytics
@@ -1645,21 +1713,25 @@ npm install --save-dev @playwright/test
 ## Security Considerations
 
 ### Authentication Security
+
 - JWT tokens stored in localStorage (consider httpOnly cookies for production)
 - Token expiration handling
 - Refresh token mechanism (to be implemented)
 
 ### Authorization Security
+
 - Role-based access control on frontend
 - **Critical**: Backend must validate all permissions
 - Protected routes prevent unauthorized access
 
 ### Input Validation
+
 - Zod schemas for form validation
 - Sanitize user inputs before API calls
 - XSS prevention through React's built-in escaping
 
 ### API Security
+
 - CORS configuration on backend
 - Rate limiting on API endpoints
 - Input validation on backend
@@ -1669,6 +1741,7 @@ npm install --save-dev @playwright/test
 ## Deployment Checklist
 
 ### Pre-Deployment
+
 - [ ] Set production environment variables
 - [ ] Run production build: `npm run build`
 - [ ] Test production build: `npm run preview`
@@ -1679,6 +1752,7 @@ npm install --save-dev @playwright/test
 - [ ] Set up error tracking (Sentry, LogRocket)
 
 ### Production Environment Variables
+
 ```env
 VITE_VENDOR_BASE_URL=https://api.production.com/vendor
 VITE_CUSTOMER_BASE_URL=https://api.production.com/customer
@@ -1686,6 +1760,7 @@ VITE_ADMIN_BASE_URL=https://api.production.com/admin
 ```
 
 ### Hosting Options
+
 - **Frontend**: Vercel, Netlify, AWS S3 + CloudFront
 - **Backend API**: AWS EC2, Heroku, DigitalOcean
 - **Database**: AWS RDS, MongoDB Atlas
@@ -1695,6 +1770,7 @@ VITE_ADMIN_BASE_URL=https://api.production.com/admin
 ## Future Enhancements
 
 ### Planned Features
+
 1. **Real-time Features**
    - WebSocket integration for live notifications
    - Real-time order tracking
@@ -1754,9 +1830,10 @@ VITE_ADMIN_BASE_URL=https://api.production.com/admin
 ### Common Issues
 
 #### 1. LocalStorage Not Persisting
+
 ```typescript
 // Check browser localStorage
-console.log(localStorage.getItem('cart'));
+console.log(localStorage.getItem("cart"));
 
 // Clear localStorage
 localStorage.clear();
@@ -1766,35 +1843,38 @@ localStorage.clear();
 ```
 
 #### 2. Protected Route Not Working
+
 ```typescript
 // Debug auth state
-const { isAuthenticated, user } = useSelector(state => state.auth);
-console.log('Auth:', isAuthenticated, 'User:', user);
+const { isAuthenticated, user } = useSelector((state) => state.auth);
+console.log("Auth:", isAuthenticated, "User:", user);
 
 // Check user_role_id matches expected roles
-console.log('Role ID:', user?.user_role_id);
+console.log("Role ID:", user?.user_role_id);
 ```
 
 #### 3. Cart Not Updating
+
 ```typescript
 // Verify cart state
-const cart = useSelector(state => state.cart);
-console.log('Cart items:', cart.items);
+const cart = useSelector((state) => state.cart);
+console.log("Cart items:", cart.items);
 
 // Check localStorage
-console.log(localStorage.getItem('cart'));
+console.log(localStorage.getItem("cart"));
 
 // Dispatch action
 dispatch(addToCart({ id: 1, price: 100 }));
 ```
 
 #### 4. API Call Failures
+
 ```typescript
 // Check environment variables
-console.log('API URL:', import.meta.env.VITE_CUSTOMER_BASE_URL);
+console.log("API URL:", import.meta.env.VITE_CUSTOMER_BASE_URL);
 
 // Verify token
-console.log('Token:', localStorage.getItem('authToken'));
+console.log("Token:", localStorage.getItem("authToken"));
 
 // Check network tab in DevTools
 ```
@@ -1804,17 +1884,21 @@ console.log('Token:', localStorage.getItem('authToken'));
 ## Documentation Maintenance
 
 ### Version History
+
 - **v2.0** - February 20, 2026 - Complete architecture update with all features
 - **v1.0** - February 9, 2026 - Initial documentation
 
 ### Last Updated
+
 **Date**: February 20, 2026  
 **Version**: 2.0.0  
 **Reviewed By**: AI Architecture Analyst  
 **Changes**: Complete codebase analysis and documentation update
 
 ### Contributing to Documentation
+
 When making significant code changes:
+
 1. Update relevant sections in this document
 2. Update version number
 3. Add entry to Version History
@@ -1825,6 +1909,7 @@ When making significant code changes:
 ## Additional Resources
 
 ### Official Documentation
+
 - [React Documentation](https://react.dev/)
 - [React Router Documentation](https://reactrouter.com/)
 - [Redux Toolkit Documentation](https://redux-toolkit.js.org/)
@@ -1835,11 +1920,13 @@ When making significant code changes:
 - [Zod Documentation](https://zod.dev/)
 
 ### Learning Resources
+
 - [React + TypeScript Cheatsheet](https://react-typescript-cheatsheet.netlify.app/)
 - [Redux Toolkit Tutorial](https://redux-toolkit.js.org/tutorials/quick-start)
 - [React Router Tutorial](https://reactrouter.com/en/main/start/tutorial)
 
 ### Tools & Extensions
+
 - **VS Code Extensions**:
   - ES7+ React/Redux/React-Native snippets
   - Tailwind CSS IntelliSense
@@ -1867,6 +1954,7 @@ When making significant code changes:
 TechSonance Marketplace is a comprehensive, production-ready e-commerce platform with robust state management, role-based access control, and a complete shopping experience. The architecture supports scalability, maintainability, and future enhancements while providing a solid foundation for a multi-tenant marketplace.
 
 The application successfully implements:
+
 - ✅ Multi-role authentication & authorization
 - ✅ Complete shopping cart & wishlist functionality
 - ✅ Address management with CRUD operations

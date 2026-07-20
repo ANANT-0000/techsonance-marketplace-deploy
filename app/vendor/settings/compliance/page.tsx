@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import React, {
   useEffect,
@@ -726,6 +727,8 @@ function complianceReducer(
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CompliancePage() {
+  const companyId = getClientCompanyId();
+
   const [state, dispatch] = useReducer(complianceReducer, initialState);
   const { fields, loading, error, search, statusFilter, countryFilter } = state;
 
@@ -733,10 +736,13 @@ export default function CompliancePage() {
   const token = authToken();
 
   const load = useCallback(async () => {
+    if (!token || !companyId) {
+      return;
+    }
     dispatch({ type: ComplianceActionType.SET_LOADING, payload: true });
     dispatch({ type: ComplianceActionType.SET_ERROR, payload: null });
     try {
-      const res = await fetchCompanyCompliance(token!);
+      const res = await fetchCompanyCompliance(token, companyId);
       dispatch({
         type: ComplianceActionType.SET_FIELDS,
         payload: Array.isArray(res?.data) ? res.data : [],
@@ -757,7 +763,16 @@ export default function CompliancePage() {
 
   const handleUpload = useCallback(
     async (fieldId: string, file: File) => {
-      await uploadComplianceProofDocument(fieldId, file, undefined, token!);
+      if (!token || !companyId) {
+        return;
+      }
+      await uploadComplianceProofDocument(
+        fieldId,
+        file,
+        undefined,
+        token!,
+        companyId,
+      );
       await load();
     },
     [token, load],

@@ -21,6 +21,7 @@ import { CouponModel } from "@/components/vendor/CouponModel";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { COUPONS_PAGE_TEXT } from "@/constants/vendorText";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 export default function CouponsPage() {
   const router = useRouter();
@@ -60,7 +61,7 @@ export default function CouponsPage() {
 
   useEffect(() => {
     if (!token) {
-      router.push("/auth/vendorLogin");
+      router.push(VEDNOR_LOGIN_PATH);
       return;
     }
     fetchCoupons(token as string);
@@ -112,7 +113,9 @@ export default function CouponsPage() {
       {/* ── Page header ── */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-theme-h4 font-bold text-gray-800">{COUPONS_PAGE_TEXT.HEADER.TITLE}</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">
+            {COUPONS_PAGE_TEXT.HEADER.TITLE}
+          </h1>
           <p className="text-theme-body-sm text-gray-500 mt-1">
             {COUPONS_PAGE_TEXT.HEADER.SUBTITLE}
           </p>

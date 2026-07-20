@@ -1,8 +1,9 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
-import { useState, useEffect } from "react";
+import { useReducer, useEffect } from "react";
 import { useParams, useRouter, redirect } from "next/navigation";
-import { Save, ArrowLeft, Percent } from "lucide-react";
+import { Save, ArrowLeft, Percent, Loader2, Lock } from "lucide-react";
 import Link from "next/link";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
@@ -17,11 +18,51 @@ import {
 import { TAX_RATES_FORM_TEXT } from "@/constants/vendorText";
 import { FieldConfig, FieldType } from "@/utils/Types";
 import { TAXSLAB_FORM_FIELDS } from "@/constants";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
+import { toast } from "sonner";
 
 // ── Configuration Array ───────────────────────────────────────────────
 
+export enum SessionState {
+  CHECKING = "checking",
+  INVALID = "invalid",
+  VALID = "valid",
+}
+
+interface TaxRatesFormState {
+  loading: boolean;
+  profiles: { id: string; profile_type: string }[];
+  sessionState: SessionState;
+}
+
+enum TaxRatesFormActionType {
+  SET_LOADING = "SET_LOADING",
+  SET_PROFILES = "SET_PROFILES",
+  SET_SESSION_STATE = "SET_SESSION_STATE",
+}
+
+type TaxRatesFormAction =
+  | { type: TaxRatesFormActionType.SET_LOADING; payload: boolean }
+  | { type: TaxRatesFormActionType.SET_PROFILES; payload: { id: string; profile_type: string }[] }
+  | { type: TaxRatesFormActionType.SET_SESSION_STATE; payload: SessionState };
+
+function formReducer(state: TaxRatesFormState, action: TaxRatesFormAction): TaxRatesFormState {
+  switch (action.type) {
+    case TaxRatesFormActionType.SET_LOADING:
+      return { ...state, loading: action.payload };
+    case TaxRatesFormActionType.SET_PROFILES:
+      return { ...state, profiles: action.payload };
+    case TaxRatesFormActionType.SET_SESSION_STATE:
+      return { ...state, sessionState: action.payload };
+    default:
+      return state;
+  }
+}
+
 // ── Main Component ────────────────────────────────────────────────────
 export default function TaxSlabFormPage() {
+  const companyId = getClientCompanyId();
+
   const params = useParams();
   const router = useRouter();
   const { user } = useAppSelector((state: RootState) => state.auth);
@@ -30,10 +71,13 @@ export default function TaxSlabFormPage() {
 
   const isEditMode = slabId !== "new";
 
-  const [loading, setLoading] = useState(isEditMode);
-  const [profiles, setProfiles] = useState<
-    { id: string; profile_type: string }[]
-  >([]);
+  const [state, dispatch] = useReducer(formReducer, {
+    loading: isEditMode,
+    profiles: [],
+    sessionState: SessionState.CHECKING,
+  });
+  const { loading, profiles, sessionState } = state;
+
   const token = authToken();
 
   const {
@@ -44,17 +88,29 @@ export default function TaxSlabFormPage() {
   } = useForm();
 
   useEffect(() => {
-    if (!token) redirect("/auth/vendorLogin");
+    let timer: NodeJS.Timeout;
+    if (!token || !companyId) {
+      timer = setTimeout(() => {
+        dispatch({ type: TaxRatesFormActionType.SET_SESSION_STATE, payload: SessionState.INVALID });
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+    dispatch({ type: TaxRatesFormActionType.SET_SESSION_STATE, payload: SessionState.VALID });
 
     const fetchData = async () => {
       try {
         // Always fetch profiles for the dropdown
-        const profilesRes = await fetchTaxProfiles("desc", undefined, token);
-        setProfiles(profilesRes?.data || []);
+        const profilesRes = await fetchTaxProfiles(
+          "desc",
+          undefined,
+          token,
+          companyId,
+        );
+        dispatch({ type: TaxRatesFormActionType.SET_PROFILES, payload: profilesRes?.data || [] });
 
         // Only fetch existing slab data in edit mode
         if (isEditMode) {
-          const res = await fetchSingleTaxSlab(slabId, token);
+          const res = await fetchSingleTaxSlab(slabId, token, companyId);
           if (res?.data) {
             reset({
               ...res.data,
@@ -67,15 +123,20 @@ export default function TaxSlabFormPage() {
           }
         }
       } catch (error) {
+        toast.error(TAX_RATES_FORM_TEXT.ALERTS.FAILED_FETCH);
       } finally {
-        setLoading(false);
+        dispatch({ type: TaxRatesFormActionType.SET_LOADING, payload: false });
       }
     };
 
     fetchData();
   }, [token, slabId, isEditMode, reset]);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: Record<string, string | boolean>) => {
+    if (!token || !companyId) {
+      toast.error(TAX_RATES_FORM_TEXT.ALERTS.SESSION_EXPIRED);
+      return;
+    }
     try {
       // Apply the 2099-12-31 sentinel logic before submitting if left blank
       const payload = {
@@ -84,13 +145,13 @@ export default function TaxSlabFormPage() {
       };
 
       if (isEditMode) {
-        await fetchUpdateTaxSlab(slabId, payload, token!);
+        await fetchUpdateTaxSlab(slabId, payload, token!, companyId);
       } else {
-        await fetchCreateTaxSlab(payload, token!);
+        await fetchCreateTaxSlab(payload, token!, companyId);
       }
       router.push(`/vendor/finances/tax-rates`);
     } catch (error) {
-      alert(
+      toast.error(
         isEditMode
           ? TAX_RATES_FORM_TEXT.ALERTS.FAILED_UPDATE
           : TAX_RATES_FORM_TEXT.ALERTS.FAILED_CREATE,
@@ -98,10 +159,40 @@ export default function TaxSlabFormPage() {
     }
   };
 
+  if (sessionState === "checking") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-8">
+        <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-4" />
+        <p className="text-gray-500 text-sm font-medium">{TAX_RATES_FORM_TEXT.SESSION.CHECKING}</p>
+      </div>
+    );
+  }
+
+  if (sessionState === "invalid") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-8">
+        <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-red-100">
+          <Lock className="w-8 h-8 text-red-500" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-800 mb-2">{TAX_RATES_FORM_TEXT.SESSION.AUTH_REQUIRED}</h2>
+        <p className="text-gray-500 text-sm max-w-md text-center mb-6 leading-relaxed">
+          {TAX_RATES_FORM_TEXT.SESSION.MISSING_FORM}
+        </p>
+        <Link 
+          href={VEDNOR_LOGIN_PATH}
+          className="bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold px-6 py-2.5 rounded-xl transition-all shadow-sm"
+        >
+          {TAX_RATES_FORM_TEXT.SESSION.LOGIN_BTN}
+        </Link>
+      </div>
+    );
+  }
+
   if (loading)
     return (
-      <div className="p-10 text-center text-gray-500">
-        {TAX_RATES_FORM_TEXT.LOADING}
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-8">
+        <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-4" />
+        <p className="text-gray-500 text-sm font-medium">{TAX_RATES_FORM_TEXT.LOADING}</p>
       </div>
     );
 
@@ -118,13 +209,13 @@ export default function TaxSlabFormPage() {
         </div>
         <Link
           href={`/vendor/finances/tax-rates`}
-          className="flex items-center gap-2 text-theme-body-sm bg-white border border-gray-200 text-gray-700 rounded-xl px-5 py-2.5 shadow-sm hover:bg-gray-50"
+          className="flex items-center gap-2 text-theme-body-sm bg-white border border-gray-100 text-gray-700 rounded-xl px-5 py-2.5 shadow-sm hover:bg-gray-50 transition-colors"
         >
           <ArrowLeft size={16} /> {TAX_RATES_FORM_TEXT.HEADER.BACK}
         </Link>
       </header>
 
-      <div className="w-full rounded-xl border border-gray-200 shadow-sm bg-white p-6 mb-4">
+      <div className="w-full rounded-2xl border border-gray-100 shadow-sm bg-white p-8 mb-6">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {TAXSLAB_FORM_FIELDS.map((field) => {
@@ -154,7 +245,7 @@ export default function TaxSlabFormPage() {
                     </label>
                     <select
                       {...register(field.name, { required: field.required })}
-                      className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white focus:outline-none transition-colors"
+                      className="w-full border border-gray-200 bg-gray-50/50 rounded-xl px-4 py-3 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 focus:bg-white focus:outline-none transition-all"
                     >
                       <option value="">
                         {field.placeholder ??
@@ -194,7 +285,7 @@ export default function TaxSlabFormPage() {
                       {...register(field.name, { required: field.required })}
                       placeholder={field.placeholder}
                       rows={3}
-                      className="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none resize-none"
+                      className="w-full border border-gray-200 bg-gray-50/50 rounded-xl px-4 py-3 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 focus:bg-white outline-none resize-none transition-all"
                     />
 
                     {field.note && (
@@ -242,7 +333,7 @@ export default function TaxSlabFormPage() {
                     step={field.step}
                     {...register(field.name, { required: field.required })}
                     placeholder={field.placeholder}
-                    className={`w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 focus:border-blue-400 focus:bg-white outline-none ${field.type === "number" ? "font-bold text-blue-600" : ""}`}
+                    className={`w-full border border-gray-200 bg-gray-50/50 rounded-xl px-4 py-3 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 focus:bg-white outline-none transition-all ${field.type === "number" ? "font-bold text-blue-600" : ""}`}
                   />
 
                   {field.note && (
@@ -264,7 +355,7 @@ export default function TaxSlabFormPage() {
             <button
               disabled={isSubmitting}
               type="submit"
-              className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-colors shadow-sm disabled:opacity-70"
+              className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm disabled:opacity-70 disabled:active:scale-100"
             >
               {isSubmitting ? (
                 TAX_RATES_FORM_TEXT.ACTIONS.PROCESSING

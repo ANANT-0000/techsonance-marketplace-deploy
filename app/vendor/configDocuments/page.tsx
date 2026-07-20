@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import { Pagination } from "@/components/common/Pagination";
 import { searchImgDark } from "@/constants/common";
 import { useState, useEffect, useCallback } from "react";
@@ -98,6 +99,8 @@ interface PoliciesPageProps {
 }
 
 export default function PoliciesPage({ labels = UiText }: PoliciesPageProps) {
+  const companyId = getClientCompanyId();
+
   const { theme } = useAppSelector((state) => state.adminTheme);
 
   const [policies, setPolicies] = useState<ProductPolicy[]>([]);
@@ -124,9 +127,10 @@ export default function PoliciesPage({ labels = UiText }: PoliciesPageProps) {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const fetchPolicies = useCallback(async () => {
+    if (!token || !companyId) return;
     setIsLoading(true);
     setError(null);
-    const res = await fetchProductPolicies(token!);
+    const res = await fetchProductPolicies(token!, companyId);
     setPolicies(res.data ?? []);
     if (res.data) {
       setTotalPages(Math.ceil(res.data.length / itemsPerPage));
@@ -141,8 +145,8 @@ export default function PoliciesPage({ labels = UiText }: PoliciesPageProps) {
     fetchPolicies();
   }, [fetchPolicies]);
 
-  const handleDelete = async (id: string, token: string) => {
-    if (!token) return;
+  const handleDelete = async (id: string) => {
+    if (!token || !companyId) return;
     setConfirmModalConfig({
       title: labels.DELETE_POLICY_TITLE,
       message: labels.DELETE_POLICY_MSG,
@@ -150,7 +154,7 @@ export default function PoliciesPage({ labels = UiText }: PoliciesPageProps) {
       confirmText: labels.YES_DELETE,
       onConfirm: async () => {
         setIsProcessing(true);
-        await deleteProductPolicy(id, token);
+        await deleteProductPolicy(id, token, companyId as string);
         setPolicies((prev) => prev.filter((policy) => policy.id !== id));
         setIsProcessing(false);
         setIsConfirmModalOpen(false);
@@ -385,7 +389,7 @@ export default function PoliciesPage({ labels = UiText }: PoliciesPageProps) {
                         <Edit size={13} /> {labels.EDIT}
                       </Link>
                       <button
-                        onClick={() => handleDelete(policy.id, token!)}
+                        onClick={() => handleDelete(policy.id)}
                         className="flex-1 flex items-center justify-center gap-1.5 text-theme-caption font-medium text-red-500 hover:bg-red-50 py-1.5 rounded-lg transition-colors"
                       >
                         <Trash2 size={13} /> {labels.DELETE}
@@ -486,11 +490,12 @@ export default function PoliciesPage({ labels = UiText }: PoliciesPageProps) {
                                 🔄 Replace
                               </span>
                             )}
-                            {!policy.is_returnable && !policy.is_replaceable && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-600 border border-red-100 rounded-full text-theme-tiny font-semibold">
-                                🚫 Final Sale
-                              </span>
-                            )}
+                            {!policy.is_returnable &&
+                              !policy.is_replaceable && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-600 border border-red-100 rounded-full text-theme-tiny font-semibold">
+                                  🚫 Final Sale
+                                </span>
+                              )}
                           </div>
                         </td>
                         <td className="p-4">
@@ -518,7 +523,7 @@ export default function PoliciesPage({ labels = UiText }: PoliciesPageProps) {
                               <Edit size={18} />
                             </Link>
                             <button
-                              onClick={() => handleDelete(policy.id, token!)}
+                              onClick={() => handleDelete(policy.id)}
                               className="text-gray-500 hover:text-red-600 transition-colors"
                               aria-label={labels.DELETE}
                             >

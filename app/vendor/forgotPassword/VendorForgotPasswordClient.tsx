@@ -19,6 +19,7 @@ import {
 } from "@/utils/authApiClient";
 import { VENDOR_FORGOT_PASSWORD_TEXT } from "@/constants/authText";
 import { PASSWORD_REQUIREMENTS_REGEX } from "@/utils/validation";
+import { VEDNOR_LOGIN_PATH } from "@/constants";
 
 interface State {
   step: 1 | 2;
@@ -184,7 +185,10 @@ export function VendorForgotPasswordClient() {
     dispatch({ type: ForgotPasswordActionType.SET_LOADING, payload: true });
     dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: null });
     dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: null });
-    dispatch({ type: ForgotPasswordActionType.SET_PENDING_BLOCKED, payload: false });
+    dispatch({
+      type: ForgotPasswordActionType.SET_PENDING_BLOCKED,
+      payload: false,
+    });
 
     try {
       await requestVendorPasswordResetOTP(state.email);
@@ -200,16 +204,21 @@ export function VendorForgotPasswordClient() {
       }); // 15 minutes
     } catch (err: any) {
       const errorMessage = err.response?.data?.message;
-      if (errorMessage === 'VENDOR_PENDING_FORGOT_PASSWORD_BLOCKED') {
-        dispatch({ type: ForgotPasswordActionType.SET_PENDING_BLOCKED, payload: true });
+      if (errorMessage === "VENDOR_PENDING_FORGOT_PASSWORD_BLOCKED") {
+        dispatch({
+          type: ForgotPasswordActionType.SET_PENDING_BLOCKED,
+          payload: true,
+        });
         dispatch({
           type: ForgotPasswordActionType.SET_ERROR,
-          payload: "Your account is pending. Please use 'Resend Temporary Password'.",
+          payload:
+            "Your account is pending. Please use 'Resend Temporary Password'.",
         });
       } else {
         dispatch({
           type: ForgotPasswordActionType.SET_ERROR,
-          payload: errorMessage || VENDOR_FORGOT_PASSWORD_TEXT.ERR_OTP_SEND_FAILED,
+          payload:
+            errorMessage || VENDOR_FORGOT_PASSWORD_TEXT.ERR_OTP_SEND_FAILED,
         });
       }
     } finally {
@@ -221,13 +230,16 @@ export function VendorForgotPasswordClient() {
     dispatch({ type: ForgotPasswordActionType.SET_LOADING, payload: true });
     dispatch({ type: ForgotPasswordActionType.SET_ERROR, payload: null });
     dispatch({ type: ForgotPasswordActionType.SET_SUCCESS, payload: null });
-    
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/vendor/resend-temp-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: state.email }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/vendor/resend-temp-password`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: state.email }),
+        },
+      );
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.message || "Failed to resend temporary password");
@@ -260,7 +272,7 @@ export function VendorForgotPasswordClient() {
       });
 
       setTimeout(() => {
-        router.push("/auth/vendorLogin");
+        router.push(VEDNOR_LOGIN_PATH);
       }, 2000);
     } catch (err: any) {
       const newAttempts = state.otpAttempts + 1;
@@ -482,49 +494,51 @@ export function VendorForgotPasswordClient() {
                   </p>
                 </div>
 
-                  {state.isPendingBlocked ? (
-                    <button
-                      type="button"
-                      onClick={handleResendTempPassword}
-                      disabled={state.isLoading || !state.email}
-                      className="w-full flex items-center justify-center gap-2 bg-amber-500 text-white hover:bg-amber-600 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer border-none mt-4"
-                    >
-                      {state.isLoading ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Sending...
-                        </>
-                      ) : (
-                        "Resend Temporary Password"
-                      )}
-                    </button>
-                  ) : (
-                    <button
-                      type="submit"
-                      disabled={
-                        state.isLoading || !state.email || state.resendCooldown > 0
-                      }
-                      className="w-full flex items-center justify-center gap-2 bg-platform-primary text-white hover:bg-platform-secondary py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 disabled:hover:bg-platform-primary group cursor-pointer border-none mt-4"
-                    >
-                      {state.isLoading ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          {VENDOR_FORGOT_PASSWORD_TEXT.BTN_SENDING}
-                        </>
-                      ) : (
-                        <>
-                          {state.resendCooldown > 0
-                            ? VENDOR_FORGOT_PASSWORD_TEXT.BTN_WAIT(
-                                state.resendCooldown,
-                              )
-                            : VENDOR_FORGOT_PASSWORD_TEXT.BTN_SEND}
-                          {state.resendCooldown === 0 && (
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                          )}
-                        </>
-                      )}
-                    </button>
-                  )}
+                {state.isPendingBlocked ? (
+                  <button
+                    type="button"
+                    onClick={handleResendTempPassword}
+                    disabled={state.isLoading || !state.email}
+                    className="w-full flex items-center justify-center gap-2 bg-amber-500 text-white hover:bg-amber-600 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer border-none mt-4"
+                  >
+                    {state.isLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Resend Temporary Password"
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={
+                      state.isLoading ||
+                      !state.email ||
+                      state.resendCooldown > 0
+                    }
+                    className="w-full flex items-center justify-center gap-2 bg-platform-primary text-white hover:bg-platform-secondary py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 disabled:hover:bg-platform-primary group cursor-pointer border-none mt-4"
+                  >
+                    {state.isLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        {VENDOR_FORGOT_PASSWORD_TEXT.BTN_SENDING}
+                      </>
+                    ) : (
+                      <>
+                        {state.resendCooldown > 0
+                          ? VENDOR_FORGOT_PASSWORD_TEXT.BTN_WAIT(
+                              state.resendCooldown,
+                            )
+                          : VENDOR_FORGOT_PASSWORD_TEXT.BTN_SEND}
+                        {state.resendCooldown === 0 && (
+                          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        )}
+                      </>
+                    )}
+                  </button>
+                )}
               </motion.form>
             ) : (
               <motion.form
@@ -732,7 +746,7 @@ export function VendorForgotPasswordClient() {
             <p className="text-sm font-medium text-slate-600">
               {VENDOR_FORGOT_PASSWORD_TEXT.LBL_REMEMBER}
               <button
-                onClick={() => router.push("/auth/vendorLogin")}
+                onClick={() => router.push(VEDNOR_LOGIN_PATH)}
                 className="text-platform-primary hover:text-platform-secondary font-bold hover:underline transition-colors bg-transparent border-none cursor-pointer ml-1"
               >
                 {VENDOR_FORGOT_PASSWORD_TEXT.BTN_BACK_LOGIN}

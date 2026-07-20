@@ -1,6 +1,5 @@
 "use client";
-// @ts-ignore
-import "./index.css";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import { Pagination } from "@/components/common/Pagination";
 import { useEffect, useState, useReducer } from "react";
 import Link from "next/link";
@@ -38,15 +37,13 @@ import {
 } from "recharts";
 import { fetchRevenueAnalytics } from "@/utils/vendorApiClient";
 import AxiosAPI from "@/lib/axios";
-import {
-  TableRowSkeleton,
-  MetricsSkeleton,
-} from "@/components/common/skeletons";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { UiText } from "@/constants/ui-text";
-import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useAppDispatch } from "@/hooks/reduxHooks";
 import { stopPageLoading } from "@/lib/features/pageLoading";
-import { useVendorTour } from "@/components/vendor/VendorTourProvider";
+import { VEDNOR_LOGIN_PATH } from "@/constants";
+import { SessionErrorCard } from "@/components/vendor/SessionErrorCard";
 
 interface OrderAddressType {
   name: string;
@@ -106,7 +103,10 @@ const getStatusBadges = (statuses: string | string[]) => {
     new Set(statusArray.map((s) => s.toLowerCase())),
   );
   const renderBadge = (status: string, index: number) => {
-    const displayStatus = UiText.DASHBOARD.STATUS_LABELS[status.toUpperCase() as keyof typeof UiText.DASHBOARD.STATUS_LABELS] || status;
+    const displayStatus =
+      UiText.DASHBOARD.STATUS_LABELS[
+        status.toUpperCase() as keyof typeof UiText.DASHBOARD.STATUS_LABELS
+      ] || status;
 
     switch (status.toLowerCase()) {
       case OrderStatus.PENDING:
@@ -204,6 +204,8 @@ const getPaymentBadge = (method: string, status: string) => {
 };
 
 export const exportAnalyticsCsv = async (token: string) => {
+  const companyId = getClientCompanyId();
+
   return await AxiosAPI.get(`/v1/orders/analytics/export`, {
     headers: { Authorization: `Bearer ${token}` },
     responseType: "blob",
@@ -378,22 +380,8 @@ export default function DashboardPage() {
   const revenueGrowth = 0;
   const router = useRouter();
   const token = authToken();
-  
-  const { startVendorTour } = useVendorTour();
-  const user = useAppSelector((state) => state.auth.user) as import("@/utils/Types").VendorUser | null;
-
-  useEffect(() => {
-    // Only trigger if we have a user and they haven't completed the dashboard tour
-    if (user && user.preferences && Array.isArray(user.preferences.completed_tours)) {
-      if (!user.preferences.completed_tours.includes("dashboard")) {
-        // slight delay to let the UI mount properly
-        setTimeout(() => startVendorTour("dashboard"), 500);
-      }
-    } else if (user && !user.preferences) {
-      // If preferences object doesn't exist yet, it means they haven't completed any tours
-      setTimeout(() => startVendorTour("dashboard"), 500);
-    }
-  }, [user, startVendorTour]);
+  const companyId = getClientCompanyId();
+  const [sessionError, setSessionError] = useState(false);
 
   const setCurrentPage = (page: number | ((prev: number) => number)) => {
     const nextPage = typeof page === "function" ? page(currentPage) : page;
@@ -408,10 +396,16 @@ export default function DashboardPage() {
       type: DashboardActionType.SET_LOADING_RECENT_ORDERS,
       payload: true,
     });
+    if (!companyId) {
+      setSessionError(true);
+      return;
+    }
     await fetchVendorOrderList(
+      token,
+      companyId,
       offset,
       itemsPerPage,
-      token,
+
       OrderStatus.PROCESSING,
     )
       .then((res) => {
@@ -439,9 +433,9 @@ export default function DashboardPage() {
       payload: true,
     });
     Promise.all([
-      fetchVendorPendingOrders(token),
-      fetchVendorActiveProducts(token),
-      fetchLowStockAlerts(token),
+      fetchVendorPendingOrders(token, companyId),
+      fetchVendorActiveProducts(token, companyId),
+      fetchLowStockAlerts(token, companyId),
     ])
       .then(([pending, active, stock]) => {
         reducerDispatch({
@@ -469,7 +463,7 @@ export default function DashboardPage() {
       type: DashboardActionType.SET_LOADING_CHART,
       payload: true,
     });
-    fetchRevenueAnalytics(token, 30)
+    fetchRevenueAnalytics(token, 30, companyId)
       .then((res) => {
         reducerDispatch({
           type: DashboardActionType.SET_REVENUE_ANALYTICS,
@@ -494,7 +488,7 @@ export default function DashboardPage() {
       type: DashboardActionType.SET_LOADING_PRODUCTS,
       payload: true,
     });
-    fetchTopProducts(token)
+    fetchTopProducts(token, companyId)
       .then((res) => {
         reducerDispatch({
           type: DashboardActionType.SET_TOP_PRODUCTS,
@@ -515,7 +509,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!token) {
-      router.replace("/auth/vendorLogin");
+      setSessionError(true);
+      router.replace(VEDNOR_LOGIN_PATH);
       return;
     }
     dispatch(stopPageLoading());
@@ -523,8 +518,18 @@ export default function DashboardPage() {
   }, [token, currentPage]);
 
   const handleOrderFilter = async (orderStatus: OrderStatusType) => {
-    if (token) {
-      await fetchVendorOrderList(offset, itemsPerPage, token, orderStatus)
+    if (!token || !companyId) {
+      setSessionError(true);
+      return;
+    }
+    if (token && companyId) {
+      await fetchVendorOrderList(
+        token,
+        companyId,
+        offset,
+        itemsPerPage,
+        orderStatus,
+      )
         .then((res) => {
           reducerDispatch({
             type: DashboardActionType.SET_RECENT_ORDERS,
@@ -558,6 +563,10 @@ export default function DashboardPage() {
   };
 
   const handleBulkDownload = async () => {
+    if (!token || !companyId) {
+      setSessionError(true);
+      return;
+    }
     if (selectedOrders.length === 0) return;
     reducerDispatch({
       type: DashboardActionType.SET_IS_DOWNLOADING,
@@ -565,7 +574,11 @@ export default function DashboardPage() {
     });
 
     try {
-      const res = await fetchBulkInvoiceUrls(selectedOrders, token as string);
+      const res = await fetchBulkInvoiceUrls(
+        selectedOrders,
+        token as string,
+        companyId,
+      );
       const invoices = res.data;
 
       if (!invoices || invoices.length === 0) {
@@ -604,10 +617,14 @@ export default function DashboardPage() {
     }
   };
 
+  if (sessionError || !token || !companyId) {
+    return <SessionErrorCard />;
+  }
+
   return (
     <>
-      <main className="px-2 overflow-y-scroll h-screen" id="tour-dashboard-welcome">
-        <div id="tour-analytics-overview">
+      <main className="px-2 overflow-y-scroll h-screen">
+        <span id="analytics-report-container">
           {isLoadingMetrics ? (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 my-8">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -624,7 +641,7 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div id="tour-analytics-overview" className="grid grid-cols-1 sm:grid-cols-3 gap-6 my-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 my-8">
               {/* Total Revenue */}
               <div className="bg-white rounded-3xl p-6 flex items-start justify-between shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300 ease-out group">
                 <div className="flex flex-col gap-2">
@@ -686,10 +703,9 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-        </div>
 
-        {/* Revenue Chart Section */}
-          <div id="tour-revenue-chart" className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-slate-100 p-8 my-8 relative overflow-hidden">
+          {/* Revenue Chart Section */}
+          <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-slate-100 p-8 my-8 relative overflow-hidden">
             <div className="flex justify-between items-center mb-8 relative z-10">
               <div>
                 <h2 className="text-xl font-medium text-slate-900 tracking-tight">
@@ -807,7 +823,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Top Selling Products Section */}
-          <div id="tour-top-products" className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-slate-100 p-8 my-8">
+          <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-slate-100 p-8 my-8">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-xl font-medium text-slate-900 tracking-tight">
                 {UiText.DASHBOARD.TOP_PERFORMING_PRODUCTS}
@@ -886,7 +902,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent Orders Table */}
-          <div id="tour-recent-orders" className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden my-8">
+          <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden my-8">
             <div className="flex justify-between items-center px-8 py-6 border-b border-slate-100">
               <h2 className="text-xl font-medium text-slate-900 tracking-tight">
                 {UiText.DASHBOARD.RECENT_ORDERS}
@@ -915,7 +931,9 @@ export default function DashboardPage() {
                   <option value="">{UiText.DASHBOARD.SELECT_STATUS}</option>
                   {Object.values(OrderStatus).map((status) => (
                     <option key={status} value={status}>
-                      {UiText.DASHBOARD.STATUS_LABELS[status.toUpperCase() as keyof typeof UiText.DASHBOARD.STATUS_LABELS] || status}
+                      {UiText.DASHBOARD.STATUS_LABELS[
+                        status.toUpperCase() as keyof typeof UiText.DASHBOARD.STATUS_LABELS
+                      ] || status}
                     </option>
                   ))}
                 </select>
@@ -987,12 +1005,10 @@ export default function DashboardPage() {
                             />
                           </div>
                           <h3 className="text-sm font-medium text-slate-900 mb-1.5">
-                            No orders found
+                            {UiText.ORDERS.NO_ORDERS}
                           </h3>
                           <p className="text-[13px] text-slate-500 mb-6 text-balance">
-                            You don't have any orders matching your criteria.
-                            Try adjusting the status filter or wait for new
-                            customers.
+                            {UiText.ORDERS.NO_ORDERS_DESC}
                           </p>
                         </div>
                       </td>
@@ -1106,6 +1122,7 @@ export default function DashboardPage() {
               />
             </span>
           )}
+        </span>
       </main>
     </>
   );

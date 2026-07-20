@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import {
   FileOrProductImage,
   ProductImage,
@@ -26,7 +27,9 @@ import { ArrowLeft } from "lucide-react";
 import { generateSKU } from "@/utils/generateSku";
 import { authToken } from "@/utils/authToken";
 import { PRODUCT_VARIANT_FORM_TEXT } from "@/constants/vendorText";
-import { useVendorTour } from "@/components/vendor/VendorTourProvider";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
+import toast from "react-hot-toast";
+
 // Replaced constants
 export const ProductVariantForm = ({
   vendorId,
@@ -47,6 +50,8 @@ export const ProductVariantForm = ({
   existVariant?: VariantFormValues;
   variantId?: string;
 }) => {
+  const companyId = getClientCompanyId();
+
   const isEditMode = Boolean(variantId && existVariant);
   const router = useRouter();
   const { user } = useAppSelector((state: any) => state.auth);
@@ -92,9 +97,9 @@ export const ProductVariantForm = ({
   const [isAutoGenerating, setIsAutoGenerating] = useState(true);
 
   useEffect(() => {
-    if (isAutoGenerating && variantName) {
+    if (isAutoGenerating && (productDetails?.name || variantName)) {
       const newSku = generateSKU({
-        productName: variantName, // Passed from parent Product
+        productName: productDetails?.name || variantName || "",
         categoryName: productDetails?.category.name,
         attributes: attributes,
       });
@@ -104,7 +109,7 @@ export const ProductVariantForm = ({
   }, [
     variantName,
     attributes,
-    variantName,
+    productDetails?.name,
     productDetails?.category.name,
     isAutoGenerating,
     setValue,
@@ -130,9 +135,7 @@ export const ProductVariantForm = ({
       variantMediaMain: existVariant.variantMediaMain ?? [],
       variantMediaGallery: existVariant.variantMediaGallery ?? [],
       warehouseId: existVariant.warehouseId || "",
-      status:
-        (existVariant.status as ProductStatus) ??
-        ProductStatus.INACTIVE,
+      status: (existVariant.status as ProductStatus) ?? ProductStatus.INACTIVE,
       weight_kg: existVariant.weight_kg || "",
       length_cm: existVariant.length_cm || "",
       width_cm: existVariant.width_cm || "",
@@ -154,23 +157,18 @@ export const ProductVariantForm = ({
     });
   }, [existVariant, variantId]); // reset is stable, no need to add it
 
-  const token = authToken();
-  const { startVendorTour } = useVendorTour();
+  // Re-sync select if options load after initial reset
   useEffect(() => {
-    if (!token) redirect("/auth/vendorLogin");
+    if (existVariant?.warehouseId && warehouseOptions?.length) {
+      setValue("warehouseId", existVariant.warehouseId);
+    }
+  }, [existVariant?.warehouseId, warehouseOptions, setValue]);
+
+  const token = authToken();
+  useEffect(() => {
+    if (!token) redirect(VEDNOR_LOGIN_PATH);
     return () => revokeAll();
   }, []);
-
-  useEffect(() => {
-    if (user && user.preferences && Array.isArray(user.preferences.completed_tours)) {
-      if (!user.preferences.completed_tours.includes("variantCreation")) {
-        const timer = setTimeout(() => {
-          startVendorTour("variantCreation");
-        }, 800);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [user, startVendorTour]);
   const fileStateMap = {
     variantMediaMain: { files: productFiles, setFiles: setProductFiles },
     variantMediaGallery: { files: featureFiles, setFiles: setFeatureFiles },
@@ -253,8 +251,16 @@ export const ProductVariantForm = ({
       formData.append("imagesToDelete", JSON.stringify(deletedImgs));
     }
     const createOrUpdate = async () => {
-      if (!token) {
-        redirect("/auth/vendorLogin");
+      if (!token || !companyId) {
+        toast.error(PRODUCT_VARIANT_FORM_TEXT.ERRORS.SESSION_EXPIRED_SAVE, {
+          icon: '🔒',
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+        });
+        return;
       }
       if (variantId && existVariant?.productId) {
         return await updateProductVariant(
@@ -262,12 +268,18 @@ export const ProductVariantForm = ({
           existVariant.productId,
           variantId,
           token,
+          companyId,
         );
       } else {
         if (!productId) {
           return;
         }
-        return await createProductVariant(formData, productId, token);
+        return await createProductVariant(
+          formData,
+          productId,
+          token,
+          companyId,
+        );
       }
     };
     const response = await createOrUpdate();
@@ -290,7 +302,9 @@ export const ProductVariantForm = ({
         <header className="flex flex-wrap justify-between items-center mb-8 gap-4">
           <div>
             <h1 className="text-theme-h4 font-bold text-slate-900">
-              {isEditMode ? PRODUCT_VARIANT_FORM_TEXT.PAGE.UPDATE.TITLE : PRODUCT_VARIANT_FORM_TEXT.PAGE.CREATE.TITLE}
+              {isEditMode
+                ? PRODUCT_VARIANT_FORM_TEXT.PAGE.UPDATE.TITLE
+                : PRODUCT_VARIANT_FORM_TEXT.PAGE.CREATE.TITLE}
             </h1>
             <p className="text-theme-body-sm text-slate-500 mt-0.5">
               {isEditMode
@@ -301,8 +315,8 @@ export const ProductVariantForm = ({
         </header>
 
         {/* ── 1. VARIANT DETAILS & ATTRIBUTES ── */}
-        <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
+        <div className="bg-white border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] rounded-3xl mb-8 overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-slate-200">
+          <div className="px-6 py-5 border-b border-slate-100/80 bg-slate-50/30 flex items-center gap-3">
             <DynamicIcon
               fallback={() => <p></p>}
               name="layers"
@@ -317,7 +331,8 @@ export const ProductVariantForm = ({
             {/* Variant Name */}
             <div>
               <label className="block mb-1.5 text-theme-body-sm font-semibold text-slate-700">
-                {PRODUCT_VARIANT_FORM_TEXT.LABELS.NAME} <span className="text-red-400">*</span>
+                {PRODUCT_VARIANT_FORM_TEXT.LABELS.NAME}{" "}
+                <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
@@ -378,7 +393,9 @@ export const ProductVariantForm = ({
                       <input
                         type="text"
                         className="w-full border rounded-lg px-3 py-2 text-theme-body-sm outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder={PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_NAME_PH}
+                        placeholder={
+                          PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_NAME_PH
+                        }
                         {...register(`attributes.${index}.name`, {
                           required: "Required",
                         })}
@@ -391,7 +408,9 @@ export const ProductVariantForm = ({
                       <input
                         type="text"
                         className="w-full border rounded-lg px-3 py-2 text-theme-body-sm outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder={PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_VAL_PH}
+                        placeholder={
+                          PRODUCT_VARIANT_FORM_TEXT.LABELS.ATTR_VAL_PH
+                        }
                         {...register(`attributes.${index}.value`, {
                           required: "Required",
                         })}
@@ -405,7 +424,7 @@ export const ProductVariantForm = ({
         </div>
 
         {/* ── 2. PRICING & INVENTORY ── */}
-        <div id="tour-variant-pricing" className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
+        <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
             <DynamicIcon
               fallback={() => <p></p>}
@@ -463,7 +482,9 @@ export const ProductVariantForm = ({
                     { required: "Please select a warehouse" },
                   )}
                 >
-                  <option value="">{PRODUCT_VARIANT_FORM_TEXT.LABELS.SELECT_WAREHOUSE}</option>
+                  <option value="">
+                    {PRODUCT_VARIANT_FORM_TEXT.LABELS.SELECT_WAREHOUSE}
+                  </option>
                   {warehouseOptions?.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
@@ -476,7 +497,7 @@ export const ProductVariantForm = ({
         </div>
 
         {/* ── 3. LOGISTICS & DIMENSIONS ── */}
-        <div id="tour-variant-inventory" className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
+        <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
             <DynamicIcon
               fallback={() => <p></p>}
@@ -503,7 +524,11 @@ export const ProductVariantForm = ({
                 />
                 {errors.weight_kg && (
                   <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
-                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    <DynamicIcon
+                      fallback={() => <p></p>}
+                      name="alert-circle"
+                      size={14}
+                    />
                     {errors.weight_kg.message as string}
                   </p>
                 )}
@@ -522,7 +547,11 @@ export const ProductVariantForm = ({
                 />
                 {errors.length_cm && (
                   <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
-                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    <DynamicIcon
+                      fallback={() => <p></p>}
+                      name="alert-circle"
+                      size={14}
+                    />
                     {errors.length_cm.message as string}
                   </p>
                 )}
@@ -541,7 +570,11 @@ export const ProductVariantForm = ({
                 />
                 {errors.width_cm && (
                   <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
-                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    <DynamicIcon
+                      fallback={() => <p></p>}
+                      name="alert-circle"
+                      size={14}
+                    />
                     {errors.width_cm.message as string}
                   </p>
                 )}
@@ -560,7 +593,11 @@ export const ProductVariantForm = ({
                 />
                 {errors.height_cm && (
                   <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
-                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
+                    <DynamicIcon
+                      fallback={() => <p></p>}
+                      name="alert-circle"
+                      size={14}
+                    />
                     {errors.height_cm.message as string}
                   </p>
                 )}
@@ -570,7 +607,7 @@ export const ProductVariantForm = ({
         </div>
 
         {/* ── 4. MEDIA ── */}
-        <div id="tour-variant-images" className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
+        <div className="border border-slate-200 rounded-2xl bg-white mb-6 shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/70">
             <DynamicIcon
               fallback={() => <p></p>}
@@ -578,97 +615,110 @@ export const ProductVariantForm = ({
               size={18}
               className="text-indigo-500"
             />
-            <h2 className="text-theme-body font-semibold text-slate-800">
-              {PRODUCT_VARIANT_FORM_TEXT.SECTIONS.MEDIA}
-            </h2>
+            <div>
+              <h2 className="text-theme-body font-semibold text-slate-800">
+                {PRODUCT_VARIANT_FORM_TEXT.SECTIONS.MEDIA} <span className="text-slate-400 font-normal ml-1">{PRODUCT_VARIANT_FORM_TEXT.SECTIONS.MEDIA_OPTIONAL}</span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-1 font-medium">
+                {PRODUCT_VARIANT_FORM_TEXT.SECTIONS.MEDIA_NOTE}
+              </p>
+            </div>
           </div>
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {PRODUCT_VARIANT_FORM_TEXT.FILE_UPLOAD_LABELS.map(({ label, fieldName }) => {
-              const { files, setFiles } =
-                fileStateMap[fieldName as keyof typeof fileStateMap];
-              return (
-                <div
-                  key={fieldName}
-                  className="border border-slate-200 rounded-xl p-4 bg-slate-50"
-                >
-                  <h3 className="text-theme-body-sm font-semibold text-slate-700 mb-3">
-                    {label}
-                  </h3>
+            {PRODUCT_VARIANT_FORM_TEXT.FILE_UPLOAD_LABELS.map(
+              ({ label, fieldName }) => {
+                const { files, setFiles } =
+                  fileStateMap[fieldName as keyof typeof fileStateMap];
+                return (
+                  <div
+                    key={fieldName}
+                    className="border border-slate-200 rounded-xl p-4 bg-slate-50"
+                  >
+                    <h3 className="text-theme-body-sm font-semibold text-slate-700 mb-3">
+                      {label}
+                    </h3>
 
-                  {/* Upload area */}
-                  <label className="flex flex-col items-center justify-center py-2 border-2 border-dashed border-blue-300 bg-blue-50/30 rounded-xl cursor-pointer hover:bg-blue-50 transition group">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*,video/*"
-                      className="hidden"
-                      onChange={(e) =>
-                        handleFileSelect(
-                          e,
-                          files,
-                          setFiles as React.Dispatch<
-                            React.SetStateAction<FileOrProductImage[]>
-                          >,
-                          fieldName as "variantMediaMain" | "variantMediaGallery",
-                        )
-                      }
-                    />
-                    <DynamicIcon
-                      fallback={() => <p></p>}
-                      name="upload-cloud"
-                      size={32}
-                      className="text-blue-400 group-hover:text-blue-600 transition mb-2"
-                    />
-                    <p className="text-theme-caption font-semibold text-blue-500 group-hover:text-blue-700">
-                      {PRODUCT_VARIANT_FORM_TEXT.ACTIONS.UPLOAD}
-                    </p>
-                    <p className="text-theme-caption text-slate-400 mt-0.5">
-                      {PRODUCT_VARIANT_FORM_TEXT.MEDIA_GUIDE.LIMITS}
-                    </p>
-                  </label>
+                    {/* Upload area */}
+                    <label className="flex flex-col items-center justify-center py-8 border border-dashed border-indigo-200 bg-indigo-50/30 rounded-2xl cursor-pointer hover:bg-indigo-50/80 hover:border-indigo-300 transition-all duration-250 ease-out group mt-auto shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_14px_rgba(99,102,241,0.06)]">
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,video/*"
+                        className="hidden"
+                        onChange={(e) =>
+                          handleFileSelect(
+                            e,
+                            files,
+                            setFiles as React.Dispatch<
+                              React.SetStateAction<FileOrProductImage[]>
+                            >,
+                            fieldName as
+                              | "variantMediaMain"
+                              | "variantMediaGallery",
+                          )
+                        }
+                      />
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-3 shadow-sm border border-indigo-50 group-hover:scale-105 transition-transform duration-250 ease-out">
+                        <DynamicIcon
+                          fallback={() => <p></p>}
+                          name="upload-cloud"
+                          size={24}
+                          className="text-indigo-400 group-hover:text-indigo-500 transition-colors"
+                        />
+                      </div>
+                      <p className="text-sm font-medium text-slate-700 group-hover:text-indigo-700 transition-colors">
+                        {PRODUCT_VARIANT_FORM_TEXT.ACTIONS.UPLOAD}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1.5">
+                        {PRODUCT_VARIANT_FORM_TEXT.MEDIA_GUIDE.LIMITS}
+                      </p>
+                    </label>
 
-                  {/* Preview list */}
-                  {files.length > 0 && (
-                    <ul className="flex flex-wrap gap-3 mt-4">
-                      {files.map((file, i) => (
-                        <li
-                          key={i}
-                          className="relative bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm w-20 h-20"
-                        >
-                          <img
-                            src={getPreviewUrl(file)}
-                            alt={`variant-preview-${i}`}
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleFileRemove(
-                                i,
-                                files,
-                                setFiles as React.Dispatch<
-                                  React.SetStateAction<FileOrProductImage[]>
-                                >,
-                                fieldName as "variantMediaMain" | "variantMediaGallery",
-                                "id" in file ? file.id : "",
-                              )
-                            }
-                            className="absolute top-1 right-1 p-0.5 bg-red-50 text-red-400 hover:text-red-600 transition rounded-full border border-red-200"
-                            title="Remove image"
+                    {/* Preview list */}
+                    {files.length > 0 && (
+                      <ul className="flex flex-wrap gap-3 mt-4">
+                        {files.map((file, i) => (
+                          <li
+                            key={i}
+                            className="relative bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm w-20 h-20"
                           >
-                            <DynamicIcon
-                              fallback={() => <p></p>}
-                              name="x"
-                              size={12}
+                            <img
+                              src={getPreviewUrl(file)}
+                              alt={`variant-preview-${i}`}
+                              className="w-full h-full object-cover"
                             />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              );
-            })}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleFileRemove(
+                                  i,
+                                  files,
+                                  setFiles as React.Dispatch<
+                                    React.SetStateAction<FileOrProductImage[]>
+                                  >,
+                                  fieldName as
+                                    | "variantMediaMain"
+                                    | "variantMediaGallery",
+                                  "id" in file ? file.id : "",
+                                )
+                              }
+                              className="absolute top-1 right-1 p-0.5 bg-red-50 text-red-400 hover:text-red-600 transition rounded-full border border-red-200"
+                              title="Remove image"
+                            >
+                              <DynamicIcon
+                                fallback={() => <p></p>}
+                                name="x"
+                                size={12}
+                              />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              },
+            )}
           </div>
         </div>
 

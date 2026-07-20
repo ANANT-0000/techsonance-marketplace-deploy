@@ -9,8 +9,6 @@ import { hydrateAuth } from "@/lib/features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { authToken } from "@/utils/authToken";
 import { usePathname, useSearchParams } from "next/navigation";
-import { stopPageLoading } from "@/lib/features/pageLoading";
-import { PageLoader } from "@/components/customer/PageLoader";
 import { Suspense } from "react";
 
 const UNDEFINED_TYPE = "undefined";
@@ -50,10 +48,6 @@ function RouteChangeTracker() {
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    dispatch(stopPageLoading());
-  }, [pathname, searchParams, dispatch]);
-
   return null;
 }
 
@@ -67,7 +61,6 @@ function PageLoadingWatcher({ children }: { children: React.ReactNode }) {
       <Suspense fallback={null}>
         <RouteChangeTracker />
       </Suspense>
-      {isPageLoading && <PageLoader />}
       {children}
     </>
   );

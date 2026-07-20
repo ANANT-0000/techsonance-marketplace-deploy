@@ -7,7 +7,7 @@ import type {
   SubscriptionPlan,
 } from "@/utils/Types";
 import { LANDING_PRICING } from "@/constants/landingText";
-import { BASE_API_URL } from "@/constants";
+import { BASE_API_URL, VEDNOR_REGISTER_PATH } from "@/constants";
 import { formatFeatureDisplay } from "@/lib/utils";
 
 const UNLIMITED_VALUE_RAW = "-1";
@@ -122,7 +122,7 @@ function buildFallbackOverride(
       : plan.display_name,
     features,
     ctaLabel: isEnterpriseLike ? "Contact Sales" : "Get Started",
-    ctaHref: "/auth/vendorRegister",
+    ctaHref: VEDNOR_REGISTER_PATH,
     isFeatured: false,
   };
 }
@@ -182,7 +182,7 @@ export default function PricingSection({
             description: "For growing businesses.",
             features: [],
             ctaLabel: "Get Started",
-            ctaHref: "/auth/vendorRegister",
+            ctaHref: VEDNOR_REGISTER_PATH,
             isFeatured: false,
           };
 

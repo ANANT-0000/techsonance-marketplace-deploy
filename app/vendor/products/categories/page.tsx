@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import { fetchVendorsProductsCategory } from "@/utils/vendorApiClient";
 import CategoryManager from "@/components/vendor/category/CategoryManager";
 import { authToken } from "@/utils/authToken";
@@ -7,9 +8,14 @@ import { useEffect, useState } from "react";
 import { CATEGORY_MANAGER_TEXT } from "@/constants/vendorText";
 import { Category } from "@/utils/Types";
 import toast from "react-hot-toast";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
-const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
-  await fetchVendorsProductsCategory(token)
+const getCategoryOptions = async (
+  token: string,
+  companyId: string,
+  setCategoryOptions: any,
+) => {
+  await fetchVendorsProductsCategory(token, companyId)
     .then((res) => {
       setCategoryOptions(
         (res.data || []).map((c: any) => ({
@@ -30,27 +36,29 @@ const getCategoryOptions = async (token: string, setCategoryOptions: any) => {
 };
 
 export default function CategoryPage() {
+  const companyId = getClientCompanyId();
+
   const token = authToken();
   const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
   const [checkChange, setCheckChange] = useState(false);
   useEffect(() => {
-    if (token) {
-      getCategoryOptions(token, setCategoryOptions);
+    if (token && companyId) {
+      getCategoryOptions(token, companyId, setCategoryOptions);
     }
   }, [token, checkChange]);
 
   if (!token) {
-    redirect("/auth/vendorLogin");
+    redirect(VEDNOR_LOGIN_PATH);
   }
 
   return (
-    <div className=" p-6 w-full min-h-screen max-h-screen overflow-y-scroll">
-      <header className="mb-8">
+    <div className=" px-6 py-1 w-full min-h-screen max-h-screen overflow-y-scroll">
+      {/* <header className="mb-8">
         <h1 className="text-theme-h4 font-bold text-gray-800">
           {CATEGORY_MANAGER_TEXT.HEADER.TITLE}
         </h1>
         <p className="text-gray-500">{CATEGORY_MANAGER_TEXT.HEADER.DESC}</p>
-      </header>
+      </header> */}
 
       <CategoryManager
         setCheckChange={setCheckChange}

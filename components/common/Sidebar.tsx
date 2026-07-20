@@ -129,14 +129,14 @@ function NavItem({
         href={href}
         aria-current={isActive ? "page" : undefined}
         className={`
-          relative flex items-center gap-3 overflow-hidden
-         px-2.5 py-[9px] select-none
-          transition-colors duration-150
-          ${expanded ? "" : "justify-center"}
+          relative flex items-center overflow-hidden
+          py-[10px] select-none rounded-[10px]
+          transition-all duration-200 ease-out
+          ${expanded ? "px-2.5 mx-1.5 gap-3" : "justify-center mx-auto w-full px-0 gap-0"}
           ${
             isActive
-              ? "bg-[#4f8ef7]/[0.15] text-[#4f8ef7]"
-              : "text-white/50 hover:bg-white/[0.07] hover:text-white/90"
+              ? "bg-[#4f8ef7]/[0.12] text-[#4f8ef7] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
+              : "text-white/60 hover:bg-white/[0.06] hover:text-white/95"
           }
         `}
       >
@@ -186,38 +186,34 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
   const dispatch = useAppDispatch();
   const path = usePathname();
 
-  // Hover state — sidebar expands while hovered OR while pinned open
-  const [hovered, setHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const expanded = isSidebarOpen;
 
-  const expanded = isSidebarOpen || hovered;
+  // ── Auto-collapse on route change ──────────────────────────────────────────
+  useEffect(() => {
+    if (mounted && expanded) {
+      // If we navigate to a new route, close the sidebar
+      dispatch(toggleSidebar());
+    }
+  }, [path]);
 
-  const handleMouseEnter = useCallback(() => {
-    // 1. Clear any pending leave actions so it doesn't accidentally close
-    if (leaveTimer.current) clearTimeout(leaveTimer.current);
-
-    // 2. Wait 500ms before triggering the hover state
-    enterTimer.current = setTimeout(() => {
-      setHovered(true);
-    }, 500);
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    // 1. If the mouse leaves before 500ms, cancel the expansion entirely
-    if (enterTimer.current) clearTimeout(enterTimer.current);
-
-    // 2. Keep your existing small delay so accidental quick mouse-outs don't flicker
-    leaveTimer.current = setTimeout(() => {
-      setHovered(false);
-    }, 120);
-  }, []);
+  // ── Auto-collapse on outside click ───────────────────────────────────────
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (expanded && sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
+        dispatch(toggleSidebar());
+      }
+    };
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [expanded, dispatch]);
 
   // ── Build render list with section headers inserted ──────────────────────
   type RenderItem =
@@ -246,6 +242,7 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
 
   return (
     <aside
+      ref={sidebarRef}
       style={{ width: expanded ? EXPANDED_W : COLLAPSED_W }}
       className={` left-0 top-0 z-40  flex h-screen flex-col  bg-[#0f1117]  transition-[width] duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden px-[14px] py-4 ${expanded ? "rounded-r-2xl" : ""}
      `}
@@ -254,21 +251,21 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
       <div
         className={` relative py-1 w-full
           mb-2 flex items-center border-b border-white/[0.07] pb-3.5
-          ${expanded ? "justify-between px-1" : "justify-between "}
+          ${expanded ? "justify-between px-1" : "justify-center"}
         `}
       >
         {/* Logo mark + wordmark */}
         <button
-          className="flex items-center justify-between overflow-hidden w-full  mx-1 "
+          className={`flex items-center overflow-hidden w-full ${expanded ? "justify-between mx-1.5" : "justify-center"}`}
           onClick={() => dispatch(toggleSidebar())}
         >
           {isSidebarOpen && (
             <div
               className="
-              h-7 w-7 shrink-0 rounded-lg
+              h-[30px] w-[30px] shrink-0 rounded-[10px]
               bg-gradient-to-br from-[#4f8ef7] to-[#7c5cfc]
               flex items-center justify-center
-              text-theme-xxs font-bold text-white
+              text-theme-xxs font-bold text-white shadow-md shadow-indigo-500/20
             "
             >
               TS
@@ -276,12 +273,12 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
           )}
 
           <span
-            className="block rounded-md text-gray-400 hover:text-gray-100  transition-colors"
+            className={`block rounded-[10px] p-1 text-white/50 hover:text-white/90 hover:bg-white/[0.06] transition-all duration-200 ${!expanded ? "mx-auto" : ""}`}
             aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
           >
             <DynamicIcon
               name={!expanded ? "panel-left-open" : "panel-left-close"}
-              size={24}
+              size={20}
             />
           </span>
         </button>
@@ -289,50 +286,84 @@ export function Sidebar({ basePath = "", NAV_LINKS }: SidebarProps) {
 
       {/* ── Nav ────────────────────────────────────────────────────────────── */}
       <nav
-        id="tour-sidebar-nav"
-        className="flex-1 overflow-y-auto overflow-x-hidden"
+        className="flex-1 overflow-y-auto overflow-x-hidden mt-1"
         aria-label="Main navigation"
       >
-        <ul className="flex flex-col gap-0.5 list-none p-0 m-0">
-          {renderList.map((item, i) => {
-            if (item.kind === "divider") {
-              return <Divider key={`div-${i}`} />;
-            }
+        <ul className="flex flex-col gap-1 list-none p-0 m-0 pb-4">
+          {renderList.length === 0 ? (
+            <li className="px-3 py-8 text-center mt-4">
+              <div className="flex flex-col items-center gap-3 opacity-60">
+                <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
+                  <DynamicIcon name="layout-dashboard" size={20} className="text-white/50" />
+                </div>
+                {expanded && (
+                  <p className="text-theme-caption text-white/60 leading-relaxed font-medium px-2">
+                    Your navigation is empty.<br />Add modules to get started.
+                  </p>
+                )}
+              </div>
+            </li>
+          ) : (
+            renderList.map((item, i) => {
+              if (item.kind === "divider") {
+                return <Divider key={`div-${i}`} />;
+              }
 
-            if (item.kind === "section") {
+              if (item.kind === "section") {
+                return (
+                  <SectionLabel
+                    key={`sec-${i}`}
+                    label={item.label}
+                    expanded={expanded}
+                  />
+                );
+              }
+
+              const { linkObj } = item;
+              const label = getLabel(linkObj);
+              const icon = getIcon(linkObj);
+              const href = getHref(basePath, linkObj);
+              const active =
+                href.length > 0 && (path === href || path.startsWith(href + "/"));
+
               return (
-                <SectionLabel
-                  key={`sec-${i}`}
-                  label={item.label}
+                <NavItem
+                  key={`link-${i}`}
+                  href={href}
+                  label={label}
+                  icon={icon}
+                  isActive={active}
                   expanded={expanded}
                 />
               );
-            }
-
-            const { linkObj } = item;
-            const label = getLabel(linkObj);
-            const icon = getIcon(linkObj);
-            const href = getHref(basePath, linkObj);
-            const active =
-              href.length > 0 && (path === href || path.startsWith(href + "/"));
-
-            return (
-              <NavItem
-                key={`link-${i}`}
-                href={href}
-                label={label}
-                icon={icon}
-                isActive={active}
-                expanded={expanded}
-              />
-            );
-          })}
+            })
+          )}
         </ul>
       </nav>
 
       {/* ── Footer / User ──────────────────────────────────────────────────── */}
-      {mounted && user && (
-        <UserMenu user={user} role={role} expanded={expanded} />
+      {mounted && (
+        user ? (
+          <UserMenu user={user} role={role} expanded={expanded} />
+        ) : (
+          <div className="mt-auto border-t border-white/[0.07] pt-4 pb-2 relative">
+            {expanded ? (
+              <div className="px-3">
+                <div className="p-3.5 bg-red-500/[0.08] border border-red-500/20 rounded-[14px] text-center shadow-sm">
+                  <p className="text-[13px] font-semibold text-red-400/90 mb-1.5">Session Expired</p>
+                  <p className="text-[11.5px] text-white/60 mb-3.5 leading-snug">Please log in again to securely continue your session.</p>
+                  <Link href="/vendor/login" className="inline-flex w-full justify-center items-center gap-2 rounded-[10px] bg-red-500/10 hover:bg-red-500/20 px-3 py-2 text-[12.5px] font-medium text-red-300 transition-all duration-200 border border-red-500/20 shadow-sm hover:shadow-md hover:border-red-500/30">
+                    Log in
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <Link href="/vendor/login" className="mx-auto flex h-[42px] w-[42px] items-center justify-center rounded-[12px] bg-red-500/[0.08] border border-red-500/20 text-red-400 hover:bg-red-500/15 hover:border-red-500/30 transition-all duration-200 shadow-sm hover:shadow-md" title="Session Expired - Log in">
+                <DynamicIcon name="log-in" size={20} />
+              </Link>
+            )}
+          </div>
+        )
       )}
     </aside>
   );

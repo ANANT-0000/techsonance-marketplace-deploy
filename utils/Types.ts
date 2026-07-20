@@ -397,8 +397,6 @@ export interface VendorUser {
   vendor_status: string;
   is_verified?: boolean;
   joined_at: Date;
-  password_change_required?: boolean;
-  preferences?: { completed_tours: string[] };
 }
 
 export interface User {
@@ -415,7 +413,6 @@ export interface User {
   updated_at: Date;
   company_id: string | null;
   role_id: string | null;
-  password_change_required?: boolean;
 }
 // Supporting Interfaces based on your schema
 // used in multiple places

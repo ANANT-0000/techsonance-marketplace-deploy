@@ -22,6 +22,7 @@ import {
   AUTH_TEXT,
   COOKIE_CONSENT_KEY,
   COOKIE_CONSENT_VALUE,
+  CUSTOMER_REGISTER_PATH,
 } from "@/constants";
 import { CUSTOMER_LOGIN_TEXT } from "@/constants/authText";
 import { getCompanyDomain } from "@/lib/get-domain";
@@ -288,18 +289,23 @@ function CustomerLoginFormContent({
       if (isModal) {
         dispatch(closeLoginModal());
       }
-      router.push("/auth/forgotPassword");
+      router.push("/customer/forgotPassword");
     }
   };
 
   const handleCreateAccountClick = () => {
+    console.log("lcice");
     if (isModal && onToggleRegister) {
+      console.log("lcicwewews e");
+
       onToggleRegister();
     } else {
       if (isModal) {
         dispatch(closeLoginModal());
       }
-      router.push("/auth/customerRegister");
+      console.log("l111111cice");
+
+      router.replace(CUSTOMER_REGISTER_PATH);
     }
   };
 

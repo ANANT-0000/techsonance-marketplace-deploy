@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import React, { useEffect, useReducer } from "react";
 import { searchImgDark } from "@/constants/common";
@@ -17,6 +18,7 @@ import { authToken } from "@/utils/authToken";
 import { fetchGstRecords } from "@/utils/vendorApiClient";
 import { Pagination } from "@/components/common/Pagination";
 import { GST_TEXT } from "@/constants/vendorText";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 interface GstRecordType {
   id: string;
@@ -121,6 +123,8 @@ function gstReducer(state: GstState, action: GstAction): GstState {
 }
 
 export default function GstListingPage() {
+  const companyId = getClientCompanyId();
+
   const [state, dispatch] = useReducer(gstReducer, initialGstState);
   const {
     date,
@@ -161,10 +165,11 @@ export default function GstListingPage() {
 
   useEffect(() => {
     if (!token) {
-      redirect("/auth/vendorLogin");
+      redirect(VEDNOR_LOGIN_PATH);
     }
 
     const getGstRecords = async () => {
+      if (!companyId) return;
       dispatch({ type: GstActionType.SET_LOADING, payload: true });
       try {
         const res = await fetchGstRecords(
@@ -174,6 +179,7 @@ export default function GstListingPage() {
           statusFilter,
           sortBy,
           token!,
+          companyId,
         );
         dispatch({
           type: GstActionType.SET_GST_RECORDS,

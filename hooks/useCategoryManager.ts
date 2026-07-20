@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 // ============================================================
 // CATEGORY MANAGEMENT — CUSTOM HOOK (STATE + HANDLERS)
 // ============================================================
@@ -142,7 +143,7 @@ export interface UseCategoryManagerReturn {
   onNameChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onParentIdChange: (value: string) => void;
-  handleSaveCategory: (e: React.FormEvent) => Promise<void>;
+  handleSaveCategory: (e: React.SubmitEvent) => Promise<void>;
   handleResetForm: () => void;
   handleEditClick: (cat: Category) => void;
 
@@ -323,7 +324,7 @@ export function useCategoryManager({
 }: CategoryManagerProps): UseCategoryManagerReturn {
   const router = useRouter();
   const token = authToken();
-
+  const companyId = getClientCompanyId();
   // ── Transition ──
   const [isPending, startTransition] = useTransition();
 
@@ -448,9 +449,9 @@ export function useCategoryManager({
   }, []);
 
   const handleSaveCategory = useCallback(
-    async (e: React.FormEvent) => {
+    async (e: React.SubmitEvent) => {
       e.preventDefault();
-      if (!token) {
+      if (!token || !companyId) {
         toast.error(CATEGORY_TOAST.NO_TOKEN);
         setTimeout(
           () => router.push(CATEGORY_AUTH.LOGIN_REDIRECT_PATH),
@@ -476,6 +477,7 @@ export function useCategoryManager({
             editingId,
             payload,
             token,
+            companyId,
           );
           if (response?.status === 200) {
             toast.success(CATEGORY_TOAST.UPDATED);
@@ -485,7 +487,11 @@ export function useCategoryManager({
             toast.error(response?.message || CATEGORY_TOAST.UPDATE_FAILED);
           }
         } else {
-          const response = await createVendorProductCategory(payload, token);
+          const response = await createVendorProductCategory(
+            payload,
+            token,
+            companyId,
+          );
           if (response?.status === 201 || response?.status === 200) {
             toast.success(CATEGORY_TOAST.CREATED);
             handleResetForm();
@@ -529,6 +535,14 @@ export function useCategoryManager({
 
   const handleDeleteClick = useCallback(
     (cat: Category) => {
+      if (!token || !companyId) {
+        toast.error(CATEGORY_TOAST.NO_TOKEN);
+        setTimeout(
+          () => router.push(CATEGORY_AUTH.LOGIN_REDIRECT_PATH),
+          CATEGORY_AUTH.REDIRECT_DELAY_MS,
+        );
+        return;
+      }
       const subs = categories.filter((c) => c.parent_id === cat.id);
       if (subs.length > 0) {
         const targetOption = categories.find(
@@ -548,6 +562,7 @@ export function useCategoryManager({
               const res = await deleteVendorProductCategory(
                 cat.id,
                 token || "",
+                companyId,
               );
               if (res.status === 200) {
                 toast.success(CATEGORY_TOAST.DELETED);
@@ -566,7 +581,7 @@ export function useCategoryManager({
   );
 
   const handleConfirmComplexDelete = useCallback(async () => {
-    if (!deleteModalConfig || !token) return;
+    if (!deleteModalConfig || !token || !companyId) return;
     const parentIdToDelete = deleteModalConfig.id;
 
     try {
@@ -582,11 +597,16 @@ export function useCategoryManager({
               parent_id: targetParent,
             },
             token,
+            companyId,
           );
         }
       }
 
-      const res = await deleteVendorProductCategory(parentIdToDelete, token);
+      const res = await deleteVendorProductCategory(
+        parentIdToDelete,
+        token,
+        companyId,
+      );
       if (res.status === 200) {
         toast.success(CATEGORY_TOAST.DELETED);
         dispatch({ type: CategoryActionType.CLOSE_DELETE_MODAL });
@@ -640,12 +660,12 @@ export function useCategoryManager({
   // ── Bulk Actions ──
 
   const handleBulkDelete = useCallback(async () => {
-    if (!token) return;
+    if (!token || !companyId) return;
     if (confirm(CATEGORY_TOAST.BULK_DELETE_CONFIRM(selectedIds.length))) {
       let successCount = 0;
       for (const id of selectedIds) {
         try {
-          const res = await deleteVendorProductCategory(id, token);
+          const res = await deleteVendorProductCategory(id, token, companyId);
           if (res.status === 200) successCount++;
         } catch {
           // Continue with remaining deletions
@@ -658,7 +678,7 @@ export function useCategoryManager({
   }, [token, selectedIds, setCheckChange]);
 
   const handleBulkMove = useCallback(async () => {
-    if (!token) return;
+    if (!token || !companyId) return;
     const targetParentId = bulkParentId === "" ? null : bulkParentId;
     let successCount = 0;
     for (const id of selectedIds) {
@@ -674,6 +694,7 @@ export function useCategoryManager({
               parent_id: targetParentId,
             },
             token,
+            companyId,
           );
           if (res.status === 200) successCount++;
         } catch {
@@ -745,7 +766,7 @@ export function useCategoryManager({
         return;
       }
 
-      if (!token) return;
+      if (!token || !companyId) return;
 
       try {
         const res = await updateVendorProductCategory(
@@ -756,6 +777,7 @@ export function useCategoryManager({
             parent_id: targetParentId,
           },
           token,
+          companyId,
         );
         if (res.status === 200) {
           toast.success(
@@ -832,7 +854,14 @@ export function useCategoryManager({
     token,
     isPending,
 
-    formState: { name, description, parentId, editingId, icon_url: "", show_in_nav: true },
+    formState: {
+      name,
+      description,
+      parentId,
+      editingId,
+      icon_url: "",
+      show_in_nav: true,
+    },
     onNameChange,
     onDescriptionChange,
     onParentIdChange,

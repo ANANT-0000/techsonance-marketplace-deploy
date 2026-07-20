@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
@@ -28,6 +29,8 @@ interface PaymentFormValues {
 }
 
 export default function VendorPaymentPage() {
+  const companyId = getClientCompanyId();
+
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -47,9 +50,9 @@ export default function VendorPaymentPage() {
   const logisticsMode = watch("logistics_mode");
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !companyId) return;
     const loadSettings = async () => {
-      const res = await fetchVendorPaymentConfig(token);
+      const res = await fetchVendorPaymentConfig(token, companyId);
       if (res && res.data) {
         const d = res.data;
         reset({
@@ -63,6 +66,7 @@ export default function VendorPaymentPage() {
   }, [token, reset]);
 
   const onSubmit = (data: PaymentFormValues) => {
+    if (!companyId) return;
     setErrorMsg("");
     setSaved(false);
     startTransition(async () => {
@@ -72,7 +76,7 @@ export default function VendorPaymentPage() {
         razorpay_key_secret: data.razorpay_key_secret,
       };
 
-      const res = await updateVendorPaymentConfig(payload, token);
+      const res = await updateVendorPaymentConfig(payload, token, companyId);
       if (res && res.success) {
         setSaved(true);
         setIsEditingKeyId(false);
@@ -250,7 +254,6 @@ export default function VendorPaymentPage() {
             )}
           </div>
         </div>
-
 
         {/* Action Button & Status alerts */}
         <div className="flex flex-col sm:flex-row items-center gap-4 justify-between pt-4 border-t border-gray-200">

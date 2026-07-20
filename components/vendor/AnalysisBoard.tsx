@@ -25,6 +25,7 @@ import {
   BarChart3,
   ArrowUpRight,
   Minus,
+  PieChart as PieChartIcon,
 } from "lucide-react";
 import {
   addDays,
@@ -56,7 +57,10 @@ import { authToken } from "@/utils/authToken";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { useAnalyticsDownload } from "@/hooks/useAnalyticsDownload";
+import { toast } from "sonner";
+import { DataLoadErrorCard } from "@/components/vendor/DataLoadErrorCard";
 import { ANALYSIS_BOARD_TEXT } from "@/constants/vendorText";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -185,7 +189,7 @@ function DateRangePicker({
       <PopoverTrigger asChild>
         <Button
           size="sm"
-          className="h-9 gap-2 text-theme-body-sm font-normal border border-border"
+          className="bg-white h-9 gap-2 text-theme-body-sm font-normal border border-border"
         >
           <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="hidden sm:inline">
@@ -228,8 +232,8 @@ function DateRangePicker({
               selected={range}
               onSelect={(r) => r && setRange(r)}
               numberOfMonths={2}
-              toDate={new Date()}
-              initialFocus
+              hidden={{ after: new Date() }}
+              autoFocus
             />
 
             <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-gray-300 ">
@@ -271,31 +275,29 @@ function MetricCard({
   trend,
 }: MetricCardProps) {
   return (
-    <Card className="relative  border border-border overflow-hidden transition-shadow hover:shadow-md">
+    <Card className="relative border border-slate-200/60 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-slate-300/80 bg-white/50 backdrop-blur-sm">
       <CardContent className="pt-5 pb-4 px-5">
         <div className="flex items-start justify-between mb-3">
-          <p className="text-theme-caption font-medium text-muted-foreground uppercase tracking-wide leading-none">
+          <p className="text-theme-caption font-medium text-slate-500 uppercase tracking-wide leading-none">
             {title}
           </p>
           <div
-            className={`h-8 w-8 rounded-lg flex items-center justify-center ${iconColor}`}
+            className={`h-8 w-8 rounded-lg flex items-center justify-center ${iconColor} shadow-sm ring-1 ring-black/5`}
           >
             {icon}
           </div>
         </div>
-        <p className="text-theme-h4 font-semibold tracking-tight text-foreground leading-none mb-1.5">
+        <p className="text-theme-h4 font-semibold tracking-tight text-slate-900 leading-none mb-1.5">
           {value}
         </p>
-        {sub && (
-          <p className="text-theme-caption text-muted-foreground">{sub}</p>
-        )}
+        {sub && <p className="text-theme-caption text-slate-500">{sub}</p>}
         {trend && (
           <div
             className={cn(
               "flex items-center gap-1 mt-2 text-theme-caption font-medium",
               trend.positive === true && "text-emerald-600",
               trend.positive === false && "text-rose-500",
-              trend.positive === null && "text-muted-foreground",
+              trend.positive === null && "text-slate-400",
             )}
           >
             {trend.positive === true && <ArrowUpRight className="h-3 w-3" />}
@@ -656,6 +658,11 @@ function DonutChart({
   const outerR = Math.floor(size * 0.37);
   const innerR = Math.floor(size * 0.26);
 
+  const isDonutEmpty = data.length === 0;
+  const chartData = isDonutEmpty
+    ? [{ name: ANALYSIS_BOARD_TEXT.EMPTY_STATES.EMPTY, value: 1 }]
+    : data;
+
   return (
     <div ref={wrapRef} className="relative w-full " style={{ height: size }}>
       {/* Center label — absolutely positioned, never affects SVG layout */}
@@ -674,7 +681,7 @@ function DonutChart({
       {/* Fixed-pixel chart — bypasses ResponsiveContainer collapse during PDF export */}
       <PieChart width={size} height={size} style={{ display: "block" }}>
         <Pie
-          data={data}
+          data={chartData}
           cx={cx}
           cy={cy}
           innerRadius={innerR}
@@ -683,13 +690,16 @@ function DonutChart({
           dataKey="value"
           nameKey="name"
           strokeWidth={0}
-          isAnimationActive={false}
+          isAnimationActive={!isDonutEmpty}
         >
-          {data.map((_, i) => (
-            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+          {chartData.map((_, i) => (
+            <Cell
+              key={i}
+              fill={isDonutEmpty ? "#f1f5f9" : COLORS[i % COLORS.length]}
+            />
           ))}
         </Pie>
-        <RechartsTooltip content={<PieTooltip />} />
+        {!isDonutEmpty && <RechartsTooltip content={<PieTooltip />} />}
       </PieChart>
     </div>
   );
@@ -756,28 +766,31 @@ function CategoryTable({ data }: { data: CategoryPerformance[] }) {
 
 function DashboardSkeleton() {
   return (
-    <div className="flex flex-col gap-6 p-6 animate-pulse">
+    <div className="flex flex-col gap-6 p-6 animate-pulse bg-slate-50/30">
       <div className="flex justify-between items-center">
-        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-8 w-48 bg-slate-200/60 rounded-md" />
         <div className="flex gap-2">
-          <Skeleton className="h-9 w-48" />
-          <Skeleton className="h-9 w-24" />
-          <Skeleton className="h-9 w-28" />
+          <Skeleton className="h-9 w-48 bg-slate-200/60 rounded-md" />
+          <Skeleton className="h-9 w-24 bg-slate-200/60 rounded-md" />
+          <Skeleton className="h-9 w-28 bg-slate-200/60 rounded-md" />
         </div>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="h-28 rounded-xl" />
+          <Skeleton
+            key={i}
+            className="h-28 rounded-xl bg-slate-200/50 shadow-sm border border-slate-100"
+          />
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <Skeleton className="lg:col-span-2 h-[340px] rounded-xl" />
-        <Skeleton className="h-[340px] rounded-xl" />
+        <Skeleton className="lg:col-span-2 h-[340px] rounded-xl bg-slate-200/50 shadow-sm border border-slate-100" />
+        <Skeleton className="h-[340px] rounded-xl bg-slate-200/50 shadow-sm border border-slate-100" />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <Skeleton className="h-[280px] rounded-xl" />
-        <Skeleton className="h-[280px] rounded-xl" />
-        <Skeleton className="h-[280px] rounded-xl" />
+        <Skeleton className="h-[280px] rounded-xl bg-slate-200/50 shadow-sm border border-slate-100" />
+        <Skeleton className="h-[280px] rounded-xl bg-slate-200/50 shadow-sm border border-slate-100" />
+        <Skeleton className="h-[280px] rounded-xl bg-slate-200/50 shadow-sm border border-slate-100" />
       </div>
     </div>
   );
@@ -798,7 +811,7 @@ export default function AnalysisBoard() {
   const [isPdfExporting, setIsPdfExporting] = useState(false);
 
   const token = authToken();
-
+  const companyId = getClientCompanyId();
   const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     setError(false);
@@ -806,7 +819,10 @@ export default function AnalysisBoard() {
       const response = await AxiosAPI.get(
         `/v1/vendors/analytics?startDate=${dateRange.startDate.toISOString()}&endDate=${dateRange.endDate.toISOString()}`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "company-id": companyId,
+          },
         },
       );
       setData(response.data.data as AnalyticsData);
@@ -828,6 +844,19 @@ export default function AnalysisBoard() {
   };
 
   // ── Render states ──────────────────────────────────────────────────────────
+
+  if (!token) {
+    return (
+      <div className="py-10">
+        <DataLoadErrorCard
+          title={ANALYSIS_BOARD_TEXT.EMPTY_STATES.SESSION_EXPIRED_TITLE}
+          description={ANALYSIS_BOARD_TEXT.EMPTY_STATES.SESSION_EXPIRED_DESC}
+          tryAgainText={ANALYSIS_BOARD_TEXT.EMPTY_STATES.SESSION_EXPIRED_BTN}
+          onTryAgain={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
 
   if (loading) return <DashboardSkeleton />;
 
@@ -896,7 +925,10 @@ export default function AnalysisBoard() {
             className="h-9 gap-1.5 border border-border"
             disabled={isPdfExporting}
             onClick={async () => {
-              if (!token) return;
+              if (!token) {
+                toast.error(ANALYSIS_BOARD_TEXT.EMPTY_STATES.EXPORT_NO_TOKEN);
+                return;
+              }
               setIsPdfExporting(true);
               try {
                 await downloadAnalyticsPdf(
@@ -994,10 +1026,29 @@ export default function AnalysisBoard() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="h-[300px] pt-0">
+            <CardContent className="h-[300px] pt-0 relative">
+              {monthlyTrend.length === 0 && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[2px] rounded-b-xl border-t border-white/20 pb-8">
+                  <div className="bg-white/95 px-5 py-2.5 rounded-full shadow-sm border border-slate-200/80 text-sm font-medium text-slate-600 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-emerald-500" />
+                    {ANALYSIS_BOARD_TEXT.EMPTY_STATES.TREND_EMPTY}
+                  </div>
+                </div>
+              )}
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart
-                  data={monthlyTrend}
+                  data={
+                    monthlyTrend.length === 0
+                      ? [
+                          {
+                            month: ANALYSIS_BOARD_TEXT.EMPTY_STATES.NO_DATA,
+                            revenue: 0,
+                            orders: 0,
+                          },
+                          { month: "", revenue: 0, orders: 0 },
+                        ]
+                      : monthlyTrend
+                  }
                   margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
                 >
                   <defs>
@@ -1118,9 +1169,17 @@ export default function AnalysisBoard() {
               {topProducts.length > 0 ? (
                 <SkuBars products={topProducts} />
               ) : (
-                <p className="text-theme-body-sm text-muted-foreground text-center py-8">
-                  No product data.
-                </p>
+                <div className="flex flex-col items-center justify-center py-10 px-4 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200/80">
+                  <div className="w-10 h-10 bg-white shadow-sm ring-1 ring-slate-100 rounded-full flex items-center justify-center mb-3">
+                    <Package className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <p className="text-sm font-semibold text-slate-700 mb-1">
+                    {ANALYSIS_BOARD_TEXT.EMPTY_STATES.NO_PRODUCTS_TITLE}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {ANALYSIS_BOARD_TEXT.EMPTY_STATES.NO_PRODUCTS_DESC}
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -1156,6 +1215,11 @@ export default function AnalysisBoard() {
                 ))}
               </div>
               <DonutChart data={categoryPerformance} total={catTotal} />
+              {categoryPerformance.length === 0 && (
+                <p className="text-center text-xs font-medium text-slate-500 mt-3 bg-slate-50/50 rounded-md py-2 border border-slate-100">
+                  {ANALYSIS_BOARD_TEXT.EMPTY_STATES.NO_CATEGORY_DATA}
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -1167,7 +1231,21 @@ export default function AnalysisBoard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CategoryTable data={categoryPerformance} />
+              {categoryPerformance.length > 0 ? (
+                <CategoryTable data={categoryPerformance} />
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10 px-4 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200/80">
+                  <div className="w-10 h-10 bg-white shadow-sm ring-1 ring-slate-100 rounded-full flex items-center justify-center mb-3">
+                    <PieChartIcon className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <p className="text-sm font-semibold text-slate-700 mb-1">
+                    {ANALYSIS_BOARD_TEXT.EMPTY_STATES.NO_CATEGORY_TITLE}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {ANALYSIS_BOARD_TEXT.EMPTY_STATES.NO_CATEGORY_DESC}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

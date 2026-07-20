@@ -20,6 +20,7 @@ import Link from "next/link";
 import { fetchPolicyCoverageDetails } from "@/utils/vendorApiClient";
 import { UiText } from "@/constants/ui-text";
 import { PolicyType } from "../../page";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -124,13 +125,18 @@ export default function PolicyCoverageDetailPage({
   const [data, setData] = useState<PolicyCoverageItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const companyId = getClientCompanyId();
 
   useEffect(() => {
-    if (!token || !policyId) return;
+    if (!token || !policyId || !companyId) return;
     const loadCoverageDetail = async () => {
       setLoading(true);
       try {
-        const res = await fetchPolicyCoverageDetails(policyId, token);
+        const res = await fetchPolicyCoverageDetails(
+          policyId,
+          token,
+          companyId,
+        );
         if (res?.data) {
           setData(res.data[0]);
         } else {
@@ -303,11 +309,12 @@ export default function PolicyCoverageDetailPage({
                           : "Replacement Accepted"}
                       </span>
                     )}
-                    {!data.policy.is_returnable && !data.policy.is_replaceable && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-full text-theme-caption font-semibold">
-                        🚫 Final Sale
-                      </span>
-                    )}
+                    {!data.policy.is_returnable &&
+                      !data.policy.is_replaceable && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-full text-theme-caption font-semibold">
+                          🚫 Final Sale
+                        </span>
+                      )}
                   </div>
                   {data.policy.return_conditions && (
                     <p className="mt-2 text-theme-caption text-gray-500 leading-relaxed">

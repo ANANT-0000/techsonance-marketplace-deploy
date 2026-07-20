@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter, redirect } from "next/navigation";
@@ -16,8 +17,13 @@ import {
 import { TAX_PROFILE_FORM_TEXT } from "@/constants/vendorText";
 import { FieldConfig, FieldType } from "@/utils/Types";
 import { TAX_PROFILE_FORM_FIELDS } from "@/constants";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
+import { DataLoadErrorCard } from "@/components/vendor/DataLoadErrorCard";
+import { TableRowSkeleton } from "@/components/common/skeletons";
 
 export default function UnifiedTaxProfileFormPage() {
+  const companyId = getClientCompanyId();
+
   const params = useParams();
   const router = useRouter();
   const { user } = useAppSelector((state: RootState) => state.auth);
@@ -41,12 +47,15 @@ export default function UnifiedTaxProfileFormPage() {
 
   // Fetch existing data for Edit Mode
   useEffect(() => {
-    if (!token) redirect("/auth/vendorLogin");
+    if (!token || !companyId) return;
 
     const fetchProfileData = async () => {
-      if (!isEditMode) return;
+      if (!isEditMode) {
+        setLoading(false);
+        return;
+      }
       try {
-        const res = await fetchSingleTaxProfile(profileId, token!);
+        const res = await fetchSingleTaxProfile(profileId, token!, companyId);
         if (res.data?.data) {
           reset(res.data.data); // Instantly populate the form
         }
@@ -56,14 +65,15 @@ export default function UnifiedTaxProfileFormPage() {
       }
     };
     fetchProfileData();
-  }, [token, profileId, isEditMode, reset]);
+  }, [token, companyId, profileId, isEditMode, reset]);
 
   const onSubmit = async (data: any) => {
+    if (!token || !companyId) return;
     try {
       if (isEditMode) {
-        await fetchUpdateTaxProfile(profileId, data, token!);
+        await fetchUpdateTaxProfile(profileId, data, token, companyId);
       } else {
-        await fetchCreateTaxProfile(data, token!);
+        await fetchCreateTaxProfile(data, token, companyId);
       }
       router.push(`/vendor/finances/tax-profiles`);
     } catch (error) {
@@ -75,15 +85,32 @@ export default function UnifiedTaxProfileFormPage() {
     }
   };
 
+  if (!token || !companyId) {
+    return (
+      <DataLoadErrorCard
+        title={TAX_PROFILE_FORM_TEXT.ERRORS.SESSION_EXPIRED_TITLE}
+        description={TAX_PROFILE_FORM_TEXT.ERRORS.SESSION_EXPIRED_DESC}
+        tryAgainText={TAX_PROFILE_FORM_TEXT.ERRORS.GO_TO_LOGIN}
+        onTryAgain={() => router.push(VEDNOR_LOGIN_PATH)}
+      />
+    );
+  }
+
   if (loading)
     return (
-      <div className="p-10 text-center text-gray-500">
-        {TAX_PROFILE_FORM_TEXT.LOADING}
-      </div>
+      <section className="w-full px-1">
+        <header className="flex justify-between items-center my-6">
+          <div className="w-48 h-8 bg-gray-100 rounded-lg animate-pulse"></div>
+          <div className="w-24 h-10 bg-gray-100 rounded-xl animate-pulse"></div>
+        </header>
+        <div className="w-full rounded-2xl border border-gray-100 shadow-sm bg-white p-8 mb-4">
+          <TableRowSkeleton columns={2} rows={3} />
+        </div>
+      </section>
     );
 
   return (
-    <section className="w-full  px-1">
+    <section className="w-full px-1">
       <header className="flex justify-between items-center my-6">
         <div className="flex items-center gap-2 text-gray-700">
           <Layers size={22} className="text-blue-500" />
@@ -101,10 +128,10 @@ export default function UnifiedTaxProfileFormPage() {
         </Link>
       </header>
 
-      <div className="w-full rounded-xl border border-gray-200 shadow-sm bg-white p-6 mb-4">
+      <div className="w-full rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white p-8 mb-6">
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="grid grid-cols-2 gap-6"
+          className="grid grid-cols-2 gap-x-8 gap-y-6"
         >
           {TAX_PROFILE_FORM_FIELDS.map((field) => {
             if (field.type === "checkbox") {
@@ -181,11 +208,11 @@ export default function UnifiedTaxProfileFormPage() {
             );
           })}
 
-          <div className="col-span-2 flex justify-end pt-4 mt-2 border-t border-gray-100">
+          <div className="col-span-2 flex justify-end pt-6 mt-4 border-t border-gray-100">
             <button
               disabled={isSubmitting}
               type="submit"
-              className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-colors shadow-sm disabled:opacity-70"
+              className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 hover:shadow-[0_4px_12px_rgba(37,99,235,0.2)] transition-all disabled:opacity-70 disabled:hover:shadow-none"
             >
               {isSubmitting ? (
                 TAX_PROFILE_FORM_TEXT.ACTIONS.PROCESSING

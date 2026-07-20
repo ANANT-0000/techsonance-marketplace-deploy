@@ -3,6 +3,8 @@ import { useRouter } from "next/navigation";
 import { REGISTRATION_SUCCESS_MODAL_TEXT } from "@/constants/commonText";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { logOut } from "@/lib/features/auth/authSlice";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
+
 interface RegistrationSuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -64,7 +66,7 @@ export const RegistrationSuccessModal = ({
                 dispatch(logOut());
               }
               onClose();
-              router.push("/auth/vendorLogin");
+              router.push(VEDNOR_LOGIN_PATH);
             }}
             className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-2xl transition-colors text-theme-body-sm"
           >

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import type { LandingNavbarContent } from "@/utils/Types";
+import { VEDNOR_REGISTER_PATH } from "@/constants";
 
 interface LandingNavbarProps {
   content: LandingNavbarContent;
@@ -85,7 +86,7 @@ export default function LandingNavbar({ content }: LandingNavbarProps) {
 
         <div className="hidden items-center gap-3 lg:flex">
           <Link
-            href="/auth/vendorRegister"
+            href={VEDNOR_REGISTER_PATH}
             className="rounded-full bg-landing-primary px-5 py-2.5 text-sm font-semibold text-landing-on-primary shadow-lg shadow-landing-primary/20 transition-transform hover:bg-landing-primary-hover hover:scale-[1.02]"
           >
             {content.ctas.signup}
@@ -170,7 +171,7 @@ export default function LandingNavbar({ content }: LandingNavbarProps) {
                 {content.ctas.login}
               </Link>
               <Link
-                href="/auth/vendorRegister"
+                href={VEDNOR_REGISTER_PATH}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="rounded-full bg-landing-primary px-5 py-3 text-center text-sm font-semibold text-landing-on-primary transition-colors hover:bg-landing-primary-hover"
               >

@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useEffect, useState, useTransition } from "react";
 import { CheckCircle2, Save, Route, LayoutList } from "lucide-react";
@@ -11,6 +12,8 @@ import {
 import { ShippingStrategy } from "@/utils/Types";
 
 export default function RoutingStrategy() {
+  const companyId = getClientCompanyId();
+
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -27,12 +30,12 @@ export default function RoutingStrategy() {
   const token = authToken() || "";
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !companyId) return;
 
     const loadData = async () => {
       const [companiesRes, prefsRes] = await Promise.all([
-        fetchLogisticCompanies(token),
-        fetchVendorShippingPreferences(token),
+        fetchLogisticCompanies(token, companyId),
+        fetchVendorShippingPreferences(token, companyId),
       ]);
 
       if (companiesRes?.data) {
@@ -59,6 +62,9 @@ export default function RoutingStrategy() {
   };
 
   const handleSave = () => {
+    if (!token || !companyId) {
+      return;
+    }
     setErrorMsg("");
     setSaved(false);
 
@@ -71,7 +77,11 @@ export default function RoutingStrategy() {
         exclusion_rules: { blocked_courier_ids: [] },
       };
 
-      const res = await updateVendorShippingPreferences(payload, token);
+      const res = await updateVendorShippingPreferences(
+        payload,
+        token,
+        companyId,
+      );
 
       if (res?.success !== false) {
         setSaved(true);

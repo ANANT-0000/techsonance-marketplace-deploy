@@ -9,6 +9,7 @@ import { createCheckoutSession } from "@/hooks/UseCheckoutSession";
 import toast from "react-hot-toast";
 import {
   ACCESS_TOKEN_KEY,
+  CUSTOMER_LOGIN_PATH,
   REFRESH_TOKEN_KEY,
   User,
   UserRole,
@@ -99,15 +100,16 @@ function AuthSuccessHandler() {
           }
           dispatchState({
             type: ActionType.SET_STATUS,
-            payload: (status && Object.values(LoginStatusEnum).includes(status as any))
-              ? (status as LoginStatusEnum)
-              : LoginStatusEnum.ERROR,
+            payload:
+              status && Object.values(LoginStatusEnum).includes(status as any)
+                ? (status as LoginStatusEnum)
+                : LoginStatusEnum.ERROR,
           });
           dispatchState({
             type: ActionType.SET_ERROR_MESSAGE,
             payload: message ? message : AUTH_SUCCESS_TEXT.ERR_NO_TOKEN,
           });
-          setTimeout(() => router.push("/auth/customerLogin"), 2000);
+          setTimeout(() => router.push(CUSTOMER_LOGIN_PATH), 2000);
           return;
         }
 
@@ -211,7 +213,7 @@ function AuthSuccessHandler() {
             type: ActionType.SET_ERROR_MESSAGE,
             payload: AUTH_SUCCESS_TEXT.ERR_INVALID_TOKEN,
           });
-          setTimeout(() => router.push("/auth/customerLogin"), 2000);
+          setTimeout(() => router.push(CUSTOMER_LOGIN_PATH), 2000);
         }
       } catch (error) {
         dispatchState({
@@ -222,7 +224,7 @@ function AuthSuccessHandler() {
           type: ActionType.SET_ERROR_MESSAGE,
           payload: AUTH_SUCCESS_TEXT.ERR_AUTH_FAILED,
         });
-        setTimeout(() => router.push("/auth/customerLogin"), 2000);
+        setTimeout(() => router.push(CUSTOMER_LOGIN_PATH), 2000);
       }
     };
 
@@ -234,7 +236,7 @@ function AuthSuccessHandler() {
       type: ActionType.SET_IS_REACTIVATION_OPEN,
       payload: false,
     });
-    router.push("/auth/customerLogin");
+    router.push(CUSTOMER_LOGIN_PATH);
   };
 
   return (

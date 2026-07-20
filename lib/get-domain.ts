@@ -54,4 +54,3 @@ export const isAdminDomainAllowed = async (): Promise<boolean> => {
 
   return allowedList.includes(actualHostname.toLowerCase());
 };
-

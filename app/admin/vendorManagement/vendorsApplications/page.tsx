@@ -79,7 +79,6 @@ export default function VendorsApplicationsPage() {
   };
   return (
     <>
-      <Navbar title="Vendors Applications" />
       <div>
         {vendorApplications.map((application, index) => {
           const { user, company, ...vendor } = application;

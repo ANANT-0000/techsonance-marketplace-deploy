@@ -14,7 +14,7 @@ import {
   CustomerRegisterSchemaType,
 } from "@/utils/validation";
 import { getCompanyDomain } from "@/lib/get-domain";
-import { AUTH_TEXT, ENV_DEVELOPMENT } from "@/constants";
+import { AUTH_TEXT, CUSTOMER_LOGIN_PATH, ENV_DEVELOPMENT } from "@/constants";
 import toast, { Toaster } from "react-hot-toast";
 import { da } from "date-fns/locale";
 
@@ -125,7 +125,7 @@ export default function CustomerRegisterForm({
         if (isModal && onToggleLogin) {
           onToggleLogin();
         } else {
-          router.push("/auth/customerLogin?registered=true");
+          router.push("/customer/login?registered=true");
         }
       } else {
         dispatch({
@@ -376,7 +376,7 @@ export default function CustomerRegisterForm({
             </button>
           ) : (
             <Link
-              href="/auth/customerLogin"
+              href={CUSTOMER_LOGIN_PATH}
               className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition-colors ml-1"
             >
               {AUTH_TEXT.REGISTER.LOGIN_LINK}

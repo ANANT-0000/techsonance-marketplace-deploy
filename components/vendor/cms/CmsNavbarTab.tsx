@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import React, { useState, useReducer, useEffect } from "react";
 import {
   Plus,
@@ -414,6 +415,7 @@ function L2ColumnEditor({
   products: rawProducts,
   menuId,
   token,
+  companyId,
   onSaved,
   onDeleted,
 }: {
@@ -422,6 +424,7 @@ function L2ColumnEditor({
   products: { id: string; name: string }[];
   menuId: string;
   token: string;
+  companyId: string;
   onSaved: (updated: L2Column) => void;
   onDeleted: (id: string) => void;
 }) {
@@ -464,6 +467,7 @@ function L2ColumnEditor({
             : NavItemType.CUSTOM_LINK,
         },
         token,
+        companyId,
       );
       dispatch({ type: L2ColumnActionType.SET_SAVING, payload: false });
       if (res?.success === false) {
@@ -488,7 +492,7 @@ function L2ColumnEditor({
   const remove = async () => {
     if (!confirm(`Delete column "${col.label}"?`)) return;
     try {
-      const res = await deleteNavbarItem(col.id, token);
+      const res = await deleteNavbarItem(col.id, token, companyId);
       if (res?.success === false) {
         toast.error(res?.message || CmsNavbarConfig.ERROR_DELETE_COLUMN);
 
@@ -721,6 +725,7 @@ function L1ItemEditor({
   products: rawProducts,
   menuId,
   token,
+  companyId,
   onSaved,
   onDeleted,
 }: {
@@ -731,6 +736,7 @@ function L1ItemEditor({
   products: { id: string; name: string }[];
   menuId: string;
   token: string;
+  companyId: string;
   onSaved: (updated: L1Item) => void;
   onDeleted: (id: string) => void;
 }) {
@@ -799,6 +805,7 @@ function L1ItemEditor({
           })(),
         },
         token,
+        companyId,
       );
       dispatch({ type: L1ItemActionType.SET_SAVING, payload: false });
       if (res?.success === false) {
@@ -844,7 +851,7 @@ function L1ItemEditor({
           col_title: "New Column",
         },
       };
-      const res = await createNavbarItem(newCol, token);
+      const res = await createNavbarItem(newCol, token, companyId);
       dispatch({ type: L1ItemActionType.SET_ADDING_COL, payload: false });
 
       if (res?.success === false) {
@@ -889,7 +896,7 @@ function L1ItemEditor({
     )
       return;
     try {
-      const res = await deleteNavbarItem(item.id, token);
+      const res = await deleteNavbarItem(item.id, token, companyId);
       if (res?.success === false) {
         toast.error(res?.message || CmsNavbarConfig.ERROR_DELETE_LINK);
         return;
@@ -1125,6 +1132,7 @@ function L1ItemEditor({
                   categories={categories}
                   menuId={menuId}
                   token={token}
+                  companyId={companyId}
                   onSaved={onColSaved}
                   onDeleted={onColDeleted}
                   products={products}
@@ -1247,11 +1255,14 @@ function reducer(state: CmsNavbarState, action: NavbarAction): CmsNavbarState {
 }
 
 export function CmsNavbarTab() {
+  const companyId = getClientCompanyId();
+
   const token = authToken();
   const [state, dispatch] = useReducer(reducer, initialState);
 
   // ── Data load ────────────────────────────────────────────────────────────
   useEffect(() => {
+    if (!token || !companyId) return;
     const load = async () => {
       dispatch({ type: ActionType.SET_LOADING, payload: true });
       try {
@@ -1259,7 +1270,7 @@ export function CmsNavbarTab() {
           AxiosAPI.get("/v1/navbar").catch(() => null),
           AxiosAPI.get("/v1/categories?limit=500").catch(() => null),
           token
-            ? fetchVendorActiveProducts(token).catch(() => null)
+            ? fetchVendorActiveProducts(token, companyId).catch(() => null)
             : Promise.resolve(null),
           AxiosAPI.get("/v1/site-maps").catch(() => null),
         ]);
@@ -1314,10 +1325,10 @@ export function CmsNavbarTab() {
 
   // ── Save scalar settings ────────────────────────────────────────────────────
   const saveSettings = async () => {
-    if (!token) return;
+    if (!token || !companyId) return;
     dispatch({ type: ActionType.SET_SAVING_SETTINGS, payload: true });
     try {
-      const res = await upsertNavbarMenu(state.settings, token);
+      const res = await upsertNavbarMenu(state.settings, token, companyId);
       dispatch({
         type: ActionType.SET_SAVING_SETTINGS,
         payload: false,
@@ -1339,14 +1350,14 @@ export function CmsNavbarTab() {
   };
 
   const makeAutoSave = async (newUrl: string) => {
-    if (!token) return;
+    if (!token || !companyId) return;
     const updatedSettings = { ...state.settings, logo_src: newUrl };
     dispatch({
       type: ActionType.PATCH_SETTINGS,
       payload: { field: "logo_src", value: newUrl },
     });
     try {
-      const res = await upsertNavbarMenu(updatedSettings, token);
+      const res = await upsertNavbarMenu(updatedSettings, token, companyId);
       if (res?.success === false)
         toast.error(res?.message || CmsNavbarConfig.ERROR_SAVE_SETTINGS);
       else toast.success("Logo saved.");
@@ -1357,7 +1368,7 @@ export function CmsNavbarTab() {
 
   // ── Add a new L1 item ───────────────────────────────────────────────────────
   const addL1Item = async () => {
-    if (!state.data?.menu_id || !token) return;
+    if (!state.data?.menu_id || !token || !companyId) return;
     dispatch({ type: ActionType.SET_ADDING_ITEM, payload: true });
     try {
       const defaultRoute =
@@ -1374,6 +1385,7 @@ export function CmsNavbarTab() {
           meta: {},
         },
         token,
+        companyId,
       );
       dispatch({ type: ActionType.SET_ADDING_ITEM, payload: false });
       if (res?.success === false) {
@@ -1585,6 +1597,7 @@ export function CmsNavbarTab() {
               mapsLoading={state.mapsLoading}
               menuId={menuId!}
               token={token!}
+              companyId={companyId!}
               onSaved={(updated) =>
                 dispatch({ type: ActionType.SAVE_ITEM, payload: updated })
               }

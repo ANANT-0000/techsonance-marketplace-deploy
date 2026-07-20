@@ -192,14 +192,6 @@ export default function ChangePasswordPage() {
         });
 
         // Update user details in LocalStorage and Redux Auth state
-        if (user) {
-          const updatedUser = { ...user, password_change_required: false };
-          localStorage.setItem(
-            USER_STORAGE_KEY || "user",
-            JSON.stringify(updatedUser),
-          );
-          dispatch(updateUserProfile({ password_change_required: false }));
-        }
 
         // Redirect to vendor dashboard after 2 seconds
         setTimeout(() => {

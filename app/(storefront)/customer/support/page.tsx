@@ -29,6 +29,7 @@ import { formatCurrency } from "@/lib/utils";
 import { SUPPORT_PAGE_TEXT } from "@/constants/customerText";
 import { motion } from "framer-motion";
 import { ReturnStatus } from "@/utils/Types";
+import { CUSTOMER_LOGIN_PATH } from "@/constants";
 
 export enum FormActionType {
   SET = "SET",
@@ -80,7 +81,10 @@ type TicketThreadAction =
   | { type: TicketThreadActionType.SET_SUBMITTING_RATING; payload: boolean }
   | { type: TicketThreadActionType.SET_RATING_SUBMITTED; payload: boolean };
 
-const ticketThreadReducer = (state: TicketThreadState, action: TicketThreadAction): TicketThreadState => {
+const ticketThreadReducer = (
+  state: TicketThreadState,
+  action: TicketThreadAction,
+): TicketThreadState => {
   switch (action.type) {
     case TicketThreadActionType.SET_COMMENTS:
       return { ...state, comments: action.payload };
@@ -134,7 +138,10 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
       dispatch({ type: TicketThreadActionType.SET_LOADING, payload: true });
       const res = await AxiosAPI.get(`/v1/tickets/${ticketId}/comments`);
       if (res.data) {
-        dispatch({ type: TicketThreadActionType.SET_COMMENTS, payload: res.data });
+        dispatch({
+          type: TicketThreadActionType.SET_COMMENTS,
+          payload: res.data,
+        });
       }
     } catch (err) {
       void 0;
@@ -147,7 +154,10 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
     try {
       const rated = localStorage.getItem(`tn_rated_ticket_${ticketId}`);
       if (rated) {
-        dispatch({ type: TicketThreadActionType.SET_RATING_SUBMITTED, payload: true });
+        dispatch({
+          type: TicketThreadActionType.SET_RATING_SUBMITTED,
+          payload: true,
+        });
       }
     } catch {}
   };
@@ -157,14 +167,20 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
     if (!state.commentText.trim()) return;
 
     try {
-      dispatch({ type: TicketThreadActionType.SET_SUBMITTING_COMMENT, payload: true });
+      dispatch({
+        type: TicketThreadActionType.SET_SUBMITTING_COMMENT,
+        payload: true,
+      });
       const res = await AxiosAPI.post(`/v1/tickets/${ticketId}/comments`, {
         userId,
         commentText: state.commentText.trim(),
         isInternal: false,
       });
       if (res.data) {
-        dispatch({ type: TicketThreadActionType.SET_COMMENT_TEXT, payload: "" });
+        dispatch({
+          type: TicketThreadActionType.SET_COMMENT_TEXT,
+          payload: "",
+        });
         toast.success("Comment sent");
         fetchComments();
       }
@@ -172,7 +188,10 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
       void 0;
       toast.error("Failed to send comment");
     } finally {
-      dispatch({ type: TicketThreadActionType.SET_SUBMITTING_COMMENT, payload: false });
+      dispatch({
+        type: TicketThreadActionType.SET_SUBMITTING_COMMENT,
+        payload: false,
+      });
     }
   };
 
@@ -184,7 +203,10 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
     }
 
     try {
-      dispatch({ type: TicketThreadActionType.SET_SUBMITTING_RATING, payload: true });
+      dispatch({
+        type: TicketThreadActionType.SET_SUBMITTING_RATING,
+        payload: true,
+      });
       const res = await AxiosAPI.post(`/v1/tickets/${ticketId}/rating`, {
         userId,
         satisfactionRating: state.rating,
@@ -193,7 +215,10 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
         npsScore: state.npsScore !== null ? state.npsScore : undefined,
       });
       if (res.data) {
-        dispatch({ type: TicketThreadActionType.SET_RATING_SUBMITTED, payload: true });
+        dispatch({
+          type: TicketThreadActionType.SET_RATING_SUBMITTED,
+          payload: true,
+        });
         try {
           localStorage.setItem(`tn_rated_ticket_${ticketId}`, "true");
         } catch {}
@@ -203,7 +228,10 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
       void 0;
       toast.error("Failed to submit feedback");
     } finally {
-      dispatch({ type: TicketThreadActionType.SET_SUBMITTING_RATING, payload: false });
+      dispatch({
+        type: TicketThreadActionType.SET_SUBMITTING_RATING,
+        payload: false,
+      });
     }
   };
 
@@ -243,7 +271,9 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
                 >
                   <div className="flex items-center justify-between gap-4 mb-1">
                     <span className="font-bold">
-                      {isSupport ? SUPPORT_PAGE_TEXT.TICKET_THREAD_AGENT : SUPPORT_PAGE_TEXT.TICKET_THREAD_YOU}
+                      {isSupport
+                        ? SUPPORT_PAGE_TEXT.TICKET_THREAD_AGENT
+                        : SUPPORT_PAGE_TEXT.TICKET_THREAD_YOU}
                     </span>
                     <span className="text-theme-tiny text-muted-foreground font-medium">
                       {new Date(comment.created_at).toLocaleTimeString([], {
@@ -268,7 +298,12 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
           <textarea
             rows={1}
             value={state.commentText}
-            onChange={(e) => dispatch({ type: TicketThreadActionType.SET_COMMENT_TEXT, payload: e.target.value })}
+            onChange={(e) =>
+              dispatch({
+                type: TicketThreadActionType.SET_COMMENT_TEXT,
+                payload: e.target.value,
+              })
+            }
             placeholder={SUPPORT_PAGE_TEXT.TICKET_THREAD_COMMENT_PLACEHOLDER}
             className="flex-1 text-theme-caption px-4 py-2.5 bg-background border border-border rounded-xl focus:bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none transition-all font-medium text-foreground"
           />
@@ -322,7 +357,12 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
                   <button
                     key={star}
                     type="button"
-                    onClick={() => dispatch({ type: TicketThreadActionType.SET_RATING, payload: star })}
+                    onClick={() =>
+                      dispatch({
+                        type: TicketThreadActionType.SET_RATING,
+                        payload: star,
+                      })
+                    }
                     className="focus:outline-none transition-transform active:scale-95 cursor-pointer"
                   >
                     <svg
@@ -352,7 +392,12 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
                     <button
                       key={num}
                       type="button"
-                      onClick={() => dispatch({ type: TicketThreadActionType.SET_NPS_SCORE, payload: num })}
+                      onClick={() =>
+                        dispatch({
+                          type: TicketThreadActionType.SET_NPS_SCORE,
+                          payload: num,
+                        })
+                      }
                       className={`w-7 h-7 rounded-lg text-theme-caption font-bold transition-all border cursor-pointer ${
                         state.npsScore === num
                           ? "bg-foreground text-background border-border shadow-sm"
@@ -377,8 +422,15 @@ function TicketThread({ ticketId, userId, ticketStatus }: TicketThreadProps) {
                 <textarea
                   rows={2}
                   value={state.feedbackComment}
-                  onChange={(e) => dispatch({ type: TicketThreadActionType.SET_FEEDBACK_COMMENT, payload: e.target.value })}
-                  placeholder={SUPPORT_PAGE_TEXT.TICKET_THREAD_FEEDBACK_COMMENT_PLACEHOLDER}
+                  onChange={(e) =>
+                    dispatch({
+                      type: TicketThreadActionType.SET_FEEDBACK_COMMENT,
+                      payload: e.target.value,
+                    })
+                  }
+                  placeholder={
+                    SUPPORT_PAGE_TEXT.TICKET_THREAD_FEEDBACK_COMMENT_PLACEHOLDER
+                  }
                   className="w-full text-theme-caption px-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none transition-all text-foreground"
                 />
               </div>
@@ -416,7 +468,7 @@ type FormState = {
 };
 
 type FormSetActionPayload = {
-  [K in keyof FormState]: { key: K; value: FormState[K] }
+  [K in keyof FormState]: { key: K; value: FormState[K] };
 }[keyof FormState];
 
 type FormAction =
@@ -460,25 +512,45 @@ const renderReturnTimeline = (returnReq: any) => {
   const type = returnReq.type.toLowerCase(); // return, replacement, refund
 
   const steps = [
-    { key: "pending", label: SUPPORT_PAGE_TEXT.TIMELINE_REQUESTED, desc: SUPPORT_PAGE_TEXT.TIMELINE_REQUESTED_DESC },
-    { key: "approved", label: SUPPORT_PAGE_TEXT.TIMELINE_APPROVED, desc: SUPPORT_PAGE_TEXT.TIMELINE_APPROVED_DESC },
+    {
+      key: "pending",
+      label: SUPPORT_PAGE_TEXT.TIMELINE_REQUESTED,
+      desc: SUPPORT_PAGE_TEXT.TIMELINE_REQUESTED_DESC,
+    },
+    {
+      key: "approved",
+      label: SUPPORT_PAGE_TEXT.TIMELINE_APPROVED,
+      desc: SUPPORT_PAGE_TEXT.TIMELINE_APPROVED_DESC,
+    },
     ...(type !== "refund"
       ? [
-          { key: "in_transit", label: SUPPORT_PAGE_TEXT.TIMELINE_IN_TRANSIT, desc: SUPPORT_PAGE_TEXT.TIMELINE_IN_TRANSIT_DESC },
-          { key: "delivered", label: SUPPORT_PAGE_TEXT.TIMELINE_INSPECTED, desc: SUPPORT_PAGE_TEXT.TIMELINE_INSPECTED_DESC },
+          {
+            key: "in_transit",
+            label: SUPPORT_PAGE_TEXT.TIMELINE_IN_TRANSIT,
+            desc: SUPPORT_PAGE_TEXT.TIMELINE_IN_TRANSIT_DESC,
+          },
+          {
+            key: "delivered",
+            label: SUPPORT_PAGE_TEXT.TIMELINE_INSPECTED,
+            desc: SUPPORT_PAGE_TEXT.TIMELINE_INSPECTED_DESC,
+          },
         ]
       : []),
     {
       key: "completed",
       label: SUPPORT_PAGE_TEXT.TIMELINE_COMPLETED,
-      desc: type === "refund" ? SUPPORT_PAGE_TEXT.TIMELINE_COMPLETED_DESC_REFUND : SUPPORT_PAGE_TEXT.TIMELINE_COMPLETED_DESC_DEFAULT,
+      desc:
+        type === "refund"
+          ? SUPPORT_PAGE_TEXT.TIMELINE_COMPLETED_DESC_REFUND
+          : SUPPORT_PAGE_TEXT.TIMELINE_COMPLETED_DESC_DEFAULT,
     },
   ];
 
   // Determine current index active
   let activeIndex = 0;
   if (status === ReturnStatus.APPROVED) activeIndex = 1;
-  else if (status === ReturnStatus.SHIPPED || status === "in_transit") activeIndex = 2;
+  else if (status === ReturnStatus.SHIPPED || status === "in_transit")
+    activeIndex = 2;
   else if (
     status === ReturnStatus.DELIVERED ||
     status === "qc_passed" ||
@@ -498,8 +570,10 @@ const renderReturnTimeline = (returnReq: any) => {
         <div className="absolute left-[15px] md:left-0 top-[20px] md:top-[15px] h-[calc(100%-40px)] md:h-0.5 w-0.5 md:w-full bg-border -z-10" />
 
         {steps.map((step, idx) => {
-          const isCompleted = idx <= activeIndex && status !== ReturnStatus.REJECTED;
-          const isCurrent = idx === activeIndex && status !== ReturnStatus.REJECTED;
+          const isCompleted =
+            idx <= activeIndex && status !== ReturnStatus.REJECTED;
+          const isCurrent =
+            idx === activeIndex && status !== ReturnStatus.REJECTED;
           const isRejectedStep = idx === 1 && status === ReturnStatus.REJECTED;
           const isQcFailedStep = idx === 3 && status === ReturnStatus.QC_FAILED;
 
@@ -517,7 +591,8 @@ const renderReturnTimeline = (returnReq: any) => {
             circleColor = "bg-primary/10 border-primary/20 text-primary";
           } else if (isRejectedStep) {
             icon = <X className="w-4.5 h-4.5 text-destructive" />;
-            circleColor = "bg-destructive/10 border-destructive/20 text-destructive";
+            circleColor =
+              "bg-destructive/10 border-destructive/20 text-destructive";
           } else if (isQcFailedStep && idx === 3) {
             icon = <AlertTriangle className="w-4.5 h-4.5 text-warning" />;
             circleColor = "bg-warning/10 border-warning/20 text-warning";
@@ -557,13 +632,17 @@ const renderReturnTimeline = (returnReq: any) => {
         <div className="mt-6 p-4 bg-muted/50 rounded-xl space-y-2 border border-border">
           {returnReq.customer_note && (
             <p className="text-theme-caption text-muted-foreground">
-              <strong className="text-foreground">{SUPPORT_PAGE_TEXT.RETURNS_CUSTOMER_NOTE}</strong>{" "}
+              <strong className="text-foreground">
+                {SUPPORT_PAGE_TEXT.RETURNS_CUSTOMER_NOTE}
+              </strong>{" "}
               {returnReq.customer_note}
             </p>
           )}
           {returnReq.store_owner_note && (
             <p className="text-theme-caption text-muted-foreground">
-              <strong className="text-foreground">{SUPPORT_PAGE_TEXT.RETURNS_STORE_REPLY}</strong>{" "}
+              <strong className="text-foreground">
+                {SUPPORT_PAGE_TEXT.RETURNS_STORE_REPLY}
+              </strong>{" "}
               {returnReq.store_owner_note}
             </p>
           )}
@@ -624,7 +703,7 @@ export default function HelpCenterPage() {
   };
 
   type UISetActionPayload = {
-    [K in keyof UIState]: { key: K; value: UIState[K] }
+    [K in keyof UIState]: { key: K; value: UIState[K] };
   }[keyof UIState];
 
   type UIAction =
@@ -970,7 +1049,6 @@ export default function HelpCenterPage() {
             {SUPPORT_PAGE_TEXT.SUBTITLE}
           </p>
         </div>
-
         {/* Custom Tab Selector */}
         <div className="flex border-b border-border mb-8 overflow-x-auto gap-2">
           <button
@@ -1034,7 +1112,6 @@ export default function HelpCenterPage() {
             )}
           </button>
         </div>
-
         {/* Tab content 1: FAQ & Contact Form */}
         {uiState.activeTab === "faq" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -1054,7 +1131,8 @@ export default function HelpCenterPage() {
                   href="/customer/orders"
                   className="w-full sm:w-auto bg-background text-foreground hover:bg-secondary transition-all px-6 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shrink-0 shadow-sm active:scale-95"
                 >
-                  <PackageSearch className="w-4.5 h-4.5" /> {SUPPORT_PAGE_TEXT.RETURN_CTA_ACTION}
+                  <PackageSearch className="w-4.5 h-4.5" />{" "}
+                  {SUPPORT_PAGE_TEXT.RETURN_CTA_ACTION}
                 </Link>
               </div>
 
@@ -1087,7 +1165,9 @@ export default function HelpCenterPage() {
                   {dataState.loadingHelpArticles ? (
                     <div className="flex flex-col items-center justify-center py-12">
                       <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
-                      <p className="text-xs text-muted-foreground">Loading FAQs...</p>
+                      <p className="text-xs text-muted-foreground">
+                        Loading FAQs...
+                      </p>
                     </div>
                   ) : FAQS_FILTERED.length === 0 ? (
                     <div className="text-center py-12 border border-dashed border-border rounded-2xl bg-secondary/20">
@@ -1151,7 +1231,9 @@ export default function HelpCenterPage() {
                                       { isHelpful: true },
                                     );
                                   } catch {}
-                                  toast.success(SUPPORT_PAGE_TEXT.FAQ_FEEDBACK_THANKS);
+                                  toast.success(
+                                    SUPPORT_PAGE_TEXT.FAQ_FEEDBACK_THANKS,
+                                  );
                                 }}
                                 className={`px-2 py-1 rounded-md text-[10px] font-semibold cursor-pointer ${uiState.faqVotes[faq.id] === "up" ? "bg-emerald-100 text-emerald-800" : "bg-secondary text-foreground"}`}
                               >
@@ -1178,9 +1260,12 @@ export default function HelpCenterPage() {
                                       { isHelpful: false },
                                     );
                                   } catch {}
-                                  toast(SUPPORT_PAGE_TEXT.FAQ_FEEDBACK_IMPROVE, {
-                                    icon: "ℹ️",
-                                  });
+                                  toast(
+                                    SUPPORT_PAGE_TEXT.FAQ_FEEDBACK_IMPROVE,
+                                    {
+                                      icon: "ℹ️",
+                                    },
+                                  );
                                 }}
                                 className={`px-2 py-1 rounded-md text-[10px] font-semibold cursor-pointer ${uiState.faqVotes[faq.id] === "down" ? "bg-destructive/10 text-destructive" : "bg-secondary text-foreground"}`}
                               >
@@ -1212,7 +1297,7 @@ export default function HelpCenterPage() {
                       {SUPPORT_PAGE_TEXT.TICKET_AUTH_PROMPT}
                     </p>
                     <Link
-                      href="/auth/customerLogin"
+                      href={CUSTOMER_LOGIN_PATH}
                       className="w-full inline-block text-center bg-foreground text-background font-bold py-3 rounded-xl hover:bg-foreground/90 transition-all shadow-sm text-theme-body-sm cursor-pointer"
                     >
                       {SUPPORT_PAGE_TEXT.TICKET_AUTH_BUTTON}
@@ -1410,7 +1495,9 @@ export default function HelpCenterPage() {
                       {formState.submitLoading && (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       )}
-                      {formState.submitLoading ? SUPPORT_PAGE_TEXT.TICKET_FORM_SUBMITTING : SUPPORT_PAGE_TEXT.TICKET_FORM_SUBMIT}
+                      {formState.submitLoading
+                        ? SUPPORT_PAGE_TEXT.TICKET_FORM_SUBMITTING
+                        : SUPPORT_PAGE_TEXT.TICKET_FORM_SUBMIT}
                     </button>
                   </form>
                 )}
@@ -1432,7 +1519,6 @@ export default function HelpCenterPage() {
             </div>
           </div>
         )}
-
         {/* Tab content 2: Support Tickets list */}
         {uiState.activeTab === "tickets" && (
           <div className="bg-card border border-border rounded-2xl shadow-sm p-6 sm:p-8 font-sans">
@@ -1450,7 +1536,7 @@ export default function HelpCenterPage() {
                   {SUPPORT_PAGE_TEXT.TICKET_AUTH_LIST_DESC}
                 </p>
                 <Link
-                  href="/auth/customerLogin"
+                  href={CUSTOMER_LOGIN_PATH}
                   className="bg-foreground hover:bg-foreground/90 text-background font-bold px-6 py-2.5 rounded-xl text-theme-body-sm transition-colors shadow-sm cursor-pointer"
                 >
                   {SUPPORT_PAGE_TEXT.TICKET_AUTH_LIST_BUTTON}
@@ -1459,7 +1545,9 @@ export default function HelpCenterPage() {
             ) : dataState.loadingTickets ? (
               <div className="text-center py-16 flex flex-col items-center justify-center">
                 <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" />
-                <p className="text-theme-body-sm text-muted-foreground">{SUPPORT_PAGE_TEXT.TICKET_LIST_LOADING}</p>
+                <p className="text-theme-body-sm text-muted-foreground">
+                  {SUPPORT_PAGE_TEXT.TICKET_LIST_LOADING}
+                </p>
               </div>
             ) : dataState.tickets.length === 0 ? (
               <motion.div
@@ -1557,14 +1645,17 @@ export default function HelpCenterPage() {
                                   />
 
                                   <span>
-                                    {SUPPORT_PAGE_TEXT.TICKET_EXPAND_LINKED_ORDER}
+                                    {
+                                      SUPPORT_PAGE_TEXT.TICKET_EXPAND_LINKED_ORDER
+                                    }
                                     {ticket.order_id.slice(0, 8)}
                                   </span>
                                   <Link
                                     href={`/customer/orders/${ticket.order_id}`}
                                     className="text-primary hover:text-primary/80 font-bold ml-1.5 flex items-center gap-0.5"
                                   >
-                                    {SUPPORT_PAGE_TEXT.TICKET_EXPAND_VIEW_ORDER} <ArrowRight size={12} />
+                                    {SUPPORT_PAGE_TEXT.TICKET_EXPAND_VIEW_ORDER}{" "}
+                                    <ArrowRight size={12} />
                                   </Link>
                                 </div>
                               )}
@@ -1576,14 +1667,20 @@ export default function HelpCenterPage() {
                                     className="text-muted-foreground"
                                   />
 
-                                  <span>{SUPPORT_PAGE_TEXT.TICKET_EXPAND_ATTACHMENT_PREVIEW}</span>
+                                  <span>
+                                    {
+                                      SUPPORT_PAGE_TEXT.TICKET_EXPAND_ATTACHMENT_PREVIEW
+                                    }
+                                  </span>
                                   <a
                                     href={ticket.attachment_url}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="text-primary hover:text-primary/80 font-bold ml-1"
                                   >
-                                    {SUPPORT_PAGE_TEXT.TICKET_EXPAND_ATTACHMENT_OPEN}
+                                    {
+                                      SUPPORT_PAGE_TEXT.TICKET_EXPAND_ATTACHMENT_OPEN
+                                    }
                                   </a>
                                 </div>
                               )}
@@ -1615,7 +1712,8 @@ export default function HelpCenterPage() {
               </div>
             )}
           </div>
-        )}            {/* Tab content 3: Returns list tracker */}
+        )}{" "}
+        {/* Tab content 3: Returns list tracker */}
         {uiState.activeTab === "returns" && (
           <div className="bg-card border border-border rounded-2xl shadow-sm p-6 sm:p-8 font-sans">
             <h2 className="text-theme-h5 font-bold text-foreground mb-6">
@@ -1632,7 +1730,7 @@ export default function HelpCenterPage() {
                   {SUPPORT_PAGE_TEXT.RETURNS_AUTH_DESC}
                 </p>
                 <Link
-                  href="/auth/customerLogin"
+                  href={CUSTOMER_LOGIN_PATH}
                   className="bg-foreground hover:bg-foreground/90 text-background font-bold px-6 py-2.5 rounded-xl text-theme-body-sm transition-colors shadow-sm cursor-pointer"
                 >
                   {SUPPORT_PAGE_TEXT.RETURNS_AUTH_BUTTON}
@@ -1696,11 +1794,13 @@ export default function HelpCenterPage() {
                             </span>
                           </div>
                           <p className="text-theme-caption text-muted-foreground font-semibold mt-0.5">
-                            {SUPPORT_PAGE_TEXT.RETURNS_SUBMITTED_ON} {formatDate(returnReq.created_at)}
+                            {SUPPORT_PAGE_TEXT.RETURNS_SUBMITTED_ON}{" "}
+                            {formatDate(returnReq.created_at)}
                           </p>
                         </div>
                         <span className="text-theme-caption font-bold text-foreground bg-secondary px-3 py-1 rounded-md capitalize">
-                          {SUPPORT_PAGE_TEXT.RETURNS_REASON_LABEL} {returnReq.reason}
+                          {SUPPORT_PAGE_TEXT.RETURNS_REASON_LABEL}{" "}
+                          {returnReq.reason}
                         </span>
                       </div>
 

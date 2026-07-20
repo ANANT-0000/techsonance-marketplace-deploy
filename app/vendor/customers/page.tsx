@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useEffect, useReducer, useCallback } from "react";
 import { searchImgDark } from "@/constants/common";
@@ -17,6 +18,7 @@ import { redirect } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { fetchCompanyCustomers } from "@/utils/vendorApiClient";
 import { CUSTOMERS_TEXT } from "@/constants/vendorText";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 export enum AccessStatus {
   ACTIVE = "ACTIVE",
@@ -66,12 +68,12 @@ const getCustomerStatusBadge = (
 };
 
 export enum ActionType {
-  SET_DATE = 'SET_DATE',
-  SET_IS_OPEN = 'SET_IS_OPEN',
-  SET_STATUS_FILTER = 'SET_STATUS_FILTER',
-  SET_SORT_BY = 'SET_SORT_BY',
-  SET_CUSTOMERS = 'SET_CUSTOMERS',
-  SET_ERROR = 'SET_ERROR',
+  SET_DATE = "SET_DATE",
+  SET_IS_OPEN = "SET_IS_OPEN",
+  SET_STATUS_FILTER = "SET_STATUS_FILTER",
+  SET_SORT_BY = "SET_SORT_BY",
+  SET_CUSTOMERS = "SET_CUSTOMERS",
+  SET_ERROR = "SET_ERROR",
 }
 
 type Action =
@@ -102,13 +104,20 @@ const initialState: State = {
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case ActionType.SET_DATE: return { ...state, date: action.payload };
-    case ActionType.SET_IS_OPEN: return { ...state, isOpen: action.payload };
-    case ActionType.SET_STATUS_FILTER: return { ...state, statusFilter: action.payload };
-    case ActionType.SET_SORT_BY: return { ...state, sortBy: action.payload };
-    case ActionType.SET_CUSTOMERS: return { ...state, customers: action.payload };
-    case ActionType.SET_ERROR: return { ...state, error: action.payload };
-    default: return state;
+    case ActionType.SET_DATE:
+      return { ...state, date: action.payload };
+    case ActionType.SET_IS_OPEN:
+      return { ...state, isOpen: action.payload };
+    case ActionType.SET_STATUS_FILTER:
+      return { ...state, statusFilter: action.payload };
+    case ActionType.SET_SORT_BY:
+      return { ...state, sortBy: action.payload };
+    case ActionType.SET_CUSTOMERS:
+      return { ...state, customers: action.payload };
+    case ActionType.SET_ERROR:
+      return { ...state, error: action.payload };
+    default:
+      return state;
   }
 }
 
@@ -117,6 +126,8 @@ export default function VendorCustomersPage({
 }: {
   uiText?: typeof CUSTOMERS_TEXT;
 }) {
+  const companyId = getClientCompanyId();
+
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const customerTableHeader = [
@@ -134,21 +145,35 @@ export default function VendorCustomersPage({
   const token = authToken();
 
   const getCustomerList = useCallback(async () => {
-    if (!token) {
-      redirect("/auth/vendorLogin");
+    if (!token || !companyId) {
+      redirect(VEDNOR_LOGIN_PATH);
       return;
     }
     dispatch({ type: ActionType.SET_ERROR, payload: null });
-    await fetchCompanyCustomers(0, 10, state.statusFilter, state.sortBy, token, state.date)
+    await fetchCompanyCustomers(
+      0,
+      10,
+      state.statusFilter,
+      state.sortBy,
+      token,
+      companyId,
+      state.date,
+    )
       .then((res) => {
         if (res.success || res.data) {
           dispatch({ type: ActionType.SET_CUSTOMERS, payload: res.data || [] });
         } else {
-          dispatch({ type: ActionType.SET_ERROR, payload: res.message || "Failed to load customers" });
+          dispatch({
+            type: ActionType.SET_ERROR,
+            payload: res.message || "Failed to load customers",
+          });
         }
       })
       .catch((err) => {
-        dispatch({ type: ActionType.SET_ERROR, payload: err?.message || "Failed to load customers" });
+        dispatch({
+          type: ActionType.SET_ERROR,
+          payload: err?.message || "Failed to load customers",
+        });
       });
   }, [token, state.statusFilter, state.sortBy, state.date]);
 
@@ -197,7 +222,12 @@ export default function VendorCustomersPage({
         <span className="flex flex-wrap gap-3 items-center">
           <select
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
-            onChange={(e) => dispatch({ type: ActionType.SET_STATUS_FILTER, payload: e.target.value })}
+            onChange={(e) =>
+              dispatch({
+                type: ActionType.SET_STATUS_FILTER,
+                payload: e.target.value,
+              })
+            }
             value={state.statusFilter}
           >
             <option value="">{uiText.FILTERS.ALL_STATUSES}</option>
@@ -212,7 +242,12 @@ export default function VendorCustomersPage({
           <select
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
             value={state.sortBy}
-            onChange={(e) => dispatch({ type: ActionType.SET_SORT_BY, payload: e.target.value })}
+            onChange={(e) =>
+              dispatch({
+                type: ActionType.SET_SORT_BY,
+                payload: e.target.value,
+              })
+            }
           >
             <option value="desc">{uiText.FILTERS.SORT_NEWEST}</option>
             <option value="asc">{uiText.FILTERS.SORT_OLDEST}</option>
@@ -220,18 +255,26 @@ export default function VendorCustomersPage({
 
           {state.isOpen ? (
             <button
-              onClick={() => dispatch({ type: ActionType.SET_IS_OPEN, payload: false })}
+              onClick={() =>
+                dispatch({ type: ActionType.SET_IS_OPEN, payload: false })
+              }
               className="flex items-center gap-2 text-theme-body-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
             >
-              {state.date ? state.date.toDateString() : uiText.FILTERS.SELECT_DATE}
+              {state.date
+                ? state.date.toDateString()
+                : uiText.FILTERS.SELECT_DATE}
               <ChevronUp size={16} />
             </button>
           ) : (
             <button
-              onClick={() => dispatch({ type: ActionType.SET_IS_OPEN, payload: true })}
+              onClick={() =>
+                dispatch({ type: ActionType.SET_IS_OPEN, payload: true })
+              }
               className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
             >
-              {state.date ? state.date.toDateString() : uiText.FILTERS.SELECT_DATE}
+              {state.date
+                ? state.date.toDateString()
+                : uiText.FILTERS.SELECT_DATE}
               <ChevronDown size={16} />
             </button>
           )}
@@ -277,7 +320,9 @@ export default function VendorCustomersPage({
                   colSpan={9}
                   className="py-16 text-center text-theme-body-sm"
                 >
-                  <p className="text-red-500 font-semibold mb-3">⚠️ {state.error}</p>
+                  <p className="text-red-500 font-semibold mb-3">
+                    ⚠️ {state.error}
+                  </p>
                   <button
                     onClick={() => getCustomerList()}
                     className="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-xl transition-all shadow-sm font-medium cursor-pointer"

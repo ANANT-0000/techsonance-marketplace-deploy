@@ -1,9 +1,13 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
-import { useEffect, useReducer, useCallback } from "react";
-import { Printer, Package } from "lucide-react";
+import { useEffect, useReducer, useCallback, useState } from "react";
+import { Printer, Package, PackageX } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
 import { Pagination } from "@/components/common/Pagination";
 import { TableRowSkeleton } from "@/components/common/skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   fetchBulkInvoiceUrls,
   fetchVendorOrderList,
@@ -18,9 +22,8 @@ import {
 import { useRouter } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { UiText } from "@/constants/ui-text";
-import { useVendorTour } from "@/components/vendor/VendorTourProvider";
-import { useAppSelector } from "@/hooks/reduxHooks";
-import { useState } from "react";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
+import { SessionErrorCard } from "@/components/vendor/SessionErrorCard";
 
 interface OrderAddressType {
   name: string;
@@ -73,7 +76,7 @@ const getStatusBadges = (statuses: string | string[]) => {
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
+            className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-100 py-1 px-3 rounded-full text-[12px] font-medium tracking-wide shadow-sm hover:bg-amber-100/50 transition-colors"
           >
             ● {UiText.ORDERS.PENDING}
           </span>
@@ -83,7 +86,7 @@ const getStatusBadges = (statuses: string | string[]) => {
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
+            className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 py-1 px-3 rounded-full text-[12px] font-medium tracking-wide shadow-sm hover:bg-emerald-100/50 transition-colors"
           >
             ● {UiText.ORDERS.DELIVERED}
           </span>
@@ -93,7 +96,7 @@ const getStatusBadges = (statuses: string | string[]) => {
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
+            className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 border border-indigo-100 py-1 px-3 rounded-full text-[12px] font-medium tracking-wide shadow-sm hover:bg-indigo-100/50 transition-colors"
           >
             ● {UiText.ORDERS.ACTIVE}
           </span>
@@ -103,7 +106,7 @@ const getStatusBadges = (statuses: string | string[]) => {
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize"
+            className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-100 py-1 px-3 rounded-full text-[12px] font-medium tracking-wide capitalize shadow-sm hover:bg-rose-100/50 transition-colors"
           >
             ● {UiText.ORDERS.CANCELLED}
           </span>
@@ -113,7 +116,7 @@ const getStatusBadges = (statuses: string | string[]) => {
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-violet-50 text-violet-700 border border-violet-200 py-1 px-3 rounded-full text-theme-caption font-semibold"
+            className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 border border-violet-100 py-1 px-3 rounded-full text-[12px] font-medium tracking-wide shadow-sm hover:bg-violet-100/50 transition-colors"
           >
             ● {UiText.ORDERS.SHIPPED}
           </span>
@@ -124,7 +127,7 @@ const getStatusBadges = (statuses: string | string[]) => {
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 border border-purple-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize"
+            className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-100 py-1 px-3 rounded-full text-[12px] font-medium tracking-wide capitalize shadow-sm hover:bg-purple-100/50 transition-colors"
           >
             ● {status}
           </span>
@@ -134,7 +137,7 @@ const getStatusBadges = (statuses: string | string[]) => {
         return (
           <span
             key={index}
-            className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 border border-gray-200 py-1 px-3 rounded-full text-theme-caption font-semibold capitalize"
+            className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-600 border border-slate-100 py-1 px-3 rounded-full text-[12px] font-medium tracking-wide capitalize shadow-sm hover:bg-slate-100/50 transition-colors"
           >
             ● {status}
           </span>
@@ -142,7 +145,13 @@ const getStatusBadges = (statuses: string | string[]) => {
     }
   };
 
-  if (uniqueStatuses.length === 0) return null;
+  if (uniqueStatuses.length === 0) {
+    return (
+      <span className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-500 border border-slate-100 py-1 px-3 rounded-full text-[12px] font-medium tracking-wide shadow-sm">
+        ● {UiText.ORDERS.NA || "Unknown"}
+      </span>
+    );
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
@@ -155,7 +164,7 @@ const getPaymentBadge = (method: string, status: string) => {
   const isPaid = status === "Paid" || status === "success";
   return (
     <span
-      className={`inline-flex items-center py-1 px-3 rounded-full text-theme-caption font-semibold border ${isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-600 border-gray-200"}`}
+      className={`inline-flex items-center py-1 px-3 rounded-full text-[12px] font-medium tracking-wide shadow-sm hover:bg-opacity-80 transition-colors border ${isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100/50" : "bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100/50"}`}
     >
       {method || UiText.ORDERS.NA}
     </span>
@@ -258,8 +267,11 @@ function reducer(state: State, action: Action): State {
 }
 
 export default function OrdersPage() {
+  const companyId = getClientCompanyId();
+
   const [state, dispatch] = useReducer(reducer, initialState);
   const [mounted, setMounted] = useState(false);
+  const [sessionError, setSessionError] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -283,16 +295,18 @@ export default function OrdersPage() {
   const token = authToken();
 
   const getOrderList = useCallback(async () => {
-    if (!token) {
-      router.push("/auth/vendorLogin");
+    if (!token || !companyId) {
+      setSessionError(true);
+      router.push(VEDNOR_LOGIN_PATH);
       return;
     }
     dispatch({ type: ActionType.SET_LOADING, payload: true });
     dispatch({ type: ActionType.SET_ERROR, payload: null });
     await fetchVendorOrderList(
+      token,
+      companyId,
       offset,
       state.itemsPerPage,
-      token,
       state.orderStatus,
       state.sortBy,
     )
@@ -325,19 +339,6 @@ export default function OrdersPage() {
   useEffect(() => {
     getOrderList();
   }, [getOrderList]);
-  
-  const { startVendorTour } = useVendorTour();
-  const user = useAppSelector((state) => state.auth.user) as import("@/utils/Types").VendorUser | null;
-
-  useEffect(() => {
-    if (user && user.preferences && Array.isArray(user.preferences.completed_tours)) {
-      if (!user.preferences.completed_tours.includes("orders")) {
-        setTimeout(() => startVendorTour("orders"), 500);
-      }
-    } else if (user && !user.preferences) {
-      setTimeout(() => startVendorTour("orders"), 500);
-    }
-  }, [user, startVendorTour]);
 
   const toggleAllOrders = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked && state.orders) {
@@ -351,21 +352,34 @@ export default function OrdersPage() {
   };
 
   const handleBulkDownload = async () => {
-    if (state.selectedOrders.length === 0) return;
+    if (!token || !companyId) {
+      setSessionError(true);
+      return;
+    }
+    if (state.selectedOrders.length === 0) {
+      toast.error("Please select at least one order to download invoices.", {
+        style: { borderRadius: "12px", background: "#333", color: "#fff" },
+      });
+      return;
+    }
     dispatch({ type: ActionType.SET_IS_DOWNLOADING, payload: true });
 
     try {
       const res = await fetchBulkInvoiceUrls(
         state.selectedOrders,
-        token as string,
+        token,
+        companyId,
       );
       const invoices = res.data;
 
       if (!invoices || invoices.length === 0) {
-        alert(UiText.ORDERS.NO_INVOICES_WARNING);
+        toast.error(UiText.ORDERS.NO_INVOICES_WARNING, {
+          style: { borderRadius: "12px", background: "#333", color: "#fff" },
+        });
         return;
       }
 
+      let skippedCount = 0;
       for (const invoice of invoices) {
         if (invoice.invoice_url) {
           const response = await fetch(invoice.invoice_url);
@@ -380,36 +394,73 @@ export default function OrdersPage() {
           a.remove();
 
           await new Promise((resolve) => setTimeout(resolve, 300));
+        } else {
+          skippedCount++;
         }
+      }
+
+      if (skippedCount > 0) {
+        toast.error(`${skippedCount} invoice(s) could not be downloaded as they are not yet generated.`, {
+          style: { borderRadius: "12px", background: "#333", color: "#fff" },
+        });
       }
 
       dispatch({ type: ActionType.SET_ALL_ORDERS_SELECTION, payload: [] });
     } catch {
-      alert(UiText.ORDERS.FAILED_DOWNLOAD_INVOICES);
+      toast.error(UiText.ORDERS.FAILED_DOWNLOAD_INVOICES, {
+        style: { borderRadius: "12px", background: "#333", color: "#fff" },
+      });
     } finally {
       dispatch({ type: ActionType.SET_IS_DOWNLOADING, payload: false });
     }
   };
 
+  if (sessionError || !token || !companyId) {
+    return <SessionErrorCard />;
+  }
+
   if (!mounted) {
     return (
       <main className="w-full px-4 py-8 min-h-screen">
-        <TableRowSkeleton columns={9} rows={5} />
+        <table className="w-full">
+          <tbody>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i} className="border-b border-slate-50/50">
+                <td colSpan={10} className="p-4 pl-6">
+                  <div className="flex items-center justify-between gap-4 w-full">
+                    <Skeleton className="h-4 w-4 rounded bg-slate-100/80 animate-pulse shrink-0" />
+                    <Skeleton className="h-4 w-16 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                    <Skeleton className="h-4 w-24 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                    <Skeleton className="h-4 w-8 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                    <Skeleton className="h-6 w-20 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                    <Skeleton className="h-4 w-32 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                    <Skeleton className="h-6 w-20 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                    <Skeleton className="h-4 w-24 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                    <Skeleton className="h-4 w-20 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                    <Skeleton className="h-8 w-12 rounded-xl bg-slate-100/80 animate-pulse shrink-0" />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </main>
     );
   }
 
   return (
-    <main className="w-full px-1 min-h-screen max-h-screen overflow-y-scroll">
+    <main className="w-full px-2 py-4 min-h-screen max-h-screen overflow-y-scroll scroll-smooth">
       {/* Header */}
-      <header className="flex justify-between items-center my-6">
-        <div className="flex items-center gap-2 text-gray-700">
-          <Package size={22} className="text-blue-500" />
-          <h1 className="text-theme-h4 font-bold text-gray-800">
+      <header className="flex justify-between items-center my-8">
+        <div className="flex items-center gap-4 text-slate-800">
+          <div className="p-2.5 bg-indigo-50/80 rounded-2xl text-indigo-600 shadow-sm border border-indigo-100/50">
+            <Package size={24} strokeWidth={1.5} />
+          </div>
+          <h1 className="text-[26px] font-semibold tracking-tight text-slate-900">
             {UiText.ORDERS.TITLE}
           </h1>
           {state.orders && state.orders.length > 0 && (
-            <span className="ml-2 bg-blue-100 text-blue-700 text-theme-caption font-semibold px-2.5 py-1 rounded-full">
+            <span className="ml-1 bg-indigo-50 border border-indigo-100/80 text-indigo-700 text-[13px] font-medium px-3 py-1 rounded-full shadow-sm">
               {state.orders.length}
             </span>
           )}
@@ -417,28 +468,29 @@ export default function OrdersPage() {
         <div className="flex gap-3">
           {/* SHOW DOWNLOAD BUTTON ONLY IF ORDERS ARE SELECTED */}
           {state.selectedOrders.length > 0 && (
-            <button
+            <motion.button
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.2 }}
               onClick={handleBulkDownload}
               disabled={state.isDownloading}
-              className="flex items-center gap-2 font-semibold text-theme-body-sm bg-purple-500 hover:bg-purple-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm disabled:opacity-50"
+              className="flex items-center gap-2.5 font-medium text-[14px] bg-slate-900 hover:bg-slate-800 text-white rounded-2xl px-6 py-3 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:hover:scale-100 hover:-translate-y-0.5"
             >
-              <Printer size={16} />
+              <Printer size={18} strokeWidth={1.75} />
               {state.isDownloading
                 ? UiText.ORDERS.DOWNLOADING
                 : `${UiText.ORDERS.PRINT_INVOICES} (${state.selectedOrders.length})`}
-            </button>
+            </motion.button>
           )}
         </div>
       </header>
 
       {/* Filter Bar */}
-      <div className="relative flex flex-wrap justify-between rounded-xl items-center py-3 px-4 gap-3 bg-white border border-gray-200 shadow-sm mb-4">
+      <div className="relative flex flex-wrap justify-between rounded-3xl items-center p-4 gap-4 bg-white border border-slate-100 shadow-[0_2px_20px_rgb(0,0,0,0.02)] mb-8 transition-all">
         {/* Filters */}
-        <span className="flex flex-wrap gap-3 items-center">
+        <span className="flex flex-wrap gap-3 items-center w-full sm:w-auto">
           <select
-            name=""
-            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
-            id=""
+            className="text-[14px] font-medium border border-slate-200 bg-white rounded-2xl px-5 py-3 text-slate-700 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50/50 cursor-pointer transition-all hover:bg-slate-50 hover:border-slate-300 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%208l5%205%205-5%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%221.5%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_12px_center] bg-no-repeat pr-10"
             onChange={(e) =>
               dispatch({
                 type: ActionType.SET_ORDER_STATUS,
@@ -462,7 +514,7 @@ export default function OrdersPage() {
           </select>
 
           <select
-            className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-blue-400 cursor-pointer transition-colors"
+            className="text-[14px] font-medium border border-slate-200 bg-white rounded-2xl px-5 py-3 text-slate-700 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50/50 cursor-pointer transition-all hover:bg-slate-50 hover:border-slate-300 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%208l5%205%205-5%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%221.5%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_12px_center] bg-no-repeat pr-10"
             value={state.sortBy}
             onChange={(e) =>
               dispatch({
@@ -478,74 +530,122 @@ export default function OrdersPage() {
         </span>
       </div>
 
-      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white" id="tour-orders-table">
-        <table className="w-full table-auto min-w-[900px] border-collapse">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200 text-left">
-              <th className="p-4 w-10">
-                <input
-                  type="checkbox"
-                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
-                  checked={
-                    state.orders?.length > 0 &&
-                    state.orders.every((o) =>
-                      state.selectedOrders.includes(o.id),
-                    )
-                  }
-                  onChange={toggleAllOrders}
-                />
-              </th>
-              {orderTableHeader.map((header) => (
-                <th
-                  key={header}
-                  className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                >
-                  {header}
+      {state.error ? (
+        <div className="w-full rounded-3xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)] bg-white py-32 flex flex-col items-center justify-center transition-all">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="flex flex-col items-center justify-center max-w-md mx-auto text-center"
+          >
+            <div className="h-20 w-20 bg-rose-50/80 text-rose-500 border border-rose-100/50 shadow-sm rounded-full flex items-center justify-center mb-6">
+              <PackageX
+                size={32}
+                strokeWidth={1.5}
+              />
+            </div>
+            <h3 className="text-xl font-semibold text-slate-900 mb-3 tracking-tight">
+              {UiText.ORDERS.ERROR_TITLE}
+            </h3>
+            <p className="text-[15px] text-slate-500 mb-8 text-balance leading-relaxed">
+              {state.error === "fetch failed" ? UiText.ORDERS.ERROR_FETCH_FAILED : state.error || UiText.ORDERS.ERROR_GENERIC}
+            </p>
+            <button
+              onClick={() => getOrderList()}
+              className="inline-flex items-center justify-center px-6 py-3 border border-slate-200 text-[14px] font-medium rounded-2xl text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-4 focus:ring-slate-100/50 transition-all shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5"
+            >
+              {UiText.ORDERS.TRY_AGAIN}
+            </button>
+          </motion.div>
+        </div>
+      ) : state.orders && state.orders?.length === 0 && !state.loading ? (
+        <div className="w-full rounded-3xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)] bg-white py-32 flex flex-col items-center justify-center transition-all">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="flex flex-col items-center justify-center max-w-md mx-auto text-center"
+          >
+            <div className="h-20 w-20 bg-indigo-50/50 text-indigo-400 border border-indigo-100/50 shadow-sm rounded-full flex items-center justify-center mb-6">
+              <Package
+                size={32}
+                strokeWidth={1.5}
+              />
+            </div>
+            <h3 className="text-xl font-semibold text-slate-900 mb-3 tracking-tight">
+              {UiText.ORDERS.WAITING_FOR_ORDER}
+            </h3>
+            <p className="text-[15px] text-slate-500 mb-8 text-balance leading-relaxed">
+              {UiText.ORDERS.WAITING_FOR_ORDER_DESC}
+            </p>
+          </motion.div>
+        </div>
+      ) : (
+        <div className="w-full overflow-x-auto rounded-3xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)] bg-white pb-4 transition-all">
+          <table className="w-full table-auto min-w-[950px] border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100 text-left bg-slate-50/50">
+                <th className="p-5 pl-8 w-14">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shadow-sm transition-colors"
+                    checked={
+                      state.orders?.length > 0 &&
+                      state.orders.every((o) =>
+                        state.selectedOrders.includes(o.id),
+                      )
+                    }
+                    onChange={toggleAllOrders}
+                  />
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {state.loading ? (
-              <TableRowSkeleton columns={9} rows={5} />
-            ) : state.error ? (
-              <tr>
-                <td
-                  colSpan={10}
-                  className="py-16 text-center text-theme-body-sm"
-                >
-                  <p className="text-red-500 font-semibold mb-3">
-                    ⚠️ {state.error}
-                  </p>
-                  <button
-                    onClick={() => getOrderList()}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-xl transition-all shadow-sm font-medium cursor-pointer"
+                {orderTableHeader.map((header) => (
+                  <th
+                    key={header}
+                    className="p-5 text-[12px] font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap"
                   >
-                    Retry
-                  </button>
-                </td>
+                    {header}
+                  </th>
+                ))}
               </tr>
-            ) : state.orders && state.orders?.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={10}
-                  className="py-16 text-center text-gray-400 text-theme-body-sm"
-                >
-                  <Package size={36} className="mx-auto mb-3 opacity-30" />
-                  {UiText.ORDERS.NO_ORDERS}
-                </td>
-              </tr>
-            ) : (
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {state.loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b border-slate-50/50">
+                    <td colSpan={10} className="p-5 pl-7">
+                      <div className="flex items-center justify-between gap-4 w-full">
+                        <Skeleton className="h-4 w-4 rounded bg-slate-100/80 animate-pulse shrink-0" />
+                        <Skeleton className="h-4 w-16 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                        <Skeleton className="h-4 w-24 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                        <Skeleton className="h-4 w-8 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                        <Skeleton className="h-6 w-20 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                        <Skeleton className="h-4 w-32 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                        <Skeleton className="h-6 w-20 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                        <Skeleton className="h-4 w-24 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                        <Skeleton className="h-4 w-20 rounded-full bg-slate-100/80 animate-pulse shrink-0" />
+                        <Skeleton className="h-8 w-12 rounded-xl bg-slate-100/80 animate-pulse shrink-0" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
               state.orders &&
-              state.orders?.map((item, idx) => (
-                <tr
+              state.orders?.map((item, i) => (
+                <motion.tr
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.3,
+                    delay: i * 0.05,
+                    ease: "easeOut",
+                  }}
                   key={item.id}
-                  className="hover:bg-gray-50 transition-colors group"
+                  className="hover:bg-slate-50/80 transition-colors group border-b border-slate-50/80 last:border-0"
                 >
-                  <td className="p-4">
+                  <td className="p-5 pl-8">
                     <input
                       type="checkbox"
-                      className="rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                      className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-colors shadow-sm"
                       checked={state.selectedOrders.includes(item.id)}
                       onChange={() =>
                         dispatch({
@@ -557,21 +657,21 @@ export default function OrdersPage() {
                   </td>
 
                   {/* ORDER ID */}
-                  <td className="p-4">
-                    <span className="font-mono text-theme-body-sm font-semibold text-gray-800">
+                  <td className="p-5">
+                    <span className="font-semibold text-[14px] text-slate-900 tracking-wide">
                       #{item.id.split("-")[0].toUpperCase()}
                     </span>
                   </td>
 
                   {/* TOTAL AMOUNT */}
-                  <td className="p-4">
-                    <span className="font-semibold text-gray-800">
+                  <td className="p-5">
+                    <span className="font-medium text-slate-700 text-[14px]">
                       ₹{Number(item.total_amount).toLocaleString()}
                     </span>
                   </td>
 
                   {/* QTY */}
-                  <td className="p-4 text-gray-600 text-theme-body-sm">
+                  <td className="p-5 text-slate-600 text-[14px] font-medium">
                     {item.items?.reduce(
                       (total, cur) => total + cur.quantity,
                       0,
@@ -579,7 +679,7 @@ export default function OrdersPage() {
                   </td>
 
                   {/* STATUS */}
-                  <td className="p-4">
+                  <td className="p-5">
                     {getStatusBadges(
                       item.items.map((x) =>
                         x.return_request
@@ -590,12 +690,12 @@ export default function OrdersPage() {
                   </td>
 
                   {/* CUSTOMER */}
-                  <td className="p-4 text-theme-body-sm text-gray-700 font-medium whitespace-nowrap">
+                  <td className="p-5 text-[14px] text-slate-700 font-medium whitespace-nowrap">
                     {item.address?.name || UiText.ORDERS.NA}
                   </td>
 
                   {/* PAYMENT */}
-                  <td className="p-4">
+                  <td className="p-5">
                     {getPaymentBadge(
                       item.payment?.payment_method,
                       item.payment?.payment_status,
@@ -603,7 +703,7 @@ export default function OrdersPage() {
                   </td>
 
                   {/* LOCATION */}
-                  <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap max-w-[200px] truncate">
+                  <td className="p-5 text-[14px] text-slate-500 whitespace-nowrap max-w-[200px] truncate">
                     {[
                       item.address?.city,
                       item.address?.state,
@@ -615,25 +715,26 @@ export default function OrdersPage() {
                   </td>
 
                   {/* DATE */}
-                  <td className="p-4 text-theme-body-sm text-gray-500 whitespace-nowrap">
+                  <td className="p-5 text-[14px] text-slate-500 whitespace-nowrap">
                     {new Date(item.created_at).toLocaleDateString("en-GB")}
                   </td>
 
                   {/* ACTIONS */}
-                  <td className="p-4" id={idx === 0 ? "tour-order-status-action" : undefined}>
+                  <td className="p-5">
                     <Link
-                      href={`orders/${item.id}`}
-                      className="text-theme-caption font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                      href={`/vendor/orders/${item.id}`}
+                      className="inline-flex items-center justify-center text-[13px] font-medium text-indigo-700 hover:text-indigo-800 bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 px-5 py-2.5 rounded-xl transition-all whitespace-nowrap shadow-sm hover:shadow hover:-translate-y-0.5"
                     >
                       {UiText.ORDERS.VIEW_ARROW}
                     </Link>
                   </td>
-                </tr>
+                </motion.tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+      )}
       <span className="flex justify-end mt-4">
         <Pagination
           setCount={(val) =>

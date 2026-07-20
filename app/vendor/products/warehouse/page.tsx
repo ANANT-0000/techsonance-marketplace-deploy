@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,11 +13,21 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { authToken } from "@/utils/authToken";
 import { redirect } from "next/navigation";
-import { MapPin, Building, Plus, Trash2, Edit, Package } from "lucide-react";
+import {
+  MapPin,
+  Building,
+  Plus,
+  Trash2,
+  Edit,
+  Package,
+  AlertCircle,
+} from "lucide-react";
+import toast from "react-hot-toast";
 import { Country, State, City } from "country-state-city";
 import { FormInput } from "@/components/common/FormInput";
 import { WAREHOUSE_ADDRESS_FIELDS } from "@/constants";
 import { WAREHOUSE_LOCATIONS_TEXT } from "@/constants/vendorText";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 interface Address {
   id: string;
@@ -45,6 +56,8 @@ interface Warehouse {
 }
 
 export default function LocationsPage() {
+  const companyId = getClientCompanyId();
+
   const [locationList, setLocationList] = useState<Warehouse[]>([]);
   const locationFormRef = useRef<HTMLFormElement>(null);
   const [closedLocationForm, setClosedLocationForm] = useState(false);
@@ -134,14 +147,20 @@ export default function LocationsPage() {
   }, [watchedState, setValue, isEditing]);
 
   const deleteLocation = async (id: string) => {
-    if (!token) {
-      redirect("/auth/vendorLogin");
+    if (!token || !companyId) {
+      toast.error("Your session has expired. Please refresh or log in again.");
+      return;
     }
-    const response = await fetchDeleteWarehouseLocation(id, token);
-    const updatedLocations = locationList.filter(
-      (location) => location.id !== id,
-    );
-    setLocationList(updatedLocations);
+    try {
+      const response = await fetchDeleteWarehouseLocation(id, token, companyId);
+      const updatedLocations = locationList.filter(
+        (location) => location.id !== id,
+      );
+      setLocationList(updatedLocations);
+      toast.success("Location deleted successfully.");
+    } catch (error) {
+      toast.error("We couldn't delete this location. Please try again.");
+    }
   };
 
   const handleEditLocation = (location: Warehouse) => {
@@ -151,14 +170,16 @@ export default function LocationsPage() {
   };
 
   const onSubmit = async (data: AddressType, isEditing: boolean) => {
-    if (!token) {
-      redirect("/auth/vendorLogin");
+    if (!token || !companyId) {
+      toast.error("Your session has expired. Please refresh or log in again.");
+      return;
     }
     if (isEditing && selectedLocation) {
-      const response = await fetchUpdateWarehouseLocation(
+      await fetchUpdateWarehouseLocation(
         selectedLocation.id,
         data,
         token,
+        companyId,
       )
         .then((res) => {
           setLocationList((prevList) =>
@@ -174,13 +195,16 @@ export default function LocationsPage() {
                       address_type: data.address_for,
                     },
                   }
-                : loc
-            )
+                : loc,
+            ),
           );
+          toast.success("Location updated successfully.");
         })
-        .catch((error) => {});
+        .catch((error) => {
+          toast.error("We couldn't update this location. Please try again.");
+        });
     } else {
-      const response = await fetchCreateWarehouseLocation(data, token)
+      await fetchCreateWarehouseLocation(data, token, companyId)
         .then((res) => {
           setLocationList((prevList) => [
             ...prevList,
@@ -195,8 +219,11 @@ export default function LocationsPage() {
               },
             },
           ]);
+          toast.success("Location added successfully.");
         })
-        .catch((error) => {});
+        .catch((error) => {
+          toast.error("We couldn't add your new location. Please try again.");
+        });
     }
     setTimeout(() => {
       closeModal();
@@ -210,17 +237,21 @@ export default function LocationsPage() {
   };
 
   useEffect(() => {
-    if (!token) {
-      redirect("/auth/vendorLogin");
+    if (!token || !companyId) {
+      return;
     }
     const getWarehouseList = async () => {
-      await fetchVendorWarehouseLocations(token)
+      await fetchVendorWarehouseLocations(token, companyId)
         .then((response) => {
           if (response.success) {
             setLocationList(response.data);
           }
         })
-        .catch((error) => {});
+        .catch((error) => {
+          toast.error(
+            "We couldn't load your warehouse locations right now. Please refresh the page.",
+          );
+        });
     };
     getWarehouseList();
   }, []);
@@ -263,224 +294,268 @@ export default function LocationsPage() {
     };
   }, [closedLocationForm]);
 
-  return (
-    <main className="mt-1 min-h-screen max-h-screen overflow-y-scroll relative w-full">
-      <AnimatePresence>
-        {closedLocationForm && (
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-10 flex justify-center items-center"
-          >
-            <motion.form
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              transition={{ type: "spring", duration: 0.4, bounce: 0.25 }}
-              onSubmit={handleSubmit((data) =>
-                onSubmit(data as AddressType, isEditing),
-              )}
-              ref={locationFormRef}
-              className="lg:p-6 p-3 space-y-4 max-h-[80dvh] overflow-y-auto bg-white rounded-2xl shadow-2xl w-full max-w-2xl"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                {WAREHOUSE_ADDRESS_FIELDS.map((field) => {
-                  const fieldError = errors[field.id as keyof typeof errors];
-
-                  // 5. Inject Dynamic Options
-                  let dynamicOptions = field.options;
-                  if (field.id === "country")
-                    dynamicOptions = availableCountries;
-                  if (field.id === "state") dynamicOptions = availableStates;
-                  if (field.id === "city") dynamicOptions = availableCities;
-
-                  return (
-                    <div key={field.id} className="flex flex-col gap-1">
-                      {field.type !== "checkbox" ? (
-                        <>
-                          <FormInput
-                            label={field.label}
-                            id={field.id}
-                            register={register}
-                            required={field.required}
-                            options={dynamicOptions}
-                            type={field.type}
-                            placeholder={field.placeholder}
-                          />
-
-                          {fieldError && (
-                            <p className="text-red-600 text-theme-body-sm">
-                              {fieldError.message as string}
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        <div className="flex items-center gap-2 py-2 border border-gray-300 mt-5 rounded-lg px-3">
-                          <input
-                            type="checkbox"
-                            id={field.id}
-                            {...register(field.id as keyof typeof register)}
-                            className="h-5 w-5 rounded-full text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
-                          />
-
-                          <label
-                            htmlFor={field.id}
-                            className="text-theme-body-sm font-semibold text-gray-700 cursor-pointer"
-                          >
-                            {field.label}
-                          </label>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="pt-4 flex gap-3 justify-end">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  {WAREHOUSE_LOCATIONS_TEXT.FORM.CANCEL}
-                </button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
-                >
-                  {WAREHOUSE_LOCATIONS_TEXT.FORM.SAVE}
-                </motion.button>
-              </div>
-            </motion.form>
-          </motion.section>
-        )}
-      </AnimatePresence>
-
-      <header className="flex flex-wrap justify-between items-center mb-6 gap-4">
-        <div className="flex items-center gap-3 text-gray-700">
-          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
-            <Package size={24} />
-          </div>
-          <div>
-            <h1 className="text-theme-h4 font-bold text-gray-800">
-              {WAREHOUSE_LOCATIONS_TEXT.HEADER.TITLE}
-            </h1>
-            <p className="text-gray-500 text-theme-body-sm mt-0.5">
-              Manage your warehouses and inventory hubs
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => setClosedLocationForm(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
+  if (!token || !companyId) {
+    return (
+      <main className="min-h-[80vh] flex items-center justify-center p-6 ">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-8 max-w-md w-full rounded-2xl shadow-sm border border-gray-100 text-center"
         >
-          <Plus size={20} />
-          {WAREHOUSE_LOCATIONS_TEXT.HEADER.ADD_BTN}
-        </button>
-      </header>
+          <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-amber-100/50">
+            <AlertCircle size={28} strokeWidth={1.5} />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2 tracking-tight">
+            Session Needs Refresh
+          </h2>
+          <p className="text-gray-500 mb-8 text-sm leading-relaxed">
+            We need to verify your account to keep your data secure. Please log
+            in again to continue managing your locations.
+          </p>
+          <a
+            href={VEDNOR_LOGIN_PATH}
+            className="inline-flex items-center justify-center w-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-sm hover:shadow-md"
+          >
+            Log In Again
+          </a>
+        </motion.div>
+      </main>
+    );
+  }
 
-      <section className="w-full">
-        <AnimatePresence mode="wait">
-          {locationList.length === 0 ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex flex-col items-center justify-center py-16 bg-white border border-gray-200 rounded-2xl shadow-sm"
-            >
-              <Building size={48} className="text-gray-300 mb-4" />
-              <h2 className="text-theme-h5 font-bold text-gray-800 mb-2">
-                No Warehouses Yet
-              </h2>
-              <p className="text-gray-500 mb-6 max-w-md text-center text-theme-body-sm">
-                {WAREHOUSE_LOCATIONS_TEXT.EMPTY}
-              </p>
-              <button
-                onClick={() => setClosedLocationForm(true)}
-                className="text-theme-body-sm font-semibold text-blue-600 hover:underline"
-              >
-                Add Your First Warehouse
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="grid"
+  return (
+    <main className="w-full px-4 sm:px-8 py-1 min-h-screen max-h-screen overflow-y-scroll bg-[#fafafa]">
+      <div className="mx-auto space-y-6">
+        <AnimatePresence>
+          {closedLocationForm && (
+            <motion.section
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex justify-center items-center"
             >
-              <AnimatePresence>
-                {locationList.map((location, index) => (
-                  <motion.div
-                    layout
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }}
-                    transition={{ duration: 0.2 }}
-                    key={location.id}
-                    className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex justify-between items-start mb-3">
-                        <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-theme-caption font-semibold">
-                          {location.address.address_type &&
-                            location.address.address_type
-                              .charAt(0)
-                              .toUpperCase() +
-                              location.address.address_type.slice(1)}
-                        </span>
-                        {location.address.is_default && (
-                          <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md text-theme-tiny uppercase font-bold tracking-wide border border-blue-100">
-                            {WAREHOUSE_LOCATIONS_TEXT.CARD.DEFAULT}
-                          </span>
+              <motion.form
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                transition={{ type: "spring", duration: 0.4, bounce: 0.25 }}
+                onSubmit={handleSubmit((data) =>
+                  onSubmit(data as AddressType, isEditing),
+                )}
+                ref={locationFormRef}
+                className="lg:p-8 p-5 space-y-6 max-h-[85dvh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-2xl"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                  {WAREHOUSE_ADDRESS_FIELDS.map((field) => {
+                    const fieldError = errors[field.id as keyof typeof errors];
+
+                    // 5. Inject Dynamic Options
+                    let dynamicOptions = field.options;
+                    if (field.id === "country")
+                      dynamicOptions = availableCountries;
+                    if (field.id === "state") dynamicOptions = availableStates;
+                    if (field.id === "city") dynamicOptions = availableCities;
+
+                    return (
+                      <div key={field.id} className="flex flex-col gap-1">
+                        {field.type !== "checkbox" ? (
+                          <>
+                            <FormInput
+                              label={field.label}
+                              id={field.id}
+                              register={register}
+                              required={field.required}
+                              options={dynamicOptions}
+                              type={field.type}
+                              placeholder={field.placeholder}
+                            />
+
+                            {fieldError && (
+                              <p className="text-red-600 text-theme-body-sm">
+                                {fieldError.message as string}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-2 py-2 border border-gray-300 mt-5 rounded-lg px-3">
+                            <input
+                              type="checkbox"
+                              id={field.id}
+                              {...register(field.id as keyof typeof register)}
+                              className="h-5 w-5 rounded-full text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
+                            />
+
+                            <label
+                              htmlFor={field.id}
+                              className="text-theme-body-sm font-semibold text-gray-700 cursor-pointer"
+                            >
+                              {field.label}
+                            </label>
+                          </div>
                         )}
                       </div>
-                      <h3 className="font-bold text-gray-800 mb-1 line-clamp-1">
-                        {location.warehouse_name}
-                      </h3>
-                      <p className="text-theme-body-sm text-gray-600">
-                        {location.address.address_line_1},{" "}
-                        {location.address.city}, {location.address.state}{" "}
-                        {location.address.postal_code}
-                      </p>
-                      <p className="text-theme-body-sm text-gray-500 mt-1">
-                        {location.address.country}
-                      </p>
-                      {location.address.number && (
-                        <p className="text-theme-body-sm text-gray-500 mt-2">
-                          <span className="font-semibold text-gray-700">
-                            {WAREHOUSE_LOCATIONS_TEXT.CARD.CONTACT}
-                          </span>{" "}
-                          {location.address.number}
-                        </p>
-                      )}
-                    </div>
+                    );
+                  })}
+                </div>
 
-                    <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-gray-100">
-                      <button
-                        onClick={() => handleEditLocation(location)}
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => deleteLocation(location.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
+                <div className="pt-6 flex gap-3 justify-end border-t border-gray-100 mt-4">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    {WAREHOUSE_LOCATIONS_TEXT.FORM.CANCEL}
+                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="submit"
+                    className="px-6 py-2 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 shadow-sm hover:shadow-md transition-all"
+                  >
+                    {WAREHOUSE_LOCATIONS_TEXT.FORM.SAVE}
+                  </motion.button>
+                </div>
+              </motion.form>
+            </motion.section>
           )}
         </AnimatePresence>
-      </section>
+
+        <header className="flex flex-wrap justify-between items-center mb-6 gap-4">
+          <div className="flex items-center gap-3 text-slate-700">
+            <div className="p-2.5 bg-white border border-slate-100 rounded-xl shadow-sm">
+              <Package size={22} className="text-slate-700" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight">
+                {WAREHOUSE_LOCATIONS_TEXT.HEADER.TITLE}
+              </h1>
+              <p className="text-sm text-slate-500 mt-0.5">
+                Manage your warehouses and inventory hubs
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setClosedLocationForm(true)}
+            className="group flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2.5 transition-all duration-200 shadow-sm hover:shadow-md"
+          >
+            <Plus
+              size={16}
+              className="transition-transform group-hover:scale-110"
+            />
+            {WAREHOUSE_LOCATIONS_TEXT.HEADER.ADD_BTN}
+          </button>
+        </header>
+
+        <section className="w-full">
+          <AnimatePresence mode="wait">
+            {locationList.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex flex-col items-center justify-center py-24 bg-white border border-gray-100 rounded-3xl shadow-sm relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-gray-50/30 to-white pointer-events-none" />
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-slate-100">
+                    <Building
+                      size={32}
+                      className="text-slate-400"
+                      strokeWidth={1.5}
+                    />
+                  </div>
+                  <h3 className="text-lg font-medium text-slate-800 mb-2">
+                    No Warehouses Yet
+                  </h3>
+                  <p className="text-slate-500 text-sm mb-6 max-w-sm text-center leading-relaxed">
+                    {WAREHOUSE_LOCATIONS_TEXT.EMPTY}
+                  </p>
+                  <button
+                    onClick={() => setClosedLocationForm(true)}
+                    className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md"
+                  >
+                    <Plus size={16} />
+                    Add Your First Warehouse
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="grid"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+              >
+                <AnimatePresence>
+                  {locationList.map((location, index) => (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={{ duration: 0.2 }}
+                      key={location.id}
+                      className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group"
+                    >
+                      <div>
+                        <div className="flex justify-between items-start mb-3">
+                          <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-theme-caption font-semibold">
+                            {location.address.address_type &&
+                              location.address.address_type
+                                .charAt(0)
+                                .toUpperCase() +
+                                location.address.address_type.slice(1)}
+                          </span>
+                          {location.address.is_default && (
+                            <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md text-theme-tiny uppercase font-bold tracking-wide border border-blue-100">
+                              {WAREHOUSE_LOCATIONS_TEXT.CARD.DEFAULT}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="font-bold text-gray-900 mb-1.5 text-lg tracking-tight line-clamp-1">
+                          {location.warehouse_name}
+                        </h3>
+                        <p className="text-sm text-gray-500 leading-relaxed">
+                          {location.address.address_line_1},{" "}
+                          {location.address.city}, {location.address.state}{" "}
+                          {location.address.postal_code}
+                        </p>
+                        <p className="text-sm text-gray-400 mt-1 font-medium">
+                          {location.address.country}
+                        </p>
+                        {location.address.number && (
+                          <p className="text-sm text-gray-500 mt-3 pt-3 border-t border-gray-50">
+                            <span className="font-medium text-gray-700">
+                              {WAREHOUSE_LOCATIONS_TEXT.CARD.CONTACT}
+                            </span>{" "}
+                            {location.address.number}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-100 opacity-80 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleEditLocation(location)}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => deleteLocation(location.id)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+      </div>
     </main>
   );
 }

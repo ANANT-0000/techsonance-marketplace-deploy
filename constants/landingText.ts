@@ -13,6 +13,7 @@ import type {
   LandingTestimonialsContent,
   LandingTickerContent,
 } from "@/utils/Types";
+import { VEDNOR_REGISTER_PATH } from "./constants";
 
 export const LANDING_METADATA = {
   title: "Techsonance | Your Brand, Your Platform",
@@ -239,7 +240,8 @@ export const LANDING_PRICING: LandingPricingContent = {
     titlePart1: "Simple, ",
     titleHighlight: "transparent",
     titlePart2: " pricing",
-    subtitle: "No hidden fees. No surprise overages. Cancel anytime. No credit card required.",
+    subtitle:
+      "No hidden fees. No surprise overages. Cancel anytime. No credit card required.",
   },
   toggle: {
     monthly: "Monthly",
@@ -257,11 +259,12 @@ export const LANDING_PRICING: LandingPricingContent = {
         "Email support",
       ],
       ctaLabel: "Start Free Trial",
-      ctaHref: "/auth/vendorRegister",
+      ctaHref: VEDNOR_REGISTER_PATH,
       isFeatured: false,
     },
     starter: {
-      description: "For individuals and small businesses getting started with their own branded store.",
+      description:
+        "For individuals and small businesses getting started with their own branded store.",
       features: [
         "Up to 100 products",
         "1,000 orders/month",
@@ -270,12 +273,13 @@ export const LANDING_PRICING: LandingPricingContent = {
         "Email support",
       ],
       ctaLabel: "Get Started",
-      ctaHref: "/auth/vendorRegister",
+      ctaHref: VEDNOR_REGISTER_PATH,
       isFeatured: false,
     },
     pro: {
       badge: "Most Popular",
-      description: "For growing teams that need advanced features and priority support.",
+      description:
+        "For growing teams that need advanced features and priority support.",
       features: [
         "Unlimited products",
         "Unlimited orders",
@@ -285,12 +289,11 @@ export const LANDING_PRICING: LandingPricingContent = {
         "Priority support",
       ],
       ctaLabel: "Start Free Trial",
-      ctaHref: "/auth/vendorRegister",
+      ctaHref: VEDNOR_REGISTER_PATH,
       isFeatured: true,
     },
   },
 };
-
 
 export const LANDING_TESTIMONIALS: LandingTestimonialsContent = {
   header: {

@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import {
   fetchTaxSlabOptions,
   fetchVendorOneProducts,
@@ -21,6 +22,8 @@ import { authToken } from "@/utils/authToken";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAppSelector } from "@/hooks/reduxHooks";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
+
 interface Attribute {
   name: string;
   value: string; // could be string[] if multiple values
@@ -83,8 +86,9 @@ const getCategoryOptions = async (
     categoryOptions: { value: string; label: string }[],
   ) => void,
   token: string,
+  companyId: string,
 ) => {
-  await fetchVendorsProductsCategory(token)
+  await fetchVendorsProductsCategory(token, companyId)
     .then((res) => {
       setCategoryOptions(
         res.data.map((c: any) => ({ value: c.id, label: c.name })),
@@ -98,9 +102,10 @@ const getExitingProduct = async (
   setGetExitingProduct: (getExitingProduct: ProductVariant | null) => void,
   id: string,
   token: string,
+  companyId: string,
 ) => {
   id
-    ? await fetchVendorOneProducts(id, token)
+    ? await fetchVendorOneProducts(id, token, companyId)
         .then((res) => {
           setGetExitingProduct(res.data);
         })
@@ -115,8 +120,9 @@ const getWarehouseOptions = async (
     warehouseOptions: { value: string; label: string }[],
   ) => void,
   token: string,
+  companyId: string,
 ) => {
-  await fetchVendorWarehouse(token)
+  await fetchVendorWarehouse(token, companyId)
     .then((res) => {
       setWarehouseOptions(
         res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name })),
@@ -126,8 +132,12 @@ const getWarehouseOptions = async (
       return [];
     });
 };
-const getTaxSlabsOptions = async (token: string, setTaxSlabsOptions: any) => {
-  fetchTaxSlabOptions(token)
+const getTaxSlabsOptions = async (
+  token: string,
+  setTaxSlabsOptions: any,
+  companyId: string,
+) => {
+  fetchTaxSlabOptions(token, companyId)
     .then((res) => {
       setTaxSlabsOptions(
         res.data.map((t: any) => ({ value: t.id, label: t.slab_name })),
@@ -137,6 +147,8 @@ const getTaxSlabsOptions = async (token: string, setTaxSlabsOptions: any) => {
 };
 
 export default function ProductUpdateFormPage() {
+  const companyId = getClientCompanyId();
+
   const { id } = useParams<{ id: string }>();
   const { user } = useAppSelector((state) => state.auth);
   const vendorId = (user && "vendor_id" in user ? user.vendor_id : "") ?? "";
@@ -152,14 +164,14 @@ export default function ProductUpdateFormPage() {
   const [exitingProduct, setGetExitingProduct] =
     useState<ProductVariant | null>(null);
   const token = authToken();
-  if (!token) {
-    redirect("/auth/vendorLogin");
+  if (!token || !companyId) {
+    redirect(VEDNOR_LOGIN_PATH);
   }
   useEffect(() => {
-    getExitingProduct(setGetExitingProduct, id, token);
-    getCategoryOptions(setCategoryOptions, token);
-    getWarehouseOptions(setWarehouseOptions, token);
-    getTaxSlabsOptions(token, setTaxSlabsOptions);
+    getExitingProduct(setGetExitingProduct, id, token, companyId);
+    getCategoryOptions(setCategoryOptions, token, companyId);
+    getWarehouseOptions(setWarehouseOptions, token, companyId);
+    getTaxSlabsOptions(token, setTaxSlabsOptions, companyId);
   }, [token, id]);
   const exitingData: Partial<ProductFormInput | ProductFormOutput | {}> =
     exitingProduct

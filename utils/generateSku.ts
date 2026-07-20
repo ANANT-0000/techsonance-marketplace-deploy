@@ -1,41 +1,76 @@
-﻿interface SkuParams {
-    productName: string;
-    categoryName?: string;
-    attributes?: { name: string; value: string }[];
+interface SkuParams {
+  productName: string;
+  categoryName?: string;
+  attributes?: { name: string; value: string }[];
 }
+// SKU Format:
 
-export function generateSKU({ productName, categoryName, attributes }: SkuParams): string {
-    const parts: string[] = [];
+// Brand: ST
+// Style Code: WT019B-01
+// Color: OW (Off White)
+// Size:
+// M
+// L
+// XL
+// 2XL
 
-    // 1. Add Category Prefix (First 3 letters, uppercase)
-    if (categoryName) {
-        parts.push(categoryName.substring(0, 3).toUpperCase());
+// Example
+
+// ST-WT019B-01-OW-L
+// ST-WT019B-01-OW-XL
+// ST-WT019B-01-OW-2XL
+export function generateSKU({
+  productName,
+  categoryName,
+  attributes,
+}: SkuParams): string {
+  const parts: string[] = [];
+
+  // 1. Process Product Name (e.g., "ST WT019B-01" -> "ST-WT019B-01")
+  if (productName) {
+    let cleanName = productName.toUpperCase().trim();
+    // Remove special characters except alphanumeric, spaces, and hyphens
+    cleanName = cleanName.replace(/[^A-Z0-9\s-]/g, "");
+
+    // If the name is long, create an acronym from the first few words
+    if (cleanName.length > 15) {
+      cleanName = cleanName
+        .split(/[\s-]+/)
+        .filter(Boolean)
+        .map((word) => word[0])
+        .join("")
+        .substring(0, 6); // max 6 char acronym
+    } else {
+      // If it's short (like a style code), just format it
+      cleanName = cleanName.replace(/\s+/g, "-");
     }
 
-    // 2. Add Product Name Prefix (First 3-4 letters of main words)
-    if (productName) {
-        const namePrefix = productName
-            .split(' ')
-            .map(word => word.substring(0, 2).toUpperCase())
-            .join('')
-            .substring(0, 4); // Keep it concise
-        parts.push(namePrefix);
+    if (cleanName) {
+      parts.push(cleanName);
     }
+  }
 
-    // 3. Add Variant Attributes (e.g., RED-XL)
-    if (attributes && attributes.length > 0) {
-        const attrValues = attributes.map(attr => {
-            // If it's a number, keep it. If it's a word, take first 3 chars.
-            const strVal = String(attr.value).toUpperCase().trim();
-            return strVal.length > 3 && isNaN(Number(strVal)) ? strVal.substring(0, 3) : strVal;
-        });
-        parts.push(attrValues.join('-'));
-    }
+  // 2. Add Variant Attributes (e.g., "Off White" -> "OW", "L" -> "L")
+  if (attributes && attributes.length > 0) {
+    const attrValues = attributes.map((attr) => {
+      const strVal = String(attr.value).toUpperCase().trim();
+      // If it contains spaces, use initials (e.g., "Off White" -> "OW")
+      if (strVal.includes(" ")) {
+        return strVal
+          .split(/\s+/)
+          .map((word) => word[0])
+          .join("");
+      }
+      // Otherwise, keep it as is (e.g., "L", "XL", "RED")
+      return strVal;
+    });
+    parts.push(...attrValues);
+  }
 
-    // 4. Add a short random string to guarantee uniqueness in the database
-    const uniqueHash = Math.random().toString(36).substring(2, 6).toUpperCase();
-    parts.push(uniqueHash);
-
-    // Combine and clean up (remove multiple dashes, etc.)
-    return parts.filter(Boolean).join('-').replace(/-+/g, '-');
+  // Combine and clean up (remove trailing/leading dashes and multiple dashes)
+  return parts
+    .filter(Boolean)
+    .join("-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 }

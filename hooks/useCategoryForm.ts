@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 // ============================================================
 // useCategoryForm — Form-specific state & create/update operations
 // Handles: form fields, validation, create & update API calls.
@@ -34,6 +35,8 @@ export function useCategoryForm({
   setCheckChange,
   editTarget,
 }: UseCategoryFormProps) {
+  const companyId = getClientCompanyId();
+
   const router = useRouter();
   const token = authToken();
   const [isPending, startTransition] = useTransition();
@@ -76,7 +79,7 @@ export function useCategoryForm({
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      if (!token) {
+      if (!token || !companyId) {
         toast.error(CATEGORY_TOAST.NO_TOKEN);
         setTimeout(
           () => router.push(CATEGORY_AUTH.LOGIN_REDIRECT_PATH),
@@ -104,6 +107,7 @@ export function useCategoryForm({
             editingId,
             payload,
             token,
+            companyId,
           );
           if (response?.status === 200) {
             toast.success(CATEGORY_TOAST.UPDATED);
@@ -113,7 +117,11 @@ export function useCategoryForm({
             toast.error(response?.message || CATEGORY_TOAST.UPDATE_FAILED);
           }
         } else {
-          const response = await createVendorProductCategory(payload, token);
+          const response = await createVendorProductCategory(
+            payload,
+            token,
+            companyId,
+          );
           if (response?.status === 201 || response?.status === 200) {
             toast.success(CATEGORY_TOAST.CREATED);
             handleResetForm();
@@ -126,12 +134,30 @@ export function useCategoryForm({
         toast.error(CATEGORY_TOAST.UNEXPECTED_ERROR);
       }
     },
-    [token, name, description, parentId, editingId, iconUrl, showInNav, router, handleResetForm, setCheckChange],
+    [
+      token,
+      name,
+      description,
+      parentId,
+      editingId,
+      iconUrl,
+      showInNav,
+      router,
+      handleResetForm,
+      setCheckChange,
+    ],
   );
 
   // ── Return ──
 
-  const formState: CategoryFormState = { name, description, parentId, editingId, icon_url: iconUrl, show_in_nav: showInNav };
+  const formState: CategoryFormState = {
+    name,
+    description,
+    parentId,
+    editingId,
+    icon_url: iconUrl,
+    show_in_nav: showInNav,
+  };
 
   return {
     formState,

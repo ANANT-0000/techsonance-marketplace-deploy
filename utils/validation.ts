@@ -549,12 +549,12 @@ export const productVariantSchema = z.object({
     .transform((val) => parseInt(val, 10)),
   variantMediaMain: z
     .array(z.any())
-    .min(0, { error: "At least one product image is required" })
-    .max(1, { error: "You can upload up to 1 image" }),
+    .max(1, { error: "You can upload up to 1 image" })
+    .optional(),
   variantMediaGallery: z
     .array(z.any())
-    .min(0, { error: "At least one feature image is required" })
-    .max(10, { error: "You can upload up to 10 images" }),
+    .max(10, { error: "You can upload up to 10 images" })
+    .optional(),
 });
 
 export type ProductVariantFormValuesType = z.infer<typeof productVariantSchema>;

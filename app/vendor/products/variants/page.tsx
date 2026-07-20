@@ -10,15 +10,18 @@ import {
   XCircle,
   CheckCircle,
   X,
+  AlertCircle,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "motion/react";
-import { BASE_API_URL } from "@/constants";
+import { BASE_API_URL, VEDNOR_LOGIN_PATH } from "@/constants";
 import { Address } from "@/utils/Types";
-import { getCompanyDomain } from "@/lib/get-domain";
 import { authToken } from "@/utils/authToken";
 import { TableRowSkeleton } from "@/components/common/skeletons/TableRowSkeleton";
 import { INVENTORY_TEXT, AlertSeverity, StatusFilter } from "@/constants";
 import AxiosAPI from "@/lib/axios";
+import { getClientCompanyId } from "@/utils/getCompanyId";
+import { SessionErrorCard } from "@/components/vendor/SessionErrorCard";
 
 interface InventoryLocation {
   inventory_id: string;
@@ -56,43 +59,43 @@ export const InventoryStats = ({
   inventory: InventoryItem[];
 }) => {
   return (
-    <div className="flex gap-4 my-6 flex-wrap">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6">
       {[
         {
           label: INVENTORY_TEXT.STATS.TOTAL_SKUS,
           value: inventory.length,
-          color: "text-blue-600",
-          bg: "bg-blue-50 border-blue-200",
+          color: "text-slate-800",
+          bg: "bg-white border-slate-100 shadow-sm",
         },
         {
           label: INVENTORY_TEXT.STATS.LOW_STOCK,
           value: inventory.filter((i) => i.isLowStock && !i.isOutOfStock)
             .length,
-          color: "text-yellow-600",
-          bg: "bg-yellow-50 border-yellow-200",
+          color: "text-amber-600",
+          bg: "bg-amber-50/50 border-amber-100",
         },
         {
           label: INVENTORY_TEXT.STATS.OUT_OF_STOCK,
           value: inventory.filter((i) => i.isOutOfStock).length,
-          color: "text-red-600",
-          bg: "bg-red-50 border-red-200",
+          color: "text-rose-600",
+          bg: "bg-rose-50/50 border-rose-100",
         },
         {
           label: INVENTORY_TEXT.STATS.HEALTHY,
           value: inventory.filter((i) => !i.isLowStock && !i.isOutOfStock)
             .length,
-          color: "text-green-600",
-          bg: "bg-green-50 border-green-200",
+          color: "text-emerald-600",
+          bg: "bg-emerald-50/50 border-emerald-100",
         },
       ].map((stat) => (
         <div
           key={stat.label}
-          className={`border rounded-2xl px-6 py-4 flex flex-col gap-1 ${stat.bg}`}
+          className={`border rounded-3xl px-6 py-6 flex flex-col gap-1.5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${stat.bg}`}
         >
-          <p className="text-theme-caption font-semibold text-gray-500 uppercase tracking-wider">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest opacity-80">
             {stat.label}
           </p>
-          <p className={`text-theme-h3 font-extrabold ${stat.color}`}>
+          <p className={`text-3xl font-extrabold tracking-tight ${stat.color}`}>
             {stat.value}
           </p>
         </div>
@@ -101,11 +104,11 @@ export const InventoryStats = ({
   );
 };
 async function fetchInventory(
-  domain: string,
+  companyId: string,
   token: string,
 ): Promise<InventoryItem[]> {
   const res = await fetch(`${BASE_API_URL}/v1/inventory`, {
-    headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+    headers: { "company-id": companyId, Authorization: `Bearer ${token}` },
     cache: "no-cache",
   });
   const json = await res.json();
@@ -113,11 +116,11 @@ async function fetchInventory(
 }
 
 async function fetchAlerts(
-  domain: string,
+  companyId: string,
   token: string,
 ): Promise<LowStockAlert[]> {
   const res = await fetch(`${BASE_API_URL}/v1/inventory/alerts/low-stock`, {
-    headers: { "company-domain": domain, Authorization: `Bearer ${token}` },
+    headers: { "company-id": companyId, Authorization: `Bearer ${token}` },
     cache: "no-cache",
   });
   const json = await res.json();
@@ -154,6 +157,7 @@ interface InventoryState {
   editQty: number;
   saving: boolean;
   count: number;
+  sessionError: boolean;
 }
 
 const initialState: InventoryState = {
@@ -166,6 +170,7 @@ const initialState: InventoryState = {
   editQty: 0,
   saving: false,
   count: 1,
+  sessionError: false,
 };
 
 type InventoryAction =
@@ -179,7 +184,8 @@ type InventoryAction =
   | { type: InventoryActionType.SET_EDIT_ID; payload: string | null }
   | { type: InventoryActionType.SET_EDIT_QTY; payload: number }
   | { type: InventoryActionType.SET_SAVING; payload: boolean }
-  | { type: InventoryActionType.SET_COUNT; payload: number };
+  | { type: InventoryActionType.SET_COUNT; payload: number }
+  | { type: "SET_SESSION_ERROR"; payload: boolean };
 
 function inventoryReducer(
   state: InventoryState,
@@ -206,6 +212,8 @@ function inventoryReducer(
       return { ...state, saving: action.payload };
     case InventoryActionType.SET_COUNT:
       return { ...state, count: action.payload };
+    case "SET_SESSION_ERROR":
+      return { ...state, sessionError: action.payload };
     default:
       return state;
   }
@@ -224,26 +232,33 @@ export default function InventoryPage() {
     editQty,
     saving,
     count,
+    sessionError,
   } = state;
 
   const pageSize = 8;
   const token = authToken();
 
   const reload = async () => {
-    const domain = await getCompanyDomain();
-    dispatch({ type: InventoryActionType.SET_LOADING, payload: true });
-    if (!token) {
+    const companyId = getClientCompanyId();
+    if (!token || !companyId) {
+      dispatch({ type: "SET_SESSION_ERROR", payload: true });
       return;
     }
-    const [inv, alrt] = await Promise.all([
-      fetchInventory(domain, token),
-      fetchAlerts(domain, token),
-    ]);
-    dispatch({
-      type: InventoryActionType.SET_INVENTORY_DATA,
-      payload: { inventory: inv, alerts: alrt },
-    });
-    dispatch({ type: InventoryActionType.SET_LOADING, payload: false });
+    dispatch({ type: InventoryActionType.SET_LOADING, payload: true });
+    try {
+      const [inv, alrt] = await Promise.all([
+        fetchInventory(companyId, token),
+        fetchAlerts(companyId, token),
+      ]);
+      dispatch({
+        type: InventoryActionType.SET_INVENTORY_DATA,
+        payload: { inventory: inv, alerts: alrt },
+      });
+    } catch (error) {
+      toast.error(INVENTORY_TEXT.TOASTS.LOAD_FAIL);
+    } finally {
+      dispatch({ type: InventoryActionType.SET_LOADING, payload: false });
+    }
   };
 
   useEffect(() => {
@@ -269,26 +284,49 @@ export default function InventoryPage() {
 
   // ── Stock update ──
   const handleSave = async (inventoryId: string) => {
-    dispatch({ type: InventoryActionType.SET_SAVING, payload: true });
     if (!token) {
+      toast.error(INVENTORY_TEXT.TOASTS.SESSION_EXPIRED_SAVE, {
+        icon: "🔒",
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
       return;
     }
-    await updateStock(inventoryId, editQty);
-    dispatch({ type: InventoryActionType.SET_SAVING, payload: false });
-    dispatch({ type: InventoryActionType.SET_EDIT_ID, payload: null });
-    await reload();
+    dispatch({ type: InventoryActionType.SET_SAVING, payload: true });
+    try {
+      await updateStock(inventoryId, editQty);
+      toast.success(INVENTORY_TEXT.TOASTS.UPDATE_SUCCESS);
+      dispatch({ type: InventoryActionType.SET_EDIT_ID, payload: null });
+      await reload();
+    } catch (error) {
+      toast.error(INVENTORY_TEXT.TOASTS.UPDATE_FAIL);
+    } finally {
+      dispatch({ type: InventoryActionType.SET_SAVING, payload: false });
+    }
   };
 
+  const companyId = getClientCompanyId();
+  if (sessionError || !token || !companyId) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <SessionErrorCard />
+      </div>
+    );
+  }
+
   return (
-    <>
-      <main className="px-2 w-full min-h-screen max-h-screen overflow-y-scroll">
+    <main className="w-full px-4 sm:px-8 py-1 min-h-screen max-h-screen overflow-y-scroll bg-[#fafafa]">
+      <div className="mx-auto ">
         <AnimatePresence>
           {alerts.length > 0 && (
             <motion.section
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-6 border-2 border-orange-300 bg-orange-50 rounded-2xl p-4 mt-2"
+              className="border-2 border-orange-200/50 bg-orange-50/50 rounded-2xl p-4 shadow-sm"
             >
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle className="text-orange-500" size={20} />
@@ -301,10 +339,10 @@ export default function InventoryPage() {
                 {alerts.map((alert) => (
                   <div
                     key={alert.inventoryId}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-theme-body-sm font-medium border ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border bg-white shadow-sm ${
                       alert.isOutOfStock
-                        ? "bg-red-100 border-red-300 text-red-700"
-                        : "bg-yellow-100 border-yellow-300 text-yellow-700"
+                        ? "border-red-200 text-red-700"
+                        : "border-yellow-200 text-yellow-700"
                     }`}
                   >
                     {alert.isOutOfStock ? (
@@ -332,14 +370,14 @@ export default function InventoryPage() {
 
         <InventoryStats inventory={inventory} />
         {/* ── Filters ─────────────────────────────────────────────── */}
-        <div className="flex gap-3 mb-4 flex-wrap items-center justify-between">
-          <span className="border-2 flex items-center gap-0 border-gray-300 px-4 rounded-2xl bg-white">
-            <div className="relative w-5 h-5 shrink-0">
-              <Image src={searchImgDark} alt="search" fill sizes="20px" />
+        <div className="flex flex-wrap items-center py-3 px-4 gap-4 bg-white border border-slate-100 rounded-2xl shadow-[0_2px_14px_rgba(0,0,0,0.02)] transition-all">
+          <div className="flex flex-1 min-w-[260px] items-center gap-2.5 bg-slate-50/50 py-2.5 px-3.5 rounded-xl border border-slate-100 focus-within:border-slate-300 focus-within:bg-white focus-within:shadow-sm transition-all duration-200">
+            <div className="relative w-4 h-4 shrink-0 opacity-50">
+              <Image src={searchImgDark} alt="search" fill sizes="16px" />
             </div>
             <input
               type="text"
-              className="py-2 px-3 w-64 text-theme-body-sm outline-none bg-transparent"
+              className="text-sm bg-transparent w-full outline-none text-slate-700 placeholder:text-slate-400"
               placeholder={INVENTORY_TEXT.FILTERS.SEARCH_PLACEHOLDER}
               value={search}
               onChange={(e) => {
@@ -350,9 +388,9 @@ export default function InventoryPage() {
                 dispatch({ type: InventoryActionType.SET_COUNT, payload: 1 });
               }}
             />
-          </span>
+          </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {[StatusFilter.ALL, StatusFilter.LOW, StatusFilter.OUT].map((f) => (
               <button
                 key={f}
@@ -363,14 +401,14 @@ export default function InventoryPage() {
                   });
                   dispatch({ type: InventoryActionType.SET_COUNT, payload: 1 });
                 }}
-                className={`px-4 py-2 rounded-xl text-theme-body-sm font-semibold border-2 transition-colors ${
+                className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   statusFilter === f
                     ? f === StatusFilter.OUT
-                      ? "bg-red-100 border-red-400 text-red-700"
+                      ? "bg-rose-100 text-rose-700 shadow-sm"
                       : f === StatusFilter.LOW
-                        ? "bg-yellow-100 border-yellow-400 text-yellow-700"
-                        : "bg-blue-100 border-blue-400 text-blue-700"
-                    : "bg-white border-gray-300 text-gray-600"
+                        ? "bg-amber-100 text-amber-700 shadow-sm"
+                        : "bg-slate-900 text-white shadow-sm"
+                    : "bg-transparent text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 {f === StatusFilter.ALL
@@ -382,7 +420,7 @@ export default function InventoryPage() {
             ))}
             <button
               onClick={reload}
-              className="px-4 py-2 rounded-xl text-theme-body-sm font-semibold border-2 border-gray-300 bg-white text-gray-600 flex items-center gap-2 hover:bg-gray-50"
+              className="px-4 py-2.5 rounded-xl text-sm font-medium border border-slate-200 bg-white text-slate-600 flex items-center gap-2 hover:bg-slate-50 shadow-sm"
             >
               <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
               {INVENTORY_TEXT.FILTERS.REFRESH}
@@ -391,94 +429,108 @@ export default function InventoryPage() {
         </div>
 
         {/* ── Table ───────────────────────────────────────────────── */}
-        <div className="relative flex flex-col w-full overflow-auto bg-white border-2 border-gray-200 rounded-2xl">
-          <table className="w-full table-auto min-w-max text-theme-body-sm">
+        <div className="relative flex flex-col w-full overflow-auto bg-white border border-slate-100 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+          <table className="w-full table-auto min-w-[900px]">
             <thead>
-              <tr className="bg-gray-50 text-left">
-                <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
+              <tr className="bg-slate-50/50 text-left border-b border-slate-100">
+                <th className="px-5 py-4 text-xs font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                   {INVENTORY_TEXT.TABLE.HEADERS.PRODUCT}
                 </th>
-                <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
+                <th className="px-5 py-4 text-xs font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                   {INVENTORY_TEXT.TABLE.HEADERS.SKU}
                 </th>
-                <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
+                <th className="px-5 py-4 text-xs font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                   {INVENTORY_TEXT.TABLE.HEADERS.ACTIVE}
                 </th>
-
-                <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
+                <th className="px-5 py-4 text-xs font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                   {INVENTORY_TEXT.TABLE.HEADERS.WAREHOUSE}
                 </th>
-                <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
+                <th className="px-5 py-4 text-xs font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                   {INVENTORY_TEXT.TABLE.HEADERS.STOCK}
                 </th>
-                <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
+                <th className="px-5 py-4 text-xs font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                   {INVENTORY_TEXT.TABLE.HEADERS.STATUS}
                 </th>
-                <th className="p-4 border-b border-gray-200 font-semibold text-gray-600">
+                <th className="px-5 py-4 text-xs font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                   {INVENTORY_TEXT.TABLE.HEADERS.PRICE}
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100/60">
               {loading ? (
                 <TableRowSkeleton columns={8} rows={5} />
               ) : currentData.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-12 text-center text-gray-400">
-                    <Package size={40} className="mx-auto mb-3 opacity-30" />
-                    {INVENTORY_TEXT.TABLE.NO_ITEMS}
+                  <td colSpan={8} className="py-24 text-center">
+                    <div className="max-w-md mx-auto flex flex-col items-center py-10">
+                      <div className="relative w-20 h-20 bg-gradient-to-tr from-slate-50 to-white rounded-3xl flex items-center justify-center mb-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 before:absolute before:inset-0 before:rounded-3xl before:border before:border-white/60 before:z-10">
+                        <Package
+                          size={36}
+                          className="text-slate-400/80 relative z-20"
+                          strokeWidth={1.2}
+                        />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-800 mb-2 tracking-tight">
+                        {INVENTORY_TEXT.TABLE.NO_ITEMS}
+                      </h3>
+                      <p className="text-slate-500 text-sm mb-6 leading-relaxed text-center max-w-[280px]">
+                        {INVENTORY_TEXT.TABLE.EMPTY_SUBTITLE_DETAILED}
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 currentData.map((item) => (
                   <tr
                     key={item.variant_id}
-                    className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                    className={`hover:bg-slate-50/80 transition-colors duration-200 cursor-default ${
                       item.isOutOfStock
-                        ? "bg-red-50/30"
+                        ? "bg-rose-50/20"
                         : item.isLowStock
-                          ? "bg-yellow-50/30"
+                          ? "bg-amber-50/20"
                           : ""
                     }`}
                   >
                     {/* Product */}
-                    <td className="p-4">
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         {item.variant_image ? (
-                          <div className="relative w-10 h-10 shrink-0">
+                          <div className="relative w-12 h-12 shrink-0">
                             <Image
                               src={item.variant_image}
                               alt={item.variant_name}
-                              className="object-cover rounded-lg border border-gray-200"
+                              className="object-cover rounded-xl border border-slate-100 bg-white"
                               fill
-                              sizes="40px"
+                              sizes="48px"
                               style={{ objectFit: "cover" }}
                             />
                           </div>
                         ) : (
-                          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                            <Package size={16} className="text-gray-400" />
+                          <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+                            <Package
+                              size={18}
+                              className="text-slate-400"
+                              strokeWidth={1.5}
+                            />
                           </div>
                         )}
-                        <span className="font-medium text-gray-800 max-w-[200px] truncate">
+                        <span className="text-sm font-medium text-slate-800 line-clamp-2 leading-snug">
                           {item.variant_name}
                         </span>
                       </div>
                     </td>
 
                     {/* SKU */}
-                    <td className="p-4 font-mono text-gray-500 text-theme-caption">
+                    <td className="px-5 py-4 text-sm font-mono text-slate-500 whitespace-nowrap">
                       {item.sku}
                     </td>
                     {/* Active */}
-                    <td
-                      className={`p-4 font-mono text-gray-500 text-theme-caption `}
-                    >
+                    <td className={`px-5 py-4`}>
                       <span
-                        className={`inline-flex items-center gap-1 text-theme-caption font-semibold px-2.5 py-0.5 rounded-full border ${
+                        className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
                           item.activeStatus === "active"
-                            ? "bg-green-100 text-green-700  border-green-400"
-                            : "text-gray-600 bg-gray-100  border-gray-400"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-slate-100 text-slate-600"
                         }`}
                       >
                         {item.activeStatus}
@@ -486,14 +538,14 @@ export default function InventoryPage() {
                     </td>
 
                     {/* Warehouse */}
-                    <td className="p-4 text-gray-600">
+                    <td className="px-5 py-4 text-sm text-slate-600 whitespace-nowrap">
                       {item.locations
                         ? (item.locations[0]?.warehouse_name ?? "—")
                         : "—"}
                     </td>
 
                     {/* Stock */}
-                    <td className="p-4">
+                    <td className="px-5 py-4">
                       {editId === item.variant_id ? (
                         <div className="flex items-center gap-2">
                           <input
@@ -506,12 +558,12 @@ export default function InventoryPage() {
                                 payload: Number(e.target.value),
                               })
                             }
-                            className="w-20 border-2 border-blue-400 rounded-lg px-2 py-1 text-theme-body-sm outline-none focus:ring-2 focus:ring-blue-200"
+                            className="w-20 border border-slate-200 rounded-lg px-2.5 py-1.5 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
                           />
                           <button
                             onClick={() => handleSave(item.variant_id)}
                             disabled={saving}
-                            className="p-1 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50"
+                            className="p-1.5 bg-slate-900 text-white rounded-md hover:bg-slate-800 disabled:opacity-50 transition-colors shadow-sm"
                           >
                             <CheckCircle size={16} />
                           </button>
@@ -522,19 +574,19 @@ export default function InventoryPage() {
                                 payload: null,
                               })
                             }
-                            className="p-1 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300"
+                            className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-md hover:bg-slate-50 transition-colors shadow-sm"
                           >
                             <X size={16} />
                           </button>
                         </div>
                       ) : (
                         <span
-                          className={`font-bold text-theme-h6 ${
+                          className={`text-sm font-bold ${
                             item.isOutOfStock
-                              ? "text-red-600"
+                              ? "text-rose-600"
                               : item.isLowStock
-                                ? "text-yellow-600"
-                                : "text-gray-800"
+                                ? "text-amber-600"
+                                : "text-slate-800"
                           }`}
                         >
                           {item.total_stock}
@@ -543,27 +595,27 @@ export default function InventoryPage() {
                     </td>
 
                     {/* Status Badge */}
-                    <td className="p-4">
+                    <td className="px-5 py-4">
                       {item.isOutOfStock ? (
-                        <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-300 text-theme-caption font-bold px-2.5 py-1 rounded-full">
-                          <XCircle size={12} />{" "}
+                        <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 text-xs font-medium px-2.5 py-1 rounded-md">
+                          <XCircle size={14} />{" "}
                           {INVENTORY_TEXT.TABLE.STATUS_OUT}
                         </span>
                       ) : item.isLowStock ? (
-                        <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 border border-yellow-300 text-theme-caption font-bold px-2.5 py-1 rounded-full">
-                          <AlertTriangle size={12} />{" "}
+                        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 text-xs font-medium px-2.5 py-1 rounded-md">
+                          <AlertTriangle size={14} />{" "}
                           {INVENTORY_TEXT.TABLE.STATUS_LOW}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 border border-green-300 text-theme-caption font-bold px-2.5 py-1 rounded-full">
-                          <CheckCircle size={12} />{" "}
+                        <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-medium px-2.5 py-1 rounded-md">
+                          <CheckCircle size={14} />{" "}
                           {INVENTORY_TEXT.TABLE.STATUS_IN}
                         </span>
                       )}
                     </td>
 
                     {/* Price */}
-                    <td className="p-4 font-semibold text-gray-700">
+                    <td className="px-5 py-4 text-sm font-medium text-slate-700 whitespace-nowrap">
                       ₹{Number(item.price).toLocaleString()}
                     </td>
                   </tr>
@@ -574,8 +626,8 @@ export default function InventoryPage() {
         </div>
 
         {/* ── Pagination ──────────────────────────────────────────── */}
-        <div className="flex justify-between items-center mt-4">
-          <p className="text-theme-body-sm text-gray-500">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 pb-8 px-2">
+          <p className="text-sm font-medium text-slate-500 whitespace-nowrap">
             {INVENTORY_TEXT.PAGINATION.SHOWING} {currentData.length}{" "}
             {INVENTORY_TEXT.PAGINATION.OF} {filtered.length}{" "}
             {INVENTORY_TEXT.PAGINATION.RECORDS}
@@ -592,7 +644,7 @@ export default function InventoryPage() {
             style=""
           />
         </div>
-      </main>
-    </>
+      </div>
+    </main>
   );
 }

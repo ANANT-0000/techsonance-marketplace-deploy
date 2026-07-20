@@ -164,6 +164,7 @@ const authSlice = createSlice({
         // Set cookies so that Next.js Server Middleware can check the auth state
         setAuthCookie("accessToken", action.payload.access_token);
         setAuthCookie("access_token", action.payload.access_token);
+
       }
     },
     logOut(state) {
@@ -185,6 +186,7 @@ const authSlice = createSlice({
         // Clear cookies
         clearAuthCookie("accessToken");
         clearAuthCookie("access_token");
+
       }
     },
 

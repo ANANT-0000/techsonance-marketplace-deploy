@@ -35,6 +35,7 @@ export interface Vendor {
   user_id: string;
   company: Company;
   user: User;
+  total_sales?: number;
 }
 
 export interface Company {
@@ -214,7 +215,7 @@ export default function VendorManagementPage() {
                   Status
                 </th>
                 <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Storefront Value
+                  Total Sales
                 </th>
                 <th className="p-4 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                   Actions
@@ -286,7 +287,7 @@ export default function VendorManagementPage() {
 
                     {/* VALUE */}
                     <td className="p-4 text-theme-body-sm text-gray-600 font-medium">
-                      ₹ {formatCurrency(23232)}
+                      ₹ {formatCurrency(vendor.total_sales || 0)}
                     </td>
 
                     {/* ACTIONS */}

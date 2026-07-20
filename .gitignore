@@ -41,8 +41,9 @@ certificates
 .vercel
 
 graphify-out
-graphify-out
-AGENTS.*
-.agents
-.codex
-.graphify
+AGENTS.md
+CLAUDE.md
+.cursorrules
+.windsurfrules
+.mcp.json
+.claude/skills/

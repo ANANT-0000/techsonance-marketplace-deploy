@@ -13,130 +13,121 @@ export const InnerSideBar = ({
     selectedMenu: string
 }) => {
     const path = usePathname()
-    const [isClosed, setIsClosed] = useState(false)
-    const [hovered, setHovered] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true)
     const [mounted, setMounted] = useState(false);
-    const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    const expanded = isClosed || hovered;
-
-    const handleMouseEnter = useCallback(() => {
-
-        if (leaveTimer.current) clearTimeout(leaveTimer.current);
-        enterTimer.current = setTimeout(() => {
-            setHovered(true);
-        }, 500);
-    }, []);
-
-    const handleMouseLeave = useCallback(() => {
-        // 1. If the mouse leaves before 500ms, cancel the expansion entirely
-        if (enterTimer.current) clearTimeout(enterTimer.current);
-
-        // 2. Keep your existing small delay so accidental quick mouse-outs don't flicker
-        leaveTimer.current = setTimeout(() => {
-            setHovered(false);
-        }, 120);
-    }, []);
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
     const links = getVendorInnerSidebarLinks(selectedMenu)
-    useEffect(() => {
-        const allPaths = links.flatMap((s) =>
-            s.sections.flatMap((sec) => sec.list?.map((item) => item.path) ?? [])
+
+    // ── Empty State ──────────────────────────────────────────────────────────
+    if (!links || links.length === 0) {
+        return (
+            <div
+                className={`mr-1 left-0 top-0 z-30 flex h-full flex-col bg-white transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden px-3 pb-4 border-r border-slate-100 ${isExpanded ? "min-w-44 w-64 rounded-r-3xl shadow-[4px_0_24px_rgb(0,0,0,0.02)]" : "w-[72px]"}`}
+            >
+                <div className="flex h-full flex-col items-center justify-center text-center px-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 mb-3">
+                        <DynamicIcon name="folder-x" className="h-6 w-6 text-slate-400" />
+                    </div>
+                    {isExpanded && (
+                        <div className="animate-in fade-in zoom-in duration-300">
+                            <h3 className="text-[13px] font-semibold text-slate-700 mb-1">No Navigation</h3>
+                            <p className="text-[11px] leading-relaxed text-slate-500">
+                                This module has no menu items configured.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </div>
         )
-        const isMatch = allPaths.some((p) => p !== path)
-        if (isMatch) setIsClosed(false)
-    }, [])
+    }
+
     return (
         <AnimatePresence mode="wait">
             <div
-                className={`mr-1
-        left-0 top-0 z-30 flex h-full flex-col  bg-white  transition-[width] duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden px-[10px] pb-4 border-r border-gray-200 
-        ${!expanded ? "w-20" : "min-w-44 w-60 rounded-r-2xl"}
-      `}
+                className={`mr-1 left-0 top-0 z-30 flex h-full flex-col bg-white transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden px-3 pb-4 border-r border-slate-100 ${isExpanded ? "min-w-44 w-64 rounded-r-3xl shadow-[4px_0_24px_rgb(0,0,0,0.02)]" : "w-[72px]"}`}
             >
-                <div className="sticky top-0 z-10 flex items-center justify-end bg-white border-b border-gray-100 px-3 py-3 w-full">
+                <div className="sticky top-0 z-10 flex items-center justify-between bg-white px-2 py-4 w-full">
                     <motion.span
                         initial={false}
                         animate={{
-                            opacity: isClosed ? 1 : 0,
-                            width: isClosed ? "auto" : 0,
-                            marginRight: isClosed ? "auto" : 0,
+                            opacity: isExpanded ? 1 : 0,
+                            width: isExpanded ? "auto" : 0,
                         }}
                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                        className="text-theme-caption font-semibold uppercase tracking-widest text-gray-400 truncate overflow-hidden whitespace-nowrap"
+                        className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 truncate overflow-hidden whitespace-nowrap"
                     >
                         {selectedMenu}
                     </motion.span>
                     <button
-                        onClick={() => setIsClosed((v) => !v)}
-                        className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors ml-auto"
-                        aria-label={expanded ? INNER_SIDEBAR_TEXT.ARIA_COLLAPSE : INNER_SIDEBAR_TEXT.ARIA_EXPAND}
+                        onClick={() => setIsExpanded((v) => !v)}
+                        className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all duration-200 ml-auto shrink-0"
+                        aria-label={isExpanded ? INNER_SIDEBAR_TEXT.ARIA_COLLAPSE : INNER_SIDEBAR_TEXT.ARIA_EXPAND}
                     >
                         {mounted ? (
-                            <DynamicIcon name={!expanded ? "panel-left-open" : "panel-left-close"} size={24} />
+                            <DynamicIcon name={isExpanded ? "panel-left-close" : "panel-left-open"} size={20} strokeWidth={2} />
                         ) : (
-                            <div className="w-6 h-6" />
+                            <div className="w-5 h-5" />
                         )}
                     </button>
                 </div>
 
-
-
-
-
-                <aside className="flex-1 py-3 space-y-6 w-full"  >
+                <aside className="flex-1 py-4 space-y-6 w-full custom-scrollbar overflow-y-auto overflow-x-hidden">
                     {links.map((section) => (
                         <div key={section.menu}>
                             {section.sections.map((group) => (
-                                <div key={group.section} className="mb-1">
+                                <div key={group.section} className="mb-2">
                                     {group.section && (
                                         <motion.p
                                             initial={false}
                                             animate={{
-                                                opacity: expanded ? 1 : 0,
-                                                height: expanded ? "auto" : 0,
-                                                marginBottom: expanded ? 8 : 0,
+                                                opacity: isExpanded ? 1 : 0,
+                                                height: isExpanded ? "auto" : 0,
+                                                marginBottom: isExpanded ? 12 : 0,
                                             }}
                                             transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                                            className="px-4 pt-2 pb-1 text-theme-body font-medium text-gray-400 truncate overflow-hidden"
+                                            className="px-3 pt-2 pb-1 text-[11px] font-semibold text-slate-400 uppercase tracking-widest truncate overflow-hidden"
                                         >
                                             {group.section}
                                         </motion.p>
                                     )}
-                                    <ul>
+                                    <ul className="space-y-1">
                                         {group.list?.map((item) => {
                                             const isActive = path === item.path
                                             return (
                                                 <motion.li
                                                     key={item.title}
-                                                    transition={{ duration: 0.18 }} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}            >
+                                                    transition={{ duration: 0.2 }} 
+                                                    initial={{ opacity: 0, y: 8 }} 
+                                                    animate={{ opacity: 1, y: 0 }} 
+                                                    exit={{ opacity: 0, y: -8 }}            
+                                                >
                                                     <Link
                                                         href={item.path ?? "#"}
-                                                        title={expanded ? item.title : undefined}
+                                                        title={isExpanded ? item.title : undefined}
                                                         className={`
-                                                            group relative flex items-center mx-2 px-2.5 py-2 rounded-lg
-                                                            text-theme-body-sm font-medium transition-all duration-150
+                                                            group relative flex items-center rounded-xl
+                                                            text-[13px] font-medium transition-all duration-200 ease-out
+                                                            ${isExpanded ? "mx-1 px-3 py-2.5" : "justify-center mx-auto w-full px-0 py-2.5"}
                                                             ${isActive
-                                                                ? "bg-blue-50 text-blue-600"
-                                                                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                                                                ? "bg-indigo-50/80 text-indigo-700 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)] ring-1 ring-indigo-500/10"
+                                                                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                                                             }
                                                           `}
                                                     >
                                                         {/* Active indicator bar */}
                                                         {isActive && (
-                                                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-blue-500 rounded-full" />
+                                                            <span className="absolute left-0 top-[20%] h-[60%] w-[3px] bg-indigo-500 rounded-r-[3px]" />
                                                         )}
 
-                                                        <span className={`shrink-0 ${isActive ? "text-blue-500" : "text-gray-400 group-hover:text-gray-600"}`}>
+                                                        <span className={`shrink-0 transition-transform duration-200 ${isActive ? "text-indigo-500" : "text-slate-400 group-hover:text-slate-600 group-hover:scale-110"}`}>
                                                             {mounted ? (
-                                                                <DynamicIcon name={item.icon as IconName} size={24} />
+                                                                <DynamicIcon name={item.icon as IconName} size={20} strokeWidth={isActive ? 2.5 : 2} />
                                                             ) : (
-                                                                <div className="w-6 h-6" />
+                                                                <div className="w-5 h-5" />
                                                             )}
                                                         </span>
 
@@ -144,24 +135,24 @@ export const InnerSideBar = ({
                                                         <motion.span
                                                             initial={false}
                                                             animate={{
-                                                                width: expanded ? "auto" : 0,
-                                                                opacity: expanded ? 1 : 0,
-                                                                marginLeft: expanded ? 12 : 0,
+                                                                width: isExpanded ? "auto" : 0,
+                                                                opacity: isExpanded ? 1 : 0,
+                                                                marginLeft: isExpanded ? 12 : 0,
                                                             }}
                                                             transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                                                            className="text-wrap overflow-hidden whitespace-nowrap text-theme-body-sm font-medium"
+                                                            className="text-wrap overflow-hidden whitespace-nowrap text-[13px] font-medium"
                                                         >
                                                             {item.title}
                                                         </motion.span>
 
                                                         {/* Tooltip on hover when collapsed */}
-                                                        {!expanded && (
+                                                        {!isExpanded && (
                                                             <span className="
-                              pointer-events-none absolute left-full ml-2 z-50
-                              whitespace-nowrap rounded-md bg-gray-900 text-white
-                              text-theme-caption px-2 py-1 opacity-0 group-hover:opacity-100
-                              transition-opacity duration-150 shadow-md
-                            ">
+                                                              pointer-events-none absolute left-full ml-3 z-50
+                                                              whitespace-nowrap rounded-lg bg-slate-900 text-white
+                                                              text-[11px] font-medium px-2.5 py-1.5 opacity-0 group-hover:opacity-100
+                                                              transition-opacity duration-200 shadow-xl border border-slate-700
+                                                            ">
                                                                 {item.title}
                                                             </span>
                                                         )}

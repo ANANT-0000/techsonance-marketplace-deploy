@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useEffect, useReducer } from "react";
 import { useRouter } from "next/navigation";
@@ -15,6 +16,7 @@ import {
   fetchGetCompanyLocations,
   fetchUpdateCompanyLocation,
 } from "@/utils/vendorApiClient";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 interface AddressType {
   id: string;
@@ -183,6 +185,8 @@ function locationsReducer(
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function VendorAddressesPage() {
+  const companyId = getClientCompanyId();
+
   const router = useRouter();
   const [state, dispatch] = useReducer(locationsReducer, initialState);
   const { addresses, loading, showModal, saving, formData, editingId } = state;
@@ -191,16 +195,19 @@ export default function VendorAddressesPage() {
 
   useEffect(() => {
     if (!token) {
-      router.push("/auth/vendorLogin");
+      router.push(VEDNOR_LOGIN_PATH);
       return;
     }
     fetchAddresses();
   }, [token]);
 
   const fetchAddresses = async () => {
+    if (!token || !companyId) {
+      return;
+    }
     dispatch({ type: LocationsActionType.SET_LOADING, payload: true });
     try {
-      const res = await fetchGetCompanyLocations(token || "");
+      const res = await fetchGetCompanyLocations(token, companyId);
       dispatch({
         type: LocationsActionType.SET_ADDRESSES,
         payload: res.data || [],
@@ -222,8 +229,11 @@ export default function VendorAddressesPage() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
+    if (!token || !companyId) {
+      return;
+    }
     dispatch({ type: LocationsActionType.SET_SAVING, payload: true });
     try {
       if (state.editingId) {
@@ -231,9 +241,10 @@ export default function VendorAddressesPage() {
           state.editingId,
           formData,
           token || "",
+          companyId,
         );
       } else {
-        await fetchCreateCompanyLocation(formData, token || "");
+        await fetchCreateCompanyLocation(formData, token || "", companyId);
       }
       dispatch({ type: LocationsActionType.SET_SHOW_MODAL, payload: false });
       dispatch({ type: LocationsActionType.RESET_FORM });
@@ -268,9 +279,12 @@ export default function VendorAddressesPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this address?")) return;
+    if (!token || !companyId) {
+      return;
+    }
     dispatch({ type: LocationsActionType.SET_LOADING, payload: true });
     try {
-      await fetchDeleteCompanyLocation(id, token || "");
+      await fetchDeleteCompanyLocation(id, token, companyId);
       fetchAddresses();
     } catch (err) {
       alert("Failed to delete location.");

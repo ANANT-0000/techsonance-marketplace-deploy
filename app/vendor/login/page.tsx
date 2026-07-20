@@ -51,7 +51,6 @@ export enum UiState {
   LOADING = "loading",
   SUCCESS = "success",
   ERROR = "error",
-  PROMPT_CHANGE_PASSWORD = "prompt_change_password",
   EXPIRED_SUBSCRIPTION = "expired_subscription",
 }
 
@@ -77,7 +76,7 @@ export enum ActionType {
   SET_SHOW_RESEND_LINK = "SET_SHOW_RESEND_LINK",
 }
 
-const REDIRECT_PATH = "/vendor";
+const REDIRECT_PATH = "/vendor/dashboard";
 // Registration URL is resolved from the platform base URL env var so it works
 // in every environment (local, staging, production) without code changes.
 // NEXT_PUBLIC_PLATFORM_REGISTRATION_URL should be the base origin of the
@@ -85,7 +84,7 @@ const REDIRECT_PATH = "/vendor";
 const REGISTER_URL = `${
   process.env.NEXT_PUBLIC_PLATFORM_REGISTRATION_URL ??
   (typeof window !== "undefined" ? window.location.origin : "")
-}/auth/vendorRegister`;
+}/vendor/register`;
 const CHANGE_PASSWORD_PATH = "/vendor/settings/change-password";
 
 const ERROR_MSG_LOGIN_FAILED = "Login failed";
@@ -150,7 +149,10 @@ export type Action =
   | { type: ActionType.SET_COOKIES_BLOCKED; payload: boolean }
   | { type: ActionType.RESET_FORM }
   | { type: ActionType.SET_IS_MOUNTED; payload: boolean }
-  | { type: ActionType.SET_RESEND_STATUS; payload: { type: "success" | "error"; message: string } | null }
+  | {
+      type: ActionType.SET_RESEND_STATUS;
+      payload: { type: "success" | "error"; message: string } | null;
+    }
   | { type: ActionType.SET_IS_RESENDING; payload: boolean }
   | { type: ActionType.SET_RESEND_COOLDOWN; payload: number }
   | { type: ActionType.SET_SHOW_RESEND_LINK; payload: boolean };
@@ -209,7 +211,6 @@ function loginReducer(state: State, action: Action): State {
   }
 }
 
-
 const StepIcon = ({ status }: { status: StepStatus }) => {
   if (status === StepStatus.ACTIVE)
     return (
@@ -231,63 +232,6 @@ export default function VendorLoginPage() {
 
   const [state, dispatchState] = useReducer(loginReducer, initialState);
   const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-
-  useEffect(() => {
-    if (state.resendCooldown > 0) {
-      const timer = setTimeout(() => {
-        dispatchState({ type: ActionType.SET_RESEND_COOLDOWN, payload: state.resendCooldown - 1 });
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [state.resendCooldown]);
-
-  const handleResendTempPassword = async () => {
-    const email = watch("email");
-    if (!email) {
-      dispatchState({ type: ActionType.SET_RESEND_STATUS, payload: {
-        type: "error",
-        message:
-          VENDOR_LOGIN_TEXT.ERR_EMAIL_REQUIRED_FOR_RESEND ||
-          "Please enter your business email address first.",
-      } });
-      return;
-    }
-
-    dispatchState({ type: ActionType.SET_IS_RESENDING, payload: true });
-    dispatchState({ type: ActionType.SET_RESEND_STATUS, payload: null });
-    try {
-      const response = await AxiosAPI.post(
-        "/v1/auth/vendor/resend-temp-password",
-        { email },
-      );
-      if (response.status === 200) {
-        dispatchState({ type: ActionType.SET_RESEND_STATUS, payload: {
-          type: "success",
-          message:
-            VENDOR_LOGIN_TEXT.MSG_TEMP_PASSWORD_RESENT ||
-            "A new generated password has been sent to your email.",
-        } });
-        dispatchState({ type: ActionType.SET_RESEND_COOLDOWN, payload: 60 });
-      } else {
-        dispatchState({ type: ActionType.SET_RESEND_STATUS, payload: {
-          type: "error",
-          message:
-            response.data?.message || "Failed to resend generated password.",
-        } });
-      }
-    } catch (err: any) {
-      dispatchState({ type: ActionType.SET_RESEND_STATUS, payload: {
-        type: "error",
-        message:
-          err.response?.data?.message ||
-          "Failed to resend generated password. Please try again.",
-      } });
-    } finally {
-      dispatchState({ type: ActionType.SET_IS_RESENDING, payload: false });
-    }
-  };
-
   const {
     reset,
     register,
@@ -306,25 +250,6 @@ export default function VendorLoginPage() {
       dispatchState({ type: ActionType.SET_SHOW_RESEND_LINK, payload: false });
       return;
     }
-
-    const timer = setTimeout(async () => {
-      try {
-        const response = await (
-          await AxiosAPI.post("/v1/auth/vendor/check-generated-password", {
-            email: emailValue,
-          })
-        ).data;
-        if (response.status === 200 && response.data?.hasGeneratedPassword) {
-          dispatchState({ type: ActionType.SET_SHOW_RESEND_LINK, payload: true });
-        } else {
-          dispatchState({ type: ActionType.SET_SHOW_RESEND_LINK, payload: false });
-        }
-      } catch {
-        dispatchState({ type: ActionType.SET_SHOW_RESEND_LINK, payload: false });
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
   }, [watch("email")]);
 
   useEffect(() => {
@@ -335,23 +260,12 @@ export default function VendorLoginPage() {
       payload: !navigator.cookieEnabled,
     });
     const initialToken = authToken();
+
     if (initialToken && isAuthenticated && role === UserRole.VENDOR) {
-      if (
-        user &&
-        "password_change_required" in user &&
-        (user as any).password_change_required
-      ) {
-        dispatchState({
-          type: ActionType.SET_UI_STATE,
-          payload: UiState.PROMPT_CHANGE_PASSWORD,
-        });
-      } else {
-        router.replace(REDIRECT_PATH);
-      }
+      router.replace(REDIRECT_PATH);
     }
     dispatchState({ type: ActionType.SET_IS_MOUNTED, payload: true });
   }, [router, isAuthenticated, role, state.uiState, user]);
-
   useEffect(() => {
     return () => {
       if (redirectTimerRef.current) {
@@ -359,7 +273,6 @@ export default function VendorLoginPage() {
       }
     };
   }, []);
-
   const setStep = (index: number, status: StepStatus) =>
     dispatchState({ type: ActionType.SET_STEP, payload: { index, status } });
 
@@ -411,19 +324,11 @@ export default function VendorLoginPage() {
       reset();
       dispatch(loginSuccess(result.user));
       dispatch(loginEnd());
-
-      if (result?.user?.user?.password_change_required) {
-        dispatchState({
-          type: ActionType.SET_UI_STATE,
-          payload: UiState.PROMPT_CHANGE_PASSWORD,
-        });
-      } else {
-        dispatchState({
-          type: ActionType.SET_UI_STATE,
-          payload: UiState.SUCCESS,
-        });
-        startRedirect();
-      }
+      dispatchState({
+        type: ActionType.SET_UI_STATE,
+        payload: UiState.SUCCESS,
+      });
+      startRedirect();
     } else {
       setStep(0, StepStatus.FAILED);
       dispatch(loginFailure(result?.message || ERROR_MSG_LOGIN_FAILED));
@@ -508,7 +413,9 @@ export default function VendorLoginPage() {
                   key={s.label}
                   className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 flex-1 shadow-lg transition-transform hover:-translate-y-1"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mb-3">{s.icon}</div>
+                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mb-3">
+                    {s.icon}
+                  </div>
                   <div className="text-2xl font-bold text-white mb-1">
                     {s.num}
                   </div>
@@ -575,7 +482,7 @@ export default function VendorLoginPage() {
                 className="flex flex-col gap-5"
               >
                 <CookieConsentBanner />
-                
+
                 {/* Email */}
                 <div className="space-y-1.5">
                   <label className="block text-sm font-semibold text-slate-700">
@@ -607,7 +514,7 @@ export default function VendorLoginPage() {
                       {VENDOR_LOGIN_TEXT.PASSWORD_LABEL}
                     </label>
                     <Link
-                      href="/auth/vendorForgotPassword"
+                      href="/vendor/forgotPassword"
                       className="text-xs font-bold text-platform-primary hover:text-platform-secondary transition-colors"
                     >
                       {VENDOR_LOGIN_TEXT.FORGOT_PASSWORD}
@@ -625,7 +532,14 @@ export default function VendorLoginPage() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       >
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <rect
+                          x="3"
+                          y="11"
+                          width="18"
+                          height="11"
+                          rx="2"
+                          ry="2"
+                        />
                         <path d="M7 11V7a5 5 0 0110 0v4" />
                       </svg>
                     </div>
@@ -669,52 +583,8 @@ export default function VendorLoginPage() {
                         </p>
                       )}
                     </div>
-                    {state.showResendLink && (
-                      <button
-                        type="button"
-                        disabled={state.isResending || state.resendCooldown > 0}
-                        onClick={handleResendTempPassword}
-                        className="text-xs font-bold text-platform-primary hover:text-platform-secondary bg-transparent border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-colors"
-                      >
-                        {state.resendCooldown > 0
-                          ? `Resend in ${state.resendCooldown}s`
-                          : VENDOR_LOGIN_TEXT.RESEND_TEMP_PASSWORD_LINK}
-                      </button>
-                    )}
                   </div>
                 </div>
-
-                <AnimatePresence mode="wait">
-                  {state.resendStatus && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className={`flex items-start gap-3 p-4 rounded-xl border shadow-sm ${
-                        state.resendStatus.type === "success"
-                          ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                          : "bg-red-50 border-red-200 text-red-700"
-                      }`}
-                      role={state.resendStatus.type === "success" ? "status" : "alert"}
-                    >
-                      <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${state.resendStatus.type === "success" ? "text-emerald-500" : "text-red-500"}`} />
-                      <p className="text-sm font-medium">{state.resendStatus.message}</p>
-                    </motion.div>
-                  )}
-
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl shadow-sm"
-                      role="alert"
-                    >
-                      <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
-                      <p className="text-sm font-medium">{error}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
                 <button
                   type="submit"
@@ -772,8 +642,8 @@ export default function VendorLoginPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.15 }}
                     className={`flex items-center gap-4 px-5 py-4 rounded-xl border text-sm font-bold transition-all shadow-sm ${
-                      state.steps[i] === StepStatus.ACTIVE 
-                        ? "bg-white border-blue-200 text-blue-700 shadow-md scale-[1.02]" 
+                      state.steps[i] === StepStatus.ACTIVE
+                        ? "bg-white border-blue-200 text-blue-700 shadow-md scale-[1.02]"
                         : state.steps[i] === StepStatus.DONE
                           ? "bg-emerald-50/50 border-emerald-100 text-emerald-700"
                           : state.steps[i] === StepStatus.FAILED
@@ -781,11 +651,17 @@ export default function VendorLoginPage() {
                             : "bg-white border-slate-100 text-slate-400"
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      state.steps[i] === StepStatus.ACTIVE ? "bg-blue-50" :
-                      state.steps[i] === StepStatus.DONE ? "bg-emerald-100" :
-                      state.steps[i] === StepStatus.FAILED ? "bg-red-100" : "bg-slate-50 border border-slate-200"
-                    }`}>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        state.steps[i] === StepStatus.ACTIVE
+                          ? "bg-blue-50"
+                          : state.steps[i] === StepStatus.DONE
+                            ? "bg-emerald-100"
+                            : state.steps[i] === StepStatus.FAILED
+                              ? "bg-red-100"
+                              : "bg-slate-50 border border-slate-200"
+                      }`}
+                    >
                       <StepIcon status={state.steps[i]} />
                     </div>
                     {label}
@@ -802,7 +678,7 @@ export default function VendorLoginPage() {
               animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col items-center text-center p-8 bg-emerald-50/30 rounded-2xl border border-emerald-100/50"
             >
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", bounce: 0.5 }}
@@ -824,26 +700,13 @@ export default function VendorLoginPage() {
               </div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 {VENDOR_LOGIN_TEXT.REDIRECT_TEXT_PREFIX}{" "}
-                <span className="text-slate-600">{Math.max(0, state.countdown)}</span>{" "}
+                <span className="text-slate-600">
+                  {Math.max(0, state.countdown)}
+                </span>{" "}
                 {VENDOR_LOGIN_TEXT.REDIRECT_TEXT_SUFFIX}
               </p>
             </motion.div>
           )}
-
-          {/* PROMPT CHANGE PASSWORD */}
-          {state.uiState === UiState.PROMPT_CHANGE_PASSWORD && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center w-full"
-            >
-              <SetTemporaryVendorPassword
-                embedded={true}
-                onSuccess={() => router.replace(REDIRECT_PATH)}
-              />
-            </motion.div>
-          )}
-
           {/* ERROR */}
           {state.uiState === UiState.ERROR && (
             <motion.div

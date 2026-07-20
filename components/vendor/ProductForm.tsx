@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import { companyDomain } from "@/config";
 import {
   BASE_API_URL,
@@ -35,7 +36,8 @@ import { DynamicIcon } from "lucide-react/dynamic";
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useCallback, useState, use } from "react";
 import { FieldErrors, useFieldArray, useForm } from "react-hook-form";
-import { useVendorTour } from "@/components/vendor/VendorTourProvider";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
+import toast from "react-hot-toast";
 
 // Replaced constants
 export function ProductForm({
@@ -53,6 +55,8 @@ export function ProductForm({
   existingData?: Partial<ProductFormInput | ProductFormOutput>;
   productId?: string;
 }) {
+  const companyId = getClientCompanyId();
+
   const isUpdate = Boolean(productId && existingData);
 
   const {
@@ -116,7 +120,7 @@ export function ProductForm({
     append: appendAttribute,
     remove: removeAttribute,
   } = useFieldArray({ control, name: "attributes" });
-  const user = useAppSelector((state) => state.auth.user) as VendorUser | undefined;
+  const { user } = useAppSelector((state) => state.auth);
   const router = useRouter();
 
   const [productFiles, setProductFiles] = useState<FileOrProductImage[]>([]);
@@ -125,19 +129,6 @@ export function ProductForm({
 
   const { getPreviewUrl, revokeAll, revokeOne } = usePreviewUrls();
   const token = authToken();
-  const { startVendorTour } = useVendorTour();
-  
-  useEffect(() => {
-    if (user && user.preferences && Array.isArray(user.preferences.completed_tours)) {
-      if (!user.preferences.completed_tours.includes("productCreation")) {
-        const timer = setTimeout(() => {
-          startVendorTour("productCreation");
-        }, 800);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [user, startVendorTour]);
-
   useEffect(() => {
     return () => revokeAll();
   }, [revokeAll]);
@@ -172,15 +163,25 @@ export function ProductForm({
       productMedia: [],
       featureMedia: [],
       category: existingData.category || "",
-      status:
-        (existingData.status as ProductStatus) ||
-        ProductStatus.INACTIVE,
+      status: (existingData.status as ProductStatus) || ProductStatus.INACTIVE,
       warehouseId: existingData.warehouseId || "",
       taxSlabId: existingData.taxSlabId || "",
-      weight_kg: existingData.weight_kg !== undefined && existingData.weight_kg !== null ? String(existingData.weight_kg) : "",
-      length_cm: existingData.length_cm !== undefined && existingData.length_cm !== null ? String(existingData.length_cm) : "",
-      width_cm: existingData.width_cm !== undefined && existingData.width_cm !== null ? String(existingData.width_cm) : "",
-      height_cm: existingData.height_cm !== undefined && existingData.height_cm !== null ? String(existingData.height_cm) : "",
+      weight_kg:
+        existingData.weight_kg !== undefined && existingData.weight_kg !== null
+          ? String(existingData.weight_kg)
+          : "",
+      length_cm:
+        existingData.length_cm !== undefined && existingData.length_cm !== null
+          ? String(existingData.length_cm)
+          : "",
+      width_cm:
+        existingData.width_cm !== undefined && existingData.width_cm !== null
+          ? String(existingData.width_cm)
+          : "",
+      height_cm:
+        existingData.height_cm !== undefined && existingData.height_cm !== null
+          ? String(existingData.height_cm)
+          : "",
     });
 
     const initialProductFiles =
@@ -200,6 +201,25 @@ export function ProductForm({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId, existingData]);
+
+  // Re-sync selects if options load after initial reset
+  useEffect(() => {
+    if (existingData?.warehouseId && warehouseOptions?.length) {
+      setValue("warehouseId", existingData.warehouseId);
+    }
+  }, [existingData?.warehouseId, warehouseOptions, setValue]);
+
+  useEffect(() => {
+    if (existingData?.category && categoryOptions?.length) {
+      setValue("category", existingData.category);
+    }
+  }, [existingData?.category, categoryOptions, setValue]);
+
+  useEffect(() => {
+    if (existingData?.taxSlabId && taxSlabsOptions?.length) {
+      setValue("taxSlabId", existingData.taxSlabId);
+    }
+  }, [existingData?.taxSlabId, taxSlabsOptions, setValue]);
 
   // ── File handlers ──
   const handleFileSelect = useCallback(
@@ -239,8 +259,16 @@ export function ProductForm({
   // ── Submit ──
 
   const onSubmit = async (data: ProductFormValuesType) => {
-    if (!token) {
-      redirect("/auth/vendorLogin");
+    if (!token || !companyId) {
+      toast.error(PRODUCT_FORM_TEXT.ERRORS.SESSION_EXPIRED_SAVE, {
+        icon: '🔒',
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        },
+      });
+      return;
     }
     // On create, both image sets must have at least one file
     if (!isUpdate && (productFiles.length === 0 || featureFiles.length === 0)) {
@@ -259,7 +287,10 @@ export function ProductForm({
       category_id: data.category,
       status: data.status.toLowerCase(),
       base_price: String(data.basePrice),
-      discount_percent: data.discountPercent !== null && data.discountPercent !== undefined ? String(data.discountPercent) : "0",
+      discount_percent:
+        data.discountPercent !== null && data.discountPercent !== undefined
+          ? String(data.discountPercent)
+          : "0",
       stock_quantity: Number(data.stocks),
       sku: data.sku,
       warehouse_id: data.warehouseId,
@@ -300,16 +331,15 @@ export function ProductForm({
       };
 
       if (isUpdate) {
-        response = await updateProduct(formData, productId!, token);
+        response = await updateProduct(formData, productId!, token, companyId);
       } else {
-        response = await createProduct(formData, vendorId, token);
+        response = await createProduct(formData, vendorId, token, companyId);
       }
       if (response.status !== 201 && response.status !== 200) {
         return;
       }
       router.push("/vendor/products");
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   return (
@@ -335,8 +365,8 @@ export function ProductForm({
         </header>
 
         {/* ── 1. GENERAL INFORMATION ── */}
-        <div id="tour-product-basic" className="section">
-          <div className="section_header">
+        <div className="bg-white border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] rounded-3xl mb-8 overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-slate-200">
+          <div className="px-6 py-5 border-b border-slate-100/80 bg-slate-50/30 flex items-center gap-3">
             <DynamicIcon
               fallback={() => <p></p>}
               name="package"
@@ -428,7 +458,7 @@ export function ProductForm({
                         className="form_input"
                         placeholder={PRODUCT_FORM_TEXT.LABELS.FEAT_TITLE_PH}
                         {...register(`features.${index}.title`, {
-                          required: "Feature title is required",
+                          required: PRODUCT_FORM_TEXT.ERRORS.FEAT_TITLE,
                         })}
                       />
                     </div>
@@ -441,7 +471,7 @@ export function ProductForm({
                         className="form_input"
                         placeholder={PRODUCT_FORM_TEXT.LABELS.FEAT_DESC_PH}
                         {...register(`features.${index}.description`, {
-                          required: "Feature description is required",
+                          required: PRODUCT_FORM_TEXT.ERRORS.FEAT_DESC,
                         })}
                       />
                     </div>
@@ -491,7 +521,7 @@ export function ProductForm({
                         className="form_input"
                         placeholder={PRODUCT_FORM_TEXT.LABELS.ATTR_TITLE_PH}
                         {...register(`attributes.${index}.name`, {
-                          required: "Attribute title is required",
+                          required: PRODUCT_FORM_TEXT.ERRORS.ATTR_TITLE,
                         })}
                       />
                     </div>
@@ -504,7 +534,7 @@ export function ProductForm({
                         className="form_input"
                         placeholder={PRODUCT_FORM_TEXT.LABELS.ATTR_DESC_PH}
                         {...register(`attributes.${index}.value`, {
-                          required: "Attribute value is required",
+                          required: PRODUCT_FORM_TEXT.ERRORS.ATTR_VAL,
                         })}
                       />
                     </div>
@@ -571,86 +601,39 @@ export function ProductForm({
               className="text-amber-500"
             />
             <h2 className="text-theme-body font-semibold text-slate-800">
-              Logistics & Dimensions
+              {PRODUCT_FORM_TEXT.SECTIONS.LOGISTICS}
             </h2>
           </div>
           <div className="p-6">
             <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6 border border-slate-200 rounded-xl bg-slate-50">
-              {/* Weight */}
-              <div>
-                <label className="form_label">
-                  Weight (kg) <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="form_input"
-                  placeholder="e.g. 0.5"
-                  {...register("weight_kg")}
-                />
-                {errors.weight_kg && (
-                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
-                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
-                    {errors.weight_kg.message as string}
-                  </p>
-                )}
-              </div>
-
-              {/* Length */}
-              <div>
-                <label className="form_label">
-                  Length (cm) <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="form_input"
-                  placeholder="e.g. 15"
-                  {...register("length_cm")}
-                />
-                {errors.length_cm && (
-                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
-                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
-                    {errors.length_cm.message as string}
-                  </p>
-                )}
-              </div>
-
-              {/* Width */}
-              <div>
-                <label className="form_label">
-                  Width (cm) <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="form_input"
-                  placeholder="e.g. 10"
-                  {...register("width_cm")}
-                />
-                {errors.width_cm && (
-                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
-                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
-                    {errors.width_cm.message as string}
-                  </p>
-                )}
-              </div>
-
-              {/* Height */}
-              <div>
-                <label className="form_label">
-                  Height (cm) <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="form_input"
-                  placeholder="e.g. 8"
-                  {...register("height_cm")}
-                />
-                {errors.height_cm && (
-                  <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
-                    <DynamicIcon fallback={() => <p></p>} name="alert-circle" size={14} />
-                    {errors.height_cm.message as string}
-                  </p>
-                )}
-              </div>
+              {PRODUCT_FORM_TEXT.LOGISTICS_FIELDS.map((field) => (
+                <div key={field.name}>
+                  <label className="form_label">
+                    {field.label} <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="form_input"
+                    placeholder={field.placeholder}
+                    {...register(field.name as keyof ProductFormValuesType, {
+                      required: `${field.label} is required`,
+                    })}
+                  />
+                  {errors[field.name as keyof ProductFormValuesType] && (
+                    <p className="text-red-500 text-theme-caption mt-1 flex items-center gap-1">
+                      <DynamicIcon
+                        fallback={() => <p></p>}
+                        name="alert-circle"
+                        size={14}
+                      />
+                      {
+                        errors[field.name as keyof ProductFormValuesType]
+                          ?.message as string
+                      }
+                    </p>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -679,7 +662,8 @@ export function ProductForm({
                 className="text-indigo-500 mt-0.5 shrink-0"
               />
               <p className="text-theme-caption text-indigo-700 leading-relaxed">
-                <strong>{PRODUCT_FORM_TEXT.MEDIA_GUIDE.TITLE}</strong> {PRODUCT_FORM_TEXT.MEDIA_GUIDE.DESC}
+                <strong>{PRODUCT_FORM_TEXT.MEDIA_GUIDE.TITLE}</strong>{" "}
+                {PRODUCT_FORM_TEXT.MEDIA_GUIDE.DESC}
               </p>
             </div>
           </div>
@@ -711,7 +695,7 @@ export function ProductForm({
                     </div>
 
                     {/* Upload area */}
-                    <label className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-blue-300 bg-blue-50/40 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition group mt-auto">
+                    <label className="flex flex-col items-center justify-center py-8 border border-dashed border-indigo-200 bg-indigo-50/30 rounded-2xl cursor-pointer hover:bg-indigo-50/80 hover:border-indigo-300 transition-all duration-250 ease-out group mt-auto shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_14px_rgba(99,102,241,0.06)]">
                       <input
                         type="file"
                         multiple={limit > 1} // Dynamically enable multiple uploads based on limit
@@ -728,16 +712,18 @@ export function ProductForm({
                           )
                         }
                       />
-                      <DynamicIcon
-                        fallback={() => <p></p>}
-                        name="upload-cloud"
-                        size={28}
-                        className="text-blue-400 group-hover:text-blue-600 transition mb-2"
-                      />
-                      <p className="text-theme-body-sm font-semibold text-blue-600 group-hover:text-blue-700">
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-3 shadow-sm border border-indigo-50 group-hover:scale-105 transition-transform duration-250 ease-out">
+                        <DynamicIcon
+                          fallback={() => <p></p>}
+                          name="upload-cloud"
+                          size={24}
+                          className="text-indigo-400 group-hover:text-indigo-500 transition-colors"
+                        />
+                      </div>
+                      <p className="text-sm font-medium text-slate-700 group-hover:text-indigo-700 transition-colors">
                         {PRODUCT_FORM_TEXT.MEDIA_GUIDE.BROWSE}
                       </p>
-                      <p className="text-theme-xxs text-slate-400 mt-1">
+                      <p className="text-xs text-slate-400 mt-1.5">
                         {PRODUCT_FORM_TEXT.MEDIA_GUIDE.LIMITS}
                       </p>
                     </label>
@@ -767,7 +753,9 @@ export function ProductForm({
                                     setFiles as React.Dispatch<
                                       React.SetStateAction<FileOrProductImage[]>
                                     >,
-                                    fieldName as "productMedia" | "featureMedia",
+                                    fieldName as
+                                      | "productMedia"
+                                      | "featureMedia",
                                     (file as { id?: string }).id ?? undefined,
                                   );
                                 }}
@@ -793,7 +781,7 @@ export function ProductForm({
         </div>
 
         {/* ── 4. CATEGORY & TAXATION ── */}
-        <div id="tour-product-category" className="section">
+        <div className="section">
           <div className="section_header">
             <DynamicIcon
               fallback={() => <p></p>}
@@ -809,7 +797,8 @@ export function ProductForm({
             {/* Category */}
             <div>
               <label className="form_label">
-                {PRODUCT_FORM_TEXT.LABELS.CATEGORY} <span className="text-red-400">*</span>
+                {PRODUCT_FORM_TEXT.LABELS.CATEGORY}{" "}
+                <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <select
@@ -845,7 +834,8 @@ export function ProductForm({
             </div>
             <div>
               <label className="form_label">
-                {PRODUCT_FORM_TEXT.LABELS.TAX_RATE} <span className="text-red-400">*</span>
+                {PRODUCT_FORM_TEXT.LABELS.TAX_RATE}{" "}
+                <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <select
@@ -882,7 +872,8 @@ export function ProductForm({
 
             <div>
               <label className="form_label">
-                {PRODUCT_FORM_TEXT.LABELS.WAREHOUSE} <span className="text-red-400">*</span>
+                {PRODUCT_FORM_TEXT.LABELS.WAREHOUSE}{" "}
+                <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <select

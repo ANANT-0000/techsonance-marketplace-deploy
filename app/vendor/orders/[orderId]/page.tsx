@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useEffect, useState } from "react";
 import {
@@ -28,12 +29,17 @@ import {
 } from "@/utils/vendorApiClient";
 import { OrderStatus } from "@/utils/Types";
 import { authToken } from "@/utils/authToken";
+import { SessionErrorCard } from "@/components/vendor/SessionErrorCard";
 import Image from "next/image";
+import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
 import { BASE_API_URL } from "@/constants";
 import { UiText } from "@/constants/ui-text";
 import { CancelModal } from "@/components/vendor/CancelModal";
 import { StatusEditor } from "@/components/vendor/OrderStatusEditor";
 import { StatusBadge } from "@/components/vendor/StatusBadge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -214,10 +220,10 @@ interface SectionCardProps {
 
 function SectionCard({ title, icon: Icon, children }: SectionCardProps) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-      <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2.5 bg-slate-50/50">
-        {Icon && <Icon className="text-slate-500" size={16} />}
-        <h2 className="text-theme-body font-bold text-slate-800">{title}</h2>
+    <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.03)] transition-all hover:shadow-[0_12px_40px_rgb(0,0,0,0.05)]">
+      <div className="px-6 py-5 border-b border-slate-50/80 flex items-center gap-2.5 bg-slate-50/40">
+        {Icon && <Icon className="text-slate-500" size={18} />}
+        <h2 className="text-lg font-bold text-slate-800">{title}</h2>
       </div>
       {children}
     </div>
@@ -280,6 +286,8 @@ export interface OrderDetailsPageLabels {
 }
 
 export default function VendorOrderDetails({}) {
+  const companyId = getClientCompanyId();
+
   const { orderId } = useParams<{ orderId: string }>();
   const router = useRouter();
 
@@ -289,23 +297,28 @@ export default function VendorOrderDetails({}) {
   );
   const [cancellingItemId, setCancellingItemId] = useState<string | null>(null);
 
+  const [sessionError, setSessionError] = useState(false);
+  const [error, setError] = useState(false);
+
   // Per-item local state for multi-warehouse
   const [itemStatuses, setItemStatuses] = useState<Record<string, OrderStatus>>(
     {},
   );
   const token = authToken();
   useEffect(() => {
-    if (!token) {
-      redirect("/auth/vendorLogin");
+    if (!token || !companyId) {
+      setSessionError(true);
     }
-  }, [token]);
+  }, [token, companyId]);
   const loadOrder = async () => {
     const token = authToken();
-    if (!token) {
-      redirect("/auth/vendorLogin");
+    if (!token || !companyId) {
+      setSessionError(true);
+      return;
     }
+    setError(false);
     try {
-      const res = await fetchVendorOrderDetails(orderId, token);
+      const res = await fetchVendorOrderDetails(orderId, token, companyId);
       const data: Order = res.data;
       setOrder(data);
 
@@ -317,7 +330,12 @@ export default function VendorOrderDetails({}) {
         statusMap[item.id] = item.order_status.toUpperCase() as OrderStatus;
       });
       setItemStatuses(statusMap);
-    } catch {}
+    } catch {
+      setError(true);
+      toast.error(UiText.ORDER_DETAILS.TOAST_LOAD_FAILED, {
+        style: { borderRadius: "12px", background: "#333", color: "#fff" },
+      });
+    }
   };
   useEffect(() => {
     loadOrder();
@@ -327,10 +345,16 @@ export default function VendorOrderDetails({}) {
 
   // ── Order-level status save (single warehouse) ─────────────────────────────
   const handleOrderLevelStatusSave = async (newStatus: OrderStatus) => {
-    if (!token) {
-      redirect("/auth/vendorLogin");
+    if (!token || !companyId) {
+      setSessionError(true);
+      return;
     }
-    const res = await fetchUpdateOrderStatus(orderId, newStatus as any, token);
+    const res = await fetchUpdateOrderStatus(
+      orderId,
+      newStatus as string,
+      token,
+      companyId as string,
+    );
     if (res.success) {
       setOrderStatus(newStatus);
       setOrder((prev) =>
@@ -372,42 +396,64 @@ export default function VendorOrderDetails({}) {
     url: string,
     action: TrackingAction,
   ) => {
-    if (!token) {
-      redirect("/auth/vendorLogin");
+    if (!token || !companyId) {
+      setSessionError(true);
+      return;
     }
-    const res =
-      action === TrackingAction.ADD
-        ? await fetchAddTrackingUrl(orderId, url, token)
-        : await fetchUpdateOrderStatus(orderId, url, token);
-    if (res.success) {
-      setOrder((prev) =>
-        prev ? { ...prev, shipping: { tracking_url: url } } : prev,
-      );
+    try {
+      const res =
+        action === TrackingAction.ADD
+          ? await fetchAddTrackingUrl(orderId, url, token, companyId)
+          : await fetchUpdateOrderStatus(orderId, url, token, companyId);
+      if (res.success) {
+        setOrder((prev) =>
+          prev ? { ...prev, shipping: { tracking_url: url } } : prev,
+        );
+      } else {
+        toast.error(UiText.ORDER_DETAILS.TOAST_TRACKING_FAILED, {
+          style: { borderRadius: "12px", background: "#333", color: "#fff" },
+        });
+      }
+    } catch {
+      toast.error(UiText.ORDER_DETAILS.TOAST_TRACKING_FAILED, {
+        style: { borderRadius: "12px", background: "#333", color: "#fff" },
+      });
     }
   };
 
   // ── Cancellation ──────────────────────────────────────────────────────────
   const handleCancelItem = async (reason: string) => {
-    if (!cancellingItemId || !token) return;
-    const res = await fetchUpdateOrderStatus(
-      cancellingItemId,
-      "cancelled",
-      token,
-    );
-    setOrder((prev) =>
-      prev
-        ? {
-            ...prev,
-            items: prev.items.map((i) =>
-              i.id === cancellingItemId
-                ? { ...i, order_status: "cancelled" }
-                : i,
-            ),
-          }
-        : prev,
-    );
-    if (res?.data?.success) await loadOrder();
-    setCancellingItemId(null);
+    if (!token || !companyId) {
+      setSessionError(true);
+      return;
+    }
+    if (!cancellingItemId) return;
+    try {
+      const res = await fetchUpdateOrderStatus(
+        cancellingItemId,
+        "cancelled",
+        token,
+        companyId,
+      );
+      setOrder((prev) =>
+        prev
+          ? {
+              ...prev,
+              items: prev.items.map((i) =>
+                i.id === cancellingItemId
+                  ? { ...i, order_status: "cancelled" }
+                  : i,
+              ),
+            }
+          : prev,
+      );
+      if (res?.data?.success) await loadOrder();
+      setCancellingItemId(null);
+    } catch {
+      toast.error(UiText.ORDER_DETAILS.TOAST_CANCEL_FAILED, {
+        style: { borderRadius: "12px", background: "#333", color: "#fff" },
+      });
+    }
   };
 
   const handleDownload = async (url: string, filename: string) => {
@@ -423,22 +469,152 @@ export default function VendorOrderDetails({}) {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
-    } catch {}
+    } catch {
+      toast.error(
+        UiText.ORDERS.FAILED_DOWNLOAD_INVOICES || "Failed to download invoice.",
+        {
+          style: { borderRadius: "12px", background: "#333", color: "#fff" },
+        },
+      );
+    }
   };
+
+  if (sessionError || !token || !companyId) {
+    return <SessionErrorCard />;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen p-4 md:p-6 w-full flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="flex flex-col items-center justify-center max-w-md mx-auto text-center bg-white p-10 rounded-3xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)]"
+        >
+          <div className="h-20 w-20 bg-rose-50/80 text-rose-500 border border-rose-100/50 shadow-sm rounded-full flex items-center justify-center mb-6">
+            <AlertCircle size={32} strokeWidth={1.5} />
+          </div>
+          <h3 className="text-xl font-semibold text-slate-900 mb-3 tracking-tight">
+            {UiText.ORDER_DETAILS.ERROR_LOAD_FAILED_TITLE}
+          </h3>
+          <p className="text-[15px] text-slate-500 mb-8 text-balance leading-relaxed">
+            {UiText.ORDER_DETAILS.ERROR_LOAD_FAILED_DESC}
+          </p>
+          <button
+            onClick={() => loadOrder()}
+            className="inline-flex items-center justify-center px-6 py-3 border border-slate-200 text-[14px] font-medium rounded-2xl text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-4 focus:ring-slate-100/50 transition-all shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5"
+          >
+            {UiText.ORDER_DETAILS.TRY_AGAIN}
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (!order)
     return (
-      <div className="h-screen w-full bg-slate-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-slate-400">
-          <div className="w-8 h-8 border-2 border-slate-200 border-t-blue-400 rounded-full animate-spin" />
-          <span className="text-theme-body-sm">
-            {UiText.ORDER_DETAILS.LOADING}
-          </span>
+      <div className="min-h-screen p-4 md:p-6 w-full">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header Skeleton */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-24 bg-slate-100/80 rounded-full animate-pulse" />
+              <Skeleton className="h-8 w-48 bg-slate-100/80 rounded-xl animate-pulse" />
+              <Skeleton className="h-4 w-32 bg-slate-100/80 rounded-full animate-pulse" />
+            </div>
+            <div className="flex flex-col gap-4">
+              <Skeleton className="h-10 w-32 bg-slate-100/80 rounded-xl animate-pulse" />
+              <Skeleton className="h-10 w-32 bg-slate-100/80 rounded-xl animate-pulse" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column Skeleton */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white border border-slate-100 rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] h-[400px]">
+                <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+                  <Skeleton className="h-5 w-32 bg-slate-100/80 rounded-full animate-pulse" />
+                </div>
+                <div className="p-5 space-y-4">
+                  {Array.from({ length: 2 }).map((_, i) => (
+                    <div key={i} className="flex gap-4">
+                      <Skeleton className="h-14 w-14 bg-slate-100/80 rounded-xl animate-pulse shrink-0" />
+                      <div className="space-y-2 flex-1">
+                        <Skeleton className="h-5 w-2/3 bg-slate-100/80 rounded-full animate-pulse" />
+                        <Skeleton className="h-4 w-1/3 bg-slate-100/80 rounded-full animate-pulse" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white border border-slate-100 rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] h-[200px]">
+                  <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+                    <Skeleton className="h-5 w-40 bg-slate-100/80 rounded-full animate-pulse" />
+                  </div>
+                  <div className="p-5 space-y-3">
+                    <Skeleton className="h-4 w-3/4 bg-slate-100/80 rounded-full animate-pulse" />
+                    <Skeleton className="h-4 w-1/2 bg-slate-100/80 rounded-full animate-pulse" />
+                    <Skeleton className="h-4 w-2/3 bg-slate-100/80 rounded-full animate-pulse" />
+                  </div>
+                </div>
+                <div className="bg-white border border-slate-100 rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] h-[200px]">
+                  <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+                    <Skeleton className="h-5 w-32 bg-slate-100/80 rounded-full animate-pulse" />
+                  </div>
+                  <div className="p-5 space-y-3">
+                    <Skeleton className="h-4 w-2/3 bg-slate-100/80 rounded-full animate-pulse" />
+                    <Skeleton className="h-4 w-3/4 bg-slate-100/80 rounded-full animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column Skeleton */}
+            <div className="space-y-5">
+              <div className="bg-white border border-slate-100 rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] h-[250px]">
+                <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+                  <Skeleton className="h-5 w-32 bg-slate-100/80 rounded-full animate-pulse" />
+                </div>
+                <div className="p-5 space-y-4">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-24 bg-slate-100/80 rounded-full animate-pulse" />
+                    <Skeleton className="h-4 w-20 bg-slate-100/80 rounded-full animate-pulse" />
+                  </div>
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-20 bg-slate-100/80 rounded-full animate-pulse" />
+                    <Skeleton className="h-4 w-24 bg-slate-100/80 rounded-full animate-pulse" />
+                  </div>
+                  <div className="flex justify-between pt-4 border-t border-slate-100">
+                    <Skeleton className="h-5 w-16 bg-slate-100/80 rounded-full animate-pulse" />
+                    <Skeleton className="h-6 w-24 bg-slate-100/80 rounded-full animate-pulse" />
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white border border-slate-100 rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.02)] h-[200px]">
+                <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+                  <Skeleton className="h-5 w-32 bg-slate-100/80 rounded-full animate-pulse" />
+                </div>
+                <div className="p-5 space-y-3">
+                  <Skeleton className="h-4 w-full bg-slate-100/80 rounded-full animate-pulse" />
+                  <Skeleton className="h-10 w-full bg-slate-100/80 rounded-xl animate-pulse" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
 
   return (
-    <div className="min-h-screen max-h-screen overflow-y-scroll p-4 md:p-6 font-sans text-slate-800">
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="min-h-screen max-h-screen overflow-y-scroll scroll-smooth p-4 md:p-6 font-sans text-slate-800"
+    >
       {cancellingItemId && (
         <CancelModal
           onConfirm={handleCancelItem}
@@ -446,31 +622,31 @@ export default function VendorOrderDetails({}) {
         />
       )}
 
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-start justify-between gap-4">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex items-start justify-between gap-6 pb-2">
           <div>
             <button
               onClick={() => router.back()}
-              className="inline-flex items-center gap-1.5 text-theme-body-sm text-slate-500 hover:text-slate-800 mb-3 transition-colors group"
+              className="inline-flex items-center gap-2 text-[14px] font-medium text-slate-500 hover:text-slate-800 mb-4 transition-all group bg-white border border-slate-200 hover:border-slate-300 rounded-full px-5 py-2.5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-md hover:-translate-y-0.5"
             >
               <ArrowLeft
-                size={14}
-                className="group-hover:-translate-x-0.5 transition-transform"
+                size={16}
+                className="group-hover:-translate-x-1 transition-transform text-slate-400 group-hover:text-slate-600"
               />
               {UiText.ORDER_DETAILS.BACK_TO_ORDERS}
             </button>
-            <h1 className="text-theme-h5 font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
               {UiText.ORDER_DETAILS.TITLE}
             </h1>
-            <p className="text-theme-body-sm text-slate-400 mt-0.5 font-mono">
+            <p className="text-[14px] text-slate-500 mt-2 font-mono bg-slate-100/70 px-2.5 py-1 rounded-md inline-block font-medium">
               #{order.id.toUpperCase()}
             </p>
           </div>
 
-          <div className="flex flex-col gap-4 justify-between">
-            <div className="hidden sm:flex items-center gap-2 text-theme-caption text-slate-400 bg-white border border-slate-200 rounded-xl px-3 py-2">
-              <Clock size={12} />
-              {new Date(order.created_at).toLocaleString("en-GB")}
+          <div className="flex flex-col gap-3 justify-end items-end">
+            <div className="hidden sm:flex items-center gap-2 text-[13px] font-medium text-slate-500 bg-white border border-slate-200 rounded-full px-4 py-1.5 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+              <Clock size={14} className="text-slate-400" />
+              {new Date(order.created_at).toLocaleString("en-GB", { dateStyle: 'medium', timeStyle: 'short' })}
             </div>
             {order.invoice && (
               <button
@@ -480,11 +656,10 @@ export default function VendorOrderDetails({}) {
                     `${order.invoice.invoice_number}.pdf`,
                   )
                 }
-                className="bg-white border border-slate-200 rounded-xl px-3 py-2 inline-flex items-center gap-1.5 text-theme-body-sm text-slate-500 hover:text-slate-800 transition-colors group cursor-pointer"
+                className="bg-indigo-50 border border-indigo-100/80 rounded-full px-5 py-2.5 inline-flex items-center gap-2 text-[14px] font-semibold text-indigo-700 hover:text-indigo-800 hover:bg-indigo-100 hover:border-indigo-200 transition-all shadow-[0_2px_10px_rgb(79,70,229,0.1)] hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
               >
                 <FileText
-                  size={14}
-                  className="group-hover:-translate-x-0.5 transition-transform"
+                  size={16}
                 />
                 {UiText.ORDER_DETAILS.VIEW_INVOICE}
               </button>
@@ -494,16 +669,18 @@ export default function VendorOrderDetails({}) {
 
         {/* ── Multi-warehouse notice ── */}
         {!isSingleWarehouse && (
-          <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-theme-body-sm text-amber-800">
+          <div className="flex items-start gap-3 bg-amber-50/50 border border-amber-100/80 rounded-2xl px-5 py-4 text-[14px] text-amber-800 shadow-[0_2px_10px_rgb(251,191,36,0.05)]">
             <AlertCircle
-              size={16}
+              size={18}
               className="flex-shrink-0 mt-0.5 text-amber-500"
             />
-            <div>
-              <span className="font-semibold">
+            <div className="leading-relaxed">
+              <span className="font-semibold text-amber-900">
                 {UiText.ORDER_DETAILS.MULTI_WAREHOUSE_ALERT}
               </span>{" "}
-              {UiText.ORDER_DETAILS.MULTI_WAREHOUSE_DESC}
+              <span className="text-amber-700">
+                {UiText.ORDER_DETAILS.MULTI_WAREHOUSE_DESC}
+              </span>
             </div>
           </div>
         )}
@@ -520,47 +697,54 @@ export default function VendorOrderDetails({}) {
               icon={Package}
             >
               <div className="divide-y divide-slate-100">
-                {order.items.map((item) => {
+                {order.items.map((item, index) => {
                   const displayStatus = (itemStatuses?.[item.id] ??
                     item.order_status.toUpperCase()) as OrderStatus;
                   return (
-                    <div
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: index * 0.05,
+                        ease: "easeOut",
+                      }}
                       key={item.id}
-                      className="px-5 py-4 flex flex-col gap-3"
+                      className="px-6 py-5 flex flex-col gap-4 group/item hover:bg-slate-50/50 transition-colors"
                     >
                       {/* Product row */}
-                      <div className="flex items-start gap-3">
-                        <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-slate-100 bg-slate-50 flex-shrink-0">
+                      <div className="flex items-start gap-4">
+                        <div className="relative w-16 h-16 rounded-2xl overflow-hidden border border-slate-200/60 bg-slate-50 flex-shrink-0 shadow-sm">
                           <Image
                             src={item.product_variant.image_url}
                             alt={item.product_variant.variant_name}
-                            className="object-cover"
+                            className="object-cover group-hover/item:scale-105 transition-transform duration-500"
                             fill
                             loading="eager"
-                            sizes="48px"
+                            sizes="64px"
                             style={{ objectFit: "cover" }}
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-theme-body-sm font-medium text-slate-800 line-clamp-2 leading-snug">
+                          <p className="text-[15px] font-semibold text-slate-800 line-clamp-2 leading-snug">
                             {item.product_variant.variant_name}
                           </p>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
-                            <span className="text-theme-caption text-slate-400">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2">
+                            <span className="text-[13px] text-slate-500">
                               {UiText.ORDER_DETAILS.QTY}{" "}
-                              <span className="text-slate-600 font-medium">
+                              <span className="text-slate-700 font-medium">
                                 {item.quantity}
                               </span>
                             </span>
-                            <span className="text-theme-caption text-slate-400">
+                            <span className="text-[13px] text-slate-500">
                               {UiText.ORDER_DETAILS.TOTAL}{" "}
-                              <span className="text-slate-700 font-semibold">
+                              <span className="text-slate-900 font-semibold">
                                 ₹{formatCurrency(Number(item.line_total))}
                               </span>
                             </span>
                             {item.warehouse && (
-                              <span className="inline-flex items-center gap-1 text-theme-caption text-slate-400">
-                                <MapPin size={10} />
+                              <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-500">
+                                <MapPin size={12} className="text-slate-400" />
                                 {item.warehouse.name}
                               </span>
                             )}
@@ -575,10 +759,10 @@ export default function VendorOrderDetails({}) {
 
                       {/* Per-item fulfillment controls — ONLY for multi-warehouse */}
                       {!isSingleWarehouse && (
-                        <div className="ml-[68px] grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                        <div className="ml-[80px] grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
                           {/* Status control */}
-                          <div className="bg-slate-50 rounded-xl p-3 space-y-1.5">
-                            <p className="text-theme-caption font-semibold text-slate-500 uppercase tracking-wide">
+                          <div className="bg-slate-50/80 border border-slate-100 rounded-xl p-4 space-y-2">
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                               {UiText.ORDER_DETAILS.STATUS}
                             </p>
                             <StatusEditor
@@ -610,10 +794,10 @@ export default function VendorOrderDetails({}) {
                       {/* Cancel button */}
                       {displayStatus !== OrderStatus.CANCELLED &&
                         displayStatus !== OrderStatus.DELIVERED && (
-                          <div className="ml-[68px]">
+                          <div className="ml-[80px]">
                             <button
                               onClick={() => setCancellingItemId(item.id)}
-                              className="text-theme-caption text-red-400 hover:text-red-600 hover:underline transition-colors"
+                              className="text-[13px] font-medium text-red-400 hover:text-red-600 hover:underline transition-colors"
                             >
                               {UiText.ORDER_DETAILS.CANCEL_THIS_ITEM}
                             </button>
@@ -621,7 +805,7 @@ export default function VendorOrderDetails({}) {
                         )}
                       {/* ── RETURN, CANCEL & REFUND SECTION ── */}
                       {(item.return || item.cancel || item.refund) && (
-                        <div className="mt-2 bg-slate-50 border border-slate-200 rounded-xl pb-4 px-4 space-y-4">
+                        <div className="mt-3 ml-[80px] bg-slate-50/80 border border-slate-100 rounded-2xl pb-5 px-5 space-y-5">
                           {/* Return/Replacement Info */}
                           {item.return && (
                             <div className="">
@@ -762,7 +946,7 @@ export default function VendorOrderDetails({}) {
                           )}
                         </div>
                       )}
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
@@ -908,6 +1092,6 @@ export default function VendorOrderDetails({}) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useEffect, useState } from "react";
 import { searchImgDark } from "@/constants/common";
@@ -11,6 +12,7 @@ import { authToken } from "@/utils/authToken";
 import { fetchGstInvoices } from "@/utils/vendorApiClient";
 import { Pagination } from "@/components/common/Pagination";
 import { INVOICES_TEXT } from "@/constants/vendorText";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 interface InvoiceType {
   id: string;
@@ -24,6 +26,8 @@ interface InvoiceType {
 }
 
 export default function InvoicesPage() {
+  const companyId = getClientCompanyId();
+
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isOpen, setIsOpen] = useState(false);
   const [sortBy, setSortBy] = useState<string>("desc");
@@ -55,8 +59,8 @@ export default function InvoicesPage() {
   const token = authToken();
 
   useEffect(() => {
-    if (!token) {
-      redirect("/auth/vendorLogin");
+    if (!token || !companyId) {
+      redirect(VEDNOR_LOGIN_PATH);
     }
 
     const fetchInvoices = async () => {
@@ -69,6 +73,7 @@ export default function InvoicesPage() {
           sortBy,
           date,
           token,
+          companyId,
         );
         setInvoices(res.data.invoices || []);
         setTotalInvoices(res.data.total || 0);

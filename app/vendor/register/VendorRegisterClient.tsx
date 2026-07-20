@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 import {
   validateComplianceFields,
@@ -1573,7 +1574,7 @@ export default function VendorRegisterClient() {
                       </button>
                     ) : (
                       <Link
-                        href="/auth/vendorLogin"
+                        href={VEDNOR_LOGIN_PATH}
                         className="text-xs text-gray-400 hover:text-platform-primary underline underline-offset-2 transition-colors"
                       >
                         {VENDOR_REGISTER_TEXT.LINK_LOGIN}

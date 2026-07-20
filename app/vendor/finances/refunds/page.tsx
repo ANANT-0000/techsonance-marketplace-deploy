@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useEffect, useState } from "react";
 import { searchImgDark } from "@/constants/common";
@@ -26,6 +27,8 @@ const RefundsTableHeader = [
   REFUNDS_TEXT.TABLE.HEADERS.REASON,
   REFUNDS_TEXT.TABLE.HEADERS.DATE,
 ];
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
+
 // Mapped exactly to your backend response structure
 interface RefundRecord {
   id: string;
@@ -74,6 +77,8 @@ interface RefundDashboardData {
 }
 
 export default function RefundsPage() {
+  const companyId = getClientCompanyId();
+
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isOpen, setIsOpen] = useState(false);
   const [dashboardData, setDashboardData] =
@@ -86,12 +91,12 @@ export default function RefundsPage() {
   };
   const token = authToken();
   const fetchRefunds = async () => {
-    if (!token) {
-      redirect("/auth/vendorLogin");
+    if (!token || !companyId) {
+      redirect(VEDNOR_LOGIN_PATH);
     }
     setLoading(true);
     try {
-      const response = await fetchGetCompanyRefunds(token);
+      const response = await fetchGetCompanyRefunds(token, companyId);
       setDashboardData(response.data);
     } catch (err) {
       setDashboardData(null);

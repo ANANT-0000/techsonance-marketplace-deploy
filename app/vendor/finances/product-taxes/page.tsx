@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useEffect, useState } from "react";
 import { searchImgDark } from "@/constants/common";
@@ -24,6 +25,7 @@ import Link from "next/link";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { RootState } from "@/lib/store";
 import { PRODUCT_TAX_TEXT } from "@/constants/vendorText";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 interface ProductTaxMappingType {
   id: string;
@@ -45,6 +47,8 @@ const productTaxHeader = [
 ];
 
 export default function ProductTaxMappingPage() {
+  const companyId = getClientCompanyId();
+
   const { user } = useAppSelector((state: RootState) => state.auth);
   const vendorId = (user && "vendor_id" in user ? user.vendor_id : "") ?? "";
 
@@ -70,11 +74,18 @@ export default function ProductTaxMappingPage() {
 
   // Fetch Products AND Available Tax Rates
   const fetchData = async () => {
+    if (!token || !companyId) return;
     setLoading(true);
     try {
       const [mappingRes, ratesRes] = await Promise.all([
-        fetchProductTaxMappings(0, sortBy, statusFilter, token as string),
-        fetchTaxSlabs(sortBy, token as string),
+        fetchProductTaxMappings(
+          0,
+          sortBy,
+          statusFilter,
+          token as string,
+          companyId,
+        ),
+        fetchTaxSlabs(sortBy, token as string, companyId),
       ]);
       setProductTaxes(mappingRes.data || []);
       setAvailableRates(ratesRes?.data || []);
@@ -85,7 +96,7 @@ export default function ProductTaxMappingPage() {
   };
 
   useEffect(() => {
-    if (!token) redirect("/auth/vendorLogin");
+    if (!token) redirect(VEDNOR_LOGIN_PATH);
     fetchData();
   }, [sortBy, statusFilter, token]);
 
@@ -97,20 +108,23 @@ export default function ProductTaxMappingPage() {
   };
 
   // Handle Form Submit
-  const handleAssignTax = async (e: React.FormEvent) => {
+  const handleAssignTax = async (e: React.SubmitEvent) => {
+    if (!token || !companyId) return;
     e.preventDefault();
     try {
       if (selectedProductId && selectedTaxSlabId) {
         setSaving(true);
         await fetchAssignProductTax(
           { product_id: selectedProductId, tax_slab_id: selectedTaxSlabId },
-          token as string,
+          token,
+          companyId,
         );
       } else if (selectedProductIds.length > 0 && selectedTaxSlabId) {
         setSaving(true);
         await fetchBulkAssignProductTax(
           { product_ids: selectedProductIds, tax_slab_id: selectedTaxSlabId },
-          token as string,
+          token,
+          companyId,
         );
       }
       setModalOpen(false);

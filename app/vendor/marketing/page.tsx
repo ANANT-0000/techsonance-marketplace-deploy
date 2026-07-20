@@ -28,6 +28,8 @@ import { Coupon } from "@/utils/Types";
 import { RootState } from "@/lib/store";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { MARKETING_TEXT } from "@/constants/vendorText";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
+
 // --- Interfaces ---
 interface OverallMetrics {
   totalCarts: number;
@@ -122,7 +124,7 @@ export default function MarketingPage() {
   };
   useEffect(() => {
     if (!token) {
-      router.push("/auth/vendorLogin");
+      router.push(VEDNOR_LOGIN_PATH);
       return;
     }
     loadMetrics();
@@ -130,7 +132,7 @@ export default function MarketingPage() {
 
   useEffect(() => {
     if (!token) {
-      router.push("/auth/vendorLogin");
+      router.push(VEDNOR_LOGIN_PATH);
       return;
     }
     loadCoupons();
@@ -200,7 +202,9 @@ export default function MarketingPage() {
               ) : (
                 <Download size={18} />
               )}
-              {isExporting ? MARKETING_TEXT.HEADER.EXPORTING : MARKETING_TEXT.HEADER.EXPORT_CSV}
+              {isExporting
+                ? MARKETING_TEXT.HEADER.EXPORTING
+                : MARKETING_TEXT.HEADER.EXPORT_CSV}
             </button>
 
             <button
@@ -309,17 +313,24 @@ export default function MarketingPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 text-theme-caption font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                  <th className="p-4">{MARKETING_TEXT.FUNNEL.HEADERS.PRODUCT_VARIANT}</th>
+                  <th className="p-4">
+                    {MARKETING_TEXT.FUNNEL.HEADERS.PRODUCT_VARIANT}
+                  </th>
                   <th className="p-4">{MARKETING_TEXT.FUNNEL.HEADERS.SKU}</th>
-                  <th className="p-4 text-center">{MARKETING_TEXT.FUNNEL.HEADERS.CART_ADDITIONS}</th>
-                  <th className="p-4 text-center">{MARKETING_TEXT.FUNNEL.HEADERS.PURCHASED}</th>
-                  <th className="p-4">{MARKETING_TEXT.FUNNEL.HEADERS.CONVERSION_RATE}</th>
+                  <th className="p-4 text-center">
+                    {MARKETING_TEXT.FUNNEL.HEADERS.CART_ADDITIONS}
+                  </th>
+                  <th className="p-4 text-center">
+                    {MARKETING_TEXT.FUNNEL.HEADERS.PURCHASED}
+                  </th>
+                  <th className="p-4">
+                    {MARKETING_TEXT.FUNNEL.HEADERS.CONVERSION_RATE}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {" "}
                 {isLoadingMetrics ? (
-                  <MetricsSkeleton count={4} />
+                  <TableRowSkeleton columns={5} rows={4} />
                 ) : productConversions?.length === 0 ? (
                   <tr>
                     <td

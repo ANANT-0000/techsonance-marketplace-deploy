@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useEffect, useState } from "react";
 import { searchImgDark } from "@/constants/common";
@@ -6,10 +7,12 @@ import { ChevronDown, ChevronUp, Download, Layers, Plus } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { TableRowSkeleton } from "@/components/common/skeletons";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { authToken } from "@/utils/authToken";
 import { fetchTaxProfiles } from "@/utils/vendorApiClient";
 import { TAX_PROFILES_TEXT } from "@/constants/vendorText";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
+import { DataLoadErrorCard } from "@/components/vendor/DataLoadErrorCard";
 
 interface TaxProfileType {
   id: string;
@@ -20,6 +23,8 @@ interface TaxProfileType {
 }
 
 export default function TaxProfilesPage() {
+  const companyId = getClientCompanyId();
+
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isOpen, setIsOpen] = useState(false);
   const [sortBy, setSortBy] = useState<string>("desc");
@@ -40,14 +45,15 @@ export default function TaxProfilesPage() {
   };
 
   const token = authToken();
+  const router = useRouter();
 
   useEffect(() => {
-    if (!token) redirect("/auth/vendorLogin");
+    if (!token || !companyId) return;
 
     const fetchProfiles = async () => {
       setLoading(true);
       try {
-        const res = await fetchTaxProfiles(sortBy, date, token!);
+        const res = await fetchTaxProfiles(sortBy, date, token, companyId);
         setProfiles(res.data || []);
       } catch (err) {
       } finally {
@@ -55,13 +61,26 @@ export default function TaxProfilesPage() {
       }
     };
     fetchProfiles();
-  }, [sortBy, date, token]);
+  }, [sortBy, date, token, companyId]);
+
   const handleRoute = (id: string | null) => {
     if (id) {
-      redirect(`/vendor/finances/tax-profiles/${id}`);
+      router.push(`/vendor/finances/tax-profiles/${id}`);
+    } else {
+      router.push(`/vendor/finances/tax-profiles/new`);
     }
-    redirect(`/vendor/finances/tax-profiles/new`);
   };
+
+  if (!token || !companyId) {
+    return (
+      <DataLoadErrorCard
+        title={TAX_PROFILES_TEXT.ERRORS.SESSION_EXPIRED_TITLE}
+        description={TAX_PROFILES_TEXT.ERRORS.SESSION_EXPIRED_DESC}
+        tryAgainText={TAX_PROFILES_TEXT.ERRORS.GO_TO_LOGIN}
+        onTryAgain={() => router.push(VEDNOR_LOGIN_PATH)}
+      />
+    );
+  }
   return (
     <section className="w-full px-1">
       <header className="flex justify-between items-center my-6">
@@ -110,7 +129,9 @@ export default function TaxProfilesPage() {
             onChange={(e) => setSortBy(e.target.value)}
             name="sort_by"
           >
-            <option value="desc">{TAX_PROFILES_TEXT.FILTERS.SORT_NEWEST}</option>
+            <option value="desc">
+              {TAX_PROFILES_TEXT.FILTERS.SORT_NEWEST}
+            </option>
             <option value="asc">{TAX_PROFILES_TEXT.FILTERS.SORT_OLDEST}</option>
           </select>
 
@@ -119,7 +140,9 @@ export default function TaxProfilesPage() {
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 text-theme-body-sm border border-blue-300 bg-blue-50 text-blue-600 rounded-xl px-3 py-2 font-medium transition-colors"
             >
-              {date ? date.toDateString() : TAX_PROFILES_TEXT.FILTERS.SELECT_DATE}{" "}
+              {date
+                ? date.toDateString()
+                : TAX_PROFILES_TEXT.FILTERS.SELECT_DATE}{" "}
               <ChevronUp size={16} />
             </button>
           ) : (
@@ -127,7 +150,9 @@ export default function TaxProfilesPage() {
               onClick={() => setIsOpen(true)}
               className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
             >
-              {date ? date.toDateString() : TAX_PROFILES_TEXT.FILTERS.SELECT_DATE}{" "}
+              {date
+                ? date.toDateString()
+                : TAX_PROFILES_TEXT.FILTERS.SELECT_DATE}{" "}
               <ChevronDown size={16} />
             </button>
           )}
@@ -168,15 +193,22 @@ export default function TaxProfilesPage() {
               <TableRowSkeleton columns={6} rows={5} />
             ) : profiles && profiles?.length === 0 ? (
               <tr>
-                <td
-                  colSpan={6}
-                  className="py-16 text-center text-gray-400 text-theme-body-sm"
-                >
-                  <Layers
-                    size={36}
-                    className="mx-auto mb-3 opacity-30 text-blue-400"
-                  />
-                  {TAX_PROFILES_TEXT.TABLE.NO_DATA}
+                <td colSpan={6} className="py-24 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 bg-blue-50/80 text-blue-500 rounded-full flex items-center justify-center mb-5 shadow-sm">
+                      <Layers size={28} strokeWidth={1.5} />
+                    </div>
+                    <h3 className="text-[17px] font-bold text-gray-900 tracking-tight mb-2">{TAX_PROFILES_TEXT.TABLE.EMPTY_TITLE}</h3>
+                    <p className="text-[15px] text-gray-500 max-w-sm mb-6 leading-relaxed">
+                      {TAX_PROFILES_TEXT.TABLE.EMPTY_DESC}
+                    </p>
+                    <button
+                      onClick={() => handleRoute(null)}
+                      className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold px-6 py-2.5 rounded-full transition-colors cursor-pointer border border-blue-100"
+                    >
+                      <Plus size={16} /> {TAX_PROFILES_TEXT.HEADER.NEW_PROFILE}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ) : (

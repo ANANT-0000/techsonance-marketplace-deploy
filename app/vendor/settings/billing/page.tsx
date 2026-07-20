@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -53,6 +54,8 @@ const formatPrice = (price: string | null) => {
 };
 
 export default function BillingAndBankingPage() {
+  const companyId = getClientCompanyId();
+  const token = authToken();
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [status, setStatus] = useState<VendorSubscriptionStatus | null>(null);
@@ -63,12 +66,15 @@ export default function BillingAndBankingPage() {
   );
 
   const fetchData = async () => {
+    if (!token || !companyId) {
+      return;
+    }
     try {
       setLoading(true);
-      const token = authToken();
+
       const [fetchedPlans, fetchedStatus] = await Promise.all([
-        getAvailableSubscriptionPlans(),
-        token ? getSubscriptionStatus(token) : Promise.resolve(null),
+        getAvailableSubscriptionPlans(companyId),
+        token ? getSubscriptionStatus(token, companyId) : Promise.resolve(null),
       ]);
 
       if (Array.isArray(fetchedPlans.data)) {
@@ -96,15 +102,13 @@ export default function BillingAndBankingPage() {
   }, []);
 
   const handleUpgrade = async (plan: SubscriptionPlan) => {
-    const token = authToken();
-    if (!token) {
-      toast.error(VENDOR_BILLING_TEXT.ALERTS.LOGIN_REQUIRED);
+    if (!token || !companyId) {
       return;
     }
 
     setUpgradeLoading(plan.id);
     try {
-      const res = await upgradeSubscriptionPlan(token, plan.id);
+      const res = await upgradeSubscriptionPlan(token, plan.id, companyId);
       if (res && res.success === true) {
         toast.success(
           VENDOR_BILLING_TEXT.ALERTS.UPGRADE_SUCCESS.replace(
@@ -219,7 +223,8 @@ export default function BillingAndBankingPage() {
                         : VENDOR_BILLING_TEXT.CURRENT_PLAN.ACTION_REQUIRED}
                     </h4>
                     <p className="text-sm opacity-90">
-                      {status.days_remaining !== null && status.days_remaining !== undefined
+                      {status.days_remaining !== null &&
+                      status.days_remaining !== undefined
                         ? VENDOR_BILLING_TEXT.CURRENT_PLAN.DAYS_REMAINING.replace(
                             "{days}",
                             status.days_remaining.toString(),
@@ -336,8 +341,7 @@ export default function BillingAndBankingPage() {
                                   formatCapabilityKey(key)}
                               </span>
                             </div>
-                          ),
-                        )}
+                          ))}
                       </div>
                     </CardContent>
 

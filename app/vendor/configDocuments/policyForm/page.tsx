@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -81,11 +82,12 @@ function PolicyFormContent({ labels = UiText }: PolicyFormPageProps) {
     PolicyType.GUARANTEE,
     PolicyType.EXTENDED_SUPPORT,
   ].includes(selectedType as PolicyType);
+  const companyId = getClientCompanyId();
 
   useEffect(() => {
-    if (!editId || !token) return;
+    if (!editId || !token || !companyId) return;
     setIsFetchingEdit(true);
-    fetchProductPolicyById(editId, token)
+    fetchProductPolicyById(editId, token, companyId as string)
       .then((result) => {
         const data = result?.data ?? result;
         if (!data) {
@@ -125,11 +127,16 @@ function PolicyFormContent({ labels = UiText }: PolicyFormPageProps) {
 
   const onError = () => {};
   const onSubmit = async (data: PolicyFormSchemaType) => {
+    if (!companyId) {
+      // setGlobalError("Please try again");
+
+      return;
+    }
     setGlobalError(null);
     try {
       const result = editId
-        ? await updateProductPolicy(editId, data, token!)
-        : await createProductPolicy(data, token!);
+        ? await updateProductPolicy(editId, data, token!, companyId)
+        : await createProductPolicy(data, token!, companyId);
       if (result?.error || result?.statusCode >= 400) {
         setGlobalError(result?.message ?? labels.POLICY_SAVE_ERROR);
         return;
@@ -546,6 +553,8 @@ function PolicyFormContent({ labels = UiText }: PolicyFormPageProps) {
 }
 
 export default function PolicyFormPage(props: PolicyFormPageProps) {
+  const companyId = getClientCompanyId();
+
   return (
     <Suspense
       fallback={

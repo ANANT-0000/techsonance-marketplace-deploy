@@ -24,7 +24,9 @@ export function SetTemporaryVendorPassword({
 }: { embedded?: boolean; onSuccess?: () => void } = {}) {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { user, access_token, refresh_token, role } = useAppSelector((state: RootState) => state.auth);
+  const { user, access_token, refresh_token, role } = useAppSelector(
+    (state: RootState) => state.auth,
+  );
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -47,7 +49,13 @@ export function SetTemporaryVendorPassword({
     }
 
     const actualUser = user && "user" in user ? (user as any).user : user;
-    const userId = actualUser && ("id" in actualUser ? (actualUser as any).id : "user_id" in actualUser ? (actualUser as any).user_id : null);
+    const userId =
+      actualUser &&
+      ("id" in actualUser
+        ? (actualUser as any).id
+        : "user_id" in actualUser
+          ? (actualUser as any).user_id
+          : null);
 
     if (!userId) {
       setError(VENDOR_SET_PASSWORD_TEXT.ERR_SESSION_INVALID);
@@ -67,15 +75,17 @@ export function SetTemporaryVendorPassword({
         setSuccess(VENDOR_SET_PASSWORD_TEXT.MSG_PASSWORD_UPDATED);
         if (user && access_token && refresh_token && role) {
           const actualUser = "user" in user ? (user as any).user : user;
-          dispatch(loginSuccess({
-            user: {
-              ...user,
-              ...("user" in user ? { user: { ...actualUser, password_change_required: false } } : { password_change_required: false })
-            },
-            access_token,
-            refresh_token,
-            role
-          }));
+          dispatch(
+            loginSuccess({
+              user: {
+                ...user,
+                ...("user" in user ? { user: { ...actualUser } } : {}),
+              },
+              access_token,
+              refresh_token,
+              role,
+            }),
+          );
         }
         setTimeout(() => {
           if (onSuccess) onSuccess();
@@ -84,7 +94,8 @@ export function SetTemporaryVendorPassword({
       }
     } catch (err: any) {
       setError(
-        err.response?.data?.message || VENDOR_SET_PASSWORD_TEXT.ERR_UPDATE_FAILED
+        err.response?.data?.message ||
+          VENDOR_SET_PASSWORD_TEXT.ERR_UPDATE_FAILED,
       );
     } finally {
       setIsLoading(false);
@@ -173,7 +184,9 @@ export function SetTemporaryVendorPassword({
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition focus:outline-none"
-                  aria-label={showNewPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showNewPassword ? "Hide password" : "Show password"
+                  }
                 >
                   {showNewPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
@@ -200,7 +213,9 @@ export function SetTemporaryVendorPassword({
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition focus:outline-none"
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showConfirmPassword ? "Hide password" : "Show password"
+                  }
                 >
                   {showConfirmPassword ? (
                     <EyeOff size={15} />

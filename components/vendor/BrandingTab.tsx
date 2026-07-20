@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import { brandingSchema } from "@/utils/validation";
 import {
   fetchCompanyBranding,
@@ -20,6 +21,8 @@ import { authToken } from "@/utils/authToken";
 // Replaced constants
 
 export function BrandingTab() {
+  const companyId = getClientCompanyId();
+
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [files, setFiles] = useState<Record<string, File>>({});
@@ -77,8 +80,8 @@ export function BrandingTab() {
   const homepageLayout = watch("homepage_layout") || [];
   const token = authToken();
   useEffect(() => {
-    if (token) {
-      fetchCompanyBranding(token).then((res) => {
+    if (token && companyId) {
+      fetchCompanyBranding(token, companyId).then((res) => {
         const d = res?.data?.data ?? res?.data;
         if (d && typeof d === "object") {
           setValue("primary_color", d.primary_color || "#000000");
@@ -118,6 +121,7 @@ export function BrandingTab() {
   }, [token, setValue]);
 
   const onSubmit = (data: z.infer<typeof brandingSchema>) => {
+    if (!companyId) return;
     startTransition(async () => {
       const fd = new FormData();
       Object.entries(data).forEach(([k, v]) => {
@@ -130,7 +134,7 @@ export function BrandingTab() {
         }
       });
       Object.entries(files).forEach(([k, v]) => fd.append(k, v));
-      const res = await upsertCompanyBranding(fd, token ?? "");
+      const res = await upsertCompanyBranding(fd, token ?? "", companyId);
       if (res?.status === 200 || res?.status === 201 || res?.ok) {
         // Refresh local storefront cache if necessary
         try {

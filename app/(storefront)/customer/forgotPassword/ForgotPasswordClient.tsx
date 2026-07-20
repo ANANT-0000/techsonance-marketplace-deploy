@@ -19,6 +19,7 @@ import {
 } from "@/utils/authApiClient";
 import { FORGOT_PASSWORD_TEXT } from "@/constants/authText";
 import { PASSWORD_REQUIREMENTS_REGEX } from "@/utils/validation";
+import { CUSTOMER_LOGIN_PATH } from "@/constants";
 
 interface State {
   step: 1 | 2;
@@ -215,7 +216,7 @@ export default function ForgotPasswordClient() {
       });
 
       setTimeout(() => {
-        router.push("/auth/customerLogin");
+        router.push(CUSTOMER_LOGIN_PATH);
       }, 2000);
     } catch (err: any) {
       const newAttempts = state.otpAttempts + 1;
@@ -249,7 +250,11 @@ export default function ForgotPasswordClient() {
     let strength = 0;
     if (password.length >= 8) strength++;
     if (password.length >= 12) strength++;
-    if (PASSWORD_REQUIREMENTS_REGEX.LOWERCASE.test(password) && PASSWORD_REQUIREMENTS_REGEX.UPPERCASE.test(password)) strength++;
+    if (
+      PASSWORD_REQUIREMENTS_REGEX.LOWERCASE.test(password) &&
+      PASSWORD_REQUIREMENTS_REGEX.UPPERCASE.test(password)
+    )
+      strength++;
     if (PASSWORD_REQUIREMENTS_REGEX.NUMBER.test(password)) strength++;
     if (PASSWORD_REQUIREMENTS_REGEX.SPECIAL_CHAR.test(password)) strength++;
 
@@ -576,8 +581,12 @@ export default function ForgotPasswordClient() {
                         </li>
                         <li
                           className={
-                            PASSWORD_REQUIREMENTS_REGEX.UPPERCASE.test(state.newPassword) &&
-                            PASSWORD_REQUIREMENTS_REGEX.LOWERCASE.test(state.newPassword)
+                            PASSWORD_REQUIREMENTS_REGEX.UPPERCASE.test(
+                              state.newPassword,
+                            ) &&
+                            PASSWORD_REQUIREMENTS_REGEX.LOWERCASE.test(
+                              state.newPassword,
+                            )
                               ? "text-emerald-600"
                               : ""
                           }
@@ -586,7 +595,9 @@ export default function ForgotPasswordClient() {
                         </li>
                         <li
                           className={
-                            PASSWORD_REQUIREMENTS_REGEX.NUMBER.test(state.newPassword)
+                            PASSWORD_REQUIREMENTS_REGEX.NUMBER.test(
+                              state.newPassword,
+                            )
                               ? "text-emerald-600"
                               : ""
                           }
@@ -632,7 +643,7 @@ export default function ForgotPasswordClient() {
           <p className="text-center text-theme-body-sm text-slate-600">
             {FORGOT_PASSWORD_TEXT.LBL_REMEMBER}
             <button
-              onClick={() => router.push("/auth/customerLogin")}
+              onClick={() => router.push(CUSTOMER_LOGIN_PATH)}
               className="text-theme-primary hover:text-theme-secondary font-semibold hover:underline bg-transparent border-none cursor-pointer"
             >
               {FORGOT_PASSWORD_TEXT.BTN_BACK_LOGIN}

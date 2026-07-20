@@ -15,9 +15,6 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
-import { useVendorTour } from "@/components/vendor/VendorTourProvider";
-import { useAppSelector } from "@/hooks/reduxHooks";
-import { VendorUser } from "@/utils/Types";
 import { BrandingTab } from "@/components/vendor/BrandingTab";
 import {
   HeroLayout,
@@ -198,25 +195,6 @@ export default function CmsManagementPage({
   const { page, lang, loading, saving, msg, data } = state;
 
   const [selectedHotspotId, setSelectedHotspotId] = useState<any>(null);
-  
-  const { startVendorTour } = useVendorTour();
-  const user = useAppSelector((state) => state.auth.user) as VendorUser | undefined;
-
-  useEffect(() => {
-    if (user && user.preferences && Array.isArray(user.preferences.completed_tours)) {
-      if (!user.preferences.completed_tours.includes("cms")) {
-        const timer = setTimeout(() => {
-          startVendorTour("cms");
-        }, 800);
-        return () => clearTimeout(timer);
-      }
-    } else if (user && !user.preferences) {
-      const timer = setTimeout(() => {
-        startVendorTour("cms");
-      }, 800);
-      return () => clearTimeout(timer);
-    }
-  }, [user, startVendorTour]);
 
   const load = async () => {
     if (page === PageType.THEME) {
@@ -389,7 +367,7 @@ export default function CmsManagementPage({
         </button>
       </div>
       {/* Tab + Lang selectors */}
-      <div id="tour-cms-tabs" className="bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl shadow-sm p-5 mb-8 flex flex-col lg:flex-row gap-6 sticky top-0 z-10">
+      <div className="bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl shadow-sm p-5 mb-8 flex flex-col lg:flex-row gap-6 sticky top-0 z-10">
         <div className="flex-1">
           <p className="text-theme-caption font-bold text-gray-400 uppercase mb-2">
             {labels.PAGE_SECTION}
@@ -409,7 +387,7 @@ export default function CmsManagementPage({
           </div>
         </div>
         {page !== PageType.THEME && page !== PageType.NAVBAR && (
-          <div id="tour-cms-lang">
+          <div>
             <p className="text-theme-caption font-bold text-gray-400 uppercase mb-2">
               {labels.LANGUAGE}
             </p>

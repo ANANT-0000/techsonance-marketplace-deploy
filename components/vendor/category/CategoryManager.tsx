@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 // ============================================================
 // CategoryManager — Thin Coordinator
 // Holds only the 3 shared signals between child components.
@@ -58,6 +59,8 @@ export default function CategoryManager({
   categories = [],
   setCheckChange,
 }: CategoryManagerProps) {
+  const companyId = getClientCompanyId();
+
   const token = authToken();
 
   // ═══════════════════════════════════════════════════════════
@@ -83,13 +86,17 @@ export default function CategoryManager({
 
   // Simple delete confirmation modal state
   const [isSimpleDeleteOpen, setIsSimpleDeleteOpen] = useState(false);
-  const [simpleDeleteTarget, setSimpleDeleteTarget] = useState<Category | null>(null);
+  const [simpleDeleteTarget, setSimpleDeleteTarget] = useState<Category | null>(
+    null,
+  );
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
   // Bulk delete confirmation modal state
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [bulkDeleteTargetIds, setBulkDeleteTargetIds] = useState<string[]>([]);
-  const [bulkDeleteOnSuccess, setBulkDeleteOnSuccess] = useState<(() => void) | null>(null);
+  const [bulkDeleteOnSuccess, setBulkDeleteOnSuccess] = useState<
+    (() => void) | null
+  >(null);
 
   // ═══════════════════════════════════════════════════════════
   //  Form hook (form owns its own state)
@@ -176,7 +183,7 @@ export default function CategoryManager({
 
   /** Confirm complex delete (move subs + delete parent) */
   const handleConfirmComplexDelete = useCallback(async () => {
-    if (!deleteModalConfig || !token) return;
+    if (!deleteModalConfig || !token || !companyId) return;
 
     try {
       if (deleteModeChoice === DeleteMode.MOVE) {
@@ -191,6 +198,7 @@ export default function CategoryManager({
               parent_id: targetParent,
             },
             token,
+            companyId,
           );
         }
       }
@@ -198,6 +206,7 @@ export default function CategoryManager({
       const res = await deleteVendorProductCategory(
         deleteModalConfig.id,
         token,
+        companyId,
       );
       if (res.status === 200) {
         toast.success(CATEGORY_TOAST.DELETED);
@@ -223,10 +232,14 @@ export default function CategoryManager({
   }, []);
 
   const handleConfirmSimpleDelete = useCallback(async () => {
-    if (!simpleDeleteTarget || !token) return;
+    if (!simpleDeleteTarget || !token || !companyId) return;
     setIsDeleteLoading(true);
     try {
-      const res = await deleteVendorProductCategory(simpleDeleteTarget.id, token);
+      const res = await deleteVendorProductCategory(
+        simpleDeleteTarget.id,
+        token,
+        companyId,
+      );
       if (res.status === 200) {
         toast.success(CATEGORY_TOAST.DELETED);
         setIsSimpleDeleteOpen(false);
@@ -242,21 +255,24 @@ export default function CategoryManager({
     }
   }, [simpleDeleteTarget, token, setCheckChange]);
 
-  const handleBulkDeleteRequest = useCallback((selectedIds: string[], onSuccess: () => void) => {
-    if (selectedIds.length === 0) return;
-    setBulkDeleteTargetIds(selectedIds);
-    setBulkDeleteOnSuccess(() => onSuccess);
-    setIsBulkDeleteOpen(true);
-  }, []);
+  const handleBulkDeleteRequest = useCallback(
+    (selectedIds: string[], onSuccess: () => void) => {
+      if (selectedIds.length === 0) return;
+      setBulkDeleteTargetIds(selectedIds);
+      setBulkDeleteOnSuccess(() => onSuccess);
+      setIsBulkDeleteOpen(true);
+    },
+    [],
+  );
 
   const handleConfirmBulkDelete = useCallback(async () => {
-    if (bulkDeleteTargetIds.length === 0 || !token) return;
+    if (bulkDeleteTargetIds.length === 0 || !token || !companyId) return;
     setIsDeleteLoading(true);
     try {
       let successCount = 0;
       for (const id of bulkDeleteTargetIds) {
         try {
-          const res = await deleteVendorProductCategory(id, token);
+          const res = await deleteVendorProductCategory(id, token, companyId);
           if (res.status === 200) successCount++;
         } catch {
           // continue with remaining
@@ -288,7 +304,7 @@ export default function CategoryManager({
   // ═══════════════════════════════════════════════════════════
 
   return (
-    <div className="w-full space-y-8 bg-gray-50/50 p-6 min-h-screen text-gray-800">
+    <div className="w-full space-y-8   p-6 min-h-screen text-gray-800">
       {/* Page Header */}
       <CategoryPageHeader onAddNew={handleAddNew} />
 
@@ -352,7 +368,11 @@ export default function CategoryManager({
         }}
         onConfirm={handleConfirmSimpleDelete}
         title="Delete Category"
-        message={simpleDeleteTarget ? CATEGORY_TOAST.DELETE_CONFIRM(simpleDeleteTarget.name) : ""}
+        message={
+          simpleDeleteTarget
+            ? CATEGORY_TOAST.DELETE_CONFIRM(simpleDeleteTarget.name)
+            : ""
+        }
         actionType="danger"
         confirmText="Delete"
         cancelText="Cancel"

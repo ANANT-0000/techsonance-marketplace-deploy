@@ -1,9 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { VEDNOR_LOGIN_PATH } from "./constants";
 
 export function proxy(request: NextRequest) {
   const token = request.cookies.get("accessToken")?.value;
   const pathname = request.nextUrl.pathname;
+
+  // Bail out early for the login pages themselves
+  const isLoginPage =
+    pathname === "/vendor/login" ||
+    pathname === "/admin/login" ||
+    pathname === "/customer/login" ||
+    pathname === "/auth/adminLogin";
+
+  if (isLoginPage) {
+    return NextResponse.next();
+  }
 
   const isVendorRoute = pathname.startsWith("/vendor");
   const isAdminRoute = pathname.startsWith("/admin");
@@ -15,14 +27,14 @@ export function proxy(request: NextRequest) {
   //   }
 
   //   1. Missing Token Fallbacks
-  if (!token) {
-    if (isVendorRoute)
-      return NextResponse.redirect(new URL("/auth/vendorLogin", request.url));
-    if (isAdminRoute)
-      return NextResponse.redirect(new URL("/auth/adminLogin", request.url));
-    if (isCustomerRoute)
-      return NextResponse.redirect(new URL("/auth/customerLogin", request.url));
-  }
+  // if (!token) {
+  //   if (isVendorRoute)
+  //     return NextResponse.redirect(new URL("/vendor/login", request.url));
+  //   if (isAdminRoute)
+  //     return NextResponse.redirect(new URL("/admin/login", request.url));
+  //   if (isCustomerRoute)
+  //     return NextResponse.redirect(new URL("/customer/login", request.url));
+  // }
 
   // 2. Token Presence & Role Checks (Edge Base64 Decode)
   if (token) {
@@ -47,9 +59,7 @@ export function proxy(request: NextRequest) {
           console.log(
             `[Proxy Middleware] Redirecting vendor route ${pathname} to /auth/vendorLogin because role is ${role}`,
           );
-          return NextResponse.redirect(
-            new URL("/auth/vendorLogin", request.url),
-          );
+          return NextResponse.redirect(new URL(VEDNOR_LOGIN_PATH, request.url));
         }
         if (isAdminRoute && role !== "admin") {
           //   console.log(`[Proxy Middleware] Redirecting admin route ${pathname} to /auth/adminLogin because role is ${role}`);

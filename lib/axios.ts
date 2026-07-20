@@ -33,9 +33,12 @@ AxiosAPI.interceptors.request.use(
       // Read the domain fresh on each request — avoids stale module-level
       // cache being shared across Vercel warm Lambda invocations where a
       // different tenant's request can pick up the wrong company-domain.
-      const domain = await getCompanyDomain();
-      config.headers["company-domain"] = domain;
-
+      if (!config.headers["company-id"]) {
+        const domain = await getCompanyDomain();
+        if (domain) {
+          config.headers["company-domain"] = domain;
+        }
+      }
       const token = localStorage.getItem(ACCESS_TOKEN_KEY);
       if (token && token !== "undefined" && token !== "null") {
         config.headers["Authorization"] = `Bearer ${token}`;
@@ -60,7 +63,8 @@ AxiosAPI.interceptors.response.use(
     let suppressRedirect = false;
     if (error.config?.headers) {
       if (typeof error.config.headers.get === "function") {
-        suppressRedirect = error.config.headers.get("x-suppress-redirect") === "true";
+        suppressRedirect =
+          error.config.headers.get("x-suppress-redirect") === "true";
       } else {
         suppressRedirect =
           error.config.headers["x-suppress-redirect"] === "true" ||
@@ -87,9 +91,9 @@ AxiosAPI.interceptors.response.use(
           if (currentPath.startsWith("/admin")) {
             // window.location.href = "/auth/adminLogin";
           } else if (currentPath.startsWith("/vendor")) {
-            // window.location.href = "/auth/vendorLogin";
+            // window.location.href = VEDNOR_LOGIN_PATH;
           } else {
-            // window.location.href = "/auth/customerLogin";
+            // window.location.href = CUSTOMER_LOGIN_PATH;
           }
         }
         // For public routes just let the calling code handle the error

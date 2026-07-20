@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useState } from "react";
 import { Star, Package, MapPin, Calculator, Loader2 } from "lucide-react";
@@ -6,6 +7,8 @@ import { fetchCalculateShippingRates } from "@/utils/vendorApiClient";
 import { authToken } from "@/utils/authToken";
 
 export default function RateCalculator() {
+  const companyId = getClientCompanyId();
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [couriers, setCouriers] = useState<any[]>([]);
@@ -27,7 +30,10 @@ export default function RateCalculator() {
     setErrorMsg("");
     setCouriers([]);
 
-    const token = authToken() || "";
+    const token = authToken();
+    if (!token || !companyId) {
+      return;
+    }
 
     const payload = {
       pickup_postcode: Number(formData.pickup_postcode),
@@ -37,7 +43,7 @@ export default function RateCalculator() {
       declared_value: Number(formData.declared_value),
     };
 
-    const res = await fetchCalculateShippingRates(payload, token);
+    const res = await fetchCalculateShippingRates(payload, token, companyId);
 
     if (Array.isArray(res?.data) && res.data.length > 0) {
       // Sort by rate ascending by default

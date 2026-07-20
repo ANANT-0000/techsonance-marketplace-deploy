@@ -28,6 +28,8 @@ export const INVENTORY_TEXT = {
       PRICE: "Price",
     },
     NO_ITEMS: "No inventory items found.",
+    EMPTY_SUBTITLE: "Your inventory list is currently empty.",
+    EMPTY_SUBTITLE_DETAILED: "Once you add products or sync your warehouse, your stock levels will appear here.",
     STATUS_OUT: "Out of Stock",
     STATUS_LOW: "Low Stock",
     STATUS_IN: "In Stock",
@@ -36,6 +38,13 @@ export const INVENTORY_TEXT = {
     SHOWING: "Showing",
     OF: "of",
     RECORDS: "records",
+  },
+  TOASTS: {
+    LOAD_FAIL: "We couldn't load your inventory data. Please refresh the page.",
+    SESSION_EXPIRED: "Your session has expired. Please log in again.",
+    SESSION_EXPIRED_SAVE: "Please log in again to save changes.",
+    UPDATE_SUCCESS: "Stock updated successfully.",
+    UPDATE_FAIL: "We couldn't update the stock. Please try again.",
   },
 };
 
@@ -125,7 +134,7 @@ export const SECURITY_SETTINGS_TEXT = {
   },
   PLACEHOLDERS: {
     CURRENT_PASSWORD: "Enter current password",
-    NEW_PASSWORD: "Enter new password",
+    NEW_PASSWORD: "New password",
     CONFIRM_PASSWORD: "Confirm new password",
   },
   UPDATE_BTN: "Update Password",
@@ -528,6 +537,7 @@ export const PRODUCT_FORM_TEXT = {
     PRICING: "Pricing & Inventory",
     MEDIA: "Media & Assets",
     CATEGORY_TAX: "Product Category & Taxation (GST)",
+    LOGISTICS: "Logistics & Dimensions",
   },
   ACTIONS: {
     ADD_FEATURE: "Add Feature",
@@ -555,6 +565,20 @@ export const PRODUCT_FORM_TEXT = {
     BROWSE: "Click to browse files",
     LIMITS: "PNG, JPG, MP4 up to 10MB",
   },
+  ERRORS: {
+    FEAT_TITLE: "Feature title is required",
+    FEAT_DESC: "Feature description is required",
+    ATTR_TITLE: "Attribute title is required",
+    ATTR_VAL: "Attribute value is required",
+    SESSION_EXPIRED: "Your session has expired. Please log in again.",
+    SESSION_EXPIRED_SAVE: "Please log in again to save your product.",
+  },
+  LOGISTICS_FIELDS: [
+    { name: "weight_kg", label: "Weight (kg)", placeholder: "e.g. 0.5" },
+    { name: "length_cm", label: "Length (cm)", placeholder: "e.g. 25" },
+    { name: "width_cm", label: "Width (cm)", placeholder: "e.g. 15" },
+    { name: "height_cm", label: "Height (cm)", placeholder: "e.g. 10" },
+  ],
 };
 
 export const PRODUCT_VARIANT_FORM_TEXT = {
@@ -580,6 +604,8 @@ export const PRODUCT_VARIANT_FORM_TEXT = {
     DETAILS: "Variant Details",
     PRICING: "Pricing & Inventory",
     MEDIA: "Variant Images",
+    MEDIA_OPTIONAL: "(Optional)",
+    MEDIA_NOTE: "Note: If no images are uploaded, the main product's thumbnail and gallery will be used automatically.",
   },
   LABELS: {
     NAME: "Variant Name",
@@ -603,6 +629,9 @@ export const PRODUCT_VARIANT_FORM_TEXT = {
   },
   MEDIA_GUIDE: {
     LIMITS: "PNG, JPG, MP4 up to 10MB",
+  },
+  ERRORS: {
+    SESSION_EXPIRED_SAVE: "Please log in again to save your variant.",
   },
 };
 
@@ -644,6 +673,20 @@ export const ANALYSIS_BOARD_TEXT = {
     SHARE: "Share",
     TOTAL: "Total",
     DERIVED_INSIGHTS: "Derived Insights",
+  },
+  EMPTY_STATES: {
+    SESSION_EXPIRED_TITLE: "Session Expired",
+    SESSION_EXPIRED_DESC: "We need to verify your session. Please log in again to view your analytics.",
+    SESSION_EXPIRED_BTN: "Log In Again",
+    EXPORT_NO_TOKEN: "Session expired. Please log in again to export.",
+    TREND_EMPTY: "Your activity trend will appear here once you start generating sales.",
+    NO_DATA: "No Data",
+    NO_PRODUCTS_TITLE: "No products sold yet",
+    NO_PRODUCTS_DESC: "Your top-selling variants will be listed here.",
+    NO_CATEGORY_DATA: "No category data yet.",
+    NO_CATEGORY_TITLE: "No category data yet",
+    NO_CATEGORY_DESC: "Add products to see breakdown.",
+    EMPTY: "Empty",
   },
 };
 
@@ -1202,6 +1245,16 @@ export const FINANCES_TEXT = {
     DATE: "Date",
     ACTIONS: "Actions",
   },
+  EMPTY_STATES: {
+    SESSION_EXPIRED_TITLE: "Session Expired",
+    SESSION_EXPIRED_DESC: "We need to verify your session. Please log in again to view your finances.",
+    SESSION_EXPIRED_BTN: "Log In Again",
+    EXPORT_NO_TOKEN: "Session expired. Please log in again to refresh.",
+    NO_TRANSACTIONS_TITLE: "No transactions yet",
+    NO_TRANSACTIONS_DESC: "Your financial ledger and cleared earnings will appear here once orders are processed.",
+    NO_RECORDS_FILTER_TITLE: "No matches found",
+    NO_RECORDS_FILTER_DESC: "Try adjusting your filters or date range to find what you're looking for.",
+  },
 };
 
 export const LOCATIONS_TEXT = {
@@ -1403,9 +1456,11 @@ export const STOCK_MANAGER_TEXT = {
   },
   TABLE: {
     NO_DATA: "No inventory data matching your filters.",
+    EMPTY_SUBTITLE_DETAILED: "Once you add products or sync your warehouse, your stock levels will appear here.",
     BTN_ADJUST: "Adjust",
     STATUS_ACTIVE: "Active",
     STATUS_INACTIVE: "Inactive",
+    PRIMARY_FACILITY: "Primary Facility",
     HEADERS: {
       PRODUCT_VARIANT: "Product / Variant",
       SKU: "SKU",
@@ -1439,6 +1494,9 @@ export const STOCK_MANAGER_TEXT = {
     UPDATE_STATUS_FAIL: "Failed to update status",
     UPDATE_STOCK_FAIL: "Failed to update stock.",
     STOCK_MIN_ERR: "Stock cannot be less than zero.",
+    UPDATE_STOCK_SUCCESS: "Stock updated successfully.",
+    LOAD_FAIL: "We couldn't load your inventory data. Please refresh the page.",
+    SESSION_EXPIRED: "Your session has expired. Please log in again.",
   },
   CONFIRM: {
     PUBLISH_TITLE: "Publish Variant?",
@@ -1658,9 +1716,16 @@ export const TAX_PROFILES_TEXT = {
       ACTIONS: "Actions",
     },
     NO_DATA: "No tax profiles found. Create one to get started.",
+    EMPTY_TITLE: "No Tax Profiles Found",
+    EMPTY_DESC: "You haven't set up any tax profiles yet. Create your first tax profile to manage rates efficiently.",
     DEFAULT_BADGE: "DEFAULT",
     STATUS_ACTIVE: "Active",
     ACTION_EDIT: "Edit →",
+  },
+  ERRORS: {
+    SESSION_EXPIRED_TITLE: "Session Expired",
+    SESSION_EXPIRED_DESC: "Your session is missing or has expired. Please log in again to manage your tax profiles.",
+    GO_TO_LOGIN: "Go to Login",
   },
 };
 
@@ -1688,6 +1753,11 @@ export const TAX_PROFILE_FORM_TEXT = {
     FAILED_UPDATE: "Failed to update Tax Profile.",
     FAILED_CREATE: "Failed to create Tax Profile.",
   },
+  ERRORS: {
+    SESSION_EXPIRED_TITLE: "Session Expired",
+    SESSION_EXPIRED_DESC: "Your session is missing or has expired. Please log in again to manage this tax profile.",
+    GO_TO_LOGIN: "Go to Login",
+  },
 };
 
 export const TAX_RATES_TEXT = {
@@ -1714,6 +1784,21 @@ export const TAX_RATES_TEXT = {
     STATUS_TAXABLE: "Taxable",
     ONGOING: "Ongoing",
   },
+  EMPTY_STATES: {
+    NO_DATA_TITLE: "No Tax Rates Configured",
+    NO_DATA_DESC: "You haven't set up any custom tax rules yet. Default rates will apply until you configure them.",
+    CREATE_BTN: "Create Your First Tax Rate",
+  },
+  SESSION: {
+    CHECKING: "Checking your session...",
+    AUTH_REQUIRED: "Authentication Required",
+    MISSING_LIST: "Your session appears to be missing or has expired. Please log in again to view your tax rates securely.",
+    LOGIN_BTN: "Log in again",
+  },
+  ALERTS: {
+    FAILED_FETCH: "Failed to fetch tax rates. Please try again.",
+    SESSION_EXPIRED: "Your session has expired. Please log in again.",
+  },
 };
 
 export const TAX_RATES_FORM_TEXT = {
@@ -1722,6 +1807,18 @@ export const TAX_RATES_FORM_TEXT = {
     EDIT: "Edit Tax Rule & Rate",
     NEW: "New Tax Rule & Rate",
     BACK: "Back to Rates",
+  },
+  SESSION: {
+    CHECKING: "Checking your session...",
+    AUTH_REQUIRED: "Authentication Required",
+    MISSING_FORM: "Your session appears to be missing or has expired. Please log in again to continue.",
+    LOGIN_BTN: "Log in again",
+  },
+  ALERTS: {
+    FAILED_FETCH: "Failed to load tax rule details.",
+    FAILED_UPDATE: "Failed to update Tax Rule.",
+    FAILED_CREATE: "Failed to create Tax Rule.",
+    SESSION_EXPIRED: "Session expired. Please log in again to save.",
   },
   FIELDS: {
     REQUIRED_ERROR: "This field is required",
@@ -1778,10 +1875,6 @@ export const TAX_RATES_FORM_TEXT = {
     PROCESSING: "Processing...",
     UPDATE: "Update Tax Rule",
     SAVE: "Save Tax Rule",
-  },
-  ALERTS: {
-    FAILED_UPDATE: "Failed to update Tax Rule.",
-    FAILED_CREATE: "Failed to create Tax Rule.",
   },
 };
 

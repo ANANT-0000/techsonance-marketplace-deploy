@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import { ProductVariantForm } from "@/components/vendor/ProductVariantForm";
 import { authToken } from "@/utils/authToken";
 import { fetchVariant, fetchVendorWarehouse } from "@/utils/vendorApiClient";
@@ -6,6 +7,9 @@ import { id, is } from "date-fns/locale";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ProductImageType } from "@/utils/Types";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
+import { SessionErrorCard } from "@/components/vendor/SessionErrorCard";
+
 interface Attribute {
   name: string;
   value: string; // could be string[] if multiple values
@@ -58,6 +62,10 @@ interface ProductVariantResponseType {
   updated_at: string;
   product_id: string;
   product: Product;
+  inventory?: {
+    stock_quantity: number;
+    warehouse_id: string;
+  };
   images: ProductImage[];
   weight_kg?: string;
   length_cm?: number;
@@ -68,21 +76,24 @@ const getExistVariant = async (
   variantId: string,
   setExistVariant: (existVariant: ProductVariantResponseType | null) => void,
   token: string,
+  companyId: string,
 ) => {
-  await fetchVariant(variantId, token)
+  await fetchVariant(variantId, token, companyId)
     .then((res) => setExistVariant(res.data))
     .catch((error) => {});
 };
 const getWarehouseOptions = async ({
   setWarehouseOptions,
   token,
+  companyId,
 }: {
   setWarehouseOptions: (
     warehouseOptions: { value: string; label: string }[],
   ) => void;
   token: string;
+  companyId: string;
 }) => {
-  await fetchVendorWarehouse(token)
+  await fetchVendorWarehouse(token, companyId)
     .then((res) => {
       setWarehouseOptions(
         res.data.map((w: any) => ({ value: w.id, label: w.warehouse_name })),
@@ -95,6 +106,8 @@ const getWarehouseOptions = async ({
 import { useAppSelector } from "@/hooks/reduxHooks";
 
 export default function ProductVariantFormPage() {
+  const companyId = getClientCompanyId();
+
   const { variantId } = useParams<{ variantId: string }>();
   const { user } = useAppSelector((state) => state.auth);
   const vendorId = (user && "vendor_id" in user ? user.vendor_id : "") ?? "";
@@ -104,12 +117,16 @@ export default function ProductVariantFormPage() {
     { value: string; label: string }[]
   >([]);
   const token = authToken();
-  if (!token) {
-    redirect("/auth/vendorLogin");
+  if (!token || !companyId) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50/30">
+        <SessionErrorCard />
+      </div>
+    );
   }
   useEffect(() => {
-    getExistVariant(variantId, setExistVariant, token);
-    getWarehouseOptions({ setWarehouseOptions, token });
+    getExistVariant(variantId, setExistVariant, token, companyId);
+    getWarehouseOptions({ setWarehouseOptions, token, companyId });
   }, [token]);
   const existingProductVariant = existVariant
     ? {
@@ -124,6 +141,7 @@ export default function ProductVariantFormPage() {
         discountPercent: existVariant.product.discount_percent,
         stocks: existVariant.stock_quantity?.toString() || "0",
         sku: existVariant.sku,
+        warehouseId: existVariant.inventory?.warehouse_id || "",
         // Map images from API into FileOrProductImage shape
         variantMediaMain: existVariant.images
           .filter((img) => img.imgType === ProductImageType.MAIN)
@@ -160,7 +178,7 @@ export default function ProductVariantFormPage() {
     : undefined;
 
   return (
-    <main className="min-h-screen max-h-screen overflow-y-scroll w-full py-8 px-4">
+    <main className="min-h-screen max-h-screen overflow-y-scroll w-full py-8 px-4 ">
       <ProductVariantForm
         vendorId={vendorId}
         productId={existVariant?.product_id}

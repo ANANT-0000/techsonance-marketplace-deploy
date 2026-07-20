@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import { docConfigSchema } from "@/utils/validation";
 import {
   fetchCompanyDocumentConfig,
@@ -19,6 +20,8 @@ import { SequenceResetSelect } from "./SequenceResetSelect";
 import { DOCUMENT_CONFIG_TAB_TEXT } from "@/constants/vendorText";
 
 export function DocumentConfigTab({ token }: { token: string }) {
+  const companyId = getClientCompanyId();
+
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   // Holds the existing signature URL loaded from the server
@@ -49,7 +52,8 @@ export function DocumentConfigTab({ token }: { token: string }) {
   });
 
   useEffect(() => {
-    fetchCompanyDocumentConfig(token).then((res) => {
+    if (!token || !companyId) return;
+    fetchCompanyDocumentConfig(token, companyId).then((res) => {
       if (res?.data) {
         const d = res.data;
         if (d.signatory_signature_url) {
@@ -80,6 +84,7 @@ export function DocumentConfigTab({ token }: { token: string }) {
   }, [prefix, format]);
 
   const onSubmit = (data: z.infer<typeof docConfigSchema>) => {
+    if (!companyId || !token) return;
     startTransition(async () => {
       const payload = new FormData();
       Object.entries(data).forEach(([k, v]) => {
@@ -93,8 +98,8 @@ export function DocumentConfigTab({ token }: { token: string }) {
       } else if (existingSignatureUrl) {
         payload.append("signatory_signature_url", existingSignatureUrl);
       }
-      
-      const res = await upsertCompanyDocumentConfig(payload, token);
+
+      const res = await upsertCompanyDocumentConfig(payload, token, companyId);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     });
@@ -135,8 +140,8 @@ export function DocumentConfigTab({ token }: { token: string }) {
               className="font-mono"
             />
           </Field>
-          <Field 
-            label={DOCUMENT_CONFIG_TAB_TEXT.INVOICE_NUMBERING.SEQ_RESET_LABEL} 
+          <Field
+            label={DOCUMENT_CONFIG_TAB_TEXT.INVOICE_NUMBERING.SEQ_RESET_LABEL}
             hint={DOCUMENT_CONFIG_TAB_TEXT.INVOICE_NUMBERING.SEQ_RESET_HINT}
           >
             <SequenceResetSelect

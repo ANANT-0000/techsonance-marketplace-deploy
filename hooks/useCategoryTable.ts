@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 // ============================================================
 // useCategoryTable — Table-specific state & operations
 // Handles: filter, pagination, tree expand, selection, drag & drop,
@@ -52,6 +53,8 @@ export function useCategoryTable({
   onSimpleDelete,
   onBulkDelete,
 }: UseCategoryTableProps) {
+  const companyId = getClientCompanyId();
+
   const token = authToken();
   const [isPending, startTransition] = useTransition();
 
@@ -227,7 +230,7 @@ export function useCategoryTable({
   }, [token, selectedIds, onBulkDelete]);
 
   const handleBulkMove = useCallback(async () => {
-    if (!token) return;
+    if (!token || !companyId) return;
     const targetParentId = bulkParentId === "" ? null : bulkParentId;
     let successCount = 0;
     for (const id of selectedIds) {
@@ -243,6 +246,7 @@ export function useCategoryTable({
               parent_id: targetParentId,
             },
             token,
+            companyId,
           );
           if (res.status === 200) successCount++;
         } catch {
@@ -309,7 +313,7 @@ export function useCategoryTable({
         return;
       }
 
-      if (!token) return;
+      if (!token || !companyId) return;
 
       try {
         const res = await updateVendorProductCategory(
@@ -320,6 +324,7 @@ export function useCategoryTable({
             parent_id: targetParentId,
           },
           token,
+          companyId,
         );
         if (res.status === 200) {
           toast.success(

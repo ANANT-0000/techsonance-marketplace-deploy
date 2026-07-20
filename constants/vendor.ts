@@ -2,6 +2,7 @@ import { NavLinkType, StatCardConfig } from "@/utils/Types";
 import { CAMPAIGN_ANALYTICS_TEXT } from "./vendorText";
 import { CategoryFilterType } from "@/components/vendor/category/CategoryManager";
 import { Folder, FolderPlus, Layers, ShoppingBag } from "lucide-react";
+import { VEDNOR_LOGIN_PATH } from "./constants";
 
 //used
 export const VendorDocumentTypes: {
@@ -55,7 +56,7 @@ export const VendorDocumentTypes: {
 // ============================================================
 //used
 export const VENDOR_NAV_LINKS: NavLinkType[] = [
-  { Dashboard: "", icon: "layout-dashboard", section: "Main" },
+  { Dashboard: "dashboard", icon: "layout-dashboard", section: "Main" },
   { Products: "products", icon: "package", section: "Main" },
   { Orders: "orders", icon: "shopping-cart", section: "Main" },
   { Analytics: "analytics", icon: "chart-column-stacked", section: "Main" },
@@ -613,7 +614,7 @@ export const CATEGORY_STATS_CONFIG: StatCardConfig[] = [
 // ── Auth Redirect ────────────────────────────────────────────
 
 export const CATEGORY_AUTH = {
-  LOGIN_REDIRECT_PATH: "/auth/vendorLogin",
+  LOGIN_REDIRECT_PATH: VEDNOR_LOGIN_PATH,
   REDIRECT_DELAY_MS: 2000,
 } as const;
 

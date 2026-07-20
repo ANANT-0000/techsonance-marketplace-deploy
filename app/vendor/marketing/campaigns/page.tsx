@@ -15,6 +15,7 @@ import { LoaderSpinner } from "@/components/common/LoaderSpinner";
 import AxiosAPI from "@/lib/axios";
 import { authToken } from "@/utils/authToken";
 import { CAMPAIGNS_PAGE_TEXT } from "@/constants/vendorText";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 interface Campaign {
   id: string;
@@ -70,7 +71,7 @@ export default function CampaignsPage() {
 
   useEffect(() => {
     if (!token) {
-      router.push("/auth/vendorLogin");
+      router.push(VEDNOR_LOGIN_PATH);
       return;
     }
     fetchCampaigns();
@@ -118,7 +119,9 @@ export default function CampaignsPage() {
     <div className="p-6 w-full mx-auto">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-theme-h4 font-bold text-gray-800">{CAMPAIGNS_PAGE_TEXT.HEADER.TITLE}</h1>
+          <h1 className="text-theme-h4 font-bold text-gray-800">
+            {CAMPAIGNS_PAGE_TEXT.HEADER.TITLE}
+          </h1>
           <p className="text-theme-body-sm text-gray-500 mt-1">
             {CAMPAIGNS_PAGE_TEXT.HEADER.SUBTITLE}
           </p>
@@ -253,7 +256,9 @@ export default function CampaignsPage() {
                   </h3>
                   <p className="text-theme-body-sm text-gray-500 mb-3 line-clamp-2 flex-grow">
                     {c.description ?? (
-                      <span className="italic">{CAMPAIGNS_PAGE_TEXT.CARD.NO_DESCRIPTION}</span>
+                      <span className="italic">
+                        {CAMPAIGNS_PAGE_TEXT.CARD.NO_DESCRIPTION}
+                      </span>
                     )}
                   </p>
 
@@ -331,7 +336,8 @@ export default function CampaignsPage() {
                   }
                   className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5"
                 >
-                  <Plus size={16} className="mr-2" /> {CAMPAIGNS_PAGE_TEXT.HEADER.CREATE_BTN}
+                  <Plus size={16} className="mr-2" />{" "}
+                  {CAMPAIGNS_PAGE_TEXT.HEADER.CREATE_BTN}
                 </Button>
               )}
             </div>

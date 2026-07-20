@@ -13,6 +13,7 @@ import {
 } from "@/utils/vendorApiClient";
 import { authToken } from "@/utils/authToken";
 import { UiText } from "@/constants/ui-text";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 interface PolicyOption {
   id: string;
@@ -71,12 +72,14 @@ export default function AssignPolicyPage({
 
   const targetType = watch("target_type");
   const token = authToken();
+  const companyId = getClientCompanyId();
 
   useEffect(() => {
+    if (!token || !companyId) return;
     Promise.all([
-      fetchProductPolicies(token!),
-      fetchVendorsProductsCategory(token!),
-      fetchVendorProductsOptions(token!),
+      fetchProductPolicies(token, companyId),
+      fetchVendorsProductsCategory(token, companyId),
+      fetchVendorProductsOptions(token, companyId),
     ])
       .then(([policiesResult, categoriesResult, productsResult]) => {
         setPolicies(policiesResult?.data ?? []);
@@ -91,6 +94,11 @@ export default function AssignPolicyPage({
   }, [token, labels.ASSIGN.LOAD_ERROR]);
 
   const onSubmit = async (data: AssignPolicySchema) => {
+    if (!companyId) {
+      // setGlobalError("Please try again");
+
+      return;
+    }
     setGlobalError(null);
     try {
       const result =
@@ -102,6 +110,7 @@ export default function AssignPolicyPage({
                 priority: data.priority ?? 1,
               },
               token!,
+              companyId,
             )
           : await fetchCreateAssignedProductPolicyOverride(
               {
@@ -110,6 +119,7 @@ export default function AssignPolicyPage({
                 overrides_category: data.overrides_category ?? true,
               },
               token!,
+              companyId,
             );
 
       if (result?.error || result?.statusCode >= 400) {

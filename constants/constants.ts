@@ -5,7 +5,8 @@ export const VENDOR_AUTH_URL = process.env.NEXT_PUBLIC_VENDOR_AUTH_URL;
 export const CUSTOMER_AUTH_URL = process.env.NEXT_PUBLIC_CUSTOMER_AUTH_URL;
 export const ADMIN_AUTH_URL = process.env.NEXT_PUBLIC_ADMIN_AUTH_URL;
 export const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL;
-export const PLATFORM_BASE_DOMAIN = process.env.NEXT_PUBLIC_PLATFORM_BASE_DOMAIN || "platform.com";
+export const PLATFORM_BASE_DOMAIN =
+  process.env.NEXT_PUBLIC_PLATFORM_BASE_DOMAIN || "platform.com";
 
 export const isClient = typeof window !== "undefined";
 export const USER_STORAGE_KEY = "user";
@@ -36,3 +37,11 @@ export const COLOR_LIGHT_GRAY = "#f3f4f6";
 export const RAZORPAY_CURRENCY = "INR";
 export const RAZORPAY_MERCHANT_NAME = "Techsonance Marketplace";
 export const RAZORPAY_PAYMENT_DESCRIPTION = "Secure Order Payment";
+export const VEDNOR_LOGIN_PATH = "/vendor/login";
+export const VEDNOR_REGISTER_PATH = "/vendor/register";
+
+export const ADMIN_LOGIN_PATH = "/admin/login";
+export const ADMIN_REGISTER_PATH = "/admin/register";
+
+export const CUSTOMER_LOGIN_PATH = "/customer/login";
+export const CUSTOMER_REGISTER_PATH = "/customer/register";

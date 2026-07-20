@@ -7,14 +7,14 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAppSelector } from "@/hooks/reduxHooks";
 import { useEffect } from "react";
 import { RootState } from "@/lib/store";
-import { UserRole } from "@/constants";
+import { UserRole, VEDNOR_LOGIN_PATH } from "@/constants";
 import AxiosAPI from "@/lib/axios";
 import { TrialBanner } from "@/components/vendor/TrialBanner";
-import VendorTourProvider from "@/components/vendor/VendorTourProvider";
+
 const STATUS_PAYMENT_REQUIRED = 402;
 const BILLING_REDIRECT_URL = "/vendor/settings/billing?reason=expired";
 const VENDOR_BASE_PATH = "/vendor";
-const VENDOR_LOGIN_PATH = "/auth/vendorLogin";
+
 const ROOT_PATH = "/";
 
 export default function VendorLayout({
@@ -29,9 +29,19 @@ export default function VendorLayout({
   const vendorId = user && "vendor_id" in user ? user?.vendor_id : "";
   const router = useRouter();
   const pathname = usePathname();
+
+  const PUBLIC_ROUTES = [
+    "/vendor/login",
+    "/vendor/register",
+    "/vendor/forgotPassword",
+  ];
+  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+
   useEffect(() => {
+    if (isPublicRoute) return;
+
     if (!isAuthenticated || role !== UserRole.VENDOR) {
-      router.replace(VENDOR_LOGIN_PATH);
+      router.replace(VEDNOR_LOGIN_PATH);
       return;
     }
 
@@ -67,12 +77,16 @@ export default function VendorLayout({
     };
   }, []);
 
+  if (isPublicRoute) {
+    return <>{children}</>;
+  }
+
   if (!isAuthenticated || role !== UserRole.VENDOR) {
     return null;
   }
 
   return (
-    <VendorTourProvider>
+    <>
       <main className={`flex w-full`}>
         <Sidebar NAV_LINKS={VENDOR_NAV_LINKS} basePath={VENDOR_BASE_PATH} />
         <div className="flex-1 flex flex-col min-w-0 min-h-screen ">
@@ -84,6 +98,6 @@ export default function VendorLayout({
           {children}
         </div>
       </main>
-    </VendorTourProvider>
+    </>
   );
 }

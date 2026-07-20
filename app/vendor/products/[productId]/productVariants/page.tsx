@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import Link from "next/link";
 import {
   Plus,
@@ -26,8 +27,10 @@ import { useAppSelector } from "@/hooks/reduxHooks";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useReducer } from "react";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 import { PRODUCT_VARIANTS_TEXT } from "@/constants";
 import { Skeleton } from "@/components/ui/skeleton";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 interface ProductVariant {
   id: string;
@@ -113,13 +116,15 @@ function variantListingReducer(
 }
 
 export default function VariantListingPage() {
+  const companyId = getClientCompanyId();
+
   const { productId } = useParams<{ productId: string }>();
   const { user } = useAppSelector((state) => state.auth);
   const vendorId = (user && "vendor_id" in user ? user.vendor_id : "") ?? "";
 
   const token = authToken();
   if (!token) {
-    redirect("/auth/vendorLogin");
+    redirect(VEDNOR_LOGIN_PATH);
   }
 
   const [state, dispatch] = useReducer(variantListingReducer, initialState);
@@ -127,8 +132,11 @@ export default function VariantListingPage() {
     state;
 
   useEffect(() => {
+    if (!token || !companyId) {
+      redirect(VEDNOR_LOGIN_PATH);
+    }
     dispatch({ type: VariantListingActionType.SET_LOADING, payload: true });
-    fetchProductVariants(productId, token)
+    fetchProductVariants(productId, token, companyId)
       .then((res) => {
         dispatch({
           type: VariantListingActionType.SET_VARIANTS,
@@ -136,6 +144,9 @@ export default function VariantListingPage() {
         });
       })
       .catch((error) => {
+        toast.error("Failed to load product variants. Please try again.", {
+          style: { borderRadius: "12px", background: "#333", color: "#fff" },
+        });
         dispatch({ type: VariantListingActionType.SET_VARIANTS, payload: [] });
       })
       .finally(() => {
@@ -158,7 +169,7 @@ export default function VariantListingPage() {
 
   const handleConfirm = async () => {
     dispatch({ type: VariantListingActionType.SET_LOADING, payload: true });
-    if (!token) {
+    if (!token || !companyId) {
       toast.error(PRODUCT_VARIANTS_TEXT.TOASTS.AUTH_ERR);
       return;
     }
@@ -167,13 +178,21 @@ export default function VariantListingPage() {
       ? ProductVariantStatus.INACTIVE
       : ProductVariantStatus.ACTIVE;
     try {
-      await updateProductVariantStatus(selectedVariantId!, nextStatus, token);
+      await updateProductVariantStatus(
+        selectedVariantId!,
+        nextStatus,
+        token,
+        companyId,
+      );
       dispatch({
         type: VariantListingActionType.CONFIRM_STATUS_UPDATE,
         payload: nextStatus,
       });
       toast.success(PRODUCT_VARIANTS_TEXT.TOASTS.UPDATE_SUCCESS);
     } catch (err) {
+      toast.error("Failed to update status.", {
+        style: { borderRadius: "12px", background: "#333", color: "#fff" },
+      });
     } finally {
       dispatch({ type: VariantListingActionType.SET_LOADING, payload: false });
       dispatch({
@@ -184,7 +203,12 @@ export default function VariantListingPage() {
   };
 
   return (
-    <main className="min-h-screen max-h-screen overflow-y-scroll w-full px-2 pb-10 pt-2 ">
+    <motion.main
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="min-h-screen max-h-screen overflow-y-scroll w-full px-2 pb-10 pt-2 "
+    >
       <div className="mx-auto  space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -238,8 +262,13 @@ export default function VariantListingPage() {
             <Skeleton className="w-full h-84" />
           </div>
         ) : variants && variants.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center flex flex-col items-center justify-center shadow-sm">
-            <div className="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white border border-slate-100/80 rounded-3xl p-16 text-center flex flex-col items-center justify-center shadow-[0_4px_24px_rgb(0,0,0,0.02)]"
+          >
+            <div className="w-20 h-20 rounded-2xl bg-slate-50/80 flex items-center justify-center mb-5 shadow-sm border border-slate-100/50">
               <Package size={36} className="text-slate-300" />
             </div>
             <h3 className="text-theme-h6 font-semibold text-slate-700">
@@ -250,19 +279,26 @@ export default function VariantListingPage() {
             </p>
             <Link
               href={`/vendor/products/variantForm/${productId}`}
-              className="inline-flex items-center gap-2 bg-blue-600 text-white text-theme-body-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-blue-700 transition shadow-md shadow-blue-200"
+              className="inline-flex items-center gap-2 bg-blue-600 text-white text-theme-body-sm font-semibold py-2.5 px-5 rounded-xl hover:bg-blue-700 hover:-translate-y-0.5 transition-all shadow-md shadow-blue-200"
             >
               <Plus size={15} /> {PRODUCT_VARIANTS_TEXT.EMPTY.BTN_CREATE}
             </Link>
-          </div>
+          </motion.div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {variants &&
               variants.length > 0 &&
-              variants.map((variant) => (
-                <div
+              variants.map((variant, index) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.3,
+                    delay: index * 0.05,
+                    ease: "easeOut",
+                  }}
                   key={variant.id}
-                  className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col"
+                  className="bg-white border border-slate-100/80 rounded-2xl overflow-hidden shadow-[0_4px_24px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col"
                 >
                   {variant.images && variant.images.length > 0 && (
                     <VariantImgGrid variantImages={variant?.images} />
@@ -366,7 +402,7 @@ export default function VariantListingPage() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
           </div>
         )}
@@ -383,6 +419,6 @@ export default function VariantListingPage() {
           isActive={isActive}
         />
       )}
-    </main>
+    </motion.main>
   );
 }

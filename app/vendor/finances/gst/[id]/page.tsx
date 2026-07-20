@@ -1,4 +1,5 @@
 "use client";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter, redirect } from "next/navigation";
@@ -15,10 +16,13 @@ import {
 } from "@/utils/vendorApiClient";
 import { GST_FORM_TEXT } from "@/constants/vendorText";
 import { GST_FORM_FIELDS } from "@/constants";
+import { VEDNOR_LOGIN_PATH, VEDNOR_REGISTER_PATH } from "@/constants";
 
 // --- DYNAMIC FIELD CONFIGURATION TYPE ---
 
 export default function GstFormPage() {
+  const companyId = getClientCompanyId();
+
   const params = useParams();
   const router = useRouter();
   const { user } = useAppSelector((state: RootState) => state.auth);
@@ -41,13 +45,13 @@ export default function GstFormPage() {
 
   // 4. FETCH DATA IF EDIT MODE
   useEffect(() => {
-    if (!token) redirect("/auth/vendorLogin");
+    if (!token) redirect(VEDNOR_LOGIN_PATH);
 
     const fetchGstData = async () => {
-      if (!isEditMode) return; // Skip fetching if creating new
+      if (!isEditMode || !companyId) return; // Skip fetching if creating new
 
       try {
-        const res = await fetchSingleGstRecord(gstId, token!);
+        const res = await fetchSingleGstRecord(gstId, token!, companyId);
 
         if (res.data?.data) {
           // Format dates properly for HTML input type="date"
@@ -68,13 +72,14 @@ export default function GstFormPage() {
 
   // 5. UNIFIED SUBMIT FUNCTION
   const onSubmit = async (data: any) => {
+    if (!companyId || !token) return;
     try {
       if (isEditMode) {
         // EDIT MODE: PATCH Request
-        await fetchUpdateGstRecord(gstId, data, token!);
+        await fetchUpdateGstRecord(gstId, data, token!, companyId);
       } else {
         // CREATE MODE: POST Request
-        await fetchCreateGstRecord(data, token!);
+        await fetchCreateGstRecord(data, token!, companyId);
       }
       router.push(`/vendor/finances/gst`);
     } catch (error) {

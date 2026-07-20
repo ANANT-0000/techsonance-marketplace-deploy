@@ -18,6 +18,7 @@ import Link from "next/link";
 import { fetchPolicyCoverageOverview } from "@/utils/vendorApiClient";
 import { UiText } from "@/constants/ui-text";
 import { PolicyType } from "../page";
+import { getClientCompanyId } from "@/utils/getCompanyId";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -120,12 +121,13 @@ export default function PolicyCoveragePage({
   const [filterScope, setFilterScope] = useState<PolicyFilterScope>(
     PolicyFilterScope.ALL,
   );
+  const companyId = getClientCompanyId();
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !companyId) return;
     const loadCoverage = async () => {
       setLoading(true);
-      const res = await fetchPolicyCoverageOverview(token);
+      const res = await fetchPolicyCoverageOverview(token, companyId);
       setData(res?.data || []);
       setLoading(false);
     };

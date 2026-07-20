@@ -15,9 +15,13 @@ import { Calendar } from "@/components/ui/calendar";
 import { TableRowSkeleton } from "@/components/common/skeletons";
 import Link from "next/link";
 import AxiosAPI from "@/lib/axios";
-import { authToken } from "@/utils/authToken";
 import { Pagination } from "@/components/common/Pagination";
 import { FINANCES_TEXT } from "@/constants/vendorText";
+import { toast } from "sonner";
+import { DataLoadErrorCard } from "@/components/vendor/DataLoadErrorCard";
+import { authToken } from "@/utils/authToken";
+import { getClientCompanyId } from "@/utils/getCompanyId";
+import { getVendorEarnings } from "@/utils/vendorApiClient";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 // Mirrors the shape returned by FinancesService.getVendorFinancial()
@@ -99,9 +103,13 @@ function SummaryCard({
 }) {
   return (
     <div
-      className={`flex items-center gap-4 bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-4 min-w-[200px] flex-1`}
+      className={`flex items-center gap-4 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm px-5 py-4 min-w-[200px] flex-1 transition-all duration-300 hover:shadow-md hover:border-slate-300/80`}
     >
-      <span className={`p-2.5 rounded-xl ${color}`}>{icon}</span>
+      <span
+        className={`p-2.5 rounded-xl shadow-sm ring-1 ring-black/5 ${color}`}
+      >
+        {icon}
+      </span>
       <div>
         <p className="text-theme-caption text-gray-500 font-medium uppercase tracking-wider mb-0.5">
           {label}
@@ -110,7 +118,9 @@ function SummaryCard({
           <IndianRupee size={16} className="text-gray-600" />
           {value}
         </p>
-        {sub && <p className="text-theme-caption text-gray-400 mt-0.5">{sub}</p>}
+        {sub && (
+          <p className="text-theme-caption text-gray-400 mt-0.5">{sub}</p>
+        )}
       </div>
     </div>
   );
@@ -187,7 +197,10 @@ type FinancesAction =
   | { type: FinancesActionType.SET_CALENDAR_OPEN; payload: boolean }
   | { type: FinancesActionType.SET_CURRENT_PAGE; payload: number };
 
-function financesReducer(state: FinancesState, action: FinancesAction): FinancesState {
+function financesReducer(
+  state: FinancesState,
+  action: FinancesAction,
+): FinancesState {
   switch (action.type) {
     case FinancesActionType.SET_LOADING:
       return { ...state, loading: action.payload };
@@ -244,6 +257,19 @@ export default function EarningsPage() {
 
   const offset = (currentPage - 1) * itemsPerPage;
   const token = authToken();
+  const companyId = getClientCompanyId();
+  if (!token || !companyId) {
+    return (
+      <div className="py-10">
+        <DataLoadErrorCard
+          title={FINANCES_TEXT.EMPTY_STATES.SESSION_EXPIRED_TITLE}
+          description={FINANCES_TEXT.EMPTY_STATES.SESSION_EXPIRED_DESC}
+          tryAgainText={FINANCES_TEXT.EMPTY_STATES.SESSION_EXPIRED_BTN}
+          onTryAgain={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
 
   // ── fetch ──
   const fetchEarnings = async (
@@ -253,22 +279,23 @@ export default function EarningsPage() {
     currentDate: Date | undefined,
     currentSortBy: string,
     currentToken: string,
+    companyId: string,
   ) => {
     dispatch({ type: FinancesActionType.SET_LOADING, payload: true });
     dispatch({ type: FinancesActionType.SET_ERROR, payload: null });
     try {
-      const response = await AxiosAPI.get(
-        `/v1/finances/earnings?search=${currentSearch}&offset=${currentOffset}&limit=${itemsPerPage}&status=${currentStatusFilter}&date=${currentDate?.toISOString() ?? ""}&sortby=${currentSortBy}`,
-        {
-          headers: {
-            Authorization: `Bearer ${currentToken}`,
-          },
-        },
+      const response = await getVendorEarnings(
+        currentSearch,
+        currentOffset,
+        itemsPerPage,
+        currentStatusFilter,
+        currentDate?.toISOString() ?? "",
+        currentSortBy,
+        currentToken,
+        companyId
       );
-      if (response.status !== 200)
-        throw new Error(`HTTP ${response.status}: ${response.data.message}`);
 
-      const data = response.data?.data;
+      const data = response?.data;
       const earningsList = data?.earnings ?? [];
       const cleared = data?.total_cleared_earnings ?? "0.00";
       const pending = data?.total_pending_earnings ?? "0.00";
@@ -286,7 +313,10 @@ export default function EarningsPage() {
         },
       });
     } catch (err: any) {
-      dispatch({ type: FinancesActionType.SET_ERROR, payload: FINANCES_TEXT.LOAD_ERROR });
+      dispatch({
+        type: FinancesActionType.SET_ERROR,
+        payload: FINANCES_TEXT.LOAD_ERROR,
+      });
       dispatch({
         type: FinancesActionType.SET_EARNINGS_DATA,
         payload: {
@@ -304,14 +334,25 @@ export default function EarningsPage() {
 
   useEffect(() => {
     if (token) {
-      fetchEarnings(debouncedSearch, offset, statusFilter, date, sortBy, token);
+      fetchEarnings(
+        debouncedSearch,
+        offset,
+        statusFilter,
+        date,
+        sortBy,
+        token,
+        companyId,
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, offset, statusFilter, date, sortBy, debouncedSearch]);
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
-      dispatch({ type: FinancesActionType.SET_DEBOUNCED_SEARCH, payload: search });
+      dispatch({
+        type: FinancesActionType.SET_DEBOUNCED_SEARCH,
+        payload: search,
+      });
       dispatch({ type: FinancesActionType.SET_CURRENT_PAGE, payload: 1 }); // Reset to first page on new search
     }, 500); // 500ms delay
 
@@ -343,10 +384,21 @@ export default function EarningsPage() {
         </div>
 
         <button
-          onClick={() =>
-            token &&
-            fetchEarnings(debouncedSearch, offset, statusFilter, date, sortBy, token)
-          }
+          onClick={() => {
+            if (!token) {
+              toast.error(FINANCES_TEXT.EMPTY_STATES.EXPORT_NO_TOKEN);
+              return;
+            }
+            fetchEarnings(
+              debouncedSearch,
+              offset,
+              statusFilter,
+              date,
+              sortBy,
+              token,
+              companyId,
+            );
+          }}
           className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 rounded-xl px-4 py-2 transition-colors font-medium shadow-sm"
         >
           <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
@@ -383,7 +435,12 @@ export default function EarningsPage() {
           <input
             type="text"
             value={search}
-            onChange={(e) => dispatch({ type: FinancesActionType.SET_SEARCH, payload: e.target.value })}
+            onChange={(e) =>
+              dispatch({
+                type: FinancesActionType.SET_SEARCH,
+                payload: e.target.value,
+              })
+            }
             className="text-theme-body-sm bg-transparent w-full outline-none text-gray-700 placeholder:text-gray-400"
             placeholder={FINANCES_TEXT.SEARCH_PLACEHOLDER}
           />
@@ -393,7 +450,12 @@ export default function EarningsPage() {
         <span className="flex flex-wrap gap-3 items-center">
           <select
             value={statusFilter}
-            onChange={(e) => dispatch({ type: FinancesActionType.SET_STATUS_FILTER, payload: e.target.value })}
+            onChange={(e) =>
+              dispatch({
+                type: FinancesActionType.SET_STATUS_FILTER,
+                payload: e.target.value,
+              })
+            }
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-emerald-400 cursor-pointer transition-colors"
           >
             <option value="all">{FINANCES_TEXT.ALL_STATUS}</option>
@@ -404,18 +466,30 @@ export default function EarningsPage() {
 
           <select
             value={sortBy}
-            onChange={(e) => dispatch({ type: FinancesActionType.SET_SORT_BY, payload: e.target.value })}
+            onChange={(e) =>
+              dispatch({
+                type: FinancesActionType.SET_SORT_BY,
+                payload: e.target.value,
+              })
+            }
             className="text-theme-body-sm border border-gray-200 bg-gray-50 rounded-xl px-3 py-2 text-gray-600 outline-none focus:border-emerald-400 cursor-pointer transition-colors"
           >
             <option value="desc">{FINANCES_TEXT.NEWEST_FIRST}</option>
             <option value="asc">{FINANCES_TEXT.OLDEST_FIRST}</option>
-            <option value="amount_highest">{FINANCES_TEXT.HIGHEST_AMOUNT}</option>
+            <option value="amount_highest">
+              {FINANCES_TEXT.HIGHEST_AMOUNT}
+            </option>
           </select>
 
           {/* Date picker toggle */}
           {calendarOpen ? (
             <button
-              onClick={() => dispatch({ type: FinancesActionType.SET_CALENDAR_OPEN, payload: false })}
+              onClick={() =>
+                dispatch({
+                  type: FinancesActionType.SET_CALENDAR_OPEN,
+                  payload: false,
+                })
+              }
               className="flex items-center gap-2 text-theme-body-sm border border-emerald-300 bg-emerald-50 text-emerald-600 rounded-xl px-3 py-2 font-medium transition-colors"
             >
               {date ? date.toDateString() : FINANCES_TEXT.SELECT_DATE}
@@ -423,7 +497,12 @@ export default function EarningsPage() {
             </button>
           ) : (
             <button
-              onClick={() => dispatch({ type: FinancesActionType.SET_CALENDAR_OPEN, payload: true })}
+              onClick={() =>
+                dispatch({
+                  type: FinancesActionType.SET_CALENDAR_OPEN,
+                  payload: true,
+                })
+              }
               className="flex items-center gap-2 text-theme-body-sm border border-gray-200 bg-gray-50 text-gray-600 rounded-xl px-3 py-2 hover:border-gray-300 transition-colors"
             >
               {date ? date.toDateString() : FINANCES_TEXT.FILTER_DATE}
@@ -440,7 +519,10 @@ export default function EarningsPage() {
               selected={date}
               onSelect={(d) => {
                 dispatch({ type: FinancesActionType.SET_DATE, payload: d });
-                dispatch({ type: FinancesActionType.SET_CALENDAR_OPEN, payload: false });
+                dispatch({
+                  type: FinancesActionType.SET_CALENDAR_OPEN,
+                  payload: false,
+                });
               }}
               className="rounded-xl bg-white"
               captionLayout="dropdown"
@@ -486,10 +568,21 @@ export default function EarningsPage() {
                   colSpan={TABLE_HEADERS.length + 1}
                   className="py-16 text-center text-gray-400 text-theme-body-sm"
                 >
-                  <Wallet size={36} className="mx-auto mb-3 opacity-25" />
-                  {earnings?.length === 0
-                    ? FINANCES_TEXT.NO_RECORDS_VENDOR
-                    : FINANCES_TEXT.NO_RECORDS_FILTER}
+                  <div className="flex flex-col items-center justify-center py-6 px-4">
+                    <div className="w-12 h-12 bg-white shadow-sm ring-1 ring-slate-100 rounded-full flex items-center justify-center mb-4">
+                      <Wallet size={24} className="text-slate-400" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-700 mb-1">
+                      {search || statusFilter !== "all" || date
+                        ? FINANCES_TEXT.EMPTY_STATES.NO_RECORDS_FILTER_TITLE
+                        : FINANCES_TEXT.EMPTY_STATES.NO_TRANSACTIONS_TITLE}
+                    </p>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                      {search || statusFilter !== "all" || date
+                        ? FINANCES_TEXT.EMPTY_STATES.NO_RECORDS_FILTER_DESC
+                        : FINANCES_TEXT.EMPTY_STATES.NO_TRANSACTIONS_DESC}
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (

@@ -1,3 +1,4 @@
+import { getClientCompanyId } from "@/utils/getCompanyId";
 import React, { useEffect, useCallback, useMemo, useState } from "react";
 import {
   Select,
@@ -326,6 +327,8 @@ export function PromotionConfigurator({
   discountFields,
   updateField,
 }: PromotionConfiguratorProps) {
+  const companyId = getClientCompanyId();
+
   const { user } = useAppSelector((state: RootState) => state.auth);
   const token = authToken();
   const [variantOptions, setVariantOptions] = useState<VariantOption[]>([]);
@@ -367,10 +370,10 @@ export function PromotionConfigurator({
     promoType === PromotionType.BUNDLE_DEAL;
 
   const fetchProductVariants = useCallback(async () => {
-    if (!token || variantOptions.length > 0) return;
+    if (!token || !companyId || variantOptions.length > 0) return;
     setLoadingVariants(true);
     try {
-      const res = await fetchVendorProductsOptions(token);
+      const res = await fetchVendorProductsOptions(token, companyId);
       setVariantOptions(res.data ?? []);
     } catch (err) {
       // silently handle or log elsewhere
